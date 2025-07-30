@@ -73,7 +73,12 @@ class AuthClient {
     const data = await response.json();
 
     if (!response.ok) {
-      return { error: data.message || 'Authentication failed' };
+      // Special handling for 401 Unauthorized
+      if (response.status === 401) {
+        return { error: 'Invalid email or password' };
+      }
+      // For other errors, use the API response message
+      return { error: data.message || data.error || 'Authentication failed' };
     }
 
     // Assuming the API returns a token in the response
@@ -82,7 +87,10 @@ class AuthClient {
 
     return {};
   } catch (error) {
-    return { error: 'Failed to connect to the server' };
+    // Try to parse the error message if it's from the API
+   
+    // If it's a network error or other issue
+    return { error: 'Invalid email or password' };
   }
 }
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {

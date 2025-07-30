@@ -48,7 +48,10 @@ export function SignInForm(): React.JSX.Element {
     handleSubmit,
     setError,
   } = useForm<Values>({
-
+    defaultValues: {
+      email: '',
+      password: ''
+    },
     mode: 'onBlur',
     resolver: async (data) => {
       try {
