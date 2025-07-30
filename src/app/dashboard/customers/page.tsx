@@ -8,6 +8,8 @@ import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
+import Papa from 'papaparse';
+
 
 import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
@@ -18,82 +20,108 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { authClient } from '@/lib/auth/client';
 
-
-const customers = [
-  {
-    id: '1',
-    name: 'zororai',
-    nationId: '9988875446',
-    address: 'wh6rhgf',
-    phone: '0772167755',
-    position: 'Representatives',
-    cooperative: 'chitwn',
-    numShafts: 0,
-    status: 'Approved',
-    reason: 'Valid documents',
-    attachedShaft: true,
-  },
-  {
-    id: '2',
-    name: 'zororai',
-    nationId: '766455',
-    address: 'e',
-    phone: '102837',
-    position: 'Representatives',
-    cooperative: 'zorro',
-    numShafts: 0,
-    status: 'Approved',
-    reason: 'Valid documents',
-    attachedShaft: true,
-  },
-  {
-    id: '3',
-    name: 'carlos',
-    nationId: 'u832u8217',
-    address: '4828 Unit C',
-    phone: '0775219766',
-    position: 'Representatives',
-    cooperative: 'seke',
-    numShafts: 1,
-    status: 'Approved',
-    reason: 'Valid documents',
-    attachedShaft: true,
-  },
-  {
-    id: '4',
-    name: 'patrick',
-    nationId: '63-553652h00',
-    address: 'Gadzima 23',
-    phone: '0715625673',
-    position: 'Owner',
-    cooperative: 'gomba',
-    numShafts: 4,
-    status: 'Approved',
-    reason: 'Valid documents',
-    attachedShaft: true,
-  },
-  {
-    id: '5',
-    name: 'Zororai',
-    nationId: '50-876567D76',
-    address: 'chegutu',
-    phone: '0775219766',
-    position: 'Representatives',
-    cooperative: 'Nhava',
-    numShafts: 0,
-    status: 'Rejected',
-    reason: 'Incomplete documents',
-    attachedShaft: true,
-  },
-] satisfies Customer[];
 
 export default function Page(): React.JSX.Element {
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
+  const [customers, setCustomers] = React.useState<Customer[]>([]);
+
+  React.useEffect(() => {
+    (async () => {
+      const data = await authClient.fetchCustomers();
+      setCustomers(data);
+    })();
+  }, []);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
+
+  // Export table data as CSV
+  const handleExport = () => {
+    const headers = [
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+    ];
+    const rows = paginatedCustomers.map(c => [
+      c.id,
+      c.name,
+      c.surname,
+      c.nationIdNumber,
+      c.address,
+      c.cellNumber,
+      c.position,
+      c.cooperativeName,
+      c.numShafts,
+      c.status,
+      c.reason,
+      c.attachedShaft ? 'Yes' : 'No'
+    ]);
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'customers.csv';
+    document.body.appendChild(a);
+
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      complete: async (results: { data: any[]; }) => {
+        // Map CSV rows to your structure
+        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
+          id: row.id ?? `imported-${idx}`,
+          name: row.name ?? '',
+          surname: row.surname ?? '',
+          nationIdNumber: row.nationIdNumber ?? '',
+          nationId: row.nationId ?? '',
+          address: row.address ?? '',
+          cellNumber: row.cellNumber ?? '',
+          phone: row.phone ?? row.cellNumber ?? '',
+          email: row.email ?? '',
+          status: row.status ?? '',
+          reason: row.reason ?? '',
+          registrationNumber: row.registrationNumber ?? '',
+          registrationDate: row.registrationDate ?? '',
+          position: row.position ?? '',
+          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
+          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
+          cooperativeName: row.cooperativeName ?? '',
+          cooperative: row.cooperative ?? '', // Added missing property
+          numShafts: row.numShafts ?? 0,
+          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
+        }));
+        console.log('Imported CSV data:', importedData);
+        setCustomers(importedData); // Update table state
+        // Send importedData to backend
+        try {
+          const response = await fetch('/api/miners/import', {
+            method: 'POST',
+            body: JSON.stringify(importedData),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          if (!response.ok) {
+            console.error('Failed to import data:', await response.text());
+          } else {
+            console.log('Successfully imported data to backend');
+          }
+        } catch (error) {
+          console.error('Error sending imported data:', error);
+        }
+      }
+    });
+  }
 
   return (
     <Stack spacing={3}>
@@ -101,10 +129,20 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Registered Miners</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
+            <Button
+              color="inherit"
+              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
+              component="label"
+            >
               Import
+              <input
+                type="file"
+                accept=".csv"
+                hidden
+                onChange={handleImport}
+              />
             </Button>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}>
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
           </Stack>
