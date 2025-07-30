@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 
 
 import type { User } from '@/types/user';
+import { Customer } from '@/components/dashboard/customer/customers-table';
 
 function generateToken(): string {
   const arr = new Uint8Array(12);
@@ -53,7 +54,7 @@ class AuthClient {
     return { error: 'Social authentication not implemented' };
   }
 
- async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string }> {
+ async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: string; token?: string }> {
   const { email, password } = params;
 
   try {
@@ -71,6 +72,7 @@ class AuthClient {
     });
 
     const data = await response.json();
+    console.log('Login response:', data); // Debug: show full response
 
     if (!response.ok) {
       // Special handling for 401 Unauthorized
@@ -86,7 +88,7 @@ class AuthClient {
     
     localStorage.setItem('custom-auth-token', token);
 
-    return {};
+    return { token };
   } catch (error) {
     // Try to parse the error message if it's from the API
    
@@ -94,6 +96,34 @@ class AuthClient {
     return { error: 'Invalid email or password' };
   }
 }
+    async fetchCustomers(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/miners/getall', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const data = await response.json();
+            
+            return Array.isArray(data) ? data : data.customers || [];
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            return [];
+        }
+    }
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
   }
@@ -123,3 +153,7 @@ class AuthClient {
 }
 
 export const authClient = new AuthClient();
+
+// Usage example after login:
+// const { token } = await authClient.signInWithPassword({ email, password });
+// const customers = await authClient.fetchCustomers(token);

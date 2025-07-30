@@ -17,14 +17,20 @@ import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
+import { ReactNode } from 'react';
 
 function noop(): void {
   // do nothing
 }
 
 export interface Customer {
+  cooperativeName: ReactNode;
+  cellNumber: ReactNode;
+  nationIdNumber: any;
+
   id: string;
   name: string;
+  surname: string;
   nationId: string;
   address: string;
   phone: string;
@@ -78,7 +84,8 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Nation Id Number</TableCell>
+              <TableCell>Surname</TableCell>
+              <TableCell>Id Number</TableCell>
               <TableCell>Address</TableCell>
               <TableCell>Phone number</TableCell>
               <TableCell>Position</TableCell>
@@ -107,11 +114,12 @@ export function CustomersTable({
                     />
                   </TableCell>
                   <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.nationId}</TableCell>
+                  <TableCell>{row.surname}</TableCell>
+                  <TableCell>{row.nationIdNumber}</TableCell>
                   <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.phone}</TableCell>
+                  <TableCell>{row.cellNumber}</TableCell>
                   <TableCell>{row.position}</TableCell>
-                  <TableCell>{row.cooperative}</TableCell>
+                  <TableCell>{row.cooperativeName}</TableCell>
                   <TableCell>{row.numShafts}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
