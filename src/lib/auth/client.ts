@@ -83,6 +83,7 @@ class AuthClient {
 
     // Assuming the API returns a token in the response
     const token = data.token || generateToken();
+    
     localStorage.setItem('custom-auth-token', token);
 
     return {};
