@@ -40,6 +40,9 @@ export interface ResetPasswordParams {
 }
 
 class AuthClient {
+    registerCompany(form: { companyName: string; registrationNumber: string; address: string; contactNumber: string; email: string; industry: string; companyDocument: string; }): { error: any; success: any; } | PromiseLike<{ error: any; success: any; }> {
+        throw new Error('Method not implemented.');
+    }
   async signUp(_: SignUpParams): Promise<{ error?: string }> {
     // Make API request
 
@@ -147,8 +150,64 @@ class AuthClient {
 
   async signOut(): Promise<{ error?: string }> {
     localStorage.removeItem('custom-auth-token');
-
     return {};
+  }
+
+  async registerMiner(data: {
+    name: string;
+    surname: string;
+    address: string;
+    cell: string;
+    nationId: string;
+    position: string;
+    cooperative: string;
+    idPicture: string;  // Changed to string for base64
+    teamMembers: Array<{
+      name: string;
+      surname: string;
+      address: string;
+      idNumber: string;
+   
+    }>;
+  }): Promise<{ error?: string; success?: boolean }> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      // Send JSON data with base64 image
+      const response = await fetch('http://localhost:1000/api/miners/createminers', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: data.name,
+          surname: data.surname,
+          address: data.address,
+          cellNumber: data.cell,
+          nationIdNumber: data.nationId,
+          position: data.position,
+          cooperativeName: data.cooperative,
+          idPicture: data.idPicture,  // Send base64 image string
+          teamMembers: data.teamMembers
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to register miner');
+      }
+
+      const result = await response.json();
+      return { success: true };
+    } catch (error) {
+      console.error('Error registering miner:', error);
+      return { error: error instanceof Error ? error.message : 'Failed to register miner' };
+    }
   }
 }
 

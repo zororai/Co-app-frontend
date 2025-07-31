@@ -127,7 +127,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Registered Syndicate Miners</Typography>
+          <Typography variant="h4">Registered Company Miners</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button
               color="inherit"
@@ -149,7 +149,7 @@ export default function Page(): React.JSX.Element {
         </Stack>
         <div>
           <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
-            Reg Syndicate Miner
+            Reg Company Miner
           </Button>
         </div>
       </Stack>

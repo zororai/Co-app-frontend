@@ -4,7 +4,7 @@ export interface NavItemConfig {
   disabled?: boolean;
   external?: boolean;
   label?: string;
-  icon?: string | React.ElementType;
+  icon?: string | React.ReactNode;
   href?: string;
   items?: NavItemConfig[];
   // Matcher cannot be a function in order

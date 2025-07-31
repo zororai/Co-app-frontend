@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+
+// Removed duplicate local Customer interface. Use the exported one below.
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -14,6 +16,12 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -40,12 +48,14 @@ export interface Customer {
   status: 'Approved' | 'Rejected';
   reason: string;
   attachedShaft: boolean;
+  // Optionally, add index signature if you need dynamic keys:
+  [key: string]: any;
 }
 
-interface CustomersTableProps {
+export interface CustomersTableProps {
   count?: number;
-  page?: number;
   rows?: Customer[];
+  page?: number;
   rowsPerPage?: number;
 }
 
@@ -55,17 +65,107 @@ export function CustomersTable({
   page = 0,
   rowsPerPage = 0,
 }: CustomersTableProps): React.JSX.Element {
-  const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
-  }, [rows]);
+  const [filters, setFilters] = React.useState({
+    search: '',
+    status: 'all',
+    position: 'all'
+  });
 
+  // Filter the rows based on search and filters
+  const filteredRows = React.useMemo(() => {
+    return rows.filter(row => {
+      const matchesSearch = filters.search === '' || 
+        Object.values(row).some(value => 
+          String(value).toLowerCase().includes(filters.search.toLowerCase())
+        );
+      
+      const matchesStatus = filters.status === 'all' || row.status === filters.status;
+      const matchesPosition = filters.position === 'all' || row.position === filters.position;
+
+      return matchesSearch && matchesStatus && matchesPosition;
+    });
+  }, [rows, filters]);
+
+  const rowIds = React.useMemo(() => {
+    return filteredRows.map((customer) => customer.id);
+  }, [filteredRows]);
+
+  // Initialize selection handling
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
+  const handleRedirect = (path: string) => {
+    window.location.href = path;
+  };
+
   return (
     <Card>
+      {/* Action Buttons */}
+      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: '#5f4bfa',
+            color: '#fff',
+            '&:hover': { bgcolor: '#4d3fd6' }
+          }}
+          onClick={() => handleRedirect('/dashboard/customers')}
+        >
+          Syndicate
+        </Button>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: '#5f4bfa',
+            color: '#fff',
+            '&:hover': { bgcolor: '#4d3fd6' }
+          }}
+          onClick={() => handleRedirect('/dashboard/company')}
+        >
+          Company
+        </Button>
+      </Box>
+      <Divider />
+      {/* Filters Section */}
+      <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <TextField
+          size="small"
+          label="Search"
+          variant="outlined"
+          value={filters.search}
+          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+          sx={{ minWidth: 200 }}
+          placeholder="Search by any field..."
+        />
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={filters.status}
+            label="Status"
+            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+          >
+            <MenuItem value="all">All Status</MenuItem>
+            <MenuItem value="Approved">Approved</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Position</InputLabel>
+          <Select
+            value={filters.position}
+            label="Position"
+            onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
+          >
+            <MenuItem value="all">All Positions</MenuItem>
+            <MenuItem value="Representatives">Representatives</MenuItem>
+            <MenuItem value="Owner">Owner</MenuItem>
+            <MenuItem value="Member">Member</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+      <Divider />
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
@@ -97,7 +197,7 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => {
+            {filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -172,7 +272,7 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={count}
+        count={filteredRows.length}
         onPageChange={noop}
         onRowsPerPageChange={noop}
         page={page}
