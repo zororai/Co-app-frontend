@@ -40,8 +40,61 @@ export interface ResetPasswordParams {
 }
 
 class AuthClient {
-    registerCompany(form: { companyName: string; registrationNumber: string; address: string; contactNumber: string; email: string; industry: string; companyDocument: string; }): { error: any; success: any; } | PromiseLike<{ error: any; success: any; }> {
-        throw new Error('Method not implemented.');
+    async registerCompany(formData: any): Promise<{ error?: string; success?: boolean }> {
+        try {
+            const token = localStorage.getItem('custom-auth-token');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
+            const requestData = {
+                companyName: formData.companyName,
+                address: formData.address,
+                cellNumber: formData.contactNumber,
+                email: formData.email,
+                companyLogo: formData.documents.companyLogo,
+                certificateOfCooperation: formData.documents.certificateOfCooperation,
+                cr14Copy: formData.documents.cr14Document,
+                miningCertificate: formData.documents.miningCertificate,
+                taxClearance: formData.documents.taxClearance,
+                passportPhoto: formData.documents.passportPhotos[0], // Taking the first passport photo
+                ownerName: formData.ownerDetails.name,
+                ownerSurname: formData.ownerDetails.surname,
+                ownerAddress: formData.ownerDetails.address,
+                ownerCellNumber: formData.ownerDetails.cellNumber,
+                ownerIdNumber: formData.ownerDetails.idNumber
+            };
+
+            const response = await fetch('http://localhost:1000/api/companies/register', {
+              
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(requestData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                return { 
+                    error: data.message || data.error || 'Company registration failed',
+                    success: false 
+                };
+            }
+
+            return { 
+                success: true 
+            };
+        } catch (error) {
+            console.error('Error during company registration:', error);
+            return { 
+                error: 'Failed to register company. Please try again.',
+                success: false 
+            };
+        }
     }
   async signUp(_: SignUpParams): Promise<{ error?: string }> {
     // Make API request
@@ -99,6 +152,74 @@ class AuthClient {
     return { error: 'Invalid email or password' };
   }
 }
+    async fetchCompanies(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/companies/getall', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch companies');
+            }
+
+            const text = await response.text();
+            if (!text) {
+                return [];
+            }
+
+            try {
+                const data = JSON.parse(text);
+                return Array.isArray(data) ? data : (data.companies || []);
+            } catch (parseError) {
+                console.error('Error parsing JSON:', parseError);
+                console.log('Raw response:', text);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+            return [];
+        }
+    }
+
+    async fetchCustomerDetails(id: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/miners/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customer details');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching customer details:', error);
+            return null;
+        }
+    }
+
     async fetchCustomers(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

@@ -1,116 +1,148 @@
 "use client";
 import * as React from 'react';
-import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
-import dayjs from 'dayjs';
 import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/customer/customers-table';
-import type { Customer } from '@/components/dashboard/customer/customers-table';
+// Update the import paths below to the correct relative or alias path where CustomersTable and Customer are defined.
+// For example, if the file is actually named 'customersCompanyTable.tsx' in the same folder, use:
+// Update the path below to the correct relative path if needed, e.g.:
+// import { CustomersTable1 } from '../../components/dashboard/Companyreg/customersCompanyTable';
+// or use the correct alias if configured:
+// Update the path below to the correct location of customersCompanyTable.tsx
+// Example: If the file is in 'src/components/dashboard/Companyreg/customersCompanyTable.tsx', use the following:
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { RegMinerDialog } from '@/components/dashboard/customer/regcompany_miner';
 import { authClient } from '@/lib/auth/client';
+import { Company, CompanyTable } from '@/components/dashboard/customer/company-table';
 
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [companies, setCompanies] = React.useState<Company[]>([]);
 
   React.useEffect(() => {
-    (async () => {
-      const data = await authClient.fetchCustomers();
-      setCustomers(data);
-    })();
+    const fetchCompanies = async () => {
+      try {
+        const data = await authClient.fetchCompanies();
+        setCompanies(data);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+      }
+    };
+
+    fetchCompanies();
   }, []);
 
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
-
-  // Export table data as CSV
-  const handleExport = () => {
-    const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
-    ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
-    ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'customers.csv';
-    document.body.appendChild(a);
-
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handlePageChange = (_: any, newPage: number) => {
+    setPage(newPage);
   };
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedCompanies = React.useMemo(() => {
+    return companies.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  }, [companies, page, rowsPerPage]);
+
+  const handleExport = () => {
+    const headers = [
+      'Company Name',
+      'Address',
+      'Contact Number',
+      'Email',
+      'Owner Name',
+      'Owner Surname',
+      'Owner ID',
+      'Status',
+      'Reason'
+    ];
+    const rows = companies.map(company => [
+      company.companyName,
+      company.address,
+      company.cellNumber,
+      company.email,
+      company.ownerName,
+      company.ownerSurname,
+      company.ownerIdNumber,
+      company.status,
+      company.reason || ''
+    ]);
+
+    // Format CSV content with proper escaping
+    const csvContent = [headers, ...rows]
+      .map(r => r.map(String)
+      .map(x => `"${x.replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'companies.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
       header: true,
       complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
+        // Map CSV rows to company structure
+        const importedData: Company[] = results.data.map((row: any) => ({
+          id: row.id || `imported-${Math.random().toString(36).substr(2, 9)}`,
+          companyName: row['Company Name'] || '',
+          address: row['Address'] || '',
+          cellNumber: row['Contact Number'] || '',
+          email: row['Email'] || '',
+          ownerName: row['Owner Name'] || '',
+          ownerSurname: row['Owner Surname'] || '',
+          ownerIdNumber: row['Owner ID'] || '',
+          status: row['Status'] || 'Pending',
+          reason: row['Reason'] || '',
+          companyLogo: row['Company Logo'] || '',
+          certificateOfCooperation: row['Certificate Of Cooperation'] || '',
+          cr14Copy: row['CR14 Copy'] || '',
+          miningCertificate: row['Mining Certificate'] || '',
+          taxClearance: row['Tax Clearance'] || '',
+          passportPhoto: row['Passport Photo'] || '',
+          ownerAddress: row['Owner Address'] || '',
+          ownerCellNumber: row['Owner Cell Number'] || ''
         }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
+
+        setCompanies(importedData);
+        
         try {
-          const response = await fetch('/api/miners/import', {
+          // You can add API endpoint to handle bulk import
+          const response = await fetch('/api/companies/import', {
             method: 'POST',
-            body: JSON.stringify(importedData),
             headers: {
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify(importedData),
           });
+          
           if (!response.ok) {
             console.error('Failed to import data:', await response.text());
           } else {
@@ -121,7 +153,7 @@ export default function Page(): React.JSX.Element {
         }
       }
     });
-  }
+  };
 
   return (
     <Stack spacing={3}>
@@ -154,18 +186,14 @@ export default function Page(): React.JSX.Element {
         </div>
       </Stack>
 
-      <CustomersTable
-        count={paginatedCustomers.length}
+      <CompanyTable
+        count={companies.length}
         page={page}
-        rows={paginatedCustomers}
+        rows={paginatedCompanies}
         rowsPerPage={rowsPerPage}
       />
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>
   );
-}
-
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }

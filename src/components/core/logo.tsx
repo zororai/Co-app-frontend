@@ -18,14 +18,16 @@ export interface LogoProps {
   width?: number;
 }
 
-export function Logo({   height = HEIGHT, width = WIDTH }: LogoProps): React.JSX.Element {
-  let url: string;
-
-
-    url = '/assets/logo-emblem.png' ;
-
-
-  return <Box alt="logo" component="img" height={height} src={url} width={width} />;
+export function Logo({ height = HEIGHT, width = WIDTH }: LogoProps): React.JSX.Element {
+  return (
+    <Box
+      component="img"
+      src="/assets/logo-emblem.png"
+      alt="Logo"
+      height={height}
+      width={width}
+    />
+  );
 }
 
 export interface DynamicLogoProps {

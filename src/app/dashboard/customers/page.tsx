@@ -41,7 +41,7 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
     ];
     const rows = paginatedCustomers.map(c => [
       c.id,

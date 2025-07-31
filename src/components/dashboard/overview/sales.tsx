@@ -26,12 +26,8 @@ export function Sales({ chartSeries, sx }: SalesProps): React.JSX.Element {
   return (
     <Card sx={sx}>
       <CardHeader
-        action={
-          <Button color="inherit" size="small" startIcon={<ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}>
-            Sync
-          </Button>
-        }
-        title="Sales"
+        
+        title="Section Production Report"
       />
       <CardContent>
         <Chart height={350} options={chartOptions} series={chartSeries} type="bar" width="100%" />

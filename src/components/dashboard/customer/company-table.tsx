@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-// Removed duplicate local Customer interface. Use the exported one below.
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -26,46 +25,45 @@ import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
-import { authClient } from '@/lib/auth/client';
-import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
 
 function noop(): void {
   // do nothing
 }
-
-export interface Customer {
-  cooperativeName: ReactNode;
-  cellNumber: ReactNode;
-  nationIdNumber: any;
-  id: string;
-  name: string;
-  surname: string;
-  nationId: string;
-  address: string;
-  phone: string;
-  position: string;
-  cooperative: string;
-  numShafts: number;
-  status: 'Approved' | 'Rejected';
+export interface Company {
+    id: string;
+    companyName: string;
+    address: string;
+    cellNumber: string;
+  email: string;
+  companyLogo: string;
+  certificateOfCooperation: string;
+  cr14Copy: string;
+  miningCertificate: string;
+  taxClearance: string;
+  passportPhoto: string;
+  ownerName: string;
+  ownerSurname: string;
+  ownerAddress: string;
+  ownerCellNumber: string;
+  ownerIdNumber: string;
+  status: 'Approved' | 'Rejected' | 'Pending';
   reason: string;
-  attachedShaft: boolean;
-  // Optionally, add index signature if you need dynamic keys:
   [key: string]: any;
 }
 
-export interface CustomersTableProps {
+export interface CompanyTableProps {
   count?: number;
-  rows?: Customer[];
+  rows?: Company[];
   page?: number;
   rowsPerPage?: number;
 }
 
-export function CustomersTable({
+export function CompanyTable({
   count = 0,
   rows = [],
   page = 0,
   rowsPerPage = 0,
-}: CustomersTableProps): React.JSX.Element {
+}: CompanyTableProps): React.JSX.Element {
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
@@ -101,21 +99,9 @@ export function CustomersTable({
     window.location.href = path;
   };
 
-  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-
-  const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
-    }
-  };
+  function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
     <Card>
@@ -200,18 +186,15 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Id Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone number</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>No.Of.Shafts</TableCell>
+              <TableCell>Company Name</TableCell>
+              <TableCell>Company Address</TableCell>
+              <TableCell>Contact Number</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Owner Name</TableCell>
+              <TableCell>Owner Surname</TableCell>
+              <TableCell>Owner ID</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Reason</TableCell>
-                <TableCell>View</TableCell>
-              <TableCell>Attached Shaft</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -231,14 +214,13 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
+                  <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
-                  <TableCell>{row.position}</TableCell>
-                  <TableCell>{row.cooperativeName}</TableCell>
-                  <TableCell>{row.numShafts}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.ownerName}</TableCell>
+                  <TableCell>{row.ownerSurname}</TableCell>
+                  <TableCell>{row.ownerIdNumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -246,8 +228,12 @@ export function CustomersTable({
                           px: 1.5,
                           py: 0.5,
                           borderRadius: 2,
-                          bgcolor: row.status === 'Approved' ? 'success.light' : 'error.light',
-                          color: row.status === 'Approved' ? 'success.main' : 'error.main',
+                          bgcolor: 
+                            row.status === 'Approved' ? 'success.light' : 
+                            row.status === 'Rejected' ? 'error.light' : 'warning.light',
+                          color: 
+                            row.status === 'Approved' ? 'success.main' : 
+                            row.status === 'Rejected' ? 'error.main' : 'warning.main',
                           fontWeight: 500,
                           fontSize: 13,
                         }}
@@ -257,42 +243,34 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button style={{
-                        background: 'none',
-                        border: '1px solid #1976d2',
-                        color: '#1976d2',
-                        borderRadius: '6px',
-                        padding: '2px 12px',
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                      }}>Reason</button>
-                    </Box>
-                  </TableCell>
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <button 
-                        onClick={() => handleViewCustomer(row.id)}
                         style={{
                           background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
+                          border: '1px solid #1976d2',
+                          color: '#1976d2',
                           borderRadius: '6px',
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View</button>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <button style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}>
-                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>&#128065;</span>
+                        }}
+                        onClick={() => alert(row.reason || 'No reason provided')}
+                      >
+                        Reason
+                      </button>
+                      <button 
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '2px 12px',
+                        }}
+                        onClick={() => {
+                          // TODO: Implement document view functionality
+                          alert('View company documents');
+                        }}
+                      >
+                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>📄</span>
                       </button>
                     </Box>
                   </TableCell>
@@ -305,22 +283,16 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={filteredRows.length}
-        onPageChange={noop}
-        onRowsPerPageChange={noop}
+        count={count}
+        onPageChange={(event, newPage) => {
+          // Implement your page change logic here
+          // For now, just call noop or handle as needed
+          noop();
+        }}
+        onRowsPerPageChange={(event) => onRowsPerPageChange(event)}
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
-      />
-      
-      {/* Customer Details Dialog */}
-      <CustomerDetailsDialog
-        open={isViewDialogOpen}
-        onClose={() => {
-          setIsViewDialogOpen(false);
-          setSelectedCustomer(null);
-        }}
-        customer={selectedCustomer}
       />
     </Card>
   );
