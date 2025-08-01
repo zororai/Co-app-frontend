@@ -40,6 +40,76 @@ export interface ResetPasswordParams {
 }
 
 class AuthClient {
+    /**
+     * Fetch a company by its ID
+     */
+    async fetchCompanyById(id: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/companies/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch company details');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching company details:', error);
+            return null;
+        }
+    }
+    /**
+     * Fetch companies from the endpoint http://localhost:1000/api/companies
+     * Returns an array of companies or an empty array on error.
+     */
+    async fetchCompaniesFromEndpoint(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/companies', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch companies');
+            }
+            const text = await response.text();
+            if (!text) {
+                return [];
+            }
+            try {
+                const data = JSON.parse(text);
+                return Array.isArray(data) ? data : (data.companies || []);
+            } catch (parseError) {
+                console.error('Error parsing JSON:', parseError);
+                console.log('Raw response:', text);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+            return [];
+        }
+    }
     async registerCompany(formData: any): Promise<{ error?: string; success?: boolean }> {
         try {
             const token = localStorage.getItem('custom-auth-token');

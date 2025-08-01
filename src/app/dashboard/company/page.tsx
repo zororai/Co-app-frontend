@@ -37,13 +37,13 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const data = await authClient.fetchCompanies();
+        // Use the correct endpoint method
+        const data = await authClient.fetchCompaniesFromEndpoint();
         setCompanies(data);
       } catch (error) {
         console.error('Error fetching companies:', error);
       }
     };
-
     fetchCompanies();
   }, []);
 

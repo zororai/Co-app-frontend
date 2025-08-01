@@ -50,7 +50,7 @@ function RegMinerForm(): React.JSX.Element {
     taxClearance: '',
     certificateOfCooperation: '',
     miningCertificate: '',
-    passportPhotos: [] as string[]
+    passportPhotos: ''
   });
 
   const [form, setForm] = React.useState({
@@ -65,7 +65,7 @@ function RegMinerForm(): React.JSX.Element {
     taxClearance: '',
     certificateOfCooperation: '',
     miningCertificate: '',
-    passportPhotos: [] as string[],
+    passportPhotos: '',
     ownerDetails: {
       name: '',
       surname: '',
@@ -263,26 +263,61 @@ function RegMinerForm(): React.JSX.Element {
       const { name, value, files, type } = e.target as HTMLInputElement;
       
       if (type === 'file' && files) {
+        // Passport photo validation: must upload exactly 1
+        if (name === 'passportPhotos') {
+          if (files.length !== 1) {
+            setErrors(prev => ({
+              ...prev,
+              [name]: 'Please upload exactly 1 passport photo.'
+            }));
+            setSelectedFileNames(prev => ({
+              ...prev,
+              [name]: ''
+            }));
+            setForm(prev => ({
+              ...prev,
+              [name]: ''
+            }));
+            return;
+          }
+          // Validate file is an image
+          if (!files[0].type.startsWith('image/')) {
+            setErrors(prev => ({
+              ...prev,
+              [name]: 'File must be an image.'
+            }));
+            return;
+          }
+          // Store file name
+          setSelectedFileNames(prev => ({
+            ...prev,
+            [name]: files[0].name
+          }));
+          setErrors(prev => ({
+            ...prev,
+            [name]: ''
+          }));
+          // Convert file to base64 and save as string
+          const reader = new FileReader();
+          reader.onload = () => {
+            const base64String = reader.result as string;
+            setForm(prev => ({
+              ...prev,
+              [name]: base64String
+            }));
+          };
+          reader.readAsDataURL(files[0]);
+          return;
+        }
+        // ...existing code for other file fields...
         const file = files[0];
         if (!file) return;
-
-        // Store the file name
-        if (name === 'passportPhotos' && files.length === 2) {
-          setSelectedFileNames(prev => ({
-            ...prev,
-            [name]: [files[0].name, files[1].name]
-          }));
-        } else {
-          setSelectedFileNames(prev => ({
-            ...prev,
-            [name]: file.name
-          }));
-        }
-
-        // Validate file type based on field name
-        const isImageField = ['companyLogo', 'passportPhotos'].includes(name);
+        setSelectedFileNames(prev => ({
+          ...prev,
+          [name]: file.name
+        }));
+        const isImageField = ['companyLogo'].includes(name);
         const isPDFField = ['cr14Document', 'taxClearance', 'certificateOfCooperation', 'miningCertificate'].includes(name);
-        
         if (isImageField && !file.type.startsWith('image/')) {
           setErrors(prev => ({
             ...prev,
@@ -290,7 +325,6 @@ function RegMinerForm(): React.JSX.Element {
           }));
           return;
         }
-
         if (isPDFField && !file.type.match('application/pdf') && !file.type.startsWith('image/')) {
           setErrors(prev => ({
             ...prev,
@@ -298,33 +332,17 @@ function RegMinerForm(): React.JSX.Element {
           }));
           return;
         }
-
-        // Reset error if previously set
         setErrors(prev => ({
           ...prev,
           [name]: ''
         }));
-
-        // Convert file to base64
         const reader = new FileReader();
         reader.onload = () => {
           const base64String = reader.result as string;
-          if (name === 'passportPhotos' && files.length === 2) {
-            // Handle multiple passport photos
-            const secondReader = new FileReader();
-            secondReader.onload = () => {
-              setForm(prev => ({
-                ...prev,
-                [name]: [base64String, secondReader.result as string]
-              }));
-            };
-            secondReader.readAsDataURL(files[1]);
-          } else {
-            setForm(prev => ({
-              ...prev,
-              [name]: base64String
-            }));
-          }
+          setForm(prev => ({
+            ...prev,
+            [name]: base64String
+          }));
         };
         reader.readAsDataURL(file);
       } else if (name.startsWith('ownerDetails.')) {
@@ -361,20 +379,24 @@ function RegMinerForm(): React.JSX.Element {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
     // Validate form before submission
     if (!validateForm()) {
-      return; // Stop submission if validation fails
+      // Validation failed, errors are set
+      return;
     }
 
+    // Show form data in console for debugging
+    console.log('Form data:', form);
+
     try {
-      const formData = {
-        companyName: form.companyName,
-        registrationNumber: form.registrationNumber,
-        address: form.address,
-        contactNumber: form.contactNumber,
-        email: form.email,
-        industry: form.industry,
+      const { error, success } = await authClient.registerCompany({
+        ...form,
+        teamMembers: teamMembers.map(member => ({
+          name: member.name,
+          surname: member.surname,
+          address: member.address,
+          idNumber: member.idNumber,
+        })),
         ownerDetails: {
           name: form.ownerDetails.name,
           surname: form.ownerDetails.surname,
@@ -390,24 +412,25 @@ function RegMinerForm(): React.JSX.Element {
           miningCertificate: form.miningCertificate,
           passportPhotos: form.passportPhotos
         }
-      };
-
-      const { error, success } = await authClient.registerCompany(formData);
+      });
 
       if (error) {
-        alert(error);
+        setErrors(prev => ({
+          ...prev,
+          submit: error
+        }));
         console.error('Registration failed:', error);
         return;
       }
 
       if (success) {
         console.log('Company registered successfully');
-        alert('Registration successful!');
+        window.alert('Registration successful!');
         window.location.reload();
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('An error occurred during registration. Please try again.');
+      window.alert('An error occurred during registration. Please try again.');
     }
   };
 
@@ -616,21 +639,20 @@ function RegMinerForm(): React.JSX.Element {
         </Box>
 
         <Box flex="1 1 48%">
-          <InputLabel>Upload two Passport Photo Picture</InputLabel>
+          <InputLabel>Upload Passport Photo Picture</InputLabel>
           <Button
             variant="outlined"
             component="label"
             fullWidth
             color={errors.passportPhotos ? 'error' : 'primary'}
           >
-            Choose Images
+            Choose Image
             <input
               type="file"
               name="passportPhotos"
               hidden
               onChange={handleChange}
               accept="image/*"
-              multiple
             />
           </Button>
           {errors.passportPhotos && (
@@ -638,16 +660,10 @@ function RegMinerForm(): React.JSX.Element {
               {errors.passportPhotos}
             </Typography>
           )}
-          {selectedFileNames.passportPhotos && selectedFileNames.passportPhotos.length > 0 && (
-            {Array.isArray(selectedFileNames.passportPhotos) ? (
-              <Typography variant="caption" display="block" sx={{ mt: 1, color: 'success.main' }}>
-                Selected: {selectedFileNames.passportPhotos.join(', ')}
-              </Typography>
-            ) : (
-              <Typography variant="caption" display="block" sx={{ mt: 1, color: 'success.main' }}>
-                Selected: {selectedFileNames.passportPhotos}
-              </Typography>
-            )}
+          {selectedFileNames.passportPhotos && (
+            <Typography variant="caption" display="block" sx={{ mt: 1, color: 'success.main' }}>
+              Selected: {selectedFileNames.passportPhotos}
+            </Typography>
           )}
         </Box>
       </Box>
