@@ -1,6 +1,20 @@
-
 import * as React from 'react';
-import { Box, Button, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { 
+  Alert,
+  Box, 
+  Button, 
+  IconButton, 
+  InputLabel, 
+  MenuItem, 
+  Select, 
+  Stack, 
+  TextField, 
+  Typography, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  Snackbar 
+} from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { authClient } from '@/lib/auth/client';
@@ -25,14 +39,12 @@ interface ErrorState {
   certificateOfCooperation: string;
   miningCertificate: string;
   passportPhotos: string;
-  ownerDetails: {
-    name: string;
-    surname: string;
-    address: string;
-    cellNumber: string;
-    idNumber: string;
-  };
-  teamMembers?: string[];
+  ownerName: string;
+  ownerSurname: string;
+  ownerAddress: string;
+  ownerCellNumber: string;
+  ownerIdNumber: string;
+  // teamMembers field removed
 }
 
 export interface RegMinerDialogProps {
@@ -40,10 +52,12 @@ export interface RegMinerDialogProps {
   onClose: () => void;
 }
 
-function RegMinerForm(): React.JSX.Element {
-  const [teamMembers, setTeamMembers] = React.useState([
-    { name: '', surname: '', address: '', idNumber: '' }
-  ]);
+interface RegMinerFormProps {
+  onClose?: () => void;
+}
+
+function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
+  // Team members state removed as requested
   const [selectedFileNames, setSelectedFileNames] = React.useState({
     companyLogo: '',
     cr14Document: '',
@@ -52,6 +66,9 @@ function RegMinerForm(): React.JSX.Element {
     miningCertificate: '',
     passportPhotos: ''
   });
+  
+  // State for success alert
+  const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
 
   const [form, setForm] = React.useState({
     companyName: '',
@@ -66,13 +83,11 @@ function RegMinerForm(): React.JSX.Element {
     certificateOfCooperation: '',
     miningCertificate: '',
     passportPhotos: '',
-    ownerDetails: {
-      name: '',
-      surname: '',
-      address: '',
-      cellNumber: '',
-      idNumber: ''
-    }
+    ownerName: '',
+    ownerSurname: '',
+    ownerAddress: '',
+    ownerCellNumber: '',
+    ownerIdNumber: ''
   });
   
   // State for form validation errors
@@ -89,45 +104,14 @@ function RegMinerForm(): React.JSX.Element {
     certificateOfCooperation: '',
     miningCertificate: '',
     passportPhotos: '',
-    ownerDetails: {
-      name: '',
-      surname: '',
-      address: '',
-      cellNumber: '',
-      idNumber: ''
-    }
+    ownerName: '',
+    ownerSurname: '',
+    ownerAddress: '',
+    ownerCellNumber: '',
+    ownerIdNumber: ''
   });
 
   // Validation function
-  interface TeamMemberError {
-    name: string;
-    surname: string;
-    address: string;
-    idNumber: string;
-  }
-
-  interface ErrorState {
-    companyName: string;
-    registrationNumber: string;
-    address: string;
-    contactNumber: string;
-    email: string;
-    industry: string;
-    companyLogo: string;
-    cr14Document: string;
-    taxClearance: string;
-    certificateOfCooperation: string;
-    miningCertificate: string;
-    passportPhotos: string;
-    ownerDetails: {
-      name: string;
-      surname: string;
-      address: string;
-      cellNumber: string;
-      idNumber: string;
-    };
-    teamMembers?: string[];
-  }
 
   const validateForm = () => {
     const newErrors: ErrorState = {
@@ -143,13 +127,11 @@ function RegMinerForm(): React.JSX.Element {
       certificateOfCooperation: '',
       miningCertificate: '',
       passportPhotos: '',
-      ownerDetails: {
-        name: '',
-        surname: '',
-        address: '',
-        cellNumber: '',
-        idNumber: ''
-      }
+      ownerName: '',
+      ownerSurname: '',
+      ownerAddress: '',
+      ownerCellNumber: '',
+      ownerIdNumber: ''
     };
     let isValid = true;
 
@@ -215,40 +197,28 @@ function RegMinerForm(): React.JSX.Element {
     }
 
     // Validate owner details
-    if (!form.ownerDetails.name.trim()) {
-      newErrors.ownerDetails.name = 'Owner name is required';
+    if (!form.ownerName.trim()) {
+      newErrors.ownerName = 'Owner name is required';
       isValid = false;
     }
-    if (!form.ownerDetails.surname.trim()) {
-      newErrors.ownerDetails.surname = 'Owner surname is required';
+    if (!form.ownerSurname.trim()) {
+      newErrors.ownerSurname = 'Owner surname is required';
       isValid = false;
     }
-    if (!form.ownerDetails.address.trim()) {
-      newErrors.ownerDetails.address = 'Owner address is required';
+    if (!form.ownerAddress.trim()) {
+      newErrors.ownerAddress = 'Owner address is required';
       isValid = false;
     }
-    if (!form.ownerDetails.cellNumber.trim()) {
-      newErrors.ownerDetails.cellNumber = 'Owner cell number is required';
+    if (!form.ownerCellNumber.trim()) {
+      newErrors.ownerCellNumber = 'Owner cell number is required';
       isValid = false;
     }
-    if (!form.ownerDetails.idNumber.trim()) {
-      newErrors.ownerDetails.idNumber = 'Owner ID number is required';
+    if (!form.ownerIdNumber.trim()) {
+      newErrors.ownerIdNumber = 'Owner ID number is required';
       isValid = false;
     }
 
-    // Validate team members
-    const teamErrors = teamMembers.map(member => {
-      const memberErrors = [];
-      if (!member.name.trim()) memberErrors.push('Name is required');
-      if (!member.surname.trim()) memberErrors.push('Surname is required');
-
-      return memberErrors.join(', ');
-    });
-    
-    if (teamErrors.some(error => error !== '')) {
-      newErrors.teamMembers = teamErrors;
-      isValid = false;
-    }
+    // Team members validation removed as requested
 
     setErrors(newErrors);
     return isValid;
@@ -345,16 +315,6 @@ function RegMinerForm(): React.JSX.Element {
           }));
         };
         reader.readAsDataURL(file);
-      } else if (name.startsWith('ownerDetails.')) {
-        // Handle nested owner details fields
-        const field = name.split('.')[1];
-        setForm(prev => ({
-          ...prev,
-          ownerDetails: {
-            ...prev.ownerDetails,
-            [field]: value
-          }
-        }));
       } else {
         setForm(prev => ({
           ...prev,
@@ -364,69 +324,63 @@ function RegMinerForm(): React.JSX.Element {
     }
   };
 
-  const handleTeamChange = (idx: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setTeamMembers((prev) => {
-      const updated = [...prev];
-      (updated[idx] as any)[name] = value;
-      return updated;
-    });
-  };
-
-  const addTeamMember = () => {
-    setTeamMembers((prev) => [...prev, { name: '', surname: '', address: '', idNumber: '' }]);
-  };
+  // Team member functions removed as requested
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validate form before submission
-    if (!validateForm()) {
-      // Validation failed, errors are set
-      return;
-    }
+    // Validation removed as requested
 
     // Show form data in console for debugging
     console.log('Form data:', form);
 
     try {
-      const { error, success } = await authClient.registerCompany({
-        ...form,
-        teamMembers: teamMembers.map(member => ({
-          name: member.name,
-          surname: member.surname,
-          address: member.address,
-          idNumber: member.idNumber,
-        })),
-        ownerDetails: {
-          name: form.ownerDetails.name,
-          surname: form.ownerDetails.surname,
-          address: form.ownerDetails.address,
-          cellNumber: form.ownerDetails.cellNumber,
-          idNumber: form.ownerDetails.idNumber
-        },
-        documents: {
-          companyLogo: form.companyLogo,
-          cr14Document: form.cr14Document,
-          taxClearance: form.taxClearance,
-          certificateOfCooperation: form.certificateOfCooperation,
-          miningCertificate: form.miningCertificate,
-          passportPhotos: form.passportPhotos
-        }
-      });
+      // Prepare form data in the correct structure for the API
+      // Send owner fields at top level as expected by the backend
+      const formData = {
+        companyName: form.companyName,
+        address: form.address,
+        cellNumber: form.contactNumber, // Mapping contactNumber to cellNumber
+        email: form.email,
+        companyLogo: form.companyLogo,
+        certificateOfCooperation: form.certificateOfCooperation,
+        cr14Copy: form.cr14Document, // Mapping cr14Document to cr14Copy
+        miningCertificate: form.miningCertificate,
+        taxClearance: form.taxClearance,
+        passportPhoto: form.passportPhotos, // Mapping passportPhotos to passportPhoto
+        ownerName: form.ownerName,
+        ownerSurname: form.ownerSurname,
+        ownerAddress: form.ownerAddress,
+        ownerCellNumber: form.ownerCellNumber,
+        ownerIdNumber: form.ownerIdNumber,
+        status: "", // Empty string for status as it's not in the form
+        reason: "" // Empty string for reason as it's not in the form
+      };
+
+      console.log('Submitting form data:', formData);
+      const { error, success } = await authClient.registerCompany(formData);
 
       if (error) {
         setErrors(prev => ({
           ...prev,
           submit: error
         }));
-        console.error('Registration failed:', error);
+        
         return;
       }
 
       if (success) {
-        console.log('Company registered successfully');
-        window.alert('Registration successful!');
-        window.location.reload();
+        // Show success alert
+        setShowSuccessAlert(true);
+        
+        // Set a timeout to close dialog and refresh page after alert is shown
+        setTimeout(() => {
+          // Close the dialog if onClose prop is provided
+          if (onClose) {
+            onClose();
+          }
+          // Refresh the page
+          window.location.reload();
+        }, 2000); // 2 seconds delay
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -436,6 +390,17 @@ function RegMinerForm(): React.JSX.Element {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ p: 2, maxWidth: 900 }}>
+      {/* Success Alert */}
+      <Snackbar
+        open={showSuccessAlert}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Registration successful!
+        </Alert>
+      </Snackbar>
+      
       {/* Company Information */}
       <Box display="flex" flexWrap="wrap" gap={2}>
         <Box flex="1 1 48%">
@@ -675,61 +640,61 @@ function RegMinerForm(): React.JSX.Element {
           <Box display="flex" flexWrap="wrap" gap={2}>
             <Box flex="1 1 48%">
               <TextField
-                name="ownerDetails.name"
+                name="ownerName"
                 label="Owner Name"
                 fullWidth
-                value={form.ownerDetails.name}
+                value={form.ownerName}
                 onChange={handleChange}
-                error={!!errors.ownerDetails?.name}
-                helperText={errors.ownerDetails?.name}
+                error={!!errors.ownerName}
+                helperText={errors.ownerName}
                 required
               />
             </Box>
             <Box flex="1 1 48%">
               <TextField
-                name="ownerDetails.surname"
+                name="ownerSurname"
                 label="Owner Surname"
                 fullWidth
-                value={form.ownerDetails.surname}
+                value={form.ownerSurname}
                 onChange={handleChange}
-                error={!!errors.ownerDetails?.surname}
-                helperText={errors.ownerDetails?.surname}
+                error={!!errors.ownerSurname}
+                helperText={errors.ownerSurname}
                 required
               />
             </Box>
             <Box flex="1 1 48%">
               <TextField
-                name="ownerDetails.address"
+                name="ownerAddress"
                 label="Owner Address"
                 fullWidth
-                value={form.ownerDetails.address}
+                value={form.ownerAddress}
                 onChange={handleChange}
-                error={!!errors.ownerDetails?.address}
-                helperText={errors.ownerDetails?.address}
+                error={!!errors.ownerAddress}
+                helperText={errors.ownerAddress}
                 required
               />
             </Box>
             <Box flex="1 1 48%">
               <TextField
-                name="ownerDetails.cellNumber"
+                name="ownerCellNumber"
                 label="Owner Cell Number"
                 fullWidth
-                value={form.ownerDetails.cellNumber}
+                value={form.ownerCellNumber}
                 onChange={handleChange}
-                error={!!errors.ownerDetails?.cellNumber}
-                helperText={errors.ownerDetails?.cellNumber}
+                error={!!errors.ownerCellNumber}
+                helperText={errors.ownerCellNumber}
                 required
               />
             </Box>
             <Box flex="1 1 100%">
               <TextField
-                name="ownerDetails.idNumber"
+                name="ownerIdNumber"
                 label="Owner ID Number"
                 fullWidth
-                value={form.ownerDetails.idNumber}
+                value={form.ownerIdNumber}
                 onChange={handleChange}
-                error={!!errors.ownerDetails?.idNumber}
-                helperText={errors.ownerDetails?.idNumber}
+                error={!!errors.ownerIdNumber}
+                helperText={errors.ownerIdNumber}
                 required
               />
             </Box>
@@ -760,13 +725,13 @@ export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JS
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" component="span"> Company Miner Registration </Typography>
+        <span>Company Miner Registration</span>
         <IconButton onClick={onClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <RegMinerForm />
+        <RegMinerForm onClose={onClose} />
       </DialogContent>
     </Dialog>
   );

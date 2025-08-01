@@ -117,40 +117,55 @@ class AuthClient {
                 throw new Error('Authentication required');
             }
 
+            // Check if documents are directly in formData or in a nested documents object
+            const documents = formData.documents || formData;
+            
             const requestData = {
                 companyName: formData.companyName,
                 address: formData.address,
                 cellNumber: formData.contactNumber,
                 email: formData.email,
-                companyLogo: formData.documents.companyLogo,
-                certificateOfCooperation: formData.documents.certificateOfCooperation,
-                cr14Copy: formData.documents.cr14Document,
-                miningCertificate: formData.documents.miningCertificate,
-                taxClearance: formData.documents.taxClearance,
-                passportPhoto: formData.documents.passportPhotos[0], // Taking the first passport photo
-                ownerName: formData.ownerDetails.name,
-                ownerSurname: formData.ownerDetails.surname,
-                ownerAddress: formData.ownerDetails.address,
-                ownerCellNumber: formData.ownerDetails.cellNumber,
-                ownerIdNumber: formData.ownerDetails.idNumber
+                companyLogo: documents.companyLogo,
+                certificateOfCooperation: documents.certificateOfCooperation,
+                cr14Copy: documents.cr14Document,
+                miningCertificate: documents.miningCertificate,
+                taxClearance: documents.taxClearance,
+                passportPhoto: documents.passportPhotos, // Handle as a single string, not an array
+                ownerName: formData.ownerName,
+                ownerSurname: formData.ownerSurname,
+                ownerAddress: formData.ownerAddress,
+                ownerCellNumber: formData.ownerCellNumber,
+                ownerIdNumber: formData.ownerIdNumber
             };
 
+            console.log('Sending company registration data:', requestData);
+
             const response = await fetch('http://localhost:1000/api/companies/register', {
-              
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json' // Added Content-Type header
                 },
                 credentials: 'include',
                 body: JSON.stringify(requestData)
             });
 
-            const data = await response.json();
+            let data;
+            const responseText = await response.text();
+            
+            try {
+                // Try to parse as JSON
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                // If it's not valid JSON, use the raw text
+                data = responseText;
+            }
 
             if (!response.ok) {
+                console.error('Company registration failed:', data);
                 return { 
-                    error: data.message || data.error || 'Company registration failed',
+                    error: typeof data === 'object' && data !== null ? (data.message || data.error) : responseText || 'Company registration failed',
                     success: false 
                 };
             }
@@ -158,7 +173,7 @@ class AuthClient {
             return { 
                 success: true 
             };
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error during company registration:', error);
             return { 
                 error: 'Failed to register company. Please try again.',
