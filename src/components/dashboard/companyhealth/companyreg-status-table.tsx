@@ -27,7 +27,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/syndicate/miner-details';
+import { MinerDetailsDialog } from './companyreg-details';
+
 
 function noop(): void {
   // do nothing
@@ -109,7 +110,7 @@ export function CustomersTable({
 
   const handleViewCustomer = async (customerId: string) => {
     try {
-      const customerDetails = await authClient.fetchCompanyDetails(customerId);
+      const customerDetails = await authClient.fetchCustomerDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
         setIsViewDialogOpen(true);

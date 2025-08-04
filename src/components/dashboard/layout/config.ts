@@ -57,20 +57,12 @@ export const navItems = [
     title: 'Permission Management',
     icon: 'key',
     items: [
-      {
-        key: 'permission-group',
-        title: 'Miner Reg status ',
-        icon: 'id-card',
-        items: [
-          { key: 'permission-list', title: 'Syndicate', href: paths.dashboard.Syndicate, icon : 'id-card' },
-          { key: 'permission-add', title: 'Add Permission', href: '/permission/add' },
-        ]
-      },
-      {
-        key: 'role-group',
-        title: 'Roles',
-        icon: 'id-card',
-        items: [
+      { key: 'permission-list', title: 'Miner Registration status', href: paths.dashboard.Syndicate, icon: 'id-card' },
+    {
+      key: 'role-group',
+      title: 'Roles',
+      icon: 'id-card',
+      items: [
           { key: 'role-list', title: 'Role List', href: '/permission/roles/list' },
           { key: 'role-add', title: 'Add Role', href: '/permission/roles/add' },
         ]
