@@ -37,7 +37,9 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
 
   const handleSubmit = async (): Promise<void> => {
     if (!status) return;
-
+ if(status === 'REJECTED' || status === 'APPROVED' ) {
+    
+    }
     setIsSubmitting(true);
     try {
       switch (status) {
@@ -66,11 +68,14 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
 
       // Close the dialog after successful update
       onClose();
-      
+
       // Refresh the table data if onRefresh callback is provided
       if (onRefresh) {
         onRefresh();
       }
+
+      // Force a full page reload
+      window.location.reload();
     } catch (error) {
       console.error(`Error updating status to ${status}:`, error);
       alert(`Failed to update status to ${status}. Please try again.`);
@@ -221,35 +226,38 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
             helperText={showReasonField && !reason ? 'Reason is required' : ''}
           />
         )}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-          <Button 
-            onClick={() => handleStatusChange('APPROVED')}
-            variant={status === 'APPROVED' ? 'contained' : 'outlined'}
-            color="success"
-            disabled={isSubmitting}
-            sx={{ minWidth: '120px' }}
-          >
-            Approve
-          </Button>
-          <Button 
-            onClick={() => handleStatusChange('PUSHED_BACK')}
-            variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
-            color="warning"
-            disabled={isSubmitting}
-            sx={{ minWidth: '120px' }}
-          >
-            Push Back
-          </Button>
-          <Button 
-            onClick={() => handleStatusChange('REJECTED')}
-            variant={status === 'REJECTED' ? 'contained' : 'outlined'}
-            color="error"
-            disabled={isSubmitting}
-            sx={{ minWidth: '120px' }}
-          >
-            Reject
-          </Button>
-        </Box>
+        {((!customer.status || (customer.status !== 'REJECTED' && customer.status !== 'APPROVED')) &&
+          (status !== 'REJECTED' && status !== 'APPROVED')) && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button 
+              onClick={() => handleStatusChange('APPROVED')}
+              variant={status === 'APPROVED' ? 'contained' : 'outlined'}
+              color="success"
+              disabled={isSubmitting}
+              sx={{ minWidth: '120px' }}
+            >
+              Approve
+            </Button>
+            <Button 
+              onClick={() => handleStatusChange('PUSHED_BACK')}
+              variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
+              color="warning"
+              disabled={isSubmitting}
+              sx={{ minWidth: '120px' }}
+            >
+              Push Back
+            </Button>
+            <Button 
+              onClick={() => handleStatusChange('REJECTED')}
+              variant={status === 'REJECTED' ? 'contained' : 'outlined'}
+              color="error"
+              disabled={isSubmitting}
+              sx={{ minWidth: '120px' }}
+            >
+              Reject
+            </Button>
+          </Box>
+        )}
         {status && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button 

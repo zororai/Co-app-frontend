@@ -58,14 +58,25 @@ export interface CustomersTableProps {
   rows?: Customer[];
   page?: number;
   rowsPerPage?: number;
+  onPageChange?: (event: unknown, newPage: number) => void;
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 export function CustomersTable({
   count = 0,
   rows = [],
   page = 0,
-  rowsPerPage = 0,
+  rowsPerPage = 5,
+  onPageChange,
+  onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
+  // Local state for pagination if not controlled by parent
+  const [internalPage, setInternalPage] = React.useState(page);
+  const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
+
+  // Use controlled or internal state
+  const currentPage = onPageChange ? page : internalPage;
+  const currentRowsPerPage = onRowsPerPageChange ? rowsPerPage : internalRowsPerPage;
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
@@ -79,13 +90,16 @@ export function CustomersTable({
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
-      
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
-
       return matchesSearch && matchesStatus && matchesPosition;
     });
   }, [rows, filters]);
+
+  // Paginate filtered rows
+  const paginatedRows = React.useMemo(() => {
+    return filteredRows.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
+  }, [filteredRows, currentPage, currentRowsPerPage]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -209,13 +223,12 @@ export function CustomersTable({
               <TableCell>Name Of Cooperative</TableCell>
               <TableCell>No.Of.Shafts</TableCell>
               <TableCell>Status</TableCell>
-             
-                <TableCell>View</TableCell>
+              <TableCell>View</TableCell>
               <TableCell>Attached Shaft</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => {
+            {paginatedRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -256,8 +269,7 @@ export function CustomersTable({
                       </Box>
                     </Box>
                   </TableCell>
-               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
                         onClick={() => handleViewCustomer(row.id)}
@@ -294,13 +306,15 @@ export function CustomersTable({
       <TablePagination
         component="div"
         count={filteredRows.length}
-        onPageChange={noop}
-        onRowsPerPageChange={noop}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        page={currentPage}
+        rowsPerPage={currentRowsPerPage}
+        onPageChange={onPageChange || ((_e, newPage) => setInternalPage(newPage))}
+        onRowsPerPageChange={onRowsPerPageChange || ((e) => {
+          setInternalRowsPerPage(parseInt(e.target.value, 10));
+          setInternalPage(0);
+        })}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
-      
       {/* Customer Details Dialog */}
       <CustomerDetailsDialog
         open={isViewDialogOpen}

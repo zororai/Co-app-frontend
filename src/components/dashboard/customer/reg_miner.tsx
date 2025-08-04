@@ -72,8 +72,8 @@ function RegMinerForm(): React.JSX.Element {
     }
     if (!form.nationId.trim()) {
       newErrors.nationId = 'National ID is required';
-    } else if (!/^\d{13}$/.test(form.nationId.trim())) {
-      newErrors.nationId = 'Invalid National ID format';
+    } else if (!/^\d{2}-\d{6}[A-Z]\d{2}$/.test(form.nationId.trim())) {
+      newErrors.nationId = 'Invalid National ID format (should be like 59-187654D49)';
       isValid = false;
     }
     if (!form.cooperative.trim()) {
@@ -269,7 +269,7 @@ function RegMinerForm(): React.JSX.Element {
           <InputLabel>National ID Number</InputLabel>
           <TextField
             name="nationId"
-            placeholder="Add your national ID (13 digits)"
+            placeholder="Add your national ID (e.g., 59-187654D49)"
             fullWidth
             value={form.nationId}
             onChange={handleChange}
