@@ -103,16 +103,29 @@ function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pat
 
 interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string;
+  items?: NavItemConfig[];
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, title }: NavItemProps): React.JSX.Element {
+function NavItem({ disabled, external, href, icon, matcher, pathname, title, items }: NavItemProps): React.JSX.Element {
+  const [open, setOpen] = React.useState(false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
+  const hasChildren = Array.isArray(items) && items.length > 0;
+  // Handle click for items with children
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (hasChildren) {
+        e.preventDefault();
+        setOpen((prevOpen) => !prevOpen);
+      }
+    },
+    [hasChildren]
+  );
   const Icon = typeof icon === 'string' && navIcons[icon] ? navIcons[icon] : null;
 
   return (
     <li>
       <Box
-        {...(href
+        {...(href && !hasChildren
           ? {
               component: external ? 'a' : RouterLink,
               href,
@@ -120,11 +133,12 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
               rel: external ? 'noreferrer' : undefined,
             }
           : { role: 'button' })}
+        onClick={hasChildren ? handleClick : undefined}
         sx={{
           alignItems: 'center',
           borderRadius: 1,
           color: 'var(--NavItem-color)',
-          cursor: 'pointer',
+          cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           flex: '0 0 auto',
           gap: 1,
@@ -157,7 +171,22 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
             {title}
           </Typography>
         </Box>
+        {hasChildren ? (
+          <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+            <CaretUpDownIcon style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          </Box>
+        ) : null}
       </Box>
+      {hasChildren && open && (
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0, pl: 3 }}>
+          {items!.map((child, idx) => {
+            // Destructure key and pass it directly, spread the rest
+            const { key, ...childProps } = child;
+            const navKey = key ? String(key) : String(idx);
+            return <NavItem key={navKey} pathname={pathname} {...childProps} />;
+          })}
+        </Stack>
+      )}
     </li>
   );
 }

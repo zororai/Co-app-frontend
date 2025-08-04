@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
+import { MinerDetailsDialog } from '@/components/dashboard/syndicate/miner-details';
 
 function noop(): void {
   // do nothing
@@ -46,7 +46,7 @@ export interface Customer {
   position: string;
   cooperative: string;
   numShafts: number;
-  status: 'Approved' | 'Rejected';
+  status: 'PENDING' | 'REJECTED' | 'PUSHED_BACK' | 'APPROVED';
   reason: string;
   attachedShaft: boolean;
   // Optionally, add index signature if you need dynamic keys:
@@ -58,6 +58,7 @@ export interface CustomersTableProps {
   rows?: Customer[];
   page?: number;
   rowsPerPage?: number;
+  onRefresh?: () => void; // Optional callback to refresh data from parent
 }
 
 export function CustomersTable({
@@ -65,6 +66,7 @@ export function CustomersTable({
   rows = [],
   page = 0,
   rowsPerPage = 0,
+  onRefresh,
 }: CustomersTableProps): React.JSX.Element {
   const [filters, setFilters] = React.useState({
     search: '',
@@ -103,6 +105,7 @@ export function CustomersTable({
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -116,6 +119,17 @@ export function CustomersTable({
       alert('Failed to load customer details');
     }
   };
+
+  // Function to refresh the table data
+  const refreshTableData = React.useCallback(() => {
+    // Increment refresh trigger to force a re-render/refresh
+    setRefreshTrigger(prev => prev + 1);
+    
+    // Call parent's refresh function if provided
+    if (onRefresh) {
+      onRefresh();
+    }
+  }, [onRefresh]);
 
   return (
     <Card>
@@ -164,8 +178,10 @@ export function CustomersTable({
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
           >
             <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="Approved">Approved</MenuItem>
-            <MenuItem value="Rejected">Rejected</MenuItem>
+            <MenuItem value="PENDING">Pending</MenuItem>
+            <MenuItem value="REJECTED">Rejected</MenuItem>
+            <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
+            <MenuItem value="APPROVED">Approved</MenuItem>
           </Select>
         </FormControl>
         <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -205,13 +221,12 @@ export function CustomersTable({
               <TableCell>Id Number</TableCell>
               <TableCell>Address</TableCell>
               <TableCell>Phone number</TableCell>
-              <TableCell>Position</TableCell>
+              
               <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>No.Of.Shafts</TableCell>
-              <TableCell>Status</TableCell>
-             
-                <TableCell>View</TableCell>
-              <TableCell>Attached Shaft</TableCell>
+              <TableCell>Current Status</TableCell>
+              
+              <TableCell>View Application Details</TableCell>
+              
             </TableRow>
           </TableHead>
           <TableBody>
@@ -236,27 +251,32 @@ export function CustomersTable({
                   <TableCell>{row.nationIdNumber}</TableCell>
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
-                  <TableCell>{row.position}</TableCell>
+                
                   <TableCell>{row.cooperativeName}</TableCell>
-                  <TableCell>{row.numShafts}</TableCell>
+                  
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          bgcolor: row.status === 'Approved' ? 'success.light' : 'error.light',
-                          color: row.status === 'Approved' ? 'success.main' : 'error.main',
-                          fontWeight: 500,
-                          fontSize: 13,
-                        }}
-                      >
-                        {row.status}
-                      </Box>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: 
+                        row.status === 'PENDING' ? '#FFF9C4' : 
+                        row.status === 'REJECTED' ? '#FFCDD2' : 
+                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
+                        '#C8E6C9',
+                      color: 
+                        row.status === 'PENDING' ? '#F57F17' : 
+                        row.status === 'REJECTED' ? '#B71C1C' : 
+                        row.status === 'PUSHED_BACK' ? '#E65100' : 
+                        '#1B5E20',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.status}
                     </Box>
                   </TableCell>
-               
+              
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
@@ -269,21 +289,10 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View</button>
+                      }}>View Application Details</button>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <button style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}>
-                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>&#128065;</span>
-                      </button>
-                    </Box>
-                  </TableCell>
+               
                 </TableRow>
               );
             })}
@@ -302,13 +311,14 @@ export function CustomersTable({
       />
       
       {/* Customer Details Dialog */}
-      <CustomerDetailsDialog
+      <MinerDetailsDialog
         open={isViewDialogOpen}
         onClose={() => {
           setIsViewDialogOpen(false);
           setSelectedCustomer(null);
         }}
         customer={selectedCustomer}
+        onRefresh={refreshTableData}
       />
     </Card>
   );
