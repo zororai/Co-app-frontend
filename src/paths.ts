@@ -8,6 +8,7 @@ export const paths = {
     integrations: '/dashboard/integrations',
     settings: '/dashboard/settings',
     Syndicate: '/dashboard/syndicate',
+    shaftreg: '/dashboard/shaftassign',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

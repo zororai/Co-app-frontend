@@ -139,7 +139,7 @@ class AuthClient {
         }
         try {
             const response = await fetch(`http://localhost:1000/api/companies/${id}/approve`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -150,7 +150,12 @@ class AuthClient {
             if (!response.ok) {
                 throw new Error(`Failed to approve miner: ${response.statusText}`);
             }
-            return await response.json();
+            const text = await response.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                return text; // Return plain text if not JSON
+            }
         } catch (error) {
             console.error('Error approving miner:', error);
             return null;
@@ -200,7 +205,7 @@ class AuthClient {
         try {
             // Using the new API endpoint format with reason as a query parameter
             const response = await fetch(`http://localhost:1000/api/companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -262,7 +267,7 @@ class AuthClient {
         try {
             // Using the new API endpoint format with reason as a query parameter
             const response = await fetch(`http://localhost:1000/api/companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
@@ -569,6 +574,35 @@ class AuthClient {
             return [];
         }
     }
+     async fetchApprovedminer(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/miners/getapproved', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const data = await response.json();
+            
+            return Array.isArray(data) ? data : data.customers || [];
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            return [];
+        }
+    }
+    
     async fetchPendingCustomers(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

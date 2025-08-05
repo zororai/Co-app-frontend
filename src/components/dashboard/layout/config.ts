@@ -9,11 +9,11 @@ export const navItems = [
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
   {
     key: 'site-management',
-    title: 'Site Management',
+    title: 'Shaft Management',
     icon: 'buildings',
     items: [
-      { key: 'site-list', title: 'Site List', href: '/site-management/list' },
-      { key: 'site-add', title: 'Add Site', href: '/site-management/add' },
+      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
+      { key: 'site-add', title: 'Add Shaft', href: '/site-management/add' },
     ],
   },
   {

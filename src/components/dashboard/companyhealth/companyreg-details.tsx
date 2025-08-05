@@ -30,55 +30,49 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
 
   if (!customer) return null;
 
-  const handleStatusChange = (newStatus: string) => {
+  const handleStatusChange = async (newStatus: string) => {
     setStatus(newStatus);
     setShowReasonField(newStatus === 'REJECTED' || newStatus === 'PUSHED_BACK');
+    // If REJECTED or PUSHED_BACK, require reason before submitting
+    if (newStatus === 'REJECTED' || newStatus === 'PUSHED_BACK') {
+      // Only show reason field, do not submit yet
+      return;
+    }
+    // For APPROVED, submit immediately
+    await handleSubmit(newStatus);
   };
 
-  const handleSubmit = async (): Promise<void> => {
-    if (!status) return;
- if(status === 'REJECTED' || status === 'APPROVED' ) {
-    
+  const handleSubmit = async (submitStatus?: string): Promise<void> => {
+    const actionStatus = submitStatus || status;
+    if (!actionStatus) return;
+    if ((actionStatus === 'REJECTED' || actionStatus === 'PUSHED_BACK') && !reason) {
+      alert('Please provide a reason.');
+      return;
     }
     setIsSubmitting(true);
     try {
-      switch (status) {
+      switch (actionStatus) {
         case 'APPROVED':
           await authClient.setCompanyMinerForApproval(customer.id);
           break;
         case 'REJECTED':
-          if (!reason) {
-            alert('Please provide a reason for rejection');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForRejection(customer.id, reason);
+          await authClient.setCompanyMinerForRejection(customer.id, reason);
           break;
         case 'PUSHED_BACK':
-          if (!reason) {
-            alert('Please provide a reason for pushing back');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForPushBack(customer.id, reason);
+          await authClient.setCompanyMinerForPushBack(customer.id, reason);
           break;
         default:
-          throw new Error(`Unsupported status: ${status}`);
+          throw new Error(`Unsupported status: ${actionStatus}`);
       }
-
-      // Close the dialog after successful update
       onClose();
-
-      // Refresh the table data if onRefresh callback is provided
-      if (onRefresh) {
-        onRefresh();
-      }
-
-      // Force a full page reload
-      window.location.reload();
+      
+      // If you want to call onRefresh instead of reload, comment out the above and uncomment below:
+       if (onRefresh) {
+         onRefresh();
+       }
     } catch (error) {
-      console.error(`Error updating status to ${status}:`, error);
-      alert(`Failed to update status to ${status}. Please try again.`);
+      console.error(`Error updating status to ${actionStatus}:`, error);
+      alert(`Failed to update status to ${actionStatus}. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -258,13 +252,14 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
             </Button>
           </Box>
         )}
-        {status && (
+        {/* Only show submit for REJECTED or PUSHED_BACK after reason is entered */}
+        {(status === 'REJECTED' || status === 'PUSHED_BACK') && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button 
-              onClick={handleSubmit}
+              onClick={() => handleSubmit()}
               variant="contained"
               color="primary"
-              disabled={isSubmitting || (showReasonField && !reason)}
+              disabled={isSubmitting || !reason}
               startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
               sx={{ 
                 minWidth: '200px',

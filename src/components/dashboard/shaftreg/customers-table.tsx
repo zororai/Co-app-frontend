@@ -27,8 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from './companyreg-details';
-
+import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
 
 function noop(): void {
   // do nothing
@@ -47,7 +46,7 @@ export interface Customer {
   position: string;
   cooperative: string;
   numShafts: number;
-  status: 'PENDING' | 'REJECTED' | 'PUSHED_BACK' | 'APPROVED';
+  status: 'Approved' | 'Rejected';
   reason: string;
   attachedShaft: boolean;
   // Optionally, add index signature if you need dynamic keys:
@@ -59,16 +58,25 @@ export interface CustomersTableProps {
   rows?: Customer[];
   page?: number;
   rowsPerPage?: number;
-  onRefresh?: () => void; // Optional callback to refresh data from parent
+  onPageChange?: (event: unknown, newPage: number) => void;
+  onRowsPerPageChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 export function CustomersTable({
   count = 0,
   rows = [],
   page = 0,
-  rowsPerPage = 0,
-  onRefresh,
+  rowsPerPage = 5,
+  onPageChange,
+  onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
+  // Local state for pagination if not controlled by parent
+  const [internalPage, setInternalPage] = React.useState(page);
+  const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
+
+  // Use controlled or internal state
+  const currentPage = onPageChange ? page : internalPage;
+  const currentRowsPerPage = onRowsPerPageChange ? rowsPerPage : internalRowsPerPage;
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
@@ -82,13 +90,16 @@ export function CustomersTable({
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
-      
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
-
       return matchesSearch && matchesStatus && matchesPosition;
     });
   }, [rows, filters]);
+
+  // Paginate filtered rows
+  const paginatedRows = React.useMemo(() => {
+    return filteredRows.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
+  }, [filteredRows, currentPage, currentRowsPerPage]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -106,11 +117,10 @@ export function CustomersTable({
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   const handleViewCustomer = async (customerId: string) => {
     try {
-      const customerDetails = await authClient.fetchCompanyDetails(customerId);
+      const customerDetails = await authClient.fetchCustomerDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
         setIsViewDialogOpen(true);
@@ -120,17 +130,6 @@ export function CustomersTable({
       alert('Failed to load customer details');
     }
   };
-
-  // Function to refresh the table data
-  const refreshTableData = React.useCallback(() => {
-    // Increment refresh trigger to force a re-render/refresh
-    setRefreshTrigger(prev => prev + 1);
-    
-    // Call parent's refresh function if provided
-    if (onRefresh) {
-      onRefresh();
-    }
-  }, [onRefresh]);
 
   return (
     <Card>
@@ -143,9 +142,9 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: '#4d3fd6' }
           }}
-          onClick={() => handleRedirect('/dashboard/syndicate')}
+          onClick={() => handleRedirect('/dashboard/customers')}
         >
-          View Syndicate Miner Reg Status Health 
+          Syndicate
         </Button>
         <Button
           variant="contained"
@@ -154,9 +153,9 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: '#4d3fd6' }
           }}
-          onClick={() => handleRedirect('/dashboard/companyhealth')}
+          onClick={() => handleRedirect('/dashboard/company')}
         >
-View Company Miner Reg Status Health
+          Company
         </Button>
       </Box>
       <Divider />
@@ -179,10 +178,8 @@ View Company Miner Reg Status Health
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
           >
             <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="PENDING">Pending</MenuItem>
-            <MenuItem value="REJECTED">Rejected</MenuItem>
-            <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
-            <MenuItem value="APPROVED">Approved</MenuItem>
+            <MenuItem value="Approved">Approved</MenuItem>
+            <MenuItem value="Rejected">Rejected</MenuItem>
           </Select>
         </FormControl>
         <FormControl size="small" sx={{ minWidth: 150 }}>
@@ -217,21 +214,21 @@ View Company Miner Reg Status Health
                   }}
                 />
               </TableCell>
+              <TableCell>Shaft Reg Number</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Surname</TableCell>
               <TableCell>Id Number</TableCell>
               <TableCell>Address</TableCell>
               <TableCell>Phone number</TableCell>
-              
               <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>Current Status</TableCell>
-              
-              <TableCell>View Application Details</TableCell>
-              
+              <TableCell>No.Of.Shafts</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>View</TableCell>
+              <TableCell>Attach Shaft</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => {
+            {paginatedRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -247,38 +244,29 @@ View Company Miner Reg Status Health
                       }}
                     />
                   </TableCell>
+                  <TableCell>{row.registrationnumber}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
-                
                   <TableCell>{row.cooperativeName}</TableCell>
-                  
+                  <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status}
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 2,
+                          bgcolor: row.status === 'Approved' ? 'success.light' : 'error.light',
+                          color: row.status === 'Approved' ? 'success.main' : 'error.main',
+                          fontWeight: 500,
+                          fontSize: 13,
+                        }}
+                      >
+                        {row.status}
+                      </Box>
                     </Box>
                   </TableCell>
-              
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
                         onClick={() => handleViewCustomer(row.id)}
@@ -290,10 +278,21 @@ View Company Miner Reg Status Health
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View Application Details</button>
+                      }}>View</button>
                     </Box>
                   </TableCell>
-               
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}>
+                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>&#128065;</span>
+                      </button>
+                    </Box>
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -304,22 +303,23 @@ View Company Miner Reg Status Health
       <TablePagination
         component="div"
         count={filteredRows.length}
-        onPageChange={noop}
-        onRowsPerPageChange={noop}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        page={currentPage}
+        rowsPerPage={currentRowsPerPage}
+        onPageChange={onPageChange || ((_e, newPage) => setInternalPage(newPage))}
+        onRowsPerPageChange={onRowsPerPageChange || ((e) => {
+          setInternalRowsPerPage(parseInt(e.target.value, 10));
+          setInternalPage(0);
+        })}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
-      
       {/* Customer Details Dialog */}
-      <MinerDetailsDialog
+      <CustomerDetailsDialog
         open={isViewDialogOpen}
         onClose={() => {
           setIsViewDialogOpen(false);
           setSelectedCustomer(null);
         }}
         customer={selectedCustomer}
-        onRefresh={refreshTableData}
       />
     </Card>
   );

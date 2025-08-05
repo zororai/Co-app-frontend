@@ -4,85 +4,20 @@ import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import CloseIcon from '@mui/icons-material/Close';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import CircularProgress from '@mui/material/CircularProgress';
-import { authClient } from '@/lib/auth/client';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   customer: any | null;
-  onRefresh?: () => void; // Optional callback to refresh the table data
 }
 
-export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: CustomerDetailsDialogProps): React.JSX.Element | null {
-  const [status, setStatus] = React.useState<string>('');
-  const [reason, setReason] = React.useState<string>('');
-  const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
-
+export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetailsDialogProps): React.JSX.Element | null {
   if (!customer) return null;
-
-  const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
-    setShowReasonField(newStatus === 'REJECTED' || newStatus === 'PUSHED_BACK');
-  };
-
-  const handleSubmit = async (): Promise<void> => {
-    if (!status) return;
- if(status === 'REJECTED' || status === 'APPROVED' ) {
-    
-    }
-    setIsSubmitting(true);
-    try {
-      switch (status) {
-        case 'APPROVED':
-          await authClient.setCompanyMinerForApproval(customer.id);
-          break;
-        case 'REJECTED':
-          if (!reason) {
-            alert('Please provide a reason for rejection');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForRejection(customer.id, reason);
-          break;
-        case 'PUSHED_BACK':
-          if (!reason) {
-            alert('Please provide a reason for pushing back');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForPushBack(customer.id, reason);
-          break;
-        default:
-          throw new Error(`Unsupported status: ${status}`);
-      }
-
-      // Close the dialog after successful update
-      onClose();
-
-      // Refresh the table data if onRefresh callback is provided
-      if (onRefresh) {
-        onRefresh();
-      }
-
-      // Force a full page reload
-      window.location.reload();
-    } catch (error) {
-      console.error(`Error updating status to ${status}:`, error);
-      alert(`Failed to update status to ${status}. Please try again.`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -94,7 +29,7 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
           p: 2
         }}
       >
-        <Typography variant="subtitle1" component="span">Miner Details</Typography>
+        <Typography variant="h6">Customer Details</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -121,7 +56,7 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
             </Box>
             <Box>
               <Typography variant="subtitle2" color="text.secondary">
-                Miner Information
+                Cooperative Information
               </Typography>
               <Box sx={{ mt: 2 }}>
                 <Typography><strong>Cooperative Name:</strong> {customer.cooperativeName}</Typography>
@@ -136,8 +71,8 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
                       py: 0.5,
                       borderRadius: 1,
                       ml: 1,
-                      bgcolor: customer.status === 'APPROVED' ? 'success.light' : 'error.light',
-                      color: customer.status === 'APPROVED' ? 'success.main' : 'error.main',
+                      bgcolor: customer.status === 'Approved' ? 'success.light' : 'error.light',
+                      color: customer.status === 'Approved' ? 'success.main' : 'error.main',
                     }}
                   >
                     {customer.status}
@@ -210,73 +145,6 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
-        {showReasonField && (
-          <TextField
-            label="Reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            fullWidth
-            margin="normal"
-            multiline
-            rows={3}
-            sx={{ mb: 2 }}
-            required
-            error={showReasonField && !reason}
-            helperText={showReasonField && !reason ? 'Reason is required' : ''}
-          />
-        )}
-        {((!customer.status || (customer.status !== 'REJECTED' && customer.status !== 'APPROVED')) &&
-          (status !== 'REJECTED' && status !== 'APPROVED')) && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-            <Button 
-              onClick={() => handleStatusChange('APPROVED')}
-              variant={status === 'APPROVED' ? 'contained' : 'outlined'}
-              color="success"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Approve
-            </Button>
-            <Button 
-              onClick={() => handleStatusChange('PUSHED_BACK')}
-              variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
-              color="warning"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Push Back
-            </Button>
-            <Button 
-              onClick={() => handleStatusChange('REJECTED')}
-              variant={status === 'REJECTED' ? 'contained' : 'outlined'}
-              color="error"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Reject
-            </Button>
-          </Box>
-        )}
-        {status && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button 
-              onClick={handleSubmit}
-              variant="contained"
-              color="primary"
-              disabled={isSubmitting || (showReasonField && !reason)}
-              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
-              sx={{ 
-                minWidth: '200px',
-                bgcolor: '#5f4bfa',
-                '&:hover': { bgcolor: '#4d3fd6' }
-              }}
-            >
-              {isSubmitting ? 'Submitting...' : `Submit ${status.toLowerCase()} status`}
-            </Button>
-          </Box>
-        )}
-      </DialogActions>
     </Dialog>
   );
 }
