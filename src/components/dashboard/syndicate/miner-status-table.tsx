@@ -109,7 +109,7 @@ export function CustomersTable({
 
   const handleViewCustomer = async (customerId: string) => {
     try {
-      const customerDetails = await authClient.fetchCompanyDetails(customerId);
+      const customerDetails = await authClient.fetchCustomerDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
         setIsViewDialogOpen(true);

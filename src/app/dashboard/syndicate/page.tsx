@@ -178,6 +178,26 @@ export default function Page(): React.JSX.Element {
 
   // Export table data as CSV
   const handleExport = () => {
+    // Get the correct customer array based on current tab
+    const getCurrentTabCustomers = () => {
+      switch (tab) {
+        case 'PENDING':
+          return pendingCustomers;
+        case 'PUSHED_BACK':
+          return pushedBackCustomers;
+        case 'REJECTED':
+          return rejectedCustomers;
+        case 'APPROVED':
+          return approvedCustomers;
+        default:
+          return pendingCustomers;
+      }
+    };
+    
+    // Apply pagination to current tab's customers
+    const currentTabCustomers = getCurrentTabCustomers();
+    const paginatedCustomers = applyPagination(currentTabCustomers, page, rowsPerPage);
+    
     const headers = [
       'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
     ];

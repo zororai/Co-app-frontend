@@ -130,6 +130,33 @@ class AuthClient {
         }
     }
 
+    async setCompanyMinerForApproval(id: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/companies/${id}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to approve miner: ${response.statusText}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error approving miner:', error);
+            return null;
+        }
+    }
+
     /**
      * Set a miner for rejection
      * @param id The ID of the miner to reject
@@ -146,6 +173,33 @@ class AuthClient {
         try {
             // Using the new API endpoint format with reason as a query parameter
             const response = await fetch(`http://localhost:1000/api/miners/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to reject miner: ${response.statusText}`);
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('Error rejecting miner:', error);
+            return null;
+        }
+    }
+    async setCompanyMinerForRejection(id: string, reason: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            // Using the new API endpoint format with reason as a query parameter
+            const response = await fetch(`http://localhost:1000/api/companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -180,6 +234,34 @@ class AuthClient {
         try {
             // Using the new API endpoint format with reason as a query parameter
             const response = await fetch(`http://localhost:1000/api/miners/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error(`Failed to push back miner: ${response.statusText}`);
+            }
+            return await response.text();
+        } catch (error) {
+            console.error('Error pushing back miner:', error);
+            return null;
+        }
+    }
+
+    async setCompanyMinerForPushBack(id: string, reason: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            // Using the new API endpoint format with reason as a query parameter
+            const response = await fetch(`http://localhost:1000/api/companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
