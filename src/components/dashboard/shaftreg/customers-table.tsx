@@ -144,7 +144,7 @@ export function CustomersTable({
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
-          Syndicate
+          View Syndicate
         </Button>
         <Button
           variant="contained"
@@ -155,7 +155,7 @@ export function CustomersTable({
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
-          Company
+          View Company
         </Button>
       </Box>
       <Divider />
