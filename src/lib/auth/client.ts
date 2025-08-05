@@ -757,6 +757,52 @@ class AuthClient {
       return { error: error instanceof Error ? error.message : 'Failed to register miner' };
     }
   }
+
+  /**
+   * Create shaft assignment
+   * @param shaftAssignmentData The shaft assignment data
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async createShaftAssignment(shaftAssignmentData: {
+    sectionName: string;
+    shaftNumbers: string;
+    medicalFee: string;
+    regFee: string;
+    startContractDate: string;
+    endContractDate: string;
+  }): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch('http://localhost:1000/api/shaft-assignments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(shaftAssignmentData),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to create shaft assignment: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating shaft assignment:', error);
+      throw error; // Re-throw the error instead of returning null
+    }
+  }
 }
 
 export const authClient = new AuthClient();

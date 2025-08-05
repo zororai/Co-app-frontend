@@ -28,6 +28,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
+import { ShaftAttachmentDialog } from './shaft-attachment-dialog';
 
 function noop(): void {
   // do nothing
@@ -117,6 +118,8 @@ export function CustomersTable({
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
+  const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -129,6 +132,11 @@ export function CustomersTable({
       console.error('Error fetching customer details:', error);
       alert('Failed to load customer details');
     }
+  };
+
+  const handleShaftAttachment = (customerId: string) => {
+    setSelectedCustomerForShaft(customerId);
+    setIsShaftAttachmentDialogOpen(true);
   };
 
   return (
@@ -282,7 +290,7 @@ export function CustomersTable({
                   <TableCell>
                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
-                        onClick={() => handleViewCustomer(row.id)}
+                        onClick={() => handleShaftAttachment(row.id)}
                         style={{
                           background: 'none',
                           border: '1px solid #06131fff',
@@ -321,6 +329,16 @@ export function CustomersTable({
           setSelectedCustomer(null);
         }}
         customer={selectedCustomer}
+      />
+      
+      {/* Shaft Attachment Dialog */}
+      <ShaftAttachmentDialog
+        open={isShaftAttachmentDialogOpen}
+        onClose={() => {
+          setIsShaftAttachmentDialogOpen(false);
+          setSelectedCustomerForShaft(null);
+        }}
+        customerId={selectedCustomerForShaft}
       />
     </Card>
   );
