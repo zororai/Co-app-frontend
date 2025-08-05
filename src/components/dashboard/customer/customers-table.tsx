@@ -46,7 +46,7 @@ export interface Customer {
   position: string;
   cooperative: string;
   numShafts: number;
-  status: 'Approved' | 'Rejected';
+  status: 'APPROVED' | 'REJECTED';
   reason: string;
   attachedShaft: boolean;
   // Optionally, add index signature if you need dynamic keys:
@@ -144,7 +144,7 @@ export function CustomersTable({
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
-          Syndicate
+          View Syndicate
         </Button>
         <Button
           variant="contained"
@@ -155,7 +155,7 @@ export function CustomersTable({
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
-          Company
+         View Company
         </Button>
       </Box>
       <Divider />
@@ -250,8 +250,8 @@ export function CustomersTable({
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
                   <TableCell>{row.position}</TableCell>
-                  <TableCell>{row.cooperativeName}</TableCell>
-                  <TableCell>{row.numShafts}</TableCell>
+                  <TableCell>{row.cooperativename}</TableCell>
+                  <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -259,8 +259,10 @@ export function CustomersTable({
                           px: 1.5,
                           py: 0.5,
                           borderRadius: 2,
-                          bgcolor: row.status === 'Approved' ? 'success.light' : 'error.light',
-                          color: row.status === 'Approved' ? 'success.main' : 'error.main',
+                         bgcolor: 
+                            row.status === 'APPROVED' ?  '#d0f5e8' : '#ffebee',
+                          color: 
+                            row.status === 'APPROVED' ? '#1b5e20' : '#c62828',
                           fontWeight: 500,
                           fontSize: 13,
                         }}
@@ -281,7 +283,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View</button>
+                      }}>View Application Details</button>
                     </Box>
                   </TableCell>
                   <TableCell>

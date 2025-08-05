@@ -46,7 +46,7 @@ export interface Customer {
   position: string;
   cooperative: string;
   numShafts: number;
-  status: 'Approved' | 'Rejected';
+  status: 'APPROVED' | 'REJECTED';
   reason: string;
   attachedShaft: boolean;
   // Optionally, add index signature if you need dynamic keys:
@@ -217,13 +217,11 @@ export function CustomersTable({
               <TableCell>Shaft Reg Number</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Surname</TableCell>
-              <TableCell>Id Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone number</TableCell>
+            
               <TableCell>Name Of Cooperative</TableCell>
               <TableCell>No.Of.Shafts</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>View</TableCell>
+              <TableCell>View Miner Details</TableCell>
               <TableCell>Attach Shaft</TableCell>
             </TableRow>
           </TableHead>
@@ -244,10 +242,10 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.registrationnumber}</TableCell>
+                  <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.cooperativeName}</TableCell>
+                  <TableCell>{row.cooperativename}</TableCell>
                   <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -256,8 +254,8 @@ export function CustomersTable({
                           px: 1.5,
                           py: 0.5,
                           borderRadius: 2,
-                          bgcolor: row.status === 'Approved' ? 'success.light' : 'error.light',
-                          color: row.status === 'Approved' ? 'success.main' : 'error.main',
+                          bgcolor: row.status === 'APPROVED' ? '#d0f5e8' : '#ffebee', // vivid green or light red
+                          color: row.status === 'APPROVED' ? '#1b5e20' : '#c62828',   // deep green or deep red
                           fontWeight: 500,
                           fontSize: 13,
                         }}
@@ -278,19 +276,22 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View</button>
+                      }}>View Miner Details</button>
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <button style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}>
-                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>&#128065;</span>
-                      </button>
+                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleViewCustomer(row.id)}
+                        style={{
+                          background: 'none',
+                          border: '1px solid #06131fff',
+                          color: '#081b2fff',
+                          borderRadius: '6px',
+                          padding: '2px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                      }}>Shaft Attachment</button>
                     </Box>
                   </TableCell>
                 </TableRow>

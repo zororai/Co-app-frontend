@@ -47,7 +47,7 @@ export interface Company {
   ownerAddress: string;
   ownerCellNumber: string;
   ownerIdNumber: string;
-  status: 'Approved' | 'Rejected' | 'Pending';
+  status: 'APPROVED' | 'REJECTED' | 'PENDING  ';
   reason: string;
   [key: string]: any;
 }
@@ -230,11 +230,9 @@ export function CompanyTable({
                           py: 0.5,
                           borderRadius: 2,
                           bgcolor: 
-                            row.status === 'Approved' ? 'success.light' : 
-                            row.status === 'Rejected' ? 'error.light' : 'warning.light',
+                            row.status === 'APPROVED' ?  '#d0f5e8' : '#ffebee',
                           color: 
-                            row.status === 'Approved' ? 'success.main' : 
-                            row.status === 'Rejected' ? 'error.main' : 'warning.main',
+                            row.status === 'APPROVED' ? '#1b5e20' : '#c62828',
                           fontWeight: 500,
                           fontSize: 13,
                         }}
