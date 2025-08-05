@@ -119,7 +119,7 @@ export function CustomersTable({
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
-  const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
+  const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<{ id: string; registrationNumber: string } | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -134,8 +134,8 @@ export function CustomersTable({
     }
   };
 
-  const handleShaftAttachment = (customerId: string) => {
-    setSelectedCustomerForShaft(customerId);
+  const handleShaftAttachment = (customerId: string, registrationNumber: any) => {
+    setSelectedCustomerForShaft({ id: customerId, registrationNumber: '' }); // Placeholder for registrationNumber
     setIsShaftAttachmentDialogOpen(true);
   };
 
@@ -290,7 +290,7 @@ export function CustomersTable({
                   <TableCell>
                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
-                        onClick={() => handleShaftAttachment(row.id)}
+                        onClick={() => handleShaftAttachment(row.id, row.registrationNumber)}
                         style={{
                           background: 'none',
                           border: '1px solid #06131fff',
@@ -338,7 +338,8 @@ export function CustomersTable({
           setIsShaftAttachmentDialogOpen(false);
           setSelectedCustomerForShaft(null);
         }}
-        customerId={selectedCustomerForShaft}
+        customerId={selectedCustomerForShaft?.id}
+        registrationNumber={selectedCustomerForShaft?.registrationNumber}
       />
     </Card>
   );

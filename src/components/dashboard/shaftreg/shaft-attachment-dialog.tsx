@@ -22,6 +22,7 @@ export interface ShaftAttachmentDialogProps {
   open: boolean;
   onClose: () => void;
   customerId?: string;
+
 }
 
 interface ShaftAssignmentData {
@@ -90,14 +91,26 @@ export function ShaftAttachmentDialog({
         throw new Error('Please fill in all required fields');
       }
 
-      console.log('Submitting shaft assignment data:', formData);
-      const result = await authClient.createShaftAssignment(formData);
-      
-      console.log('Shaft assignment result:', result);
-      setSuccess(true);
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
+      // Add minerId to the payload
+      const payload = { ...formData, minerId: customerId };
+      console.log('Submitting shaft assignment:', payload);
+      let result;
+      try {
+        result = await authClient.createShaftAssignment(payload);
+        console.log('Shaft assignment result:', result);
+        setSuccess(true);
+        setTimeout(() => {
+          handleClose();
+        }, 2000);
+      } catch (err: any) {
+        // If the error is from the API and has status info, show it
+        if (err && err.message) {
+          setError(err.message);
+        } else {
+          setError('An error occurred while creating the shaft assignment.');
+        }
+        return;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
