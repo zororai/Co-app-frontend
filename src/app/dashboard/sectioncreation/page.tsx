@@ -14,12 +14,7 @@ import Papa from 'papaparse';
 import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/sectioncreation/section-table';
 import type { Customer } from '@/components/dashboard/sectioncreation/section-table';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { SectionDialog } from '@/components/dashboard/sectioncreation/section-dialog';
 import { authClient } from '@/lib/auth/client';
 
 
@@ -29,12 +24,14 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
 
-  React.useEffect(() => {
-    (async () => {
-      const data = await authClient.fetchCustomers();
-      setCustomers(data);
-    })();
+  const fetchSection = React.useCallback(async () => {
+    const data = await authClient.fetchSection();
+    setCustomers(data);
   }, []);
+
+  React.useEffect(() => {
+    fetchSection();
+  }, [fetchSection]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
@@ -161,7 +158,13 @@ export default function Page(): React.JSX.Element {
         rowsPerPage={rowsPerPage}
       />
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <SectionDialog 
+        open={open} 
+        onClose={() => setOpen(false)} 
+        onSuccess={() => {
+          fetchSection(); // Refresh the data after successful creation
+        }}
+      />
     </Stack>
   );
 }

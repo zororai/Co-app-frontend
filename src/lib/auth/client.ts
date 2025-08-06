@@ -574,6 +574,34 @@ class AuthClient {
             return [];
         }
     }
+     async fetchSection(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/sections', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const data = await response.json();
+            
+            return Array.isArray(data) ? data : data.customers || [];
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            return [];
+        }
+    }
      async fetchApprovedminer(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -801,6 +829,50 @@ class AuthClient {
     } catch (error) {
       console.error('Error creating shaft assignment:', error);
       throw error; // Re-throw the error instead of returning null
+    }
+  }
+
+  /**
+   * Create a new section
+   * @param sectionData The section data
+   * @returns A promise that resolves to the response data or throws an error
+   */
+  async createSection(sectionData: {
+    sectionName: string;
+    numberOfShaft: string;
+    status: string;
+    reason: string;
+  }): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch('http://localhost:1000/api/sections/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(sectionData),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to create section: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      return await response.text();
+    } catch (error) {
+      console.error('Error creating section:', error);
+      throw error;
     }
   }
 }

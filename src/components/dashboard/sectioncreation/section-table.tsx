@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/syndicate/miner-details';
+import { SectionDialog } from '@/components/dashboard/sectioncreation/section-dialog';
 
 function noop(): void {
   // do nothing
@@ -180,15 +180,60 @@ export function CustomersTable({
         <Table sx={{ minWidth: '400px' }}>
           <TableHead>
             <TableRow>
+                    <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedAll}
+                                indeterminate={selectedSome}
+                                onChange={(event) => {
+                                  if (event.target.checked) {
+                                    selectAll();
+                                  } else {
+                                    deselectAll();
+                                  }
+                                }}
+                              />
+                            </TableCell>
               <TableCell>Section Name</TableCell>
               <TableCell>Number of Shaft</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Reason</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredRows.map((row) => (
               <TableRow hover key={row.id}>
+                
+              <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={selected?.has(row.id) ?? false}
+                                    onChange={(event) => {
+                                      if (event.target.checked) {
+                                        selectOne(row.id);
+                                      } else {
+                                        deselectOne(row.id);
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
                 <TableCell>{row.sectionName}</TableCell>
                 <TableCell>{row.numberOfShaft}</TableCell>
+                <TableCell>                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <Box
+                                        sx={{
+                                          px: 1.5,
+                                          py: 0.5,
+                                          borderRadius: 2,
+                                          bgcolor: row.status === 'APPROVED' ? '#d0f5e8' : '#ffebee', // vivid green or light red
+                                          color: row.status === 'APPROVED' ? '#1b5e20' : '#c62828',   // deep green or deep red
+                                          fontWeight: 500,
+                                          fontSize: 13,
+                                        }}
+                                      >
+                                        {row.status}
+                                      </Box>
+                                    </Box>
+                </TableCell>
+                <TableCell>{row.reason}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -206,7 +251,7 @@ export function CustomersTable({
       />
       
       {/* Customer Details Dialog */}
-      <MinerDetailsDialog
+      <SectionDialog
         open={isViewDialogOpen}
         onClose={() => {
           setIsViewDialogOpen(false);

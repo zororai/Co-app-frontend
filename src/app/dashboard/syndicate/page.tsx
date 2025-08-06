@@ -178,29 +178,19 @@ export default function Page(): React.JSX.Element {
 
   // Export table data as CSV
   const handleExport = () => {
-    // Get the correct customer array based on current tab
-    const getCurrentTabCustomers = () => {
-      switch (tab) {
-        case 'PENDING':
-          return pendingCustomers;
-        case 'PUSHED_BACK':
-          return pushedBackCustomers;
-        case 'REJECTED':
-          return rejectedCustomers;
-        case 'APPROVED':
-          return approvedCustomers;
-        default:
-          return pendingCustomers;
-      }
-    };
-    
-    // Apply pagination to current tab's customers
-    const currentTabCustomers = getCurrentTabCustomers();
-    const paginatedCustomers = applyPagination(currentTabCustomers, page, rowsPerPage);
-    
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
+
+    // Determine which customers to export based on the current tab
+    let filteredCustomers: Customer[] = [];
+    if (tab === 'PENDING') filteredCustomers = pendingCustomers;
+    else if (tab === 'PUSHED_BACK') filteredCustomers = pushedBackCustomers;
+    else if (tab === 'REJECTED') filteredCustomers = rejectedCustomers;
+    else if (tab === 'APPROVED') filteredCustomers = approvedCustomers;
+
+    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
+
     const rows = paginatedCustomers.map(c => [
       c.id,
       c.name,
