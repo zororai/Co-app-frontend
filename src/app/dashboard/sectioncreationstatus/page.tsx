@@ -59,7 +59,7 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await authClient.fetchSection();
+        const data = await authClient.fetchSectionstatus();
         console.log('Fetched data from API:', data);
         // Normalize status values to match expected enum
         const normalizedData = data.map((customer: any) => ({

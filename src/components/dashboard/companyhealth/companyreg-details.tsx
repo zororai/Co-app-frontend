@@ -88,7 +88,7 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
           p: 2
         }}
       >
-        <Typography variant="subtitle1" component="span">Miner Details</Typography>
+        <Typography variant="subtitle1" component="span">Company Details</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
@@ -98,67 +98,181 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
           <Box sx={{ 
             display: 'grid', 
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
-            gap: 2 
+            gap: 3 
           }}>
+            {/* Company Information */}
             <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Personal Information
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                Company Information
               </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Typography><strong>Name:</strong> {customer.name}</Typography>
-                <Typography><strong>Surname:</strong> {customer.surname}</Typography>
-                <Typography><strong>ID Number:</strong> {customer.nationIdNumber}</Typography>
-                <Typography><strong>Address:</strong> {customer.address}</Typography>
-                <Typography><strong>Phone:</strong> {customer.cellNumber}</Typography>
-                <Typography><strong>Position:</strong> {customer.position}</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography><strong>Company Name:</strong> {customer.companyName || 'N/A'}</Typography>
+                <Typography><strong>Registration Number:</strong> {customer.registrationNumber || 'N/A'}</Typography>
+                <Typography><strong>Address:</strong> {customer.address || 'N/A'}</Typography>
+                <Typography><strong>Phone Number:</strong> {customer.cellNumber || 'N/A'}</Typography>
+                <Typography><strong>Email:</strong> {customer.email || 'N/A'}</Typography>
+                <Typography><strong>Number of Shafts:</strong> {customer.shaftnumber || 'N/A'}</Typography>
               </Box>
             </Box>
+            
+            {/* Owner Information */}
             <Box>
-              <Typography variant="subtitle2" color="text.secondary">
-                Miner Information
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                Owner Information
               </Typography>
-              <Box sx={{ mt: 2 }}>
-                <Typography><strong>Cooperative Name:</strong> {customer.cooperativeName}</Typography>
-                <Typography><strong>Number of Shafts:</strong> {customer.numShafts}</Typography>
-                <Typography>
-                  <strong>Status:</strong> 
-                  <Box 
-                    component="span" 
-                    sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      ml: 1,
-                      bgcolor: customer.status === 'APPROVED' ? 'success.light' : 'error.light',
-                      color: customer.status === 'APPROVED' ? 'success.main' : 'error.main',
-                    }}
-                  >
-                    {customer.status}
-                  </Box>
-                </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography><strong>Owner Name:</strong> {customer.ownerName || 'N/A'}</Typography>
+                <Typography><strong>Owner Surname:</strong> {customer.ownerSurname || 'N/A'}</Typography>
+                <Typography><strong>Owner ID Number:</strong> {customer.ownerIdNumber || 'N/A'}</Typography>
+                <Typography><strong>Owner Address:</strong> {customer.ownerAddress || 'N/A'}</Typography>
+                <Typography><strong>Owner Phone:</strong> {customer.ownerCellNumber || 'N/A'}</Typography>
               </Box>
             </Box>
+            
+            {/* Status */}
             <Box sx={{ gridColumn: '1 / -1' }}>
               <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" color="text.secondary">
-                ID Picture
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                Application Status
               </Typography>
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                {customer.idPicture && (
-                  <Box
-                    component="img"
-                    src={customer.idPicture}
-                    alt="ID Picture"
-                    sx={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                      maxHeight: '200px',
+              <Typography>
+                <strong>Status:</strong> 
+                <Box 
+                  component="span" 
+                  sx={{
+                    display: 'inline-block',
+                    px: 2,
+                    py: 0.5,
+                    borderRadius: 2,
+                    ml: 1,
+                    bgcolor: customer.status === 'APPROVED' ? '#d0f5e8' : 
+                             customer.status === 'REJECTED' ? '#ffebee' : 
+                             customer.status === 'PUSHED_BACK' ? '#fff3e0' : '#f5f5f5',
+                    color: customer.status === 'APPROVED' ? '#1b5e20' : 
+                           customer.status === 'REJECTED' ? '#c62828' : 
+                           customer.status === 'PUSHED_BACK' ? '#e65100' : '#666',
+                    fontWeight: 500,
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  {customer.status || 'PENDING'}
+                </Box>
+              </Typography>
+            </Box>
+            {/* Company Documents */}
+            <Box sx={{ gridColumn: '1 / -1' }}>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
+                Company Documents
+              </Typography>
+              <Box sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' }, 
+                gap: 2 
+              }}>
+                {/* Company Logo */}
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Company Logo</Typography>
+                  {customer.companyLogo ? (
+                    <Box
+                      component="img"
+                      src={customer.companyLogo}
+                      alt="Company Logo"
+                      sx={{
+                        width: '100%',
+                        height: '120px',
+                        objectFit: 'contain',
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0',
+                        bgcolor: '#fafafa'
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ 
+                      width: '100%', 
+                      height: '120px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      border: '1px dashed #ccc',
                       borderRadius: 1,
-                      border: '1px solid #e0e0e0'
-                    }}
-                  />
-                )}
+                      color: 'text.secondary'
+                    }}>
+                      No logo uploaded
+                    </Box>
+                  )}
+                </Box>
+                
+                {/* Passport Photo */}
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>Owner Passport Photo</Typography>
+                  {customer.passportPhoto ? (
+                    <Box
+                      component="img"
+                      src={customer.passportPhoto}
+                      alt="Passport Photo"
+                      sx={{
+                        width: '100%',
+                        height: '120px',
+                        objectFit: 'cover',
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0'
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ 
+                      width: '100%', 
+                      height: '120px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      border: '1px dashed #ccc',
+                      borderRadius: 1,
+                      color: 'text.secondary'
+                    }}>
+                      No photo uploaded
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+              
+              {/* Document Links */}
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 2 }}>Required Documents</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 1 }}>
+                  <Typography>
+                    <strong>Certificate of Cooperation:</strong> 
+                    {customer.certificateOfCooperation ? (
+                      <Box component="span" sx={{ color: 'success.main', ml: 1 }}>✓ Uploaded</Box>
+                    ) : (
+                      <Box component="span" sx={{ color: 'error.main', ml: 1 }}>✗ Not uploaded</Box>
+                    )}
+                  </Typography>
+                  <Typography>
+                    <strong>CR14 Copy:</strong> 
+                    {customer.cr14Copy ? (
+                      <Box component="span" sx={{ color: 'success.main', ml: 1 }}>✓ Uploaded</Box>
+                    ) : (
+                      <Box component="span" sx={{ color: 'error.main', ml: 1 }}>✗ Not uploaded</Box>
+                    )}
+                  </Typography>
+                  <Typography>
+                    <strong>Mining Certificate:</strong> 
+                    {customer.miningCertificate ? (
+                      <Box component="span" sx={{ color: 'success.main', ml: 1 }}>✓ Uploaded</Box>
+                    ) : (
+                      <Box component="span" sx={{ color: 'error.main', ml: 1 }}>✗ Not uploaded</Box>
+                    )}
+                  </Typography>
+                  <Typography>
+                    <strong>Tax Clearance:</strong> 
+                    {customer.taxClearance ? (
+                      <Box component="span" sx={{ color: 'success.main', ml: 1 }}>✓ Uploaded</Box>
+                    ) : (
+                      <Box component="span" sx={{ color: 'error.main', ml: 1 }}>✗ Not uploaded</Box>
+                    )}
+                  </Typography>
+                </Box>
               </Box>
             </Box>
 

@@ -217,16 +217,15 @@ View Company Miner Reg Status Health
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Id Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone number</TableCell>
-              
-              <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>Current Status</TableCell>
-              
-              <TableCell>View Application Details</TableCell>
+         <TableCell>Company Name</TableCell>
+                       <TableCell>Company Address</TableCell>
+                       <TableCell>Contact Number</TableCell>
+                       <TableCell>Email</TableCell>
+                       <TableCell>Owner Name</TableCell>
+                       <TableCell>Owner Surname</TableCell>
+                       <TableCell>Owner ID</TableCell>
+                       <TableCell>Status</TableCell>
+                       <TableCell>Actions</TableCell>
               
             </TableRow>
           </TableHead>
@@ -247,13 +246,14 @@ View Company Miner Reg Status Health
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
-                
-                  <TableCell>{row.cooperativeName}</TableCell>
+                  
+                                    <TableCell>{row.companyName}</TableCell>
+                                    <TableCell>{row.address}</TableCell>
+                                    <TableCell>{row.cellNumber}</TableCell>
+                                    <TableCell>{row.email}</TableCell>
+                                    <TableCell>{row.ownerName}</TableCell>
+                                    <TableCell>{row.ownerSurname}</TableCell>
+                                    <TableCell>{row.ownerIdNumber}</TableCell>
                   
                   <TableCell>
                     <Box sx={{

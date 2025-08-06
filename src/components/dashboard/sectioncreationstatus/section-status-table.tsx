@@ -22,6 +22,13 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -106,18 +113,95 @@ export function CustomersTable({
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  
+  // Discussion dialog state
+  const [isDiscussionDialogOpen, setIsDiscussionDialogOpen] = React.useState(false);
+  const [discussionCustomer, setDiscussionCustomer] = React.useState<Customer | null>(null);
+  const [discussionStatus, setDiscussionStatus] = React.useState<string>('');
+  const [discussionReason, setDiscussionReason] = React.useState<string>('');
+  const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
+    // Open discussion dialog instead of view dialog
+    const customer = rows.find(row => row.id === customerId);
+    if (customer) {
+      setDiscussionCustomer(customer);
+      setIsDiscussionDialogOpen(true);
+      setDiscussionStatus('');
+      setDiscussionReason('');
+      setShowReasonField(false);
     }
+  };
+
+  const handleDiscussionStatusChange = (newStatus: string) => {
+    setDiscussionStatus(newStatus);
+    setShowReasonField(newStatus === 'REJECTED' || newStatus === 'PUSHED_BACK');
+    
+    // If APPROVED, submit immediately
+    if (newStatus === 'APPROVED') {
+      handleDiscussionSubmit(newStatus);
+    }
+  };
+
+  const handleDiscussionSubmit = async (submitStatus?: string) => {
+    const actionStatus = submitStatus || discussionStatus;
+    if (!actionStatus || !discussionCustomer) return;
+    
+    if ((actionStatus === 'REJECTED' || actionStatus === 'PUSHED_BACK') && !discussionReason) {
+      alert('Please provide a reason.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Here you would call the appropriate API method based on the status
+      // For now, I'll use placeholder API calls - you'll need to implement these in authClient
+      switch (actionStatus) {
+        case 'APPROVED':
+          // await authClient.setSectionForApproval(discussionCustomer.id);
+          console.log('Approving section:', discussionCustomer.id);
+          break;
+        case 'REJECTED':
+          // await authClient.setSectionForRejection(discussionCustomer.id, discussionReason);
+          console.log('Rejecting section:', discussionCustomer.id, 'Reason:', discussionReason);
+          break;
+        case 'PUSHED_BACK':
+          // await authClient.setSectionForPushBack(discussionCustomer.id, discussionReason);
+          console.log('Pushing back section:', discussionCustomer.id, 'Reason:', discussionReason);
+          break;
+        default:
+          throw new Error(`Unsupported status: ${actionStatus}`);
+      }
+
+      // Close the dialog after successful update
+      setIsDiscussionDialogOpen(false);
+      setDiscussionCustomer(null);
+      setDiscussionStatus('');
+      setDiscussionReason('');
+      setShowReasonField(false);
+
+      // Refresh the table data if onRefresh callback is provided
+      if (onRefresh) {
+        onRefresh();
+      }
+
+    } catch (error) {
+      console.error('Error updating section status:', error);
+      alert('Failed to update section status. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCloseDiscussionDialog = () => {
+    setIsDiscussionDialogOpen(false);
+    setDiscussionCustomer(null);
+    setDiscussionStatus('');
+    setDiscussionReason('');
+    setShowReasonField(false);
+    setIsSubmitting(false);
   };
 
   // Function to refresh the table data
@@ -193,16 +277,12 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Id Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone number</TableCell>
+           <TableCell>Section Name</TableCell>
+                        <TableCell>Number of Shaft</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Reason</TableCell>
               
-              <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>Current Status</TableCell>
-              
-              <TableCell>View Application Details</TableCell>
+              <TableCell>Discussion Panel</TableCell>
               
             </TableRow>
           </TableHead>
@@ -223,37 +303,25 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
-                
-                  <TableCell>{row.cooperativeName}</TableCell>
-                  
-                  <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status}
-                    </Box>
-                  </TableCell>
-              
+                  <TableCell>{row.sectionName}</TableCell>
+                                <TableCell>{row.numberOfShaft}</TableCell>
+                                <TableCell>                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                      <Box
+                                                        sx={{
+                                                          px: 1.5,
+                                                          py: 0.5,
+                                                          borderRadius: 2,
+                                                          bgcolor: row.status === 'APPROVED' ? '#d0f5e8' : '#ffebee', // vivid green or light red
+                                                          color: row.status === 'APPROVED' ? '#1b5e20' : '#c62828',   // deep green or deep red
+                                                          fontWeight: 500,
+                                                          fontSize: 13,
+                                                        }}
+                                                      >
+                                                        {row.status}
+                                                      </Box>
+                                                    </Box>
+                                </TableCell>
+                                <TableCell>{row.reason}</TableCell>
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
@@ -266,7 +334,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View Application Details</button>
+                      }}>Make A Discussion</button>
                     </Box>
                   </TableCell>
                
@@ -297,6 +365,133 @@ export function CustomersTable({
         customer={selectedCustomer}
         onRefresh={refreshTableData}
       />
+      
+      {/* Discussion Dialog */}
+      <Dialog open={isDiscussionDialogOpen} onClose={handleCloseDiscussionDialog} maxWidth="sm" fullWidth>
+        <DialogTitle 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            p: 2
+          }}
+        >
+          <Typography variant="h6" component="span">Section Discussion</Typography>
+          <IconButton onClick={handleCloseDiscussionDialog} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ p: 2 }}>
+            {discussionCustomer && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                  Section: {discussionCustomer.sectionName || discussionCustomer.name}
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                  <Typography><strong>Number of Shafts:</strong> {discussionCustomer.numberOfShaft || discussionCustomer.numShafts || 'N/A'}</Typography>
+                  <Typography><strong>Current Status:</strong> 
+                    <Box 
+                      component="span" 
+                      sx={{
+                        display: 'inline-block',
+                        px: 1.5,
+                        py: 0.5,
+                        borderRadius: 2,
+                        ml: 1,
+                        bgcolor: discussionCustomer.status === 'APPROVED' ? '#d0f5e8' : 
+                                 discussionCustomer.status === 'REJECTED' ? '#ffebee' : 
+                                 discussionCustomer.status === 'PUSHED_BACK' ? '#fff3e0' : '#f5f5f5',
+                        color: discussionCustomer.status === 'APPROVED' ? '#1b5e20' : 
+                               discussionCustomer.status === 'REJECTED' ? '#c62828' : 
+                               discussionCustomer.status === 'PUSHED_BACK' ? '#e65100' : '#666',
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      {discussionCustomer.status || 'PENDING'}
+                    </Box>
+                  </Typography>
+                </Box>
+                {discussionCustomer.reason && (
+                  <Typography sx={{ mb: 2 }}><strong>Previous Reason:</strong> {discussionCustomer.reason}</Typography>
+                )}
+              </Box>
+            )}
+            
+            {showReasonField && (
+              <TextField
+                label="Reason"
+                value={discussionReason}
+                onChange={(e) => setDiscussionReason(e.target.value)}
+                fullWidth
+                margin="normal"
+                multiline
+                rows={3}
+                sx={{ mb: 2 }}
+                required
+                error={showReasonField && !discussionReason}
+                helperText={showReasonField && !discussionReason ? 'Reason is required' : ''}
+              />
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          {/* Action Buttons */}
+          {(!discussionStatus || (discussionStatus !== 'REJECTED' && discussionStatus !== 'PUSHED_BACK')) && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 2 }}>
+              <Button 
+                onClick={() => handleDiscussionStatusChange('APPROVED')}
+                variant={discussionStatus === 'APPROVED' ? 'contained' : 'outlined'}
+                color="success"
+                disabled={isSubmitting}
+                sx={{ flex: 1, minHeight: '48px' }}
+              >
+                Approve
+              </Button>
+              <Button 
+                onClick={() => handleDiscussionStatusChange('PUSHED_BACK')}
+                variant={discussionStatus === 'PUSHED_BACK' ? 'contained' : 'outlined'}
+                color="warning"
+                disabled={isSubmitting}
+                sx={{ flex: 1, minHeight: '48px' }}
+              >
+                Push Back
+              </Button>
+              <Button 
+                onClick={() => handleDiscussionStatusChange('REJECTED')}
+                variant={discussionStatus === 'REJECTED' ? 'contained' : 'outlined'}
+                color="error"
+                disabled={isSubmitting}
+                sx={{ flex: 1, minHeight: '48px' }}
+              >
+                Reject
+              </Button>
+            </Box>
+          )}
+          
+          {/* Submit Button for REJECTED or PUSHED_BACK */}
+          {(discussionStatus === 'REJECTED' || discussionStatus === 'PUSHED_BACK') && (
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button 
+                onClick={() => handleDiscussionSubmit()}
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting || !discussionReason}
+                startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
+                sx={{ 
+                  minWidth: '200px',
+                  minHeight: '48px',
+                  bgcolor: '#5f4bfa',
+                  '&:hover': { bgcolor: '#4d3fd6' }
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : `Submit ${discussionStatus.toLowerCase().replace('_', ' ')} status`}
+              </Button>
+            </Box>
+          )}
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
