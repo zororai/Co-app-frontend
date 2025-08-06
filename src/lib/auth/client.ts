@@ -631,6 +631,43 @@ class AuthClient {
         }
     }
     
+    async fetchSection(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/miners/getall', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const text = await response.text();
+      
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (parseError) {
+                console.error('Failed to parse JSON:', parseError);
+                return [];
+            }
+            return Array.isArray(data) ? data : data.customers || [];
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            return [];
+        }
+    }
+
+    
     async fetchPendingCustomers(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

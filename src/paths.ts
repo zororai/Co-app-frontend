@@ -10,6 +10,7 @@ export const paths = {
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
     sectioncreation: '/dashboard/sectioncreation',
+    sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
     oreManagement: '/dashboard/ore-management',
   },

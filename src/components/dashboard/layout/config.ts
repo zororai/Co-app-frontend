@@ -57,16 +57,9 @@ export const navItems = [
     title: 'Permission Management',
     icon: 'key',
     items: [
-      { key: 'permission-list', title: 'Miner Registration status', href: paths.dashboard.Syndicate, icon: 'id-card' },
-    {
-      key: 'role-group',
-      title: 'Roles',
-      icon: 'id-card',
-      items: [
-          { key: 'role-list', title: 'Role List', href: '/permission/roles/list' },
-          { key: 'role-add', title: 'Add Role', href: '/permission/roles/add' },
-        ]
-      }
+      { key: 'permission-list', title: 'Miner Registration Status', href: paths.dashboard.Syndicate, icon: 'id-card' },
+      { key: 'section-creation', title: 'Section Create Status', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
+
     ],
   },
 ] satisfies NavItemConfig[];
