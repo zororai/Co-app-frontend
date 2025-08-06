@@ -156,20 +156,16 @@ export function CustomersTable({
     setIsSubmitting(true);
 
     try {
-      // Here you would call the appropriate API method based on the status
-      // For now, I'll use placeholder API calls - you'll need to implement these in authClient
+      // Call the appropriate API method based on the status
       switch (actionStatus) {
         case 'APPROVED':
-          // await authClient.setSectionForApproval(discussionCustomer.id);
-          console.log('Approving section:', discussionCustomer.id);
+          await authClient.setSectionForApproval(discussionCustomer.id);
           break;
         case 'REJECTED':
-          // await authClient.setSectionForRejection(discussionCustomer.id, discussionReason);
-          console.log('Rejecting section:', discussionCustomer.id, 'Reason:', discussionReason);
+          await authClient.setSectionForRejection(discussionCustomer.id, discussionReason);
           break;
         case 'PUSHED_BACK':
-          // await authClient.setSectionForPushBack(discussionCustomer.id, discussionReason);
-          console.log('Pushing back section:', discussionCustomer.id, 'Reason:', discussionReason);
+          await authClient.setSectionForPushBack(discussionCustomer.id, discussionReason);
           break;
         default:
           throw new Error(`Unsupported status: ${actionStatus}`);
@@ -376,7 +372,7 @@ export function CustomersTable({
             p: 2
           }}
         >
-          <Typography variant="h6" component="span">Section Discussion</Typography>
+          Section Discussion
           <IconButton onClick={handleCloseDiscussionDialog} size="small">
             <CloseIcon />
           </IconButton>
@@ -437,8 +433,8 @@ export function CustomersTable({
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
-          {/* Action Buttons */}
-          {(!discussionStatus || (discussionStatus !== 'REJECTED' && discussionStatus !== 'PUSHED_BACK')) && (
+          {/* Action Buttons - Only show if section is not already approved */}
+          {discussionCustomer && discussionCustomer.status !== 'APPROVED' && (!discussionStatus || (discussionStatus !== 'REJECTED' && discussionStatus !== 'PUSHED_BACK')) && (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 2 }}>
               <Button 
                 onClick={() => handleDiscussionStatusChange('APPROVED')}
@@ -467,6 +463,15 @@ export function CustomersTable({
               >
                 Reject
               </Button>
+            </Box>
+          )}
+          
+          {/* Message for already approved sections */}
+          {discussionCustomer && discussionCustomer.status === 'APPROVED' && (
+            <Box sx={{ textAlign: 'center', py: 2 }}>
+              <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 500 }}>
+                This section has already been approved.
+              </Typography>
             </Box>
           )}
           

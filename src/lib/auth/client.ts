@@ -906,6 +906,119 @@ class AuthClient {
       throw error;
     }
   }
+
+  /**
+   * Approve a section
+   * @param id The ID of the section to approve
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async setSectionForApproval(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/sections/${id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to approve section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error approving section:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Reject a section
+   * @param id The ID of the section to reject
+   * @param reason The reason for rejection
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async setSectionForRejection(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/sections/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to reject section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error rejecting section:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Push back a section
+   * @param id The ID of the section to push back
+   * @param reason The reason for pushing back
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async setSectionForPushBack(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/sections/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to push back section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error pushing back section:', error);
+      return null;
+    }
+  }
 }
 
 export const authClient = new AuthClient();
