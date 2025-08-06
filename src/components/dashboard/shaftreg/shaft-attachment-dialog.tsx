@@ -11,6 +11,7 @@ import {
   Box,
   Typography,
   Alert,
+  MenuItem,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -47,7 +48,26 @@ export function ShaftAttachmentDialog({
     startContractDate: '',
     endContractDate: '',
   });
+  const [sections, setSections] = React.useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = React.useState(false);
   
+  React.useEffect(() => {
+    if (open) {
+      fetchSections();
+    }
+  }, [open]);
+
+  const fetchSections = async () => {
+    setSectionsLoading(true);
+    try {
+      const sectionsData = await authClient.fetchSectionsApproved();
+      setSections(sectionsData);
+    } catch (error) {
+      setSections([]);
+    } finally {
+      setSectionsLoading(false);
+    }
+  };
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
   const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -159,13 +179,43 @@ export function ShaftAttachmentDialog({
 
             <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr' }}>
               <TextField
+                select
                 fullWidth
                 label="Section Name"
                 value={formData.sectionName}
-                onChange={handleInputChange('sectionName')}
+                onChange={(e) => {
+                  const selectedName = e.target.value;
+                  // Find the selected section
+                  const selectedSection = sections.find(s => s.sectionName === selectedName);
+                  // Get the last shaft number (assume section.shaftNumbers is an array or a string)
+                  let lastNumber = 0;
+                  if (selectedSection) {
+                    if (Array.isArray(selectedSection.shaftNumbers)) {
+                      lastNumber = Math.max(...selectedSection.shaftNumbers.map(Number));
+                    } else if (selectedSection.shaftNumbers) {
+                      lastNumber = parseInt(selectedSection.shaftNumbers, 10) || 0;
+                    }
+                  }
+                  // Generate sequence: first letter + last letter + next number
+                  const firstLetter = selectedName.charAt(0) || '';
+                  const lastLetter = selectedName.charAt(selectedName.length - 1) || '';
+                  const nextNumber = lastNumber + 1;
+                  setFormData(prev => ({
+                    ...prev,
+                    sectionName: selectedName,
+                    shaftNumbers: `${firstLetter}${lastLetter}${nextNumber}`
+                  }));
+                }}
                 required
-                disabled={loading}
-              />
+                disabled={loading || sectionsLoading}
+                helperText={sectionsLoading ? "Loading sections..." : `${sections.length} sections available`}
+              >
+                {sections.map((section) => (
+                  <MenuItem key={section.id} value={section.sectionName}>
+                    {section.sectionName}
+                  </MenuItem>
+                ))}
+              </TextField>
 
               <TextField
                 fullWidth
@@ -183,9 +233,16 @@ export function ShaftAttachmentDialog({
                   label="Medical Fee"
                   placeholder="Please enter Medical Fee"
                   value={formData.medicalFee}
-                  onChange={handleInputChange('medicalFee')}
+                  onChange={e => {
+                    const value = e.target.value;
+                    // Allow only valid double values
+                    if (/^\d*(\.\d*)?$/.test(value)) {
+                      setFormData(prev => ({ ...prev, medicalFee: value }));
+                    }
+                  }}
                   required
                   disabled={loading}
+                  inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
                 />
 
                 <TextField
@@ -193,9 +250,16 @@ export function ShaftAttachmentDialog({
                   label="Reg Fee"
                   placeholder="Please enter Registration Fee"
                   value={formData.regFee}
-                  onChange={handleInputChange('regFee')}
+                  onChange={e => {
+                    const value = e.target.value;
+                    // Allow only valid double values
+                    if (/^\d*(\.\d*)?$/.test(value)) {
+                      setFormData(prev => ({ ...prev, regFee: value }));
+                    }
+                  }}
                   required
                   disabled={loading}
+                  inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
                 />
               </Box>
 

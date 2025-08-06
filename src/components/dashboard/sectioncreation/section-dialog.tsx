@@ -12,6 +12,7 @@ import {
   Stack,
   Alert,
   CircularProgress,
+  Autocomplete,
 } from '@mui/material';
 import { X as CloseIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { authClient } from '@/lib/auth/client';
@@ -42,6 +43,37 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
+  
+  // State for sections dropdown
+  const [sections, setSections] = React.useState<any[]>([]);
+  const [sectionsLoading, setSectionsLoading] = React.useState(false);
+  const [selectedSection, setSelectedSection] = React.useState<any | null>(null);
+
+  // Fetch sections data when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      fetchSections();
+    }
+  }, [open]);
+
+  const fetchSections = async () => {
+    setSectionsLoading(true);
+    try {
+      console.log('Fetching sections data...');
+      const sectionsData = await authClient.fetchSection();
+      console.log('Sections data received:', sectionsData);
+      
+      // If no data from API, use test data for debugging
+
+    } catch (error) {
+      console.error('Error fetching sections:', error);
+      // Use test data if API fails
+      console.log('API failed, using test data');
+      
+    } finally {
+      setSectionsLoading(false);
+    }
+  };
 
   const handleInputChange = (field: keyof SectionFormData) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -62,8 +94,8 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
       setError('Section name is required');
       return;
     }
-    if (!formData.numberOfShaft.trim()) {
-      setError('Number of shaft is required');
+    if (!selectedSection) {
+      setError('Section selection is required');
       return;
     }
     if (!formData.reason.trim()) {
@@ -77,7 +109,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
     try {
       await authClient.createSection({
         sectionName: formData.sectionName.trim(),
-        numberOfShaft: formData.numberOfShaft.trim(),
+        numberOfShaft: selectedSection.numberOfShaft || selectedSection.numShafts || selectedSection.shaftnumber || '',
         status: formData.status,
         reason: formData.reason.trim(),
       });
@@ -113,6 +145,8 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
         reason: '',
         status: 'PENDING',
       });
+      setSelectedSection(null);
+      setSections([]);
       setError(null);
       setSuccess(false);
       onClose();
@@ -157,24 +191,110 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             </Alert>
           )}
 
-          <TextField
-            label="Section Name"
-            value={formData.sectionName}
-            onChange={handleInputChange('sectionName')}
-            disabled={loading}
+          <Autocomplete
+            options={sections}
+            getOptionLabel={(option) => {
+              if (!option) return '';
+              if (typeof option === 'string') return option;
+              return option.sectionName || option.name || 'Unknown Section';
+            }}
+            value={sections.find(section => section.sectionName === formData.sectionName) || null}
+            onChange={(event, newValue) => {
+              console.log('Selected section name:', newValue);
+              const sectionName = newValue ? (newValue.sectionName || newValue.name || '') : '';
+              // Generate sequence: first letter + last letter + next number
+              let nextNumber = 1;
+              if (newValue) {
+                let lastNumber = 0;
+                if (Array.isArray(newValue.numberOfShaft)) {
+                  lastNumber = Math.max(...newValue.numberOfShaft.map(Number));
+                } else if (newValue.numberOfShaft) {
+                  lastNumber = parseInt(newValue.numberOfShaft, 10) || 0;
+                }
+                nextNumber = lastNumber + 1;
+              }
+              const firstLetter = sectionName.charAt(0) || '';
+              const lastLetter = sectionName.charAt(sectionName.length - 1) || '';
+              setFormData(prev => ({
+                ...prev,
+                sectionName,
+                numberOfShaft: `${firstLetter}${lastLetter}${nextNumber}`
+              }));
+              if (error) {
+                setError(null);
+              }
+            }}
+            loading={sectionsLoading}
+            disabled={loading || sectionsLoading}
             fullWidth
-            required
-            placeholder="Enter section name"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Section Name"
+                placeholder="Search and select a section name..."
+                required
+                helperText={`${sections.length} sections available`}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <React.Fragment>
+                      {sectionsLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </React.Fragment>
+                  ),
+                }}
+              />
+            )}
+            noOptionsText={sectionsLoading ? "Loading sections..." : sections.length === 0 ? "No sections available" : "No matching sections"}
+            isOptionEqualToValue={(option, value) => {
+              if (!option || !value) return false;
+              return (option.sectionName || option.name) === (value.sectionName || value.name);
+            }}
           />
 
-          <TextField
-            label="No of Shaft"
-            value={formData.numberOfShaft}
-            onChange={handleInputChange('numberOfShaft')}
-            disabled={loading}
+          <Autocomplete
+            options={sections}
+            getOptionLabel={(option) => {
+              if (!option) return '';
+              if (typeof option === 'string') return option;
+              const name = option.sectionName || option.name || 'Unknown Section';
+              const shafts = option.numberOfShaft || option.numShafts || option.shaftnumber || 'N/A';
+              return `${name} (${shafts} shafts)`;
+            }}
+            value={selectedSection}
+            onChange={(event, newValue) => {
+              console.log('Selected section:', newValue);
+              setSelectedSection(newValue);
+              if (error) {
+                setError(null);
+              }
+            }}
+            loading={sectionsLoading}
+            disabled={loading || sectionsLoading}
             fullWidth
-            required
-            placeholder="Enter number of shaft"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Select Section"
+                placeholder="Search and select a section..."
+                required
+                helperText={`${sections.length} sections available`}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <React.Fragment>
+                      {sectionsLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </React.Fragment>
+                  ),
+                }}
+              />
+            )}
+            noOptionsText={sectionsLoading ? "Loading sections..." : sections.length === 0 ? "No sections available" : "No matching sections"}
+            isOptionEqualToValue={(option, value) => {
+              if (!option || !value) return false;
+              return option.id === value.id || option.sectionName === value.sectionName;
+            }}
           />
 
           <TextField

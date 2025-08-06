@@ -41,6 +41,66 @@ export interface ResetPasswordParams {
 }
 
 class AuthClient {
+    /**
+     * Fetch only approved sections from the backend
+     */
+    async fetchSectionsApproved(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/sections/status/approved', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch approved sections');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.sections || [];
+        } catch (error) {
+            console.error('Error fetching approved sections:', error);
+            return [];
+        }
+    }
+    /**
+     * Fetch all sections from the backend
+     */
+    async fetchSections(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/sections', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch sections');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.sections || [];
+        } catch (error) {
+            console.error('Error fetching sections:', error);
+            return [];
+        }
+    }
     async fetchAllMiners(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
