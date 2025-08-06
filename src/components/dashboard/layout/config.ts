@@ -13,7 +13,7 @@ export const navItems = [
     icon: 'buildings',
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-      { key: 'site-add', title: 'Add Shaft', href: '/site-management/add' },
+      { key: 'site-add', title: 'Create Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
     ],
   },
   {

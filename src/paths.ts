@@ -9,6 +9,9 @@ export const paths = {
     settings: '/dashboard/settings',
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
+    sectioncreation: '/dashboard/sectioncreation',
+    minerDetails: '/dashboard/miner-details',
+    oreManagement: '/dashboard/ore-management',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;
