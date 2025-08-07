@@ -33,6 +33,8 @@ interface ShaftAssignmentData {
   regFee: string;
   startContractDate: string;
   endContractDate: string;
+  status: string;
+  reason: string;
 }
 
 export function ShaftAttachmentDialog({
@@ -47,6 +49,8 @@ export function ShaftAttachmentDialog({
     regFee: '',
     startContractDate: '',
     endContractDate: '',
+    status: 'PENDING',
+    reason: '',
   });
   const [sections, setSections] = React.useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = React.useState(false);
@@ -111,8 +115,13 @@ export function ShaftAttachmentDialog({
         throw new Error('Please fill in all required fields');
       }
 
-      // Add minerId to the payload
-      const payload = { ...formData, minerId: customerId };
+      // Add minerId and always include status and reason in the payload
+      const payload = {
+        ...formData,
+        status: 'PENDING',
+        reason: 'Newly created shaft waiting for approval',
+        minerId: customerId
+      };
       console.log('Submitting shaft assignment:', payload);
       let result;
       try {
@@ -124,10 +133,10 @@ export function ShaftAttachmentDialog({
         }, 2000);
       } catch (err: any) {
         // If the error is from the API and has status info, show it
-        if (err && err.message) {
+        if (err && err.message && err.message !== '{}' && err.message.trim() !== '') {
           setError(err.message);
         } else {
-          setError('An error occurred while creating the shaft assignment.');
+          setError('API Error: Unable to create shaft assignment. Please check your input or try again later.');
         }
         return;
       }
@@ -146,6 +155,8 @@ export function ShaftAttachmentDialog({
       regFee: '',
       startContractDate: '',
       endContractDate: '',
+      status: 'PENDING',
+      reason: '',
     });
     setStartDate(null);
     setEndDate(null);
@@ -177,12 +188,12 @@ export function ShaftAttachmentDialog({
               </Alert>
             )}
 
-            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr' }}>
+              <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr' }}>
               <TextField
                 select
                 fullWidth
                 label="Section Name"
-                value={formData.sectionName}
+                value={formData.sectionName || ''}
                 onChange={(e) => {
                   const selectedName = e.target.value;
                   // Find the selected section
@@ -221,10 +232,33 @@ export function ShaftAttachmentDialog({
                 fullWidth
                 label="Shaft Numbers"
                 placeholder="Please enter number"
-                value={formData.shaftNumbers}
+                value={formData.shaftNumbers || ''}
                 onChange={handleInputChange('shaftNumbers')}
                 required
                 disabled={loading}
+              />
+
+              <TextField
+                fullWidth
+                label="Status"
+                value="PENDING"
+                InputProps={{ readOnly: true }}
+                required
+                disabled={loading}
+                placeholder="Status (default: PENDING)"
+                helperText="Default status is PENDING and cannot be changed"
+              />
+
+              <TextField
+                fullWidth
+                label="Reason"
+                value="Newly created shaft waiting for approval"
+                InputProps={{ readOnly: true }}
+                required
+                disabled={loading}
+                multiline
+                rows={2}
+                placeholder="Reason for shaft assignment (default)"
               />
 
               <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
@@ -232,7 +266,7 @@ export function ShaftAttachmentDialog({
                   fullWidth
                   label="Medical Fee"
                   placeholder="Please enter Medical Fee"
-                  value={formData.medicalFee}
+                  value={formData.medicalFee || ''}
                   onChange={e => {
                     const value = e.target.value;
                     // Allow only valid double values
@@ -249,7 +283,7 @@ export function ShaftAttachmentDialog({
                   fullWidth
                   label="Reg Fee"
                   placeholder="Please enter Registration Fee"
-                  value={formData.regFee}
+                  value={formData.regFee || ''}
                   onChange={e => {
                     const value = e.target.value;
                     // Allow only valid double values
