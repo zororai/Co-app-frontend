@@ -36,6 +36,7 @@ interface ErrorState {
   companyLogo: string;
   cr14Document: string;
   taxClearance: string;
+  cellNumber: string;
   certificateOfCooperation: string;
   miningCertificate: string;
   passportPhotos: string;
@@ -74,7 +75,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
     companyName: '',
     registrationNumber: '',
     address: '',
-    contactNumber: '',
+    cellNumber: '',
     email: '',
     industry: 'Mining',
     companyLogo: '',
@@ -96,6 +97,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
     registrationNumber: '',
     address: '',
     contactNumber: '',
+    cellNumber: '',
     email: '',
     industry: '',
     companyLogo: '',
@@ -127,6 +129,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
       certificateOfCooperation: '',
       miningCertificate: '',
       passportPhotos: '',
+      cellNumber: '',
       ownerName: '',
       ownerSurname: '',
       ownerAddress: '',
@@ -144,10 +147,10 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
       newErrors.address = 'Address is required';
       isValid = false;
     }
-    if (!form.contactNumber.trim()) {
-      newErrors.contactNumber = 'Contact number is required';
-    } else if (!/^\d{10}$/.test(form.contactNumber.trim())) {
-      newErrors.contactNumber = 'Invalid contact number format';
+    if (!form.cellNumber.trim()) {
+      newErrors.cellNumber = 'Cell number is required';
+    } else if (!/^\d{10}$/.test(form.cellNumber.trim())) {
+      newErrors.cellNumber = 'Invalid cell number format';
       isValid = false;
     }
     if (!form.registrationNumber.trim()) {
@@ -339,7 +342,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
       const formData = {
         companyName: form.companyName,
         address: form.address,
-        cellNumber: form.contactNumber, // Mapping contactNumber to cellNumber
+        cellNumber: form.cellNumber, // Mapping cellNumber to cellNumber
         email: form.email,
         companyLogo: form.companyLogo,
         certificateOfCooperation: form.certificateOfCooperation,
@@ -435,10 +438,10 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
             name="contactNumber"
             placeholder="Enter your mobile number"
             fullWidth
-            value={form.contactNumber}
+            value={form.cellNumber}
             onChange={handleChange}
-            error={!!errors.contactNumber}
-            helperText={errors.contactNumber}
+            error={!!errors.cellNumber}
+            helperText={errors.cellNumber}
             required
           />
         </Box>

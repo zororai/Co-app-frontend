@@ -185,8 +185,8 @@ function RegMinerForm(): React.JSX.Element {
           surname: member.surname,
           address: member.address,
           idNumber: member.idNumber,
-    
-        }))
+        })),
+        cooperativename: ''
       });
 
       if (error) {

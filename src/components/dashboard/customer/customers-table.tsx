@@ -34,7 +34,6 @@ function noop(): void {
 }
 
 export interface Customer {
-  cooperativeName: ReactNode;
   cellNumber: ReactNode;
   nationIdNumber: any;
   id: string;

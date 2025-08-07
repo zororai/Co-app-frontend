@@ -78,7 +78,9 @@ export default function Page(): React.JSX.Element {
       company.cellNumber,
       company.email,
       company.ownerName,
+      company.cellNumber,
       company.ownerSurname,
+      company.shaftnumber,
       company.ownerIdNumber,
       company.status,
       company.reason || ''

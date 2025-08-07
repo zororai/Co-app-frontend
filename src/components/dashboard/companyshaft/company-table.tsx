@@ -34,6 +34,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
+import { ShaftAttachmentDialog } from '@/components/dashboard/shaftreg/shaft-attachment-dialog';
 
 function noop(): void {
   // do nothing
@@ -79,6 +80,8 @@ export function CompanyTable({
   const [companyDialogData, setCompanyDialogData] = useState<any | null>(null);
   const [companyDialogLoading, setCompanyDialogLoading] = useState(false);
   const [companyDialogError, setCompanyDialogError] = useState<string | null>(null);
+  const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
+  const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
 
   const handleOpenCompanyDialog = async (id: string) => {
     setCompanyDialogOpen(true);
@@ -107,11 +110,23 @@ export function CompanyTable({
     setCompanyDialogError(null);
     setCompanyDialogLoading(false);
   };
+
+  const handleShaftAttachment = (customerId: string) => {
+    setSelectedCustomerForShaft(customerId);
+    setIsShaftAttachmentDialogOpen(true);
+  };
+
+  const handleCloseShaftAttachment = () => {
+    setIsShaftAttachmentDialogOpen(false);
+    setSelectedCustomerForShaft(null);
+  };
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
     position: 'all'
   });
+
+  
 
   // Filter the rows based on search and filters
   const filteredRows = React.useMemo(() => {
@@ -145,6 +160,7 @@ export function CompanyTable({
   function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
     throw new Error('Function not implemented.');
   }
+
 
   return (
     <Card>
@@ -232,7 +248,6 @@ export function CompanyTable({
               <TableCell>Registration Number</TableCell>
               <TableCell>Company Name</TableCell>
               <TableCell>Company Address</TableCell>
-              <TableCell>Contact Number</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Number Of Shaft</TableCell>
           <TableCell>Status</TableCell>
@@ -260,9 +275,9 @@ export function CompanyTable({
                   <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
+                
                   <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.shaftNumber}</TableCell>
+                  <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -455,53 +470,23 @@ export function CompanyTable({
           <Button onClick={handleCloseCompanyDialog} color="primary">Close</Button>
         </DialogActions>
       </Dialog>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '2px 12px',
-                        }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
-                      >
-                     
-                      </button>
+                    
                     </Box>
                   </TableCell>
                    <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <button 
-                        style={{
-                          background: 'none',
-                           border: '1px solid #17212cff',
-                          color: '#17212cff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                        }}
-                        onClick={() => alert(row.reason || 'No reason provided')}
-                      >
-                      Shaft Assignment
-                      </button>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '2px 12px',
-                        }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
-                      >
-                     
-                      </button>
-                    </Box>
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                         <button 
+                                           onClick={() => handleShaftAttachment(row.id)}
+                                           style={{
+                                             background: 'none',
+                                             border: '1px solid #06131fff',
+                                             color: '#081b2fff',
+                                             borderRadius: '6px',
+                                             padding: '2px 12px',
+                                             cursor: 'pointer',
+                                             fontWeight: 500,
+                                         }}>Shaft Attachment</button>
+                                       </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -522,6 +507,13 @@ export function CompanyTable({
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
+      />
+      
+      {/* Shaft Attachment Dialog */}
+      <ShaftAttachmentDialog
+        open={isShaftAttachmentDialogOpen}
+        onClose={handleCloseShaftAttachment}
+        customerId={selectedCustomerForShaft || undefined}
       />
     </Card>
   );
