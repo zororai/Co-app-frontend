@@ -21,7 +21,7 @@ export const navItems = [
     title: 'Ore Management',
     icon: 'mountain',
     items: [
-      { key: 'ore-list', title: 'Ore List', href: '/ore-management/list' },
+      { key: 'ore-list', title: 'Ore List', href: paths.dashboard.integrations, icon: 'id-card' },
       { key: 'ore-add', title: 'Add Ore', href: '/ore-management/add' },
     ],
   },

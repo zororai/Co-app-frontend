@@ -17,6 +17,16 @@ export interface Integration {
   logo: string;
   installs: number;
   updatedAt: Date;
+  // Shaft assignment data fields
+  sectionName?: string;
+  shaftNumbers?: string;
+  medicalFee?: string;
+  regFee?: string;
+  startContractDate?: string;
+  endContractDate?: string;
+  status?: string;
+  reason?: string | null;
+  createdAt?: string;
 }
 
 export interface IntegrationCardProps {
@@ -26,36 +36,29 @@ export interface IntegrationCardProps {
 export function IntegrationCard({ integration }: IntegrationCardProps): React.JSX.Element {
   return (
     <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <CardContent sx={{ flex: '1 1 auto' }}>
-        <Stack spacing={2}>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Avatar src={integration.logo} variant="square" />
-          </Box>
-          <Stack spacing={1}>
+      <Divider />
+      <Stack spacing={1}>
             <Typography align="center" variant="h5">
-              {integration.title}
+              {integration.sectionName}
             </Typography>
             <Typography align="center" variant="body1">
-              {integration.description}
+              {integration.shaftNumbers}
             </Typography>
+            {integration.sectionName && (
+              <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>Shaft Assignment Details</Typography>
+                  <Typography variant="body2">Section: {integration.sectionName}</Typography>
+                <Typography variant="body2">Shaft Numbers: {integration.shaftNumbers}</Typography>
+                <Typography variant="body2">Medical Fee: {integration.medicalFee}</Typography>
+                <Typography variant="body2">Registration Fee: {integration.regFee}</Typography>
+                <Typography variant="body2">Contract Start: {integration.startContractDate}</Typography>
+                <Typography variant="body2">Contract End: {integration.endContractDate}</Typography>
+                <Typography variant="body2">Status: {integration.status}</Typography>
+                <Typography variant="body2">Reason: {integration.reason || 'N/A'}</Typography>
+                <Typography variant="body2">Created: {integration.createdAt}</Typography>
+              </Box>
+            )}
           </Stack>
-        </Stack>
-      </CardContent>
-      <Divider />
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-        <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <ClockIcon fontSize="var(--icon-fontSize-sm)" />
-          <Typography color="text.secondary" display="inline" variant="body2">
-            Updated {dayjs(integration.updatedAt).format('MMM D, YYYY')}
-          </Typography>
-        </Stack>
-        <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-          <DownloadIcon fontSize="var(--icon-fontSize-sm)" />
-          <Typography color="text.secondary" display="inline" variant="body2">
-            {integration.installs} installs
-          </Typography>
-        </Stack>
-      </Stack>
     </Card>
   );
 }

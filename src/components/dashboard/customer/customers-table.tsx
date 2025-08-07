@@ -28,6 +28,8 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
+import { useRouter } from 'next/navigation';
+import { paths } from '@/paths';
 
 function noop(): void {
   // do nothing
@@ -69,6 +71,8 @@ export function CustomersTable({
   onPageChange,
   onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
+  const router = useRouter();
+  
   // Local state for pagination if not controlled by parent
   const [internalPage, setInternalPage] = React.useState(page);
   const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
@@ -81,6 +85,11 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+
+  // Navigation function for View Attached Shaft button
+  const handleViewAttachedShaft = (customerId: string) => {
+    router.push(paths.dashboard.integrations);
+  };
 
   // Filter the rows based on search and filters
   const filteredRows = React.useMemo(() => {
@@ -286,7 +295,7 @@ export function CustomersTable({
                       <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <button 
-                        onClick={() => handleViewCustomer(row.id)}
+                        onClick={() => handleViewAttachedShaft(row.id)}
                         style={{
                           background: 'none',
                           border: '1px solid #06131fff',

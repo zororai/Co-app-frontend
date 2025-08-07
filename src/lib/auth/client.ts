@@ -127,6 +127,37 @@ class AuthClient {
             return [];
         }
     }
+
+    /**
+     * Fetch shaft assignments by miner ID
+     */
+    async fetchShaftAssignmentsByMiner(minerId: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/shaft-assignments/by-miner/${minerId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch shaft assignments');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching shaft assignments:', error);
+            return null;
+        }
+    }
     /**
      * Fetch a company by its ID
      */
