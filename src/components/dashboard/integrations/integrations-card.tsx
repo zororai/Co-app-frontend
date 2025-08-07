@@ -35,30 +35,44 @@ export interface IntegrationCardProps {
 
 export function IntegrationCard({ integration }: IntegrationCardProps): React.JSX.Element {
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Divider />
-      <Stack spacing={1}>
-            <Typography align="center" variant="h5">
-              {integration.sectionName}
-            </Typography>
-            <Typography align="center" variant="body1">
-              {integration.shaftNumbers}
-            </Typography>
-            {integration.sectionName && (
-              <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>Shaft Assignment Details</Typography>
-                  <Typography variant="body2">Section: {integration.sectionName}</Typography>
-                <Typography variant="body2">Shaft Numbers: {integration.shaftNumbers}</Typography>
-                <Typography variant="body2">Medical Fee: {integration.medicalFee}</Typography>
-                <Typography variant="body2">Registration Fee: {integration.regFee}</Typography>
-                <Typography variant="body2">Contract Start: {integration.startContractDate}</Typography>
-                <Typography variant="body2">Contract End: {integration.endContractDate}</Typography>
-                <Typography variant="body2">Status: {integration.status}</Typography>
-                <Typography variant="body2">Reason: {integration.reason || 'N/A'}</Typography>
-                <Typography variant="body2">Created: {integration.createdAt}</Typography>
-              </Box>
-            )}
-          </Stack>
+    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 2 }}>
+      <Stack spacing={2} alignItems="center">
+        <Avatar src={integration.logo} alt={integration.title} sx={{ width: 56, height: 56, mb: 1 }} />
+        <Typography variant="h6" align="center">{integration.title || integration.sectionName || 'No Title'}</Typography>
+        <Typography variant="body2" color="text.secondary" align="center">
+          {integration.description || 'No description provided.'}
+        </Typography>
+        <Divider sx={{ width: '100%' }} />
+        <Box sx={{ width: '100%' }}>
+          {integration.sectionName && (
+            <Typography variant="subtitle2">Section: {integration.sectionName}</Typography>
+          )}
+          {integration.shaftNumbers && (
+            <Typography variant="subtitle2">Shaft Numbers: {integration.shaftNumbers}</Typography>
+          )}
+          {integration.medicalFee && (
+            <Typography variant="body2">Medical Fee: {integration.medicalFee}</Typography>
+          )}
+          {integration.regFee && (
+            <Typography variant="body2">Registration Fee: {integration.regFee}</Typography>
+          )}
+          {integration.startContractDate && (
+            <Typography variant="body2">Contract Start: {integration.startContractDate}</Typography>
+          )}
+          {integration.endContractDate && (
+            <Typography variant="body2">Contract End: {integration.endContractDate}</Typography>
+          )}
+          {integration.status && (
+            <Typography variant="body2">Status: {integration.status}</Typography>
+          )}
+          {integration.reason && (
+            <Typography variant="body2">Reason: {integration.reason}</Typography>
+          )}
+          {integration.createdAt && (
+            <Typography variant="body2">Created: {integration.createdAt}</Typography>
+          )}
+        </Box>
+      </Stack>
     </Card>
   );
 }

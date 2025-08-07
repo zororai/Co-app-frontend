@@ -28,8 +28,11 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
-import { useRouter } from 'next/navigation';
-import { paths } from '@/paths';
+import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function noop(): void {
   // do nothing
@@ -71,11 +74,11 @@ export function CustomersTable({
   onPageChange,
   onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
-  const router = useRouter();
   
   // Local state for pagination if not controlled by parent
   const [internalPage, setInternalPage] = React.useState(page);
   const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
+// import { useRouter } from 'next/navigation';
 
   // Use controlled or internal state
   const currentPage = onPageChange ? page : internalPage;
@@ -86,9 +89,29 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Navigation function for View Attached Shaft button
-  const handleViewAttachedShaft = (customerId: string) => {
-    router.push(paths.dashboard.integrations);
+
+  // State for attached shaft dialog
+  const [shaftDialogOpen, setShaftDialogOpen] = React.useState(false);
+  const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
+  const [shaftLoading, setShaftLoading] = React.useState(false);
+  const [shaftError, setShaftError] = React.useState<string | null>(null);
+  const [shaftCustomerId, setShaftCustomerId] = React.useState<string | null>(null);
+
+  // Handler to open dialog and fetch shaft assignments
+  const handleViewAttachedShaft = async (customerId: string) => {
+    setShaftDialogOpen(true);
+    setShaftLoading(true);
+    setShaftError(null);
+    setShaftAssignments([]);
+    setShaftCustomerId(customerId);
+    try {
+      const data = await authClient.fetchShaftAssignmentsByMiner(customerId);
+      setShaftAssignments(Array.isArray(data) ? data : [data]);
+    } catch (e: any) {
+      setShaftError(e.message || 'Failed to fetch shaft assignments');
+    } finally {
+      setShaftLoading(false);
+    }
   };
 
   // Filter the rows based on search and filters
@@ -335,6 +358,28 @@ export function CustomersTable({
         }}
         customer={selectedCustomer}
       />
+
+      {/* Shaft Assignments Dialog */}
+      <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Attached Shaft Assignments</DialogTitle>
+        <DialogContent>
+          {shaftLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+              <CircularProgress />
+            </Box>
+          ) : shaftError ? (
+            <Typography color="error">{shaftError}</Typography>
+          ) : shaftAssignments.length === 0 ? (
+            <Typography>No shaft assignments found for this customer.</Typography>
+          ) : (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              {shaftAssignments.map((assignment, idx) => (
+                <IntegrationCard key={assignment.id || idx} integration={assignment} />
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
