@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 
@@ -143,7 +142,7 @@ class AuthClient {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': '*/*',
                     'Authorization': `Bearer ${token}`,
                 },
                 credentials: 'include',
@@ -357,6 +356,44 @@ class AuthClient {
         }
         try {
             const response = await fetch('http://localhost:1000/api/companies', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch companies');
+            }
+            const text = await response.text();
+            if (!text) {
+                return [];
+            }
+            try {
+                const data = JSON.parse(text);
+                return Array.isArray(data) ? data : (data.companies || []);
+            } catch (parseError) {
+                console.error('Error parsing JSON:', parseError);
+                console.log('Raw response:', text);
+                return [];
+            }
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+            return [];
+        }
+    }
+
+    async fetchCompaniesApproved(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/companies/status/approved', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -827,7 +864,7 @@ class AuthClient {
     cell: string;
     nationId: string;
     position: string;
-    cooperative: string;
+cooperativename: string;
     idPicture: string;  // Changed to string for base64
     teamMembers: Array<{
       name: string;
@@ -858,7 +895,7 @@ class AuthClient {
           cellNumber: data.cell,
           nationIdNumber: data.nationId,
           position: data.position,
-          cooperativeName: data.cooperative,
+          cooperativename: data.cooperativename,
           idPicture: data.idPicture,  // Send base64 image string
           teamMembers: data.teamMembers
         })
@@ -898,20 +935,29 @@ class AuthClient {
       window.location.href = '/auth/signin';
       return null;
     }
-    
-      const response = await fetch('http://localhost:1000/api/shaft-assignments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-        body: JSON.stringify(shaftAssignmentData),
-      });
-  
-      return await response.json();
-    } 
+    const response = await fetch('http://localhost:1000/api/shaft-assignments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify(shaftAssignmentData),
+    });
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(text || `Failed with status ${response.status}`);
+    }
+    if (!text) {
+      return null;
+    }
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  }
   
 
   /**

@@ -94,9 +94,7 @@ export default function Page(): React.JSX.Element {
           registrationDate: row.registrationDate ?? '',
           position: row.position ?? '',
           teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
+          cooperativename: row.cooperativename ?? row.cooperativename ?? '', // Map to correct property
           numShafts: row.numShafts ?? 0,
           attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
         }));

@@ -44,7 +44,7 @@ export interface Customer {
   address: string;
   phone: string;
   position: string;
-  cooperative: string;
+  cooperativename: string;
   numShafts: number;
   status: 'APPROVED' | 'REJECTED';
   reason: string;
@@ -214,17 +214,15 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
+              <TableCell>RegistrationNumber</TableCell>
+                       <TableCell>Name Of Cooperative</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Surname</TableCell>
-              <TableCell>Id Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Phone number</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Name Of Cooperative</TableCell>
+              <TableCell>Nationality ID Number</TableCell>
               <TableCell>No.Of.Shafts</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>View</TableCell>
-              <TableCell>Attached Shaft</TableCell>
+              <TableCell>View Syndicate Details</TableCell>
+              <TableCell>View Attached Shafts</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -244,14 +242,14 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
+                   <TableCell>{row.registrationNumber}</TableCell>
+                     <TableCell>{row.cooperativename}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
-                  <TableCell>{row.position}</TableCell>
-                  <TableCell>{row.cooperativename}</TableCell>
-                  <TableCell>{row.registrationNumber}</TableCell>
+                  
+                
+                  <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -286,16 +284,19 @@ export function CustomersTable({
                       }}>View Application Details</button>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <button style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}>
-                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>&#128065;</span>
-                      </button>
+                      <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleViewCustomer(row.id)}
+                        style={{
+                          background: 'none',
+                          border: '1px solid #06131fff',
+                          color: '#081b2fff',
+                          borderRadius: '6px',
+                          padding: '2px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                      }}>View Attached Shaft</button>
                     </Box>
                   </TableCell>
                 </TableRow>

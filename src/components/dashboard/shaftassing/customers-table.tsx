@@ -28,7 +28,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
-import { ShaftAttachmentDialog } from './shaft-attachment-dialog';
+import { ShaftAttachmentDialog } from '@/components/dashboard/shaftassing/shaft-attachment-dialog';
 
 function noop(): void {
   // do nothing

@@ -178,10 +178,8 @@ export function CustomersTable({
       setDiscussionReason('');
       setShowReasonField(false);
 
-      // Refresh the table data if onRefresh callback is provided
-      if (onRefresh) {
-        onRefresh();
-      }
+      // Always refresh the table data
+      refreshTableData();
 
     } catch (error) {
       console.error('Error updating section status:', error);

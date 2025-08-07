@@ -21,15 +21,15 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
+      <DialogTitle 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
           alignItems: 'center',
           p: 2
         }}
       >
-        Customer Details
+        <Typography variant="h6">Customer Details</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>

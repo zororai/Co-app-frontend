@@ -217,12 +217,13 @@ View Company Miner Reg Status Health
                   }}
                 />
               </TableCell>
+              <TableCell>Registration Number</TableCell>
          <TableCell>Company Name</TableCell>
-                       <TableCell>Company Address</TableCell>
-                       <TableCell>Contact Number</TableCell>
-                       <TableCell>Email</TableCell>
-                       <TableCell>Owner Name</TableCell>
-                       <TableCell>Owner Surname</TableCell>
+         <TableCell>Company Address</TableCell>
+         <TableCell>Contact Number</TableCell>
+         <TableCell>Email</TableCell>
+         <TableCell>Owner Name</TableCell>
+         <TableCell>Owner Surname</TableCell>
                        <TableCell>Owner ID</TableCell>
                        <TableCell>Status</TableCell>
                        <TableCell>Actions</TableCell>
@@ -246,12 +247,12 @@ View Company Miner Reg Status Health
                       }}
                     />
                   </TableCell>
-                  
-                                    <TableCell>{row.companyName}</TableCell>
-                                    <TableCell>{row.address}</TableCell>
-                                    <TableCell>{row.cellNumber}</TableCell>
-                                    <TableCell>{row.email}</TableCell>
-                                    <TableCell>{row.ownerName}</TableCell>
+                  <TableCell>{row.registrationNumber}</TableCell>
+                  <TableCell>{row.companyName}</TableCell>
+                  <TableCell>{row.address}</TableCell>
+                  <TableCell>{row.cellNumber}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.ownerName}</TableCell>
                                     <TableCell>{row.ownerSurname}</TableCell>
                                     <TableCell>{row.ownerIdNumber}</TableCell>
                   

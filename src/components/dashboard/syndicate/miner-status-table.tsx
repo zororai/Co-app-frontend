@@ -216,6 +216,7 @@ View Company Miner Reg Status Health
                   }}
                 />
               </TableCell>
+              <TableCell>Registration Number</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Surname</TableCell>
               <TableCell>Id Number</TableCell>
@@ -246,6 +247,7 @@ View Company Miner Reg Status Health
                       }}
                     />
                   </TableCell>
+                  <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>

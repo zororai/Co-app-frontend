@@ -149,7 +149,7 @@ export function CompanyTable({
   return (
     <Card>
       {/* Action Buttons */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+     <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
         <Button
           variant="contained"
           sx={{
@@ -157,9 +157,9 @@ export function CompanyTable({
             color: '#fff',
             '&:hover': { bgcolor: '#4d3fd6' }
           }}
-          onClick={() => handleRedirect('/dashboard/customers')}
+          onClick={() => handleRedirect('/dashboard/shaftassign')}
         >
-          Syndicate
+          View Syndicate
         </Button>
         <Button
           variant="contained"
@@ -168,9 +168,9 @@ export function CompanyTable({
             color: '#fff',
             '&:hover': { bgcolor: '#4d3fd6' }
           }}
-          onClick={() => handleRedirect('/dashboard/company')}
+          onClick={() => handleRedirect('/dashboard/companyshaft')}
         >
-          Company
+          View Company
         </Button>
       </Box>
       <Divider />
@@ -234,9 +234,10 @@ export function CompanyTable({
               <TableCell>Company Address</TableCell>
               <TableCell>Contact Number</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Number Of Shaft</TableCell>
           <TableCell>Status</TableCell>
               <TableCell>View  Miner Details</TableCell>
-              <TableCell>View Attached Shafts</TableCell>
+              <TableCell>Attached Shaft</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -261,7 +262,7 @@ export function CompanyTable({
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
                   <TableCell>{row.email}</TableCell>
-                  
+                  <TableCell>{row.shaftNumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -484,7 +485,7 @@ export function CompanyTable({
                         }}
                         onClick={() => alert(row.reason || 'No reason provided')}
                       >
-                      View Attached Shafts
+                      Shaft Assignment
                       </button>
                       <button 
                         style={{

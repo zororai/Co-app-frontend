@@ -26,7 +26,13 @@ export default function Page(): React.JSX.Element {
 
   const fetchSection = React.useCallback(async () => {
     const data = await authClient.fetchSection();
-    setCustomers(data);
+    // Ensure each customer has cooperativeName and cooperative properties
+    const mappedData = data.map((c: any) => ({
+      ...c,
+      cooperativeName: c.cooperativeName ?? '',
+      cooperative: c.cooperative ?? ''
+    }));
+    setCustomers(mappedData);
   }, []);
 
   React.useEffect(() => {

@@ -12,8 +12,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/shaftreg/customers-table';
-import type { Customer } from '@/components/dashboard/shaftreg/customers-table';
+import { CustomersTable } from '@/components/dashboard/shaftassing/customers-table';
+import type { Customer } from '@/components/dashboard/shaftassing/customers-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -32,7 +32,13 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     (async () => {
       const data = await authClient.fetchApprovedminer();
-      setCustomers(data);
+      // Ensure each customer has cooperativeName and cooperative properties
+      const normalizedData = data.map((customer: any) => ({
+        ...customer,
+        cooperativeName: customer.cooperativeName ?? '',
+        cooperative: customer.cooperative ?? ''
+      }));
+      setCustomers(normalizedData);
     })();
   }, []);
 
