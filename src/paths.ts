@@ -13,6 +13,7 @@ export const paths = {
     sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
     oreManagement: '/dashboard/ore-management',
+    shaftassignmentstatus: '/dashboard/shaftassignmentstatus',
   },
   errors: { notFound: '/errors/not-found' },
 } as const;

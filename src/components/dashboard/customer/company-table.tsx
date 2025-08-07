@@ -234,8 +234,9 @@ export function CompanyTable({
               <TableCell>Company Address</TableCell>
               <TableCell>Contact Number</TableCell>
               <TableCell>Email</TableCell>
-          <TableCell>Status</TableCell>
-              <TableCell>View  Miner Details</TableCell>
+              <TableCell>No of Shaft Assignments</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>View Miner Details</TableCell>
               <TableCell>View Attached Shafts</TableCell>
             </TableRow>
           </TableHead>
@@ -261,7 +262,7 @@ export function CompanyTable({
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
                   <TableCell>{row.email}</TableCell>
-                  
+                  <TableCell>{row.shaftnumber}</TableCell>  
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
