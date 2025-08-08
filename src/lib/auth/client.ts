@@ -41,6 +41,73 @@ export interface ResetPasswordParams {
 
 class AuthClient {
     /**
+     * Create a new user
+     */
+    async createUser(userData: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        idNumber: string;
+        address: string;
+        role: string;
+        location: string;
+        position: string;
+        isActive: boolean;
+        notes: string;
+    }): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            // Map frontend fields to backend expected fields
+            const requestData = {
+                name: userData.firstName,
+                surname: userData.lastName,
+                password: Math.random().toString(36).slice(-10), // Generate random password
+                idNumber: userData.idNumber,
+                address: userData.address,
+                cellNumber: userData.phone,
+                email: userData.email,
+                position: userData.position,
+                role: userData.role,
+                status: userData.isActive ? 'active' : 'inactive',
+                notes: userData.notes,
+                reason: '' // This field is empty as it wasn't specified in the frontend
+            };
+
+            const response = await fetch('http://localhost:1000/api/users/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(requestData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to create user');
+            }
+
+            const data = await response.json();
+            return { success: true, data, password: requestData.password };
+        } catch (error) {
+            console.error('Error creating user:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
+    /**
      * Fetch only approved sections from the backend
      */
     async fetchSectionsApproved(): Promise<any[]> {
@@ -73,6 +140,68 @@ class AuthClient {
     /**
      * Fetch all sections from the backend
      */
+    /**
+     * Fetch all users from the backend
+     */
+    async fetchUsers(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/users', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.users || [];
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            return [];
+        }
+    }
+    
+    /**
+     * Fetch user details by ID
+     */
+    async fetchUserById(userId: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/users/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch user details');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Error fetching user with ID ${userId}:`, error);
+            return null;
+        }
+    }
+
     async fetchSections(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
