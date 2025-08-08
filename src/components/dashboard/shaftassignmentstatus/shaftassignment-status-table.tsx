@@ -273,8 +273,10 @@ export function CustomersTable({
               </TableCell>
            <TableCell>Section</TableCell>
                         <TableCell>Shaft Numbers</TableCell>
-                        
-                    
+                        <TableCell>Medical Fee</TableCell>
+                        <TableCell>Registration Fee</TableCell>
+                        <TableCell>Contract Start</TableCell>
+                        <TableCell>Contract End</TableCell>
                         <TableCell>Status</TableCell>
                         <TableCell>Reason</TableCell>
                        
@@ -301,7 +303,11 @@ export function CustomersTable({
                     />
                   </TableCell>
                   <TableCell>{row.sectionName}</TableCell>
-                  <TableCell>{row.numberOfShaft}</TableCell>
+                  <TableCell>{row.shaftNumbers}</TableCell>
+                  <TableCell>{row.medicalFee}</TableCell>
+                  <TableCell>{row.regFee}</TableCell>
+                  <TableCell>{row.startContractDate}</TableCell>
+                  <TableCell>{row.endContractDate}</TableCell>
               
                   <TableCell>                    
                                   

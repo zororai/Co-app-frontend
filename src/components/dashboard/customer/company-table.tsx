@@ -27,6 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
+import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -34,6 +35,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
+import { Customer } from './customers-table';
 
 function noop(): void {
   // do nothing
@@ -79,6 +81,43 @@ export function CompanyTable({
   const [companyDialogData, setCompanyDialogData] = useState<any | null>(null);
   const [companyDialogLoading, setCompanyDialogLoading] = useState(false);
   const [companyDialogError, setCompanyDialogError] = useState<string | null>(null);
+
+  const [shaftDialogOpen, setShaftDialogOpen] = React.useState(false);
+    const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
+    const [shaftLoading, setShaftLoading] = React.useState(false);
+    const [shaftError, setShaftError] = React.useState<string | null>(null);
+    const [shaftCustomerId, setShaftCustomerId] = React.useState<string | null>(null);
+
+    const handleViewAttachedShaft = async (customerId: string) => {
+      setShaftDialogOpen(true);
+      setShaftLoading(true);
+      setShaftError(null);
+      setShaftAssignments([]);
+      setShaftCustomerId(customerId);
+      try {
+        const data = await authClient.fetchShaftAssignmentsByMiner(customerId);
+        setShaftAssignments(Array.isArray(data) ? data : [data]);
+      } catch (e: any) {
+        setShaftError(e.message || 'Failed to fetch shaft assignments');
+      } finally {
+        setShaftLoading(false);
+      }
+    };
+    const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
+    const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+    
+    const handleViewCustomer = async (customerId: string) => {
+      try {
+        const customerDetails = await authClient.fetchCustomerDetails(customerId);
+        if (customerDetails) {
+          setSelectedCustomer(customerDetails);
+          setIsViewDialogOpen(true);
+        }
+      } catch (error) {
+        console.error('Error fetching customer details:', error);
+        alert('Failed to load customer details');
+      }
+    };
 
   const handleOpenCompanyDialog = async (id: string) => {
     setCompanyDialogOpen(true);
@@ -159,7 +198,7 @@ export function CompanyTable({
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
-          Syndicate
+        View Syndicate
         </Button>
         <Button
           variant="contained"
@@ -170,7 +209,7 @@ export function CompanyTable({
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
-          Company
+        View Company
         </Button>
       </Box>
       <Divider />
@@ -483,7 +522,7 @@ export function CompanyTable({
                           cursor: 'pointer',
                           fontWeight: 500,
                         }}
-                        onClick={() => alert(row.reason || 'No reason provided')}
+                        onClick={() => handleViewAttachedShaft(row.id)}
                       >
                       View Attached Shafts
                       </button>
@@ -523,6 +562,27 @@ export function CompanyTable({
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
       />
+          {/* Shaft Assignments Dialog */}
+            <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
+              <DialogTitle>Attached Shaft Assignments</DialogTitle>
+              <DialogContent>
+                {shaftLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : shaftError ? (
+                  <Typography color="error">{shaftError}</Typography>
+                ) : shaftAssignments.length === 0 ? (
+                  <Typography>No shaft assignments found for this customer.</Typography>
+                ) : (
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    {shaftAssignments.map((assignment, idx) => (
+                      <IntegrationCard key={assignment.id || idx} integration={assignment} />
+                    ))}
+                  </Box>
+                )}
+              </DialogContent>
+            </Dialog>
     </Card>
   );
 }

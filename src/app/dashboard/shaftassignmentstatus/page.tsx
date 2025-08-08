@@ -14,8 +14,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/sectioncreationstatus/section-status-table';
-import type { Customer } from '@/components/dashboard/sectioncreationstatus/section-status-table';
+import { CustomersTable } from '@/components/dashboard/shaftassignmentstatus/shaftassignment-status-table';
+import type { Customer } from '@/components/dashboard/shaftassignmentstatus/shaftassignment-status-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -59,7 +59,7 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await authClient.fetchSectionstatus();
+        const data = await authClient.fetchShaftstatus();
         console.log('Fetched data from API:', data);
         // Normalize status values to match expected enum
         const normalizedData = data.map((customer: any) => ({
@@ -185,7 +185,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Section Creation Status Health</Typography>
+          <Typography variant="h4">Shaft Assignment Status Health</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}

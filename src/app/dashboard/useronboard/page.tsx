@@ -14,8 +14,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/sectioncreationstatus/section-status-table';
-import type { Customer } from '@/components/dashboard/sectioncreationstatus/section-status-table';
+import { CustomersTable } from '@/components/dashboard/syndicate/miner-status-table';
+import type { Customer } from '@/components/dashboard/syndicate/miner-status-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -59,7 +59,7 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     (async () => {
       try {
-        const data = await authClient.fetchSectionstatus();
+        const data = await authClient.fetchPendingCustomers();
         console.log('Fetched data from API:', data);
         // Normalize status values to match expected enum
         const normalizedData = data.map((customer: any) => ({
@@ -75,7 +75,97 @@ export default function Page(): React.JSX.Element {
       } catch (error) {
         console.error('API call failed, using mock data:', error);
         // Use mock data when API fails
-      
+        const mockData = [
+          {
+            id: 'mock-1',
+            name: 'John',
+            surname: 'Doe',
+            nationIdNumber: '1234567890123',
+            nationId: '1234567890123',
+            address: '123 Main St, City',
+            cellNumber: '+27123456789',
+            phone: '+27123456789',
+            email: 'john.doe@example.com',
+            status: 'PENDING',
+            reason: 'Under review',
+            registrationNumber: 'REG001',
+            registrationDate: '2024-01-15',
+            position: 'Miner',
+            teamMembers: [],
+            cooperativeDetails: [],
+            cooperativeName: 'Sample Cooperative',
+            cooperative: 'Sample Cooperative',
+            numShafts: 2,
+            attachedShaft: true
+          },
+          {
+            id: 'mock-2',
+            name: 'Jane',
+            surname: 'Smith',
+            nationIdNumber: '9876543210987',
+            nationId: '9876543210987',
+            address: '456 Oak Ave, Town',
+            cellNumber: '+27987654321',
+            phone: '+27987654321',
+            email: 'jane.smith@example.com',
+            status: 'APPROVED',
+            reason: 'All requirements met',
+            registrationNumber: 'REG002',
+            registrationDate: '2024-01-20',
+            position: 'Team Leader',
+            teamMembers: [],
+            cooperativeDetails: [],
+            cooperativeName: 'Another Cooperative',
+            cooperative: 'Another Cooperative',
+            numShafts: 1,
+            attachedShaft: false
+          },
+          {
+            id: 'mock-3',
+            name: 'Push',
+            surname: 'Back',
+            nationIdNumber: '1111111111111',
+            nationId: '1111111111111',
+            address: '789 Pine Rd, Village',
+            cellNumber: '+27111111111',
+            phone: '+27111111111',
+            email: 'push.back@example.com',
+            status: 'PUSHED_BACK',
+            reason: 'Need more info',
+            registrationNumber: 'REG003',
+            registrationDate: '2024-01-25',
+            position: 'Miner',
+            teamMembers: [],
+            cooperativeDetails: [],
+            cooperativeName: 'PushBack Cooperative',
+            cooperative: 'PushBack Cooperative',
+            numShafts: 1,
+            attachedShaft: false
+          },
+          {
+            id: 'mock-4',
+            name: 'Rick',
+            surname: 'Rejected',
+            nationIdNumber: '2222222222222',
+            nationId: '2222222222222',
+            address: '101 Maple St, Hamlet',
+            cellNumber: '+27222222222',
+            phone: '+27222222222',
+            email: 'rick.rejected@example.com',
+            status: 'REJECTED',
+            reason: 'Incomplete docs',
+            registrationNumber: 'REG004',
+            registrationDate: '2024-01-30',
+            position: 'Miner',
+            teamMembers: [],
+            cooperativeDetails: [],
+            cooperativeName: 'Rejected Cooperative',
+            cooperative: 'Rejected Cooperative',
+            numShafts: 1,
+            attachedShaft: false
+          }
+        ];
+        setCustomers(mockData as Customer[]);
       }
     })();
   }, []);
@@ -185,7 +275,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Section Creation Status Health</Typography>
+          <Typography variant="h4">Syndicate Registration Miner Status Health</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}

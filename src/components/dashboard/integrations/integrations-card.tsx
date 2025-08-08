@@ -59,11 +59,28 @@ export function IntegrationCard({ integration }: IntegrationCardProps): React.JS
           {integration.startContractDate && (
             <Typography variant="body2">Contract Start: {integration.startContractDate}</Typography>
           )}
+
           {integration.endContractDate && (
             <Typography variant="body2">Contract End: {integration.endContractDate}</Typography>
           )}
           {integration.status && (
-            <Typography variant="body2">Status: {integration.status}</Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 2,
+                bgcolor: 
+                  integration.status === 'APPROVED' ? '#d0f5e8' : '#ffebee',
+                color: integration.status === 'APPROVED' ? '#1b5e20' : 
+                       integration.status === 'REJECTED' ? '#c62828' : 
+                       integration.status === 'PENDING' ? 'red' : 
+                       integration.status === 'PUSH BACK' ? '#0d47a1' : 
+                       'text.primary' 
+              }}
+            >
+              Status: {integration.status}
+            </Typography>
           )}
           {integration.reason && (
             <Typography variant="body2">Reason: {integration.reason}</Typography>

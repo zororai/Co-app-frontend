@@ -761,6 +761,35 @@ class AuthClient {
             return [];
         }
     }
+    async fetchShaftstatus(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/shaft-assignments', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch customers');
+            }
+            const data = await response.json();
+            
+            return Array.isArray(data) ? data : data.customers || [];
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            return [];
+        }
+    }
+
      async fetchApprovedminer(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -1072,6 +1101,38 @@ cooperativename: string;
     }
   }
 
+  async setShaftAssignmentForApproval(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/sections/${id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to approve section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error approving section:', error);
+      return null;
+    }
+  }
+
   /**
    * Reject a section
    * @param id The ID of the section to reject
@@ -1144,6 +1205,44 @@ cooperativename: string;
       }
     } catch (error) {
       console.error('Error pushing back section:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Import miners data to the backend
+   * @param data The miners data to import
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async importMinersData(data: any[]): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch('/api/miners/import', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to import data: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error sending imported data:', error);
       return null;
     }
   }
