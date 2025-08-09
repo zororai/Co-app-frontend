@@ -143,6 +143,126 @@ class AuthClient {
     /**
      * Fetch all users from the backend
      */
+   
+
+    /**
+     * Register a new security company
+     * @param securityCompanyData The security company data to register
+     * @returns A promise that resolves to the response data or error
+     */
+    async registerSecurityCompany(securityCompanyData: {
+        companyName: string;
+        registrationNumber: string;
+        contactPhone: string;
+        contactPersonName: string;
+        contactEmail: string;
+        siteAddress: string;
+        serviceType: string;
+        headOfficeAddress: string;
+        numberOfWorks: string;
+        startContractDate: string;
+        endContractDate: string;
+        emergencyContactPhone: string;
+        emergencyContactName: string;
+        locations: string[];
+        validTaxClearance: string;
+        companyLogo: string;
+        getCertificateOfCooperation: string;
+        operatingLicense: string;
+        proofOfInsurance: string;
+        siteRiskAssessmentReport: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            const response = await fetch('http://localhost:1000/api/security-companies/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(securityCompanyData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to register security company');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error registering security company:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
+    async  fetchsecurityonboarding(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/security-companies/register', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.users || [];
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            return [];
+        }
+    }
+
+    async fetchSecurityCompany(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/security-companies', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.securityCompanies || [];
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            return [];
+        }
+    }
+    
     async fetchUsers(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

@@ -5,7 +5,15 @@ import { iconMap } from './icon-map';
 export const navItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   { key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
-  { key: 'user-admin-onboarding', title: 'User Onboarding', href: paths.dashboard.useronboard, icon: 'users' },
+  { key: 'user-admin-onboarding', 
+    title: 'User Onboarding',
+    icon: 'users',
+    items: [
+      { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'id-card'},
+      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'id-card'},
+    ], 
+    
+   },
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
   {
     key: 'site-management',

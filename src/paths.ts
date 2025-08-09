@@ -10,6 +10,7 @@ export const paths = {
     useronboard: '/dashboard/useronboard',
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
+    securityonboarding: '/dashboard/securityonboarding',
     sectioncreation: '/dashboard/sectioncreation',
     sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
