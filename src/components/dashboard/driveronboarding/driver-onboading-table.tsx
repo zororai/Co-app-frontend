@@ -315,12 +315,13 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Company Name</TableCell>
-              <TableCell>Contact Person</TableCell>
-              <TableCell>Type</TableCell>
+              <TableCell>Driver</TableCell>
+              <TableCell>License</TableCell>
+              <TableCell>Contact</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Workers</TableCell>
-              <TableCell>Contract Expiry</TableCell>
+              <TableCell>License Status</TableCell>
+              <TableCell>Assigned Vehicle</TableCell>
+              <TableCell>Experience</TableCell>
               <TableCell>Actions</TableCell>
               
      
