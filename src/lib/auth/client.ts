@@ -201,6 +201,114 @@ class AuthClient {
             return null;
         }
     }
+    
+    /**
+     * Approve a user by ID
+     */
+    async approveUser(userId: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/users/${userId}/approve`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to approve user');
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error(`Error approving user with ID ${userId}:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+            };
+        }
+    }
+    
+    /**
+     * Reject a user by ID with reason
+     */
+    async rejectUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/users/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to reject user');
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error(`Error rejecting user with ID ${userId}:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+            };
+        }
+    }
+    
+    /**
+     * Push back a user by ID with reason
+     */
+    async pushbackUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/users/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to push back user');
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error(`Error pushing back user with ID ${userId}:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+            };
+        }
+    }
 
     async fetchSections(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');

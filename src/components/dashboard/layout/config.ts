@@ -60,7 +60,7 @@ export const navItems = [
       { key: 'permission-list', title: 'Miner Registration Status', href: paths.dashboard.Syndicate, icon: 'id-card' },
       { key: 'section-creation', title: 'Section Create Status', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
       { key: 'shaft-assignment-status', title: 'Shaft Assignment Status', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
-
+      { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'id-card' },
     ],
   },
 ] satisfies NavItemConfig[];

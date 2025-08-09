@@ -323,7 +323,8 @@ export function CustomersTable({
               <TableCell>Role</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>View User Details</TableCell>
+
               
      
               
@@ -361,7 +362,7 @@ export function CustomersTable({
                   <TableCell>{row.email || ''}</TableCell>
                   <TableCell>{row.position || ''}</TableCell>
                   <TableCell>{row.role || ''}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
+                  <TableCell>{row.Location || ''}</TableCell>
                   
                   
                   <TableCell>
@@ -402,6 +403,7 @@ export function CustomersTable({
                       }}>View User Details</button>
                     </Box>
                   </TableCell>
+       
                
                 </TableRow>
               );
@@ -434,6 +436,7 @@ export function CustomersTable({
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
+        onRefresh={refreshTableData}
       />
     </Card>
   );
