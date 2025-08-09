@@ -39,7 +39,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddSecurityCompanyDialog } from '@/components/dashboard/securityonboarding/add-security-company-dialog';
+import { AddDriverDialog } from '@/components/dashboard/driveronboarding/add-driver-dialog-box';
 
 
 export default function Page(): React.JSX.Element {
@@ -278,7 +278,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
       </Button>
       
       {/* Add Security Company Dialog */}
-      <AddSecurityCompanyDialog 
+      <AddDriverDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 
         onRefresh={onRefresh}

@@ -1603,6 +1603,96 @@ cooperativename: string;
       return null;
     }
   }
+
+  /**
+   * Register a new driver
+   * @param driverData The driver data to register
+   * @returns A promise that resolves to the response data or null on error
+   */
+  async registerDriver(driverData: {
+    firstName: string;
+    lastName: string;
+    idNumber: string;
+    dateOfBirth: any; // dayjs.Dayjs | null
+    licenseNumber: string;
+    licenseClass: string;
+    licenseExpiryDate: any; // dayjs.Dayjs | null
+    yearsOfExperience: string;
+    phoneNumber: string;
+    emailAddress: string;
+    address: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+    licenseDocument: File | null;
+    idDocument: File | null;
+    additionalNotes: string;
+  }): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      // Create FormData for file uploads
+      const formData = new FormData();
+      
+      // Convert date objects to ISO strings for backend
+      const requestData = {
+        firstName: driverData.firstName,
+        lastName: driverData.lastName,
+        idNumber: driverData.idNumber,
+        dateOfBirth: driverData.dateOfBirth ? driverData.dateOfBirth.format('YYYY-MM-DD') : null,
+        licenseNumber: driverData.licenseNumber,
+        licenseClass: driverData.licenseClass,
+        licenseExpiryDate: driverData.licenseExpiryDate ? driverData.licenseExpiryDate.format('YYYY-MM-DD') : null,
+        yearsOfExperience: parseInt(driverData.yearsOfExperience) || 0,
+        phoneNumber: driverData.phoneNumber,
+        emailAddress: driverData.emailAddress,
+        address: driverData.address,
+        emergencyContactName: driverData.emergencyContactName,
+        emergencyContactPhone: driverData.emergencyContactPhone,
+        additionalNotes: driverData.additionalNotes
+      };
+      
+      // Add JSON data to FormData
+      formData.append('driverData', new Blob([JSON.stringify(requestData)], {
+        type: 'application/json'
+      }));
+      
+      // Add files if they exist
+      if (driverData.licenseDocument) {
+        formData.append('licenseDocument', driverData.licenseDocument);
+      }
+      
+      if (driverData.idDocument) {
+        formData.append('idDocument', driverData.idDocument);
+      }
+
+      const response = await fetch('http://localhost:1000/api/drivers/register', {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type header when using FormData, browser will set it with boundary
+        },
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to register driver: ${response.statusText}`);
+      }
+
+      const data = await response.json().catch(() => response.text());
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error registering driver:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
 }
 
 export const authClient = new AuthClient();
