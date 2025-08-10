@@ -17,6 +17,7 @@ export const paths = {
     oreManagement: '/dashboard/ore-management',
     securityonboardingstatus: '/dashboard/securityonboardingstatus',
     driveronboarding: '/dashboard/driveronboarding',
+    vehicleonboarding: '/dashboard/vehicleonboarding',
     driveronboardingstatus: '/dashboard/driveronboardingstatus',
     useronboardstatus: '/dashboard/useronboardstatus',
     shaftassignmentstatus: '/dashboard/shaftassignmentstatus',
