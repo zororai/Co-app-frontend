@@ -25,54 +25,99 @@ import { authClient } from '@/lib/auth/client';
 import { Snackbar, Alert } from '@mui/material';
 import dayjs from 'dayjs';
 
-interface AddDriverDialogProps {
+interface AddVehicleDialogProps {
   open: boolean;
   onClose: () => void;
   onRefresh?: () => void;
-  onSubmit?: (driverData: DriverFormData) => void;
+  onSubmit?: (vehicleData: VehicleFormData) => void;
 }
 
-export interface DriverFormData {
-  firstName: string;
-  lastName: string;
-  idNumber: string;
-  dateOfBirth: dayjs.Dayjs | null;
-  licenseNumber: string;
-  licenseClass: string;
-  licenseExpiryDate: dayjs.Dayjs | null;
-  yearsOfExperience: string;
-  phoneNumber: string;
-  emailAddress: string;
-  address: string;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  licenseDocument: string | null; // Changed to string for base64
-  idDocument: string | null; // Changed to string for base64
-  additionalNotes: string;
+export interface VehicleFormData {
+  regNumber: string;
+  vehicleType: string;
+  make: string;
+  model: string;
+  year: string;
+  assignedDriver: string;
+  lastServiceDate: dayjs.Dayjs | null;
+  ownerName: string;
+  ownerAddress: string;
+  ownerCellNumber: string;
+  ownerIdNumber: string;
+  idPicture: File | null;
+  truckPicture: File | null;
+  registrationBook: File | null;
 }
 
-export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDriverDialogProps): React.JSX.Element {
+export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehicleDialogProps): React.JSX.Element {
   const [loading, setLoading] = React.useState(false);
   const [notification, setNotification] = React.useState<{type: 'success' | 'error', message: string} | null>(null);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
-  const [formData, setFormData] = React.useState<DriverFormData>({
-    firstName: '',
-    lastName: '',
-    idNumber: '',
-    dateOfBirth: null,
-    licenseNumber: '',
-    licenseClass: '',
-    licenseExpiryDate: null,
-    yearsOfExperience: '',
-    phoneNumber: '',
-    emailAddress: '',
-    address: '',
-    emergencyContactName: '',
-    emergencyContactPhone: '',
-    licenseDocument: null,
-    idDocument: null,
-    additionalNotes: '',
+  const [approvedDrivers, setApprovedDrivers] = React.useState<Array<{id: string, name: string, surname: string}>>([]);
+  const [formData, setFormData] = React.useState<VehicleFormData>({
+    regNumber: '',
+    vehicleType: '',
+    make: '',
+    model: '',
+    year: '',
+    assignedDriver: '',
+    lastServiceDate: null,
+    ownerName: '',
+    ownerAddress: '',
+    ownerCellNumber: '',
+    ownerIdNumber: '',
+    idPicture: null,
+    truckPicture: null,
+    registrationBook: null,
   });
+  
+  // Fetch approved drivers when component mounts
+  React.useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        const drivers = await authClient.fetchApprovedDrivers();
+        console.log('Fetched approved drivers:', drivers);
+        console.log('Type of drivers:', typeof drivers);
+        
+        // Check if we need to parse the JSON string
+        if (typeof drivers === 'string') {
+          try {
+            const parsedDrivers = JSON.parse(drivers);
+            console.log('Parsed drivers:', parsedDrivers);
+            setApprovedDrivers(parsedDrivers);
+          } catch (parseError) {
+            console.error('Error parsing drivers data:', parseError);
+          }
+        } else {
+          // If it's already an object, ensure it's an array
+          if (Array.isArray(drivers)) {
+            console.log('Drivers is already an array with length:', drivers.length);
+            setApprovedDrivers(drivers);
+          } else {
+            console.log('Drivers is an object but not an array:', drivers);
+            // Check if there's a data property or similar that contains the array
+            const possibleArrays = ['data', 'drivers', 'items', 'results'];
+            for (const key of possibleArrays) {
+              if (drivers && drivers[key] && Array.isArray(drivers[key])) {
+                console.log(`Found array in drivers.${key} with length:`, drivers[key].length);
+                setApprovedDrivers(drivers[key]);
+                break;
+              }
+            }
+          }
+        }
+        
+        // After setting the state, log what we have
+        setTimeout(() => {
+          console.log('Current approvedDrivers state:', approvedDrivers);
+        }, 100);
+      } catch (error) {
+        console.error('Error fetching approved drivers:', error);
+      }
+    };
+    
+    fetchDrivers();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name?: string; value: string } }, child?: React.ReactNode) => {
     const { name, value } = e.target;
@@ -89,57 +134,53 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     });
   };
 
-  const handleFileChange = (field: 'licenseDocument' | 'idDocument', e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        if (event.target && event.target.result) {
-          // Store the base64 string in the form data
-          setFormData({
-            ...formData,
-            [field]: event.target.result as string,
-          });
-        }
-      };
-      
-      // Read the file as a data URL (base64)
-      reader.readAsDataURL(file);
-    }
+  // Handle file input for document fields
+  const handleFileChange = (field: 'idPicture' | 'truckPicture' | 'registrationBook', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setFormData({
+      ...formData,
+      [field]: file,
+    });
   };
 
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
     // Required fields validation
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-    if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
-    if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
-    if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
-    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
+    if (!formData.regNumber) newErrors.regNumber = 'Registration number is required';
+    if (!formData.vehicleType) newErrors.vehicleType = 'Vehicle type is required';
+    if (!formData.make) newErrors.make = 'Make is required';
+    if (!formData.model) newErrors.model = 'Model is required';
+    if (!formData.year) newErrors.year = 'Year is required';
+    if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+    if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
+    if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
+    if (!formData.ownerIdNumber) newErrors.ownerIdNumber = 'Owner ID number is required';
+    if (!formData.ownerCellNumber) newErrors.ownerCellNumber = 'Owner cell number is required';
+    if (!formData.ownerAddress) newErrors.ownerAddress = 'Owner address is required';
     
-    // Email validation if provided
-    if (formData.emailAddress && !/^\S+@\S+\.\S+$/.test(formData.emailAddress)) {
-      newErrors.emailAddress = 'Please enter a valid email address';
+    // Phone number validation
+    if (formData.ownerCellNumber && !/^\+?[0-9\s]+$/.test(formData.ownerCellNumber)) {
+      newErrors.ownerCellNumber = 'Invalid phone number format';
     }
     
-    // Phone number validation (simple format check)
-    if (formData.phoneNumber && !/^[+]?[0-9\s-()]{8,}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid phone number';
+    // ID number validation to allow format like 80-101500D87
+    if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
+      newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
     }
     
-    // ID number validation (simple length check)
-    if (formData.idNumber && formData.idNumber.length < 6) {
-      newErrors.idNumber = 'ID number must be at least 6 characters';
+    // Document validation
+    if (!formData.idPicture) {
+      newErrors.idPicture = 'ID picture is required';
     }
     
-    // Required documents
-    if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
-    if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
+    if (!formData.truckPicture) {
+      newErrors.truckPicture = 'Vehicle picture is required';
+    }
+    
+    if (!formData.registrationBook) {
+      newErrors.registrationBook = 'Registration book is required';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -157,14 +198,15 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     
     setLoading(true);
     try {
-      // Call the API to register the driver
-      const result = await authClient.registerDriver(formData);
+      // Call the API to register the vehicle
+      // Note: This API function needs to be implemented in client.ts
+      const result = await authClient.registerVehicle(formData);
       
       if (result.success) {
         // Show success notification
         setNotification({
           type: 'success',
-          message: 'Driver registered successfully!'
+          message: 'Vehicle registered successfully!'
         });
         
         // If onSubmit is provided, call it with the form data
@@ -186,11 +228,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         // Show error notification
         setNotification({
           type: 'error',
-          message: `Failed to register driver: ${result.error || 'Unknown error'}`
+          message: `Failed to register vehicle: ${result.error || 'Unknown error'}`
         });
       }
     } catch (error) {
-      console.error('Error registering driver:', error);
+      console.error('Error registering vehicle:', error);
       setNotification({
         type: 'error',
         message: error instanceof Error ? error.message : 'An unexpected error occurred'
@@ -202,22 +244,20 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
 
   const handleClose = () => {
     setFormData({
-      firstName: '',
-      lastName: '',
-      idNumber: '',
-      dateOfBirth: null,
-      licenseNumber: '',
-      licenseClass: '',
-      licenseExpiryDate: null,
-      yearsOfExperience: '',
-      phoneNumber: '',
-      emailAddress: '',
-      address: '',
-      emergencyContactName: '',
-      emergencyContactPhone: '',
-      licenseDocument: null,
-      idDocument: null,
-      additionalNotes: '',
+      regNumber: '',
+      vehicleType: '',
+      make: '',
+      model: '',
+      year: '',
+      assignedDriver: '',
+      lastServiceDate: null,
+      ownerName: '',
+      ownerAddress: '',
+      ownerCellNumber: '',
+      ownerIdNumber: '',
+      idPicture: null,
+      truckPicture: null,
+      registrationBook: null,
     });
     onClose();
   };
@@ -231,7 +271,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         maxWidth="md"
       >
         <DialogTitle sx={{ pb: 1 }}>
-          Add New Driver
+          Register New Vehicle
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -245,73 +285,139 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           </IconButton>
         </DialogTitle>
         <Typography variant="body2" color="text.secondary" sx={{ px: 3, pb: 2 }}>
-          Register a new driver in the transport management system
+          Register a new vehicle in the transport management system
         </Typography>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
-            {/* Personal Information Section */}
+            {/* Vehicle Information Section */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Personal Information
+                Vehicle Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="First Name"
-                    name="firstName"
-                    value={formData.firstName}
+                    label="Registration Number"
+                    name="regNumber"
+                    value={formData.regNumber}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.firstName}
-                    helperText={errors.firstName}
+                    error={!!errors.regNumber}
+                    helperText={errors.regNumber}
                     required
+                    placeholder="e.g., ABC123GP"
+                  />
+                </Box>
+                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                  <FormControl fullWidth required error={!!errors.vehicleType}>
+                    <InputLabel id="vehicle-type-label">Vehicle Type</InputLabel>
+                    <Select
+                      labelId="vehicle-type-label"
+                      name="vehicleType"
+                      value={formData.vehicleType}
+                      label="Vehicle Type"
+                      onChange={handleChange}
+                      disabled={loading}
+                    >
+                      <MenuItem value="Sedan">Sedan</MenuItem>
+                      <MenuItem value="SUV">SUV</MenuItem>
+                      <MenuItem value="Truck">Truck</MenuItem>
+                      <MenuItem value="Van">Van</MenuItem>
+                      <MenuItem value="Bus">Bus</MenuItem>
+                    </Select>
+                    {errors.vehicleType && <FormHelperText error>{errors.vehicleType}</FormHelperText>}
+                  </FormControl>
+                </Box>
+                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                  <TextField
+                    fullWidth
+                    label="Make"
+                    name="make"
+                    value={formData.make}
+                    onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.make}
+                    helperText={errors.make}
+                    required
+                    placeholder="e.g., Toyota"
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="Last Name"
-                    name="lastName"
-                    value={formData.lastName}
+                    label="Model"
+                    name="model"
+                    value={formData.model}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.lastName}
-                    helperText={errors.lastName}
+                    error={!!errors.model}
+                    helperText={errors.model}
                     required
+                    placeholder="e.g., Corolla"
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="ID Number"
-                    name="idNumber"
-                    value={formData.idNumber}
+                    label="Year"
+                    name="year"
+                    value={formData.year}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.idNumber}
-                    helperText={errors.idNumber}
+                    error={!!errors.year}
+                    helperText={errors.year}
                     required
-                    placeholder="e.g., 8001015009087"
+                    placeholder="e.g., 2023"
                   />
+                </Box>
+                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                  <FormControl fullWidth margin="normal" error={!!errors.assignedDriver} disabled={loading}>
+                    <InputLabel id="assigned-driver-label">Assigned Driver</InputLabel>
+                    <Select
+                      labelId="assigned-driver-label"
+                      id="assigned-driver"
+                      name="assignedDriver"
+                      value={formData.assignedDriver}
+                      onChange={handleChange}
+                      label="Assigned Driver"
+                    >
+                      <MenuItem value=""><em>None</em></MenuItem>
+                      {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
+                        approvedDrivers.map((driver) => (
+                          <MenuItem key={driver.id || Math.random()} value={driver.id}>
+                            {driver.name || (driver as any).firstName} {driver.surname || (driver as any).lastName}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem disabled>No drivers available</MenuItem>
+                      )}
+                    </Select>
+                    {errors.assignedDriver && (
+                      <Typography variant="caption" color="error">
+                        {errors.assignedDriver}
+                      </Typography>
+                    )}
+                  </FormControl>
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <DatePicker
-                    label="Date of Birth"
-                    value={formData.dateOfBirth}
-                    onChange={(date) => handleDateChange('dateOfBirth', date)}
+                    label="Last Service Date"
+                    value={formData.lastServiceDate}
+                    onChange={(date) => handleDateChange('lastServiceDate', date)}
                     slotProps={{
                       textField: {
                         fullWidth: true,
-                        required: true,
-                        error: !!errors.dateOfBirth,
-                        helperText: errors.dateOfBirth,
+                        error: !!errors.lastServiceDate,
+                        helperText: errors.lastServiceDate,
                         disabled: loading,
                         placeholder: "Select date"
                       }
@@ -321,100 +427,55 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
               </Box>
             </Box>
 
-            {/* License Information Section */}
+            {/* Owner Information Section */}
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                License Information
+                Owner Information
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="License Number"
-                    name="licenseNumber"
-                    value={formData.licenseNumber}
+                    label="Owner Name"
+                    name="ownerName"
+                    value={formData.ownerName}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.licenseNumber}
-                    helperText={errors.licenseNumber}
+                    error={!!errors.ownerName}
+                    helperText={errors.ownerName}
                     required
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <FormControl fullWidth required error={!!errors.licenseClass}>
-                    <InputLabel id="license-class-label">License Class</InputLabel>
-                    <Select
-                      labelId="license-class-label"
-                      name="licenseClass"
-                      value={formData.licenseClass}
-                      label="License Class"
-                      onChange={handleChange}
-                      disabled={loading}
-                    >
-                      <MenuItem value="A">Class A</MenuItem>
-                      <MenuItem value="B">Class B</MenuItem>
-                      <MenuItem value="C">Class C</MenuItem>
-                      <MenuItem value="EB">Class EB</MenuItem>
-                      <MenuItem value="EC1">Class EC1</MenuItem>
-                    </Select>
-                    {errors.licenseClass && <FormHelperText error>{errors.licenseClass}</FormHelperText>}
-                  </FormControl>
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <DatePicker
-                    label="License Expiry Date"
-                    value={formData.licenseExpiryDate}
-                    onChange={(date) => handleDateChange('licenseExpiryDate', date)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        required: true,
-                        error: !!errors.licenseExpiryDate,
-                        helperText: errors.licenseExpiryDate,
-                        disabled: loading,
-                        placeholder: "Select expiry date"
-                      }
-                    }}
+                  <TextField
+                    fullWidth
+                    label="Owner ID Number"
+                    name="ownerIdNumber"
+                    value={formData.ownerIdNumber}
+                    onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.ownerIdNumber}
+                    helperText={errors.ownerIdNumber}
+                    required
+                    placeholder="e.g., 80-101500D-87"
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="Years of Experience"
-                    name="yearsOfExperience"
-                    value={formData.yearsOfExperience}
-                    onChange={handleChange}
-                    type="number"
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.yearsOfExperience}
-                    helperText={errors.yearsOfExperience}
-                  />
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Contact Information Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Contact Information
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <TextField
-                    fullWidth
-                    label="Phone Number"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
+                    label="Owner Cell Number"
+                    name="ownerCellNumber"
+                    value={formData.ownerCellNumber}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.phoneNumber}
-                    helperText={errors.phoneNumber}
+                    error={!!errors.ownerCellNumber}
+                    helperText={errors.ownerCellNumber}
                     required
                     placeholder="+27 11 123 4567"
                   />
@@ -422,146 +483,19 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                   <TextField
                     fullWidth
-                    label="Email Address"
-                    name="emailAddress"
-                    type="email"
-                    value={formData.emailAddress}
+                    label="Owner Address"
+                    name="ownerAddress"
+                    value={formData.ownerAddress}
                     onChange={handleChange}
                     margin="normal"
                     variant="outlined"
                     disabled={loading}
-                    error={!!errors.emailAddress}
-                    helperText={errors.emailAddress}
-                    placeholder="email@example.com"
-                  />
-                </Box>
-
-                {/* Documents Section */}
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                    Documents
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                    <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                      <Button
-                        component="label"
-                        variant={formData.licenseDocument ? "contained" : "outlined"}
-                        color={formData.licenseDocument ? "success" : "primary"}
-                        startIcon={formData.licenseDocument ? <CheckCircleIcon /> : <UploadIcon />}
-                        sx={{ 
-                          height: '56px', 
-                          width: '100%',
-                          borderColor: errors.licenseDocument ? 'error.main' : undefined,
-                          position: 'relative'
-                        }}
-                        disabled={loading}
-                      >
-                        {formData.licenseDocument ? 'License Uploaded ✓' : 'Upload License'}
-                        <input
-                          type="file"
-                          hidden
-                          onChange={(e) => handleFileChange('licenseDocument', e)}
-                        />
-                      </Button>
-                      {formData.licenseDocument && (
-                        <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
-                          License document selected successfully
-                        </Typography>
-                      )}
-                      {errors.licenseDocument && (
-                        <FormHelperText error>{errors.licenseDocument}</FormHelperText>
-                      )}
-                    </Box>
-                    <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                      <Button
-                        component="label"
-                        variant={formData.idDocument ? "contained" : "outlined"}
-                        color={formData.idDocument ? "success" : "primary"}
-                        startIcon={formData.idDocument ? <CheckCircleIcon /> : <UploadIcon />}
-                        sx={{ 
-                          height: '56px', 
-                          width: '100%',
-                          borderColor: errors.idDocument ? 'error.main' : undefined,
-                          position: 'relative'
-                        }}
-                        disabled={loading}
-                      >
-                        {formData.idDocument ? 'ID Uploaded ✓' : 'Upload ID'}
-                        <input
-                          type="file"
-                          hidden
-                          onChange={(e) => handleFileChange('idDocument', e)}
-                        />
-                      </Button>
-                      {formData.idDocument && (
-                        <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
-                          ID document selected successfully
-                        </Typography>
-                      )}
-                      {errors.idDocument && (
-                        <FormHelperText error>{errors.idDocument}</FormHelperText>
-                      )}
-                    </Box>
-                  </Box>
-                </Box>
-
-                {/* Additional Notes Section */}
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                    Additional Notes
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.address}
-                    helperText={errors.address}
+                    error={!!errors.ownerAddress}
+                    helperText={errors.ownerAddress}
                     multiline
                     rows={2}
                     placeholder="Full residential address"
-                  />
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Emergency Contact Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Emergency Contact
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <TextField
-                    fullWidth
-                    label="Emergency Contact Name"
-                    name="emergencyContactName"
-                    value={formData.emergencyContactName}
-                    onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.emergencyContactName}
-                    helperText={errors.emergencyContactName}
-                  />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <TextField
-                    fullWidth
-                    label="Emergency Contact Phone"
-                    name="emergencyContactPhone"
-                    value={formData.emergencyContactPhone}
-                    onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.emergencyContactPhone}
-                    helperText={errors.emergencyContactPhone}
-                    placeholder="+27 11 123 4567"
+                    required
                   />
                 </Box>
               </Box>
@@ -573,53 +507,99 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 Documents
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
                   <Button
                     component="label"
-                    variant="outlined"
-                    startIcon={<UploadIcon />}
-                    sx={{ height: '56px', width: '100%' }}
+                    variant={formData.idPicture ? "contained" : "outlined"}
+                    color={formData.idPicture ? "success" : "primary"}
+                    startIcon={formData.idPicture ? <CheckCircleIcon /> : <UploadIcon />}
+                    sx={{ 
+                      height: '56px', 
+                      width: '100%',
+                      borderColor: errors.idPicture ? 'error.main' : undefined,
+                      position: 'relative'
+                    }}
+                    disabled={loading}
                   >
-                    Upload License
+                    {formData.idPicture ? 'ID Photo Uploaded ✓' : 'Upload ID Photo'}
                     <input
                       type="file"
+                      accept="image/jpeg"
                       hidden
-                      onChange={(e) => handleFileChange('licenseDocument', e)}
+                      onChange={(e) => handleFileChange('idPicture', e)}
                     />
                   </Button>
+                  {formData.idPicture && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
+                      ID photo selected successfully
+                    </Typography>
+                  )}
+                  {errors.idPicture && (
+                    <FormHelperText error>{errors.idPicture}</FormHelperText>
+                  )}
                 </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
                   <Button
                     component="label"
-                    variant="outlined"
-                    startIcon={<UploadIcon />}
-                    sx={{ height: '56px', width: '100%' }}
+                    variant={formData.truckPicture ? "contained" : "outlined"}
+                    color={formData.truckPicture ? "success" : "primary"}
+                    startIcon={formData.truckPicture ? <CheckCircleIcon /> : <UploadIcon />}
+                    sx={{ 
+                      height: '56px', 
+                      width: '100%',
+                      borderColor: errors.truckPicture ? 'error.main' : undefined,
+                      position: 'relative'
+                    }}
+                    disabled={loading}
                   >
-                    Upload ID
+                    {formData.truckPicture ? 'Vehicle Photo Uploaded ✓' : 'Upload Vehicle Photo'}
+                    <input
+                      type="file"
+                      accept="image/jpeg"
+                      hidden
+                      onChange={(e) => handleFileChange('truckPicture', e)}
+                    />
+                  </Button>
+                  {formData.truckPicture && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
+                      Vehicle photo selected successfully
+                    </Typography>
+                  )}
+                  {errors.truckPicture && (
+                    <FormHelperText error>{errors.truckPicture}</FormHelperText>
+                  )}
+                </Box>
+                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
+                  <Button
+                    component="label"
+                    variant={formData.registrationBook ? "contained" : "outlined"}
+                    color={formData.registrationBook ? "success" : "primary"}
+                    startIcon={formData.registrationBook ? <CheckCircleIcon /> : <UploadIcon />}
+                    sx={{ 
+                      height: '56px', 
+                      width: '100%',
+                      borderColor: errors.registrationBook ? 'error.main' : undefined,
+                      position: 'relative'
+                    }}
+                    disabled={loading}
+                  >
+                    {formData.registrationBook ? 'Registration Book Uploaded ✓' : 'Upload Registration Book'}
                     <input
                       type="file"
                       hidden
-                      onChange={(e) => handleFileChange('idDocument', e)}
+                      onChange={(e) => handleFileChange('registrationBook', e)}
                     />
                   </Button>
+                  {formData.registrationBook && (
+                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
+                      Registration book selected successfully
+                    </Typography>
+                  )}
+                  {errors.registrationBook && (
+                    <FormHelperText error>{errors.registrationBook}</FormHelperText>
+                  )}
                 </Box>
               </Box>
-            </Box>
-
-            {/* Additional Notes Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Additional Notes
-              </Typography>
-              <TextField
-                fullWidth
-                name="additionalNotes"
-                value={formData.additionalNotes}
-                onChange={handleChange}
-                multiline
-                rows={2}
-                placeholder="Any additional information about the driver"
-              />
             </Box>
           </Stack>
         </DialogContent>
@@ -633,7 +613,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             color="primary"
             disabled={loading}
           >
-            {loading ? 'Submitting...' : 'Add Driver'}
+            {loading ? 'Submitting...' : 'Register Vehicle'}
           </Button>
         </DialogActions>
       </Dialog>

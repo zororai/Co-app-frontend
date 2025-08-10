@@ -1893,8 +1893,231 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
-}
+  
+  /**
+   * Register a new vehicle
+   * @param vehicleData The vehicle data to register
+   * @returns A promise that resolves to the response data or error
+   */
+  async registerVehicle(vehicleData: {
+    regNumber: string;
+    vehicleType: string;
+    make: string;
+    model: string;
+    year: string;
+    assignedDriver: string;
+    lastServiceDate: any; // dayjs.Dayjs | null
+    ownerName: string;
+    ownerAddress: string;
+    ownerCellNumber: string;
+    ownerIdNumber: string;
+    idPicture: File | null;
+    truckPicture: File | null;
+    registrationBook: File | null;
+  }): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
 
+    try {
+      // Convert file objects to base64 strings
+      const idPictureBase64 = vehicleData.idPicture ? await this.fileToBase64(vehicleData.idPicture) : null;
+      const truckPictureBase64 = vehicleData.truckPicture ? await this.fileToBase64(vehicleData.truckPicture) : null;
+      const registrationBookBase64 = vehicleData.registrationBook ? await this.fileToBase64(vehicleData.registrationBook) : null;
+      
+      // Safely format date if it exists and has format method
+      const lastServiceDate = vehicleData.lastServiceDate && typeof vehicleData.lastServiceDate.format === 'function' 
+        ? vehicleData.lastServiceDate.format('YYYY-MM-DD') 
+        : null;
+      
+      // Map frontend fields to backend expected fields
+      const requestData = {
+        regNumber: vehicleData.regNumber,
+        vehicleType: vehicleData.vehicleType,
+        make: vehicleData.make,
+        model: vehicleData.model,
+        year: vehicleData.year,
+        assignedDriver: vehicleData.assignedDriver,
+        lastServiceDate: lastServiceDate,
+        ownerName: vehicleData.ownerName,
+        ownerAddress: vehicleData.ownerAddress,
+        ownerCellNumber: vehicleData.ownerCellNumber,
+        ownerIdNumber: vehicleData.ownerIdNumber,
+        idPicture: idPictureBase64,
+        truckPicture: truckPictureBase64,
+        registrationBook: registrationBookBase64,
+      };
+
+      const response = await fetch('http://localhost:1000/api/vehicles/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(requestData),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage;
+        try {
+          // Try to parse as JSON
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || `Failed to register vehicle: ${response.statusText}`;
+        } catch {
+          // If not valid JSON, use the text directly
+          errorMessage = errorText || `Failed to register vehicle: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Clone the response before reading its body
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = responseText;
+      }
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error registering vehicle:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+  
+  /**
+   * Convert a File object to a base64 string
+   * @param file The file to convert
+   * @returns A promise that resolves to the base64 string
+   */
+  fileToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove the data URL prefix (e.g., 'data:image/jpeg;base64,') to get just the base64 string
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  }
+
+  /**
+   * Get the authentication token from localStorage
+   * @returns The authentication token or null if not found
+   */
+  getToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('custom-auth-token');
+    }
+    return null;
+  }
+
+  /**
+   * Fetch all vehicles from the API
+   * @returns A promise that resolves to the vehicles data
+   */
+  async fetchVehicles() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        console.warn('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:1000/api/vehicles', {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching vehicles: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch approved drivers from the API
+   * @returns A promise that resolves to the approved drivers data
+   */
+  async fetchApprovedDrivers() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        console.warn('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:1000/api/drivers/status/approved', {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching approved drivers: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching approved drivers:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Fetch vehicle details by ID
+   * @param vehicleId The ID of the vehicle to fetch
+   * @returns A promise that resolves to the vehicle details
+   */
+  async fetchVehicleById(vehicleId: string) {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        console.warn('No authentication token found');
+      }
+
+      const response = await fetch(`http://localhost:1000/api/vehicles/${vehicleId}`, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching vehicle details: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`Error fetching vehicle with ID ${vehicleId}:`, error);
+      return null;
+    }
+  }
+}
 
 
 export const authClient = new AuthClient();

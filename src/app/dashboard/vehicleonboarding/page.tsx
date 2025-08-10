@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/driveronboarding/driver-onboading-table';
-import type { Customer } from '@/components/dashboard/driveronboarding/driver-onboading-table';
+import { CustomersTable } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
+import type { Customer } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -39,7 +39,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddDriverDialog } from '@/components/dashboard/driveronboarding/add-driver-dialog-box';
+import { AddVehicleDialog } from '@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box';
 
 
 export default function Page(): React.JSX.Element {
@@ -274,11 +274,11 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
           '&:hover': { bgcolor: '#4aa856' }
         }}
       >
-        Add New Driver
+        Add New Vehicle
       </Button>
       
-      {/* Add Security Company Dialog */}
-      <AddDriverDialog 
+      {/* Add Vehicle Dialog */}
+      <AddVehicleDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 
         onRefresh={onRefresh}

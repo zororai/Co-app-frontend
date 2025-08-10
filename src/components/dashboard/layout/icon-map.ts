@@ -1,4 +1,5 @@
 // icon-map.ts
+import DriveEta from '@mui/icons-material/DriveEta';
 import {
   PieChart,
   Security,
@@ -10,6 +11,7 @@ import {
   LocalShipping,
   Lock,
   VpnKey,
+  Person,
 } from '@mui/icons-material';
 
 export const iconMap = {
@@ -18,9 +20,11 @@ export const iconMap = {
   'users': Group,
   'id-card': ContactPage,
   'buildings': Business,
+  'user-secret': Person,
   'mountain': Terrain,
   'tools': Build,
   'truck': LocalShipping,
   'lock': Lock,
   'key': VpnKey,
+  'driver': DriveEta,
 };

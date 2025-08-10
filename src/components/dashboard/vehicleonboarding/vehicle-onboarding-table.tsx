@@ -121,23 +121,46 @@ export function CustomersTable({
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
-  // Fetch drivers from API when component mounts or refreshTrigger changes
+  // Fetch vehicles from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchDriverData = async () => {
+    const fetchVehicleData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchDrivers();
-        setUsers(fetchedDrivers);
+        const fetchedVehicles = await authClient.fetchVehicles();
+        console.log('Fetched vehicles:', fetchedVehicles);
+        
+        // Transform the vehicle data to match the expected format
+        const transformedVehicles = fetchedVehicles.map((vehicle: any) => ({
+          id: vehicle.id || '',
+          name: vehicle.make || '',
+          surname: vehicle.model || '',
+          regNumber: vehicle.regNumber || '',
+          vehicleType: vehicle.vehicleType || '',
+          make: vehicle.make || '',
+          model: vehicle.model || '',
+          year: vehicle.year || '',
+          assignedDriver: vehicle.assignedDriver || '',
+          lastServiceDate: vehicle.lastServiceDate || '',
+          ownerName: vehicle.ownerName || '',
+          ownerAddress: vehicle.ownerAddress || '',
+          ownerCellNumber: vehicle.ownerCellNumber || '',
+          ownerIdNumber: vehicle.ownerIdNumber || '',
+          status: vehicle.status || 'PENDING',
+          reason: vehicle.reason || '',
+          // Add any other fields needed for the table
+        }));
+        
+        setUsers(transformedVehicles);
       } catch (err) {
-        console.error('Error fetching drivers:', err);
-        setError('Failed to load drivers. Please try again.');
+        console.error('Error fetching vehicles:', err);
+        setError('Failed to load vehicles. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDriverData();
+    fetchVehicleData();
   }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
@@ -315,12 +338,11 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Driver Name</TableCell>
-              <TableCell>License Number</TableCell>
-              <TableCell>License Class</TableCell>
-              <TableCell>License Expiry</TableCell>
-              <TableCell>Contact</TableCell>
-              <TableCell>Experience (Years)</TableCell>
+              <TableCell>Registration Number</TableCell>
+              <TableCell>Owner Name</TableCell>
+              <TableCell>Owner Contact</TableCell>
+              <TableCell>Owner ID</TableCell>
+              <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -351,12 +373,11 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
-                  <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseClass || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseExpiryDate || 'N/A'}</TableCell>
-                  <TableCell>{row.phoneNumber || row.emailAddress || 'N/A'}</TableCell>
-                  <TableCell>{row.yearsOfExperience || '0'}</TableCell>
+                  <TableCell>{row.regNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.ownerName || 'N/A'}</TableCell>
+                  <TableCell>{row.ownerCellNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.ownerIdNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.vehicleType || 'N/A'}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',

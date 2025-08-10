@@ -10,8 +10,10 @@ export const navItems = [
     icon: 'users',
     items: [
       { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'id-card'},
-      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'id-card'},
-      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'id-card'},   
+      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'user-secret'},
+      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'driver'},   
+      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
+    
     ], 
     
    },
@@ -71,6 +73,9 @@ export const navItems = [
       { key: 'shaft-assignment-status', title: 'Shaft Assignment Status', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
       { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'id-card' },
       { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'id-card' },
+      { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'id-card' },
+      { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'id-card' },
+    
     ],
   },
 ] satisfies NavItemConfig[];
