@@ -5,8 +5,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import UploadIcon from '@mui/icons-material/Upload';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Stack from '@mui/material/Stack';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -43,14 +46,15 @@ export interface DriverFormData {
   address: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
-  licenseDocument: File | null;
-  idDocument: File | null;
+  licenseDocument: string | null; // Changed to string for base64
+  idDocument: string | null; // Changed to string for base64
   additionalNotes: string;
 }
 
 export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDriverDialogProps): React.JSX.Element {
   const [loading, setLoading] = React.useState(false);
   const [notification, setNotification] = React.useState<{type: 'success' | 'error', message: string} | null>(null);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [formData, setFormData] = React.useState<DriverFormData>({
     firstName: '',
     lastName: '',
@@ -87,14 +91,70 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
 
   const handleFileChange = (field: 'licenseDocument' | 'idDocument', e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFormData({
-        ...formData,
-        [field]: e.target.files[0],
-      });
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        if (event.target && event.target.result) {
+          // Store the base64 string in the form data
+          setFormData({
+            ...formData,
+            [field]: event.target.result as string,
+          });
+        }
+      };
+      
+      // Read the file as a data URL (base64)
+      reader.readAsDataURL(file);
     }
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    // Required fields validation
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
+    if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
+    if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
+    
+    // Email validation if provided
+    if (formData.emailAddress && !/^\S+@\S+\.\S+$/.test(formData.emailAddress)) {
+      newErrors.emailAddress = 'Please enter a valid email address';
+    }
+    
+    // Phone number validation (simple format check)
+    if (formData.phoneNumber && !/^[+]?[0-9\s-()]{8,}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = 'Please enter a valid phone number';
+    }
+    
+    // ID number validation (simple length check)
+    if (formData.idNumber && formData.idNumber.length < 6) {
+      newErrors.idNumber = 'ID number must be at least 6 characters';
+    }
+    
+    // Required documents
+    if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
+    if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    // Validate form before submission
+    if (!validateForm()) {
+      setNotification({
+        type: 'error',
+        message: 'Please fill in all required fields correctly'
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
       // Call the API to register the driver
@@ -202,8 +262,12 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.firstName}
+                    helperText={errors.firstName}
                     required
-                    placeholder="First name"
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
@@ -213,8 +277,12 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.lastName}
+                    helperText={errors.lastName}
                     required
-                    placeholder="Last name"
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
@@ -224,6 +292,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="idNumber"
                     value={formData.idNumber}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.idNumber}
+                    helperText={errors.idNumber}
                     required
                     placeholder="e.g., 8001015009087"
                   />
@@ -237,6 +310,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                       textField: {
                         fullWidth: true,
                         required: true,
+                        error: !!errors.dateOfBirth,
+                        helperText: errors.dateOfBirth,
+                        disabled: loading,
                         placeholder: "Select date"
                       }
                     }}
@@ -258,11 +334,16 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="licenseNumber"
                     value={formData.licenseNumber}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.licenseNumber}
+                    helperText={errors.licenseNumber}
                     required
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <FormControl fullWidth required>
+                  <FormControl fullWidth required error={!!errors.licenseClass}>
                     <InputLabel id="license-class-label">License Class</InputLabel>
                     <Select
                       labelId="license-class-label"
@@ -270,6 +351,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                       value={formData.licenseClass}
                       label="License Class"
                       onChange={handleChange}
+                      disabled={loading}
                     >
                       <MenuItem value="A">Class A</MenuItem>
                       <MenuItem value="B">Class B</MenuItem>
@@ -277,6 +359,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                       <MenuItem value="EB">Class EB</MenuItem>
                       <MenuItem value="EC1">Class EC1</MenuItem>
                     </Select>
+                    {errors.licenseClass && <FormHelperText error>{errors.licenseClass}</FormHelperText>}
                   </FormControl>
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
@@ -288,6 +371,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                       textField: {
                         fullWidth: true,
                         required: true,
+                        error: !!errors.licenseExpiryDate,
+                        helperText: errors.licenseExpiryDate,
+                        disabled: loading,
                         placeholder: "Select expiry date"
                       }
                     }}
@@ -301,6 +387,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     value={formData.yearsOfExperience}
                     onChange={handleChange}
                     type="number"
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.yearsOfExperience}
+                    helperText={errors.yearsOfExperience}
                   />
                 </Box>
               </Box>
@@ -319,6 +410,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.phoneNumber}
+                    helperText={errors.phoneNumber}
                     required
                     placeholder="+27 11 123 4567"
                   />
@@ -331,16 +427,100 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     type="email"
                     value={formData.emailAddress}
                     onChange={handleChange}
-                    placeholder="driver@company.com"
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.emailAddress}
+                    helperText={errors.emailAddress}
+                    placeholder="email@example.com"
                   />
                 </Box>
-                <Box sx={{ flex: '1 1 100%' }}>
+
+                {/* Documents Section */}
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Documents
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                    <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                      <Button
+                        component="label"
+                        variant={formData.licenseDocument ? "contained" : "outlined"}
+                        color={formData.licenseDocument ? "success" : "primary"}
+                        startIcon={formData.licenseDocument ? <CheckCircleIcon /> : <UploadIcon />}
+                        sx={{ 
+                          height: '56px', 
+                          width: '100%',
+                          borderColor: errors.licenseDocument ? 'error.main' : undefined,
+                          position: 'relative'
+                        }}
+                        disabled={loading}
+                      >
+                        {formData.licenseDocument ? 'License Uploaded ✓' : 'Upload License'}
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) => handleFileChange('licenseDocument', e)}
+                        />
+                      </Button>
+                      {formData.licenseDocument && (
+                        <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
+                          License document selected successfully
+                        </Typography>
+                      )}
+                      {errors.licenseDocument && (
+                        <FormHelperText error>{errors.licenseDocument}</FormHelperText>
+                      )}
+                    </Box>
+                    <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                      <Button
+                        component="label"
+                        variant={formData.idDocument ? "contained" : "outlined"}
+                        color={formData.idDocument ? "success" : "primary"}
+                        startIcon={formData.idDocument ? <CheckCircleIcon /> : <UploadIcon />}
+                        sx={{ 
+                          height: '56px', 
+                          width: '100%',
+                          borderColor: errors.idDocument ? 'error.main' : undefined,
+                          position: 'relative'
+                        }}
+                        disabled={loading}
+                      >
+                        {formData.idDocument ? 'ID Uploaded ✓' : 'Upload ID'}
+                        <input
+                          type="file"
+                          hidden
+                          onChange={(e) => handleFileChange('idDocument', e)}
+                        />
+                      </Button>
+                      {formData.idDocument && (
+                        <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
+                          ID document selected successfully
+                        </Typography>
+                      )}
+                      {errors.idDocument && (
+                        <FormHelperText error>{errors.idDocument}</FormHelperText>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Additional Notes Section */}
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    Additional Notes
+                  </Typography>
                   <TextField
                     fullWidth
                     label="Address"
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.address}
+                    helperText={errors.address}
                     multiline
                     rows={2}
                     placeholder="Full residential address"
@@ -362,6 +542,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="emergencyContactName"
                     value={formData.emergencyContactName}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.emergencyContactName}
+                    helperText={errors.emergencyContactName}
                   />
                 </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
@@ -371,6 +556,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     name="emergencyContactPhone"
                     value={formData.emergencyContactPhone}
                     onChange={handleChange}
+                    margin="normal"
+                    variant="outlined"
+                    disabled={loading}
+                    error={!!errors.emergencyContactPhone}
+                    helperText={errors.emergencyContactPhone}
                     placeholder="+27 11 123 4567"
                   />
                 </Box>

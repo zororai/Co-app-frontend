@@ -1623,8 +1623,8 @@ cooperativename: string;
     address: string;
     emergencyContactName: string;
     emergencyContactPhone: string;
-    licenseDocument: File | null;
-    idDocument: File | null;
+    licenseDocument: string | null; // Changed to string for base64
+    idDocument: string | null; // Changed to string for base64
     additionalNotes: string;
   }): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
@@ -1635,58 +1635,68 @@ cooperativename: string;
     }
 
     try {
-      // Create FormData for file uploads
-      const formData = new FormData();
+      // Safely format dates if they exist and have format method
+      const dateOfBirth = driverData.dateOfBirth && typeof driverData.dateOfBirth.format === 'function' 
+        ? driverData.dateOfBirth.format('YYYY-MM-DD') 
+        : null;
+        
+      const licenseExpiryDate = driverData.licenseExpiryDate && typeof driverData.licenseExpiryDate.format === 'function' 
+        ? driverData.licenseExpiryDate.format('YYYY-MM-DD') 
+        : null;
       
-      // Convert date objects to ISO strings for backend
+      // Create the request data with all fields including base64 document strings
       const requestData = {
         firstName: driverData.firstName,
         lastName: driverData.lastName,
         idNumber: driverData.idNumber,
-        dateOfBirth: driverData.dateOfBirth ? driverData.dateOfBirth.format('YYYY-MM-DD') : null,
+        dateOfBirth: dateOfBirth,
         licenseNumber: driverData.licenseNumber,
         licenseClass: driverData.licenseClass,
-        licenseExpiryDate: driverData.licenseExpiryDate ? driverData.licenseExpiryDate.format('YYYY-MM-DD') : null,
+        licenseExpiryDate: licenseExpiryDate,
         yearsOfExperience: parseInt(driverData.yearsOfExperience) || 0,
         phoneNumber: driverData.phoneNumber,
         emailAddress: driverData.emailAddress,
         address: driverData.address,
         emergencyContactName: driverData.emergencyContactName,
         emergencyContactPhone: driverData.emergencyContactPhone,
+        licenseDocument: driverData.licenseDocument, // Now a base64 string
+        idDocument: driverData.idDocument, // Now a base64 string
         additionalNotes: driverData.additionalNotes
       };
-      
-      // Add JSON data to FormData
-      formData.append('driverData', new Blob([JSON.stringify(requestData)], {
-        type: 'application/json'
-      }));
-      
-      // Add files if they exist
-      if (driverData.licenseDocument) {
-        formData.append('licenseDocument', driverData.licenseDocument);
-      }
-      
-      if (driverData.idDocument) {
-        formData.append('idDocument', driverData.idDocument);
-      }
 
       const response = await fetch('http://localhost:1000/api/drivers/register', {
         method: 'POST',
         headers: {
-          'Accept': '*/*',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
-          // Don't set Content-Type header when using FormData, browser will set it with boundary
         },
-        body: formData,
+        body: JSON.stringify(requestData),
         credentials: 'include',
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to register driver: ${response.statusText}`);
+        const errorText = await response.text();
+        let errorMessage;
+        try {
+          // Try to parse as JSON
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || `Failed to register driver: ${response.statusText}`;
+        } catch {
+          // If not valid JSON, use the text directly
+          errorMessage = errorText || `Failed to register driver: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json().catch(() => response.text());
+      // Clone the response before reading its body
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = responseText;
+      }
       return { success: true, data };
     } catch (error) {
       console.error('Error registering driver:', error);
