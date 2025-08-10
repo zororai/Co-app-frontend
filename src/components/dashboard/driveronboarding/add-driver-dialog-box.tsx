@@ -20,7 +20,7 @@ import Box from '@mui/material/Box';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+import { Upload as PhosphorUploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import { authClient } from '@/lib/auth/client';
 import { Snackbar, Alert } from '@mui/material';
 import dayjs from 'dayjs';

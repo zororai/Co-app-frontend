@@ -70,6 +70,7 @@ export const navItems = [
       { key: 'section-creation', title: 'Section Create Status', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
       { key: 'shaft-assignment-status', title: 'Shaft Assignment Status', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
       { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'id-card' },
+      { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'id-card' },
     ],
   },
 ] satisfies NavItemConfig[];

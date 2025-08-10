@@ -207,6 +207,41 @@ class AuthClient {
         }
     }
 
+    // registerDriver method is implemented elsewhere in the file
+    
+    // fetchDrivers method is implemented elsewhere in the file
+    
+    /**
+     * Fetch driver details by ID
+     */
+    async fetchDriverById(driverId: string): Promise<any> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/drivers/${driverId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch driver details');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Error fetching driver with ID ${driverId}:`, error);
+            return null;
+        }
+    }
+
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -465,7 +500,7 @@ class AuthClient {
             return [];
         }
         try {
-            const response = await fetch('http://localhost:1000/api/miners', {
+            const response = await fetch('http://localhost:1000/api/sections/miners', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -484,6 +519,161 @@ class AuthClient {
             return [];
         }
     }
+  
+  /**
+   * Fetch all drivers from the backend
+   */
+  async fetchDrivers(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+    }
+    try {
+      const response = await fetch('http://localhost:1000/api/drivers', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch drivers');
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.drivers || [];
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Approve a driver by ID
+   * @param driverId The ID of the driver to approve
+   * @returns A promise that resolves to the response data or error
+   */
+  async approveDriver(driverId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/drivers/${driverId}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to approve driver');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error(`Error approving driver with ID ${driverId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Reject a driver by ID with reason
+   * @param driverId The ID of the driver to reject
+   * @param reason The reason for rejection
+   * @returns A promise that resolves to the response data or error
+   */
+  async rejectDriver(driverId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    if (!reason.trim()) {
+      return { success: false, error: 'Reason is required for rejection' };
+    }
+    
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/drivers/${driverId}/reject?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to reject driver');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error(`Error rejecting driver with ID ${driverId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Push back a driver by ID with reason
+   * @param driverId The ID of the driver to push back
+   * @param reason The reason for pushing back
+   * @returns A promise that resolves to the response data or error
+   */
+  async pushbackDriver(driverId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    if (!reason.trim()) {
+      return { success: false, error: 'Reason is required for pushback' };
+    }
+    
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/drivers/${driverId}/pushback?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to push back driver');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error(`Error pushing back driver with ID ${driverId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
 
     /**
      * Fetch shaft assignments by miner ID
@@ -1704,6 +1894,8 @@ cooperativename: string;
     }
   }
 }
+
+
 
 export const authClient = new AuthClient();
 
