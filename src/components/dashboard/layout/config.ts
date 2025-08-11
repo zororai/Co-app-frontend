@@ -32,7 +32,7 @@ export const navItems = [
     title: 'Ore Management',
     icon: 'mountain',
     items: [
-      { key: 'ore-list', title: 'Ore List', href: paths.dashboard.integrations, icon: 'id-card' },
+      { key: 'ore-list', title: 'Ore tracking', href: paths.dashboard.oremanagement, icon: 'id-card' },
       { key: 'ore-add', title: 'Add Ore', href: '/ore-management/add' },
     ],
   },

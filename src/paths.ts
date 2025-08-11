@@ -14,10 +14,12 @@ export const paths = {
     sectioncreation: '/dashboard/sectioncreation',
     sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
-    oreManagement: '/dashboard/ore-management',
+    oremanagement: '/dashboard/oremanagement',
+
     securityonboardingstatus: '/dashboard/securityonboardingstatus',
     driveronboarding: '/dashboard/driveronboarding',
     vehicleonboarding: '/dashboard/vehicleonboarding',
+    vehicleonboardingstatus: '/dashboard/vehicleonboardingstatus',
     driveronboardingstatus: '/dashboard/driveronboardingstatus',
     useronboardstatus: '/dashboard/useronboardstatus',
     shaftassignmentstatus: '/dashboard/shaftassignmentstatus',

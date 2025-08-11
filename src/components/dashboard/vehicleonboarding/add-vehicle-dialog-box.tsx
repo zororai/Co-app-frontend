@@ -1,4 +1,7 @@
+'use client';
+
 import * as React from 'react';
+import { Fragment } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -17,13 +20,18 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { Upload as PhosphorUploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
-import { authClient } from '@/lib/auth/client';
-import { Snackbar, Alert } from '@mui/material';
 import dayjs from 'dayjs';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import Alert from '@mui/material/Alert';
+import { Snackbar } from '@mui/material';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import { authClient } from '@/lib/auth/client';
 
 interface AddVehicleDialogProps {
   open: boolean;
@@ -49,8 +57,31 @@ export interface VehicleFormData {
   registrationBook: File | null;
 }
 
+// Define steps for the stepper
+const steps = [
+  'Vehicle Information',
+  'Owner Details',
+  'Documents',
+  'Review Details',
+  'Confirmation'
+];
+
+// Vehicle type options
+const vehicleTypes = [
+  { value: 'Sedan', label: 'Sedan' },
+  { value: 'SUV', label: 'SUV' },
+  { value: 'Truck', label: 'Truck' },
+  { value: 'Van', label: 'Van' },
+  { value: 'Bus', label: 'Bus' }
+];
+
 export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehicleDialogProps): React.JSX.Element {
+  const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
+  const [referenceNumber, setReferenceNumber] = React.useState('');
+  const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [notification, setNotification] = React.useState<{type: 'success' | 'error', message: string} | null>(null);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [approvedDrivers, setApprovedDrivers] = React.useState<Array<{id: string, name: string, surname: string}>>([]);
@@ -76,14 +107,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     const fetchDrivers = async () => {
       try {
         const drivers = await authClient.fetchApprovedDrivers();
-        console.log('Fetched approved drivers:', drivers);
-        console.log('Type of drivers:', typeof drivers);
         
         // Check if we need to parse the JSON string
         if (typeof drivers === 'string') {
           try {
             const parsedDrivers = JSON.parse(drivers);
-            console.log('Parsed drivers:', parsedDrivers);
             setApprovedDrivers(parsedDrivers);
           } catch (parseError) {
             console.error('Error parsing drivers data:', parseError);
@@ -91,26 +119,18 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         } else {
           // If it's already an object, ensure it's an array
           if (Array.isArray(drivers)) {
-            console.log('Drivers is already an array with length:', drivers.length);
             setApprovedDrivers(drivers);
           } else {
-            console.log('Drivers is an object but not an array:', drivers);
             // Check if there's a data property or similar that contains the array
             const possibleArrays = ['data', 'drivers', 'items', 'results'];
             for (const key of possibleArrays) {
               if (drivers && drivers[key] && Array.isArray(drivers[key])) {
-                console.log(`Found array in drivers.${key} with length:`, drivers[key].length);
                 setApprovedDrivers(drivers[key]);
                 break;
               }
             }
           }
         }
-        
-        // After setting the state, log what we have
-        setTimeout(() => {
-          console.log('Current approvedDrivers state:', approvedDrivers);
-        }, 100);
       } catch (error) {
         console.error('Error fetching approved drivers:', error);
       }
@@ -119,7 +139,8 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     fetchDrivers();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name?: string; value: string } }, child?: React.ReactNode) => {
+  // Handle form field changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name?: string; value: string } }, child?: React.ReactNode): void => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -127,7 +148,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     });
   };
 
-  const handleDateChange = (field: string, value: dayjs.Dayjs | null) => {
+  const handleDateChange = (field: string) => (value: dayjs.Dayjs | null): void => {
     setFormData({
       ...formData,
       [field]: value,
@@ -135,7 +156,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   };
 
   // Handle file input for document fields
-  const handleFileChange = (field: 'idPicture' | 'truckPicture' | 'registrationBook', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (field: 'idPicture' | 'truckPicture' | 'registrationBook') => (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0] || null;
     setFormData({
       ...formData,
@@ -143,7 +164,52 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     });
   };
 
-  const validateForm = () => {
+  // Validate current step
+  const validateCurrentStep = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    setFormSubmitted(true);
+    
+    switch (activeStep) {
+      case 0: // Vehicle Information
+        if (!formData.regNumber) newErrors.regNumber = 'Registration number is required';
+        if (!formData.vehicleType) newErrors.vehicleType = 'Vehicle type is required';
+        if (!formData.make) newErrors.make = 'Make is required';
+        if (!formData.model) newErrors.model = 'Model is required';
+        if (!formData.year) newErrors.year = 'Year is required';
+        if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+        if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
+        break;
+      
+      case 1: // Owner Details
+        if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
+        if (!formData.ownerIdNumber) newErrors.ownerIdNumber = 'Owner ID number is required';
+        if (!formData.ownerCellNumber) newErrors.ownerCellNumber = 'Owner cell number is required';
+        if (!formData.ownerAddress) newErrors.ownerAddress = 'Owner address is required';
+        
+        // Phone number validation
+        if (formData.ownerCellNumber && !/^\+?[0-9\s]+$/.test(formData.ownerCellNumber)) {
+          newErrors.ownerCellNumber = 'Invalid phone number format';
+        }
+        
+        // ID number validation to allow format like 80-101500D87
+        if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
+          newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
+        }
+        break;
+      
+      case 2: // Documents
+        if (!formData.idPicture) newErrors.idPicture = 'ID picture is required';
+        if (!formData.truckPicture) newErrors.truckPicture = 'Vehicle picture is required';
+        if (!formData.registrationBook) newErrors.registrationBook = 'Registration book is required';
+        break;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Validate all steps
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     
     // Required fields validation
@@ -170,20 +236,32 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     }
     
     // Document validation
-    if (!formData.idPicture) {
-      newErrors.idPicture = 'ID picture is required';
-    }
-    
-    if (!formData.truckPicture) {
-      newErrors.truckPicture = 'Vehicle picture is required';
-    }
-    
-    if (!formData.registrationBook) {
-      newErrors.registrationBook = 'Registration book is required';
-    }
+    if (!formData.idPicture) newErrors.idPicture = 'ID picture is required';
+    if (!formData.truckPicture) newErrors.truckPicture = 'Vehicle picture is required';
+    if (!formData.registrationBook) newErrors.registrationBook = 'Registration book is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle stepper navigation
+  const handleNext = () => {
+    if (activeStep === steps.length - 2) {
+      // If on the review step, submit the form
+      handleSubmit();
+    } else {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleStepNext = () => {
+    if (validateCurrentStep()) {
+      handleNext();
+    }
   };
 
   const handleSubmit = async () => {
@@ -199,15 +277,13 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setLoading(true);
     try {
       // Call the API to register the vehicle
-      // Note: This API function needs to be implemented in client.ts
       const result = await authClient.registerVehicle(formData);
       
       if (result.success) {
-        // Show success notification
-        setNotification({
-          type: 'success',
-          message: 'Vehicle registered successfully!'
-        });
+        // Set success state and move to confirmation step
+        setSuccess(true);
+        setReferenceNumber(result.referenceNumber || 'VEH-' + Math.floor(Math.random() * 10000));
+        setActiveStep(steps.length - 1); // Move to confirmation step
         
         // If onSubmit is provided, call it with the form data
         if (onSubmit) {
@@ -218,31 +294,20 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         if (onRefresh) {
           onRefresh();
         }
-        
-        // Close the dialog after a short delay to show the success message
-        setTimeout(() => {
-          handleClose();
-          setNotification(null);
-        }, 1500);
       } else {
-        // Show error notification
-        setNotification({
-          type: 'error',
-          message: `Failed to register vehicle: ${result.error || 'Unknown error'}`
-        });
+        // Show error
+        setError(`Failed to register vehicle: ${result.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error registering vehicle:', error);
-      setNotification({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
-      });
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
+    // Reset all form state
     setFormData({
       regNumber: '',
       vehicleType: '',
@@ -259,59 +324,39 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       truckPicture: null,
       registrationBook: null,
     });
+    setActiveStep(0);
+    setFormSubmitted(false);
+    setSuccess(false);
+    setError(null);
+    setErrors({});
     onClose();
   };
 
-  return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog 
-        open={open} 
-        onClose={handleClose}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          Register New Vehicle
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <Typography variant="body2" color="text.secondary" sx={{ px: 3, pb: 2 }}>
-          Register a new vehicle in the transport management system
-        </Typography>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
-            {/* Vehicle Information Section */}
+  // Render step content based on active step
+  const renderStepContent = (): React.ReactNode => {
+    switch (activeStep) {
+      case 0: // Vehicle Information
+        return (
+          <Stack spacing={3}>
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Vehicle Information
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Registration Number"
                     name="regNumber"
                     value={formData.regNumber}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.regNumber}
-                    helperText={errors.regNumber}
+                    error={formSubmitted && !!errors.regNumber}
+                    helperText={formSubmitted && errors.regNumber}
                     required
                     placeholder="e.g., ABC123GP"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <FormControl fullWidth required error={!!errors.vehicleType}>
                     <InputLabel id="vehicle-type-label">Vehicle Type</InputLabel>
                     <Select
@@ -322,65 +367,58 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                       onChange={handleChange}
                       disabled={loading}
                     >
-                      <MenuItem value="Sedan">Sedan</MenuItem>
-                      <MenuItem value="SUV">SUV</MenuItem>
-                      <MenuItem value="Truck">Truck</MenuItem>
-                      <MenuItem value="Van">Van</MenuItem>
-                      <MenuItem value="Bus">Bus</MenuItem>
+                      {vehicleTypes.map((type) => (
+                        <MenuItem key={type.value} value={type.value}>
+                          {type.label}
+                        </MenuItem>
+                      ))}
                     </Select>
-                    {errors.vehicleType && <FormHelperText error>{errors.vehicleType}</FormHelperText>}
+                    {formSubmitted && errors.vehicleType && (
+                      <FormHelperText>{errors.vehicleType}</FormHelperText>
+                    )}
                   </FormControl>
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Make"
                     name="make"
                     value={formData.make}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.make}
-                    helperText={errors.make}
+                    error={formSubmitted && !!errors.make}
+                    helperText={formSubmitted && errors.make}
                     required
                     placeholder="e.g., Toyota"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Model"
                     name="model"
                     value={formData.model}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.model}
-                    helperText={errors.model}
+                    error={formSubmitted && !!errors.model}
+                    helperText={formSubmitted && errors.model}
                     required
                     placeholder="e.g., Corolla"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Year"
                     name="year"
                     value={formData.year}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.year}
-                    helperText={errors.year}
+                    error={formSubmitted && !!errors.year}
+                    helperText={formSubmitted && errors.year}
                     required
                     placeholder="e.g., 2023"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <FormControl fullWidth margin="normal" error={!!errors.assignedDriver} disabled={loading}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={formSubmitted && !!errors.assignedDriver} required>
                     <InputLabel id="assigned-driver-label">Assigned Driver</InputLabel>
                     <Select
                       labelId="assigned-driver-label"
@@ -398,240 +436,375 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>No drivers available</MenuItem>
+                        <MenuItem value=""><em>No drivers available</em></MenuItem>
                       )}
                     </Select>
-                    {errors.assignedDriver && (
-                      <Typography variant="caption" color="error">
-                        {errors.assignedDriver}
-                      </Typography>
+                    {formSubmitted && errors.assignedDriver && (
+                      <FormHelperText>{errors.assignedDriver}</FormHelperText>
                     )}
                   </FormControl>
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
-                  <DatePicker
-                    label="Last Service Date"
-                    value={formData.lastServiceDate}
-                    onChange={(date) => handleDateChange('lastServiceDate', date)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        error: !!errors.lastServiceDate,
-                        helperText: errors.lastServiceDate,
-                        disabled: loading,
-                        placeholder: "Select date"
-                      }
-                    }}
-                  />
-                </Box>
-              </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Last Service Date"
+                      value={formData.lastServiceDate}
+                      onChange={handleDateChange('lastServiceDate')}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          required: true,
+                          error: formSubmitted && !!errors.lastServiceDate,
+                          helperText: formSubmitted && errors.lastServiceDate,
+                        },
+                      }}
+                    />
+                  </LocalizationProvider>
+                </Grid>
+              </Grid>
             </Box>
-
-            {/* Owner Information Section */}
+          </Stack>
+        );
+      
+      case 1: // Owner Details
+        return (
+          <Stack spacing={3}>
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Owner Information
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
                     label="Owner Name"
                     name="ownerName"
                     value={formData.ownerName}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.ownerName}
-                    helperText={errors.ownerName}
+                    error={formSubmitted && !!errors.ownerName}
+                    helperText={formSubmitted && errors.ownerName}
                     required
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Owner ID Number"
+                    label="ID Number"
                     name="ownerIdNumber"
                     value={formData.ownerIdNumber}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.ownerIdNumber}
-                    helperText={errors.ownerIdNumber}
+                    error={formSubmitted && !!errors.ownerIdNumber}
+                    helperText={formSubmitted && errors.ownerIdNumber}
                     required
-                    placeholder="e.g., 80-101500D-87"
+                    placeholder="e.g., 80-101500D87"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Owner Cell Number"
+                    label="Cell Number"
                     name="ownerCellNumber"
                     value={formData.ownerCellNumber}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.ownerCellNumber}
-                    helperText={errors.ownerCellNumber}
+                    error={formSubmitted && !!errors.ownerCellNumber}
+                    helperText={formSubmitted && errors.ownerCellNumber}
                     required
-                    placeholder="+27 11 123 4567"
+                    placeholder="e.g., +27 11 123 4567"
                   />
-                </Box>
-                <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Owner Address"
+                    label="Address"
                     name="ownerAddress"
                     value={formData.ownerAddress}
                     onChange={handleChange}
-                    margin="normal"
-                    variant="outlined"
-                    disabled={loading}
-                    error={!!errors.ownerAddress}
-                    helperText={errors.ownerAddress}
-                    multiline
-                    rows={2}
-                    placeholder="Full residential address"
+                    error={formSubmitted && !!errors.ownerAddress}
+                    helperText={formSubmitted && errors.ownerAddress}
                     required
+                    multiline
+                    rows={3}
                   />
-                </Box>
-              </Box>
+                </Grid>
+              </Grid>
             </Box>
-
-            {/* Documents Section */}
+          </Stack>
+        );
+      
+      case 2: // Documents
+        return (
+          <Stack spacing={3}>
             <Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Documents
+                Required Documents
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Please upload the following required documents
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
                   <Button
                     component="label"
-                    variant={formData.idPicture ? "contained" : "outlined"}
-                    color={formData.idPicture ? "success" : "primary"}
-                    startIcon={formData.idPicture ? <CheckCircleIcon /> : <UploadIcon />}
-                    sx={{ 
-                      height: '56px', 
-                      width: '100%',
-                      borderColor: errors.idPicture ? 'error.main' : undefined,
-                      position: 'relative'
-                    }}
-                    disabled={loading}
+                    variant="outlined"
+                    fullWidth
+                    startIcon={formData.idPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                    sx={{ height: '56px' }}
+                    color={formData.idPicture ? 'success' : 'primary'}
                   >
-                    {formData.idPicture ? 'ID Photo Uploaded ✓' : 'Upload ID Photo'}
+                    {formData.idPicture ? 'ID Uploaded ✓' : 'Upload ID'}
                     <input
                       type="file"
-                      accept="image/jpeg"
                       hidden
-                      onChange={(e) => handleFileChange('idPicture', e)}
+                      onChange={handleFileChange('idPicture')}
                     />
                   </Button>
-                  {formData.idPicture && (
-                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
-                      ID photo selected successfully
-                    </Typography>
-                  )}
-                  {errors.idPicture && (
+                  {formSubmitted && errors.idPicture && (
                     <FormHelperText error>{errors.idPicture}</FormHelperText>
                   )}
-                </Box>
-                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={4}>
                   <Button
                     component="label"
-                    variant={formData.truckPicture ? "contained" : "outlined"}
-                    color={formData.truckPicture ? "success" : "primary"}
-                    startIcon={formData.truckPicture ? <CheckCircleIcon /> : <UploadIcon />}
-                    sx={{ 
-                      height: '56px', 
-                      width: '100%',
-                      borderColor: errors.truckPicture ? 'error.main' : undefined,
-                      position: 'relative'
-                    }}
-                    disabled={loading}
+                    variant="outlined"
+                    fullWidth
+                    startIcon={formData.truckPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                    sx={{ height: '56px' }}
+                    color={formData.truckPicture ? 'success' : 'primary'}
                   >
                     {formData.truckPicture ? 'Vehicle Photo Uploaded ✓' : 'Upload Vehicle Photo'}
                     <input
                       type="file"
-                      accept="image/jpeg"
                       hidden
-                      onChange={(e) => handleFileChange('truckPicture', e)}
+                      onChange={handleFileChange('truckPicture')}
                     />
                   </Button>
-                  {formData.truckPicture && (
-                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
-                      Vehicle photo selected successfully
-                    </Typography>
-                  )}
-                  {errors.truckPicture && (
+                  {formSubmitted && errors.truckPicture && (
                     <FormHelperText error>{errors.truckPicture}</FormHelperText>
                   )}
-                </Box>
-                <Box sx={{ flex: '1 1 calc(33% - 8px)', minWidth: '240px' }}>
+                </Grid>
+                <Grid item xs={12} sm={4}>
                   <Button
                     component="label"
-                    variant={formData.registrationBook ? "contained" : "outlined"}
-                    color={formData.registrationBook ? "success" : "primary"}
-                    startIcon={formData.registrationBook ? <CheckCircleIcon /> : <UploadIcon />}
-                    sx={{ 
-                      height: '56px', 
-                      width: '100%',
-                      borderColor: errors.registrationBook ? 'error.main' : undefined,
-                      position: 'relative'
-                    }}
-                    disabled={loading}
+                    variant="outlined"
+                    fullWidth
+                    startIcon={formData.registrationBook ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                    sx={{ height: '56px' }}
+                    color={formData.registrationBook ? 'success' : 'primary'}
                   >
-                    {formData.registrationBook ? 'Registration Book Uploaded ✓' : 'Upload Registration Book'}
+                    {formData.registrationBook ? 'Registration Uploaded ✓' : 'Upload Registration'}
                     <input
                       type="file"
                       hidden
-                      onChange={(e) => handleFileChange('registrationBook', e)}
+                      onChange={handleFileChange('registrationBook')}
                     />
                   </Button>
-                  {formData.registrationBook && (
-                    <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 1 }}>
-                      Registration book selected successfully
-                    </Typography>
-                  )}
-                  {errors.registrationBook && (
+                  {formSubmitted && errors.registrationBook && (
                     <FormHelperText error>{errors.registrationBook}</FormHelperText>
                   )}
-                </Box>
-              </Box>
+                </Grid>
+              </Grid>
             </Box>
           </Stack>
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          <Button onClick={handleClose} color="inherit" disabled={loading}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained" 
-            color="primary"
-            disabled={loading}
+        );
+      
+      case 3: // Review Details
+        return (
+          <Stack spacing={3}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Review Vehicle Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Please review all the information before submitting
+            </Typography>
+            
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Vehicle Information
+                </Typography>
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="body2">
+                    <strong>Registration Number:</strong> {formData.regNumber}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Vehicle Type:</strong> {formData.vehicleType}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Make:</strong> {formData.make}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Model:</strong> {formData.model}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Year:</strong> {formData.year}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Last Service Date:</strong> {formData.lastServiceDate?.format('DD/MM/YYYY') || 'Not provided'}
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Owner Information
+                </Typography>
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="body2">
+                    <strong>Owner Name:</strong> {formData.ownerName}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>ID Number:</strong> {formData.ownerIdNumber}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Cell Number:</strong> {formData.ownerCellNumber}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Address:</strong> {formData.ownerAddress}
+                  </Typography>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Documents
+                </Typography>
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="body2">
+                    <strong>ID Picture:</strong> {formData.idPicture ? 'Uploaded' : 'Not uploaded'}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Vehicle Picture:</strong> {formData.truckPicture ? 'Uploaded' : 'Not uploaded'}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Registration Book:</strong> {formData.registrationBook ? 'Uploaded' : 'Not uploaded'}
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Stack>
+        );
+      
+      case 4: // Confirmation
+        return (
+          <Stack spacing={3} alignItems="center">
+            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60 }} />
+            <Typography variant="h6" align="center">
+              Vehicle Registration Successful!
+            </Typography>
+            <Typography variant="body1" align="center">
+              The vehicle has been successfully registered in the system.
+            </Typography>
+            <Typography variant="body1" align="center" fontWeight="bold">
+              Reference Number: {referenceNumber}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" align="center">
+              Please keep this reference number for your records.
+            </Typography>
+          </Stack>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  // Main render function
+  return (
+    <Dialog
+      open={open}
+      onClose={loading ? undefined : handleClose}
+      maxWidth="md"
+      fullWidth
+      aria-labelledby="vehicle-dialog-title"
+    >
+      <DialogTitle id="vehicle-dialog-title" sx={{ m: 0, p: 2 }}>
+        {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          disabled={loading}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent dividers>
+        {/* Stepper */}
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        {/* Error message */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Step content */}
+        {renderStepContent()}
+      </DialogContent>
+
+      {/* Navigation buttons */}
+      {activeStep !== steps.length - 1 && (
+        <DialogActions sx={{ justifyContent: 'space-between', p: 2 }}>
+          <Button
+            onClick={handleBack}
+            disabled={activeStep === 0 || loading}
+            variant="outlined"
           >
-            {loading ? 'Submitting...' : 'Register Vehicle'}
+            Back
+          </Button>
+          <Box>
+            <Button
+              onClick={activeStep === steps.length - 2 ? handleSubmit : handleStepNext}
+              variant="contained"
+              color="primary"
+              disabled={loading}
+              sx={{ ml: 1 }}
+            >
+              {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
+            </Button>
+          </Box>
+        </DialogActions>
+      )}
+
+      {/* Confirmation step buttons */}
+      {activeStep === steps.length - 1 && (
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleClose} variant="contained" color="primary">
+            Close
           </Button>
         </DialogActions>
-      </Dialog>
-      {/* Notification Snackbar */}
-      <Snackbar 
-        open={notification !== null} 
-        autoHideDuration={6000} 
+      )}
+
+      {/* Notification snackbar */}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={6000}
         onClose={() => setNotification(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={() => setNotification(null)} 
-          severity={notification?.type || 'info'} 
-          sx={{ width: '100%' }}
-        >
-          {notification?.message || ''}
-        </Alert>
+        {notification ? (
+          <Alert
+            onClose={() => setNotification(null)}
+            severity={notification.type}
+            sx={{ width: '100%' }}
+          >
+            {notification.message}
+          </Alert>
+        ) : null}
       </Snackbar>
-    </LocalizationProvider>
+    </Dialog>
   );
 }

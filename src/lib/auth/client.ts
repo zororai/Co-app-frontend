@@ -2090,6 +2090,42 @@ cooperativename: string;
   }
   
   /**
+   * Fetch ore transport data
+   * @returns A promise that resolves to the ore data
+   */
+  async fetchOre(): Promise<any[]> {
+    try {
+      // Get token from localStorage directly to ensure we have the latest token
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.warn('No authentication token found in localStorage');
+        return [];
+      }
+
+      const response = await fetch('http://localhost:1000/api/ore-transports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({}), // Empty body for now, can be modified to include filters
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch ore data');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching ore data:', error);
+      return [];
+    }
+  }
+
+  /**
    * Fetch vehicle details by ID
    * @param vehicleId The ID of the vehicle to fetch
    * @returns A promise that resolves to the vehicle details
