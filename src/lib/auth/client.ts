@@ -55,6 +55,9 @@ class AuthClient {
         position: string;
         isActive: boolean;
         notes: string;
+        startDate?: string;
+        emergencyContactName?: string;
+        emergencyContactPhone?: string;
     }): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -2093,20 +2096,30 @@ cooperativename: string;
    */
   async fetchVehicleById(vehicleId: string) {
     try {
-      const token = this.getToken();
+      // Get token from localStorage directly to ensure we have the latest token
+      const token = localStorage.getItem('custom-auth-token');
       if (!token) {
-        console.warn('No authentication token found');
+        console.warn('No authentication token found in localStorage');
+        throw new Error('Authentication token not found');
       }
+
+      console.log('Using token for vehicle fetch:', token.substring(0, 10) + '...');
 
       const response = await fetch(`http://localhost:1000/api/vehicles/${vehicleId}`, {
         method: 'GET',
         headers: {
-          'accept': '*/*',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
+          'Accept': '*/*',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
       });
 
+      console.log('Vehicle fetch response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
         throw new Error(`Error fetching vehicle details: ${response.status}`);
       }
 

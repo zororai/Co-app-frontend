@@ -29,6 +29,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboarding/vehicle-details-dialog';
 
 
 function noop(): void {
@@ -119,6 +120,8 @@ export function CustomersTable({
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
+  const [selectedVehicleId, setSelectedVehicleId] = React.useState<string | null>(null);
+  const [isVehicleDetailsDialogOpen, setIsVehicleDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch vehicles from API when component mounts or refreshTrigger changes
@@ -176,10 +179,10 @@ export function CustomersTable({
     }
   };
   
-  // Function to handle viewing user details
-  const handleViewUserDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsUserDetailsDialogOpen(true);
+  // Function to handle viewing vehicle details
+  const handleViewUserDetails = (vehicleId: string) => {
+    setSelectedVehicleId(vehicleId);
+    setIsVehicleDetailsDialogOpen(true);
   };
 
   // Function to refresh the table data
@@ -415,7 +418,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View Driver Details</button>
+                      }}>View Vehicle Details</button>
                     </Box>
                   </TableCell>
                
@@ -450,6 +453,14 @@ export function CustomersTable({
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
+      />
+      
+      {/* Vehicle details dialog */}
+      <VehicleDetailsDialog
+        open={isVehicleDetailsDialogOpen}
+        onClose={() => setIsVehicleDetailsDialogOpen(false)}
+        vehicleId={selectedVehicleId}
+        onRefresh={refreshTableData}
       />
     </Card>
   );
