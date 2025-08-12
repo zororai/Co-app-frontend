@@ -4,15 +4,15 @@ import { iconMap } from './icon-map';
 
 export const navItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
-  { key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
+  //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
   { key: 'user-admin-onboarding', 
     title: 'User Onboarding',
     icon: 'users',
     items: [
-      { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'id-card'},
-      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'id-card'},
-      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'id-card'},   
-      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'id-card'},   
+      { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'user'},
+      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
+      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
+      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
     
     ], 
     
@@ -50,8 +50,8 @@ export const navItems = [
     title: 'Transport Management',
     icon: 'truck',
     items: [
-      { key: 'transport-list', title: 'Transport List', href: '/transport-management/list' },
-      { key: 'transport-add', title: 'Add Transport', href: '/transport-management/add' },
+      { key: 'transport-list', title: 'Transport List', href: '/transport-management/list', icon: 'truck' },
+      { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },
   {

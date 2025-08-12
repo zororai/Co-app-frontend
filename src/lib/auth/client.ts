@@ -186,24 +186,21 @@ class AuthClient {
 
         try {
             // Format the data according to the API requirements
+            // Format the data to match the backend model structure
             const requestData = {
-                id: `ORE-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-                oreUniqueId: `ORE-${Date.now().toString(36)}`,
-                shaftNumbers: [oreData.shaftNumbers], // API expects an array
+                shaftNumbers: oreData.shaftNumbers, // Backend expects a string, not an array
                 weight: Number(oreData.weight),
                 numberOfBags: Number(oreData.numberOfBags),
                 transportStatus: oreData.transportStatus,
-                selectedTransportdriver: oreData.selectedTransportdriver,
-                selectedTransport: oreData.selectedTransport,
                 tax: oreData.tax,
-                transportReason: oreData.transportReason || '',
                 processStatus: oreData.processStatus || '',
-                location: oreData.location || '',
-                date: oreData.date,
-                time: oreData.time
+                location: oreData.location || ''
+                // Removed fields not in the backend model:
+                // selectedTransportdriver, selectedTransport, transportReason, date, time
             };
 
-            const response = await fetch('http://localhost:1000/api/ore-transports/Create', {
+            console.log('Sending request to API with data:', JSON.stringify(requestData));
+            const response = await fetch('http://localhost:1000/api/ore-transports/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

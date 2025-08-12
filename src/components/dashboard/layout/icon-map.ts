@@ -11,6 +11,8 @@ import {
   LocalShipping,
   Lock,
   VpnKey,
+  Agriculture,
+  AssignmentInd,
   Person,
 } from '@mui/icons-material';
 
@@ -27,4 +29,6 @@ export const iconMap = {
   'lock': Lock,
   'key': VpnKey,
   'driver': DriveEta,
+  'user': AssignmentInd,
+  'truck': Agriculture,
 };
