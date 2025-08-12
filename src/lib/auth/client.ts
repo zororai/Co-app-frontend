@@ -147,6 +147,88 @@ class AuthClient {
      * Fetch all users from the backend
      */
    
+    /**
+     * Create a new ore transport record
+     * @param oreData The ore transport data to create
+     * @returns A promise that resolves to the response data or error
+     */
+    async createOre(oreData: {
+        shaftNumbers: string;
+        weight: string | number;
+        numberOfBags: string | number;
+        transportStatus: string;
+        selectedTransportdriver: string;
+        selectedTransport: string;
+        originLocation?: string;
+        destination?: string;
+        notes?: string;
+        transportReason?: string;
+        processStatus?: string;
+        location?: string;
+        date: string;
+        time: {
+            hour: number;
+            minute: number;
+            second: number;
+            nano: number;
+        };
+        tax: Array<{
+            taxType: string;
+            taxRate: number;
+        }>;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            // Format the data according to the API requirements
+            const requestData = {
+                id: `ORE-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+                oreUniqueId: `ORE-${Date.now().toString(36)}`,
+                shaftNumbers: [oreData.shaftNumbers], // API expects an array
+                weight: Number(oreData.weight),
+                numberOfBags: Number(oreData.numberOfBags),
+                transportStatus: oreData.transportStatus,
+                selectedTransportdriver: oreData.selectedTransportdriver,
+                selectedTransport: oreData.selectedTransport,
+                tax: oreData.tax,
+                transportReason: oreData.transportReason || '',
+                processStatus: oreData.processStatus || '',
+                location: oreData.location || '',
+                date: oreData.date,
+                time: oreData.time
+            };
+
+            const response = await fetch('http://localhost:1000/api/ore-transports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(requestData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to create ore transport record');
+            }
+
+            const data = await response.json();
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error creating ore transport record:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
 
     /**
      * Register a new security company
@@ -2093,37 +2175,63 @@ cooperativename: string;
    * Fetch ore transport data
    * @returns A promise that resolves to the ore data
    */
-  async fetchOre(): Promise<any[]> {
+  async fetchOre() {
     try {
-      // Get token from localStorage directly to ensure we have the latest token
-      const token = localStorage.getItem('custom-auth-token');
+      const token = this.getToken();
       if (!token) {
-        console.warn('No authentication token found in localStorage');
-        return [];
+        console.warn('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:1000/api/ore-transports', {
-        method: 'POST',
+      const response = await fetch('http://localhost:1000/api/ore-transports/allOre', {
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({}), // Empty body for now, can be modified to include filters
-        credentials: 'include'
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch ore data');
+        throw new Error(`Error fetching approved drivers: ${response.status}`);
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching ore data:', error);
-      return [];
+      console.error('Error fetching approved drivers:', error);
+      throw error;
     }
   }
+
+
+    async fetchOreTransportData() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        console.warn('No authentication token found');
+
+      }
+
+      const response = await fetch('http://localhost:1000/api/ore-transports/allOre', {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching approved drivers: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching approved drivers:', error);
+      throw error;
+    }
+  }
+
+
 
   /**
    * Fetch vehicle details by ID

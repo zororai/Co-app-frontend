@@ -10,9 +10,9 @@ export const navItems = [
     icon: 'users',
     items: [
       { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'id-card'},
-      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'user-secret'},
-      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'driver'},   
-      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
+      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'id-card'},
+      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'id-card'},   
+      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'id-card'},   
     
     ], 
     

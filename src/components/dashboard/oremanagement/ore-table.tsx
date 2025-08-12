@@ -123,11 +123,11 @@ export function CustomersTable({
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchOreData = async () => {
+    const fetchOreTransportData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedOres = await authClient.fetchOre();
+        const fetchedOres = await authClient.fetchOreTransportData();
         setUsers(fetchedOres);
       } catch (err) {
         console.error('Error fetching ore data:', err);
@@ -136,8 +136,7 @@ export function CustomersTable({
         setLoading(false);
       }
     };
-
-    fetchOreData();
+    fetchOreTransportData();
   }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
@@ -334,11 +333,7 @@ export function CustomersTable({
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No users found
-                  </Typography>
-                </TableCell>
+              
               </TableRow>
             )}
             {filteredRows.map((row) => {
