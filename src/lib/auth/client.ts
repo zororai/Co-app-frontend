@@ -203,7 +203,7 @@ class AuthClient {
                 time: oreData.time
             };
 
-            const response = await fetch('http://localhost:1000/api/ore-transports', {
+            const response = await fetch('http://localhost:1000/api/ore-transports/Create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -382,6 +382,39 @@ class AuthClient {
             return [];
         }
     }
+    
+    /**
+     * Fetch all ore transport data from the backend
+     * @returns A promise that resolves to an array of ore transport records
+     */
+    async fetchOreTransportData(): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/ore-transports/allOre', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch users');
+          }
+          const data = await response.json();
+          return Array.isArray(data) ? data : data.users || [];
+      } catch (error) {
+          console.error('Error fetching users:', error);
+          return [];
+      }
+  }
+ 
     
     async fetchUsers(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
@@ -1278,7 +1311,63 @@ class AuthClient {
             return null;
         }
     }
- 
+    async fetchOreDetails(id: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/ore-transports/${id}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch customer details');
+          }
+          return await response.json();
+      } catch (error) {
+          console.error('Error fetching customer details:', error);
+          return null;
+      }
+  }
+  
+  /**
+   * Fetch approved shaft assignments
+   * @returns A promise that resolves to the approved shaft assignments or null on error
+   */
+  async fetchApprovedShaftAssignments(): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/shaft-assignments/approved', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch approved shaft assignments');
+          }
+          return await response.json();
+      } catch (error) {
+          console.error('Error fetching approved shaft assignments:', error);
+          return null;
+      }
+  }
     async fetchCustomerDetails(id: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -1701,6 +1790,37 @@ cooperativename: string;
    * @param id The ID of the section to approve
    * @returns A promise that resolves to the response data or null on error
    */
+  async setShaftForApproval(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/shaft-assignments/${id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to approve section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error approving section:', error);
+      return null;
+    }
+  }
   async setSectionForApproval(id: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -1802,6 +1922,37 @@ cooperativename: string;
       return null;
     }
   }
+  async setShaftForRejection(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/shaft-assignments/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to reject section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error rejecting section:', error);
+      return null;
+    }
+  }
 
   /**
    * Push back a section
@@ -1809,6 +1960,37 @@ cooperativename: string;
    * @param reason The reason for pushing back
    * @returns A promise that resolves to the response data or null on error
    */
+  async setShaftForPushBack(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/shaft-assignments/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to push back section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error pushing back section:', error);
+      return null;
+    }
+  }
   async setSectionForPushBack(id: string, reason: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -2203,33 +2385,7 @@ cooperativename: string;
   }
 
 
-    async fetchOreTransportData() {
-    try {
-      const token = this.getToken();
-      if (!token) {
-        console.warn('No authentication token found');
-
-      }
-
-      const response = await fetch('http://localhost:1000/api/ore-transports/allOre', {
-        method: 'GET',
-        headers: {
-          'accept': '*/*',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error fetching approved drivers: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error fetching approved drivers:', error);
-      throw error;
-    }
-  }
+    // This method is implemented above - removing duplicate implementation
 
 
 

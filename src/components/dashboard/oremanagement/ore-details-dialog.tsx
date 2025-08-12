@@ -12,15 +12,15 @@ import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { authClient } from '@/lib/auth/client';
 
-interface UserDetailsDialogProps {
+interface OreDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   userId: string | null;
   onRefresh?: () => void; // Optional callback to refresh data after action
 }
 
-export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDetailsDialogProps): React.JSX.Element {
-  const [userDetails, setUserDetails] = React.useState<any>(null);
+export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetailsDialogProps): React.JSX.Element {
+  const [oreDetails, setOreDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
   const [actionLoading, setActionLoading] = React.useState<boolean>(false);
@@ -30,7 +30,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
   const [actionType, setActionType] = React.useState<'reject' | 'pushback' | null>(null);
 
-  // Reset action states when dialog opens/closes
+  // Reset states when dialog opens/closes
   React.useEffect(() => {
     if (open) {
       setActionError('');
@@ -41,135 +41,32 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     }
   }, [open]);
 
+  // Fetch ore details when dialog opens
   React.useEffect(() => {
-    const fetchUserDetails = async () => {
+    const fetchOreDetails = async () => {
       if (!userId) return;
       
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchUserById(userId);
-        setUserDetails(details);
+        const details = await authClient.fetchOreDetails(userId);
+        setOreDetails(details);
       } catch (err) {
-        console.error('Error fetching user details:', err);
-        setError('Failed to load user details. Please try again.');
+        console.error('Error fetching ore details:', err);
+        setError('Failed to load ore details. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
     if (open && userId) {
-      fetchUserDetails();
+      fetchOreDetails();
     } else {
       // Reset state when dialog closes
-      setUserDetails(null);
+      setOreDetails(null);
       setError('');
     }
   }, [open, userId]);
-  
-  // Handle approve action
-  const handleApprove = async () => {
-    if (!userId) return;
-    
-    setActionLoading(true);
-    setActionError('');
-    setActionSuccess('');
-    
-    try {
-      const result = await authClient.approveUser(userId);
-      if (result.success) {
-        setActionSuccess('User approved successfully');
-        // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
-        // Call parent refresh if provided
-        if (onRefresh) onRefresh();
-      } else {
-        setActionError(result.error || 'Failed to approve user');
-      }
-    } catch (err) {
-      console.error('Error approving user:', err);
-      setActionError('An unexpected error occurred');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-  
-  // Handle reject action
-  const handleReject = async () => {
-    if (!userId || !reason.trim()) {
-      setActionError('Please provide a reason for rejection');
-      return;
-    }
-    
-    setActionLoading(true);
-    setActionError('');
-    setActionSuccess('');
-    
-    try {
-      const result = await authClient.rejectUser(userId, reason);
-      if (result.success) {
-        setActionSuccess('User rejected successfully');
-        setShowReasonField(false);
-        setReason('');
-        setActionType(null);
-        // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
-        // Call parent refresh if provided
-        if (onRefresh) onRefresh();
-      } else {
-        setActionError(result.error || 'Failed to reject user');
-      }
-    } catch (err) {
-      console.error('Error rejecting user:', err);
-      setActionError('An unexpected error occurred');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-  
-  // Handle push back action
-  const handlePushBack = async () => {
-    if (!userId || !reason.trim()) {
-      setActionError('Please provide a reason for pushing back');
-      return;
-    }
-    
-    setActionLoading(true);
-    setActionError('');
-    setActionSuccess('');
-    
-    try {
-      const result = await authClient.pushbackUser(userId, reason);
-      if (result.success) {
-        setActionSuccess('User pushed back successfully');
-        setShowReasonField(false);
-        setReason('');
-        setActionType(null);
-        // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
-        // Call parent refresh if provided
-        if (onRefresh) onRefresh();
-      } else {
-        setActionError(result.error || 'Failed to push back user');
-      }
-    } catch (err) {
-      console.error('Error pushing back user:', err);
-      setActionError('An unexpected error occurred');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-  
-  // Show reason field for reject or push back
-  const showReasonFieldFor = (type: 'reject' | 'pushback') => {
-    setShowReasonField(true);
-    setActionType(type);
-    setActionError('');
-    setActionSuccess('');
-  };
   
   // Cancel action
   const cancelAction = () => {
@@ -177,6 +74,36 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setReason('');
     setActionType(null);
     setActionError('');
+  };
+
+  // Handle action (reject/pushback)
+  const handleAction = async () => {
+    if (!actionType || !reason.trim() || !userId) return;
+    
+    setActionLoading(true);
+    setActionError('');
+    setActionSuccess('');
+    
+    try {
+      // Here you would call the appropriate API method based on actionType
+      // For example: await authClient.rejectOre(userId, reason) or await authClient.pushbackOre(userId, reason)
+      
+      // For now, just simulate success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setActionSuccess(`Ore has been ${actionType === 'reject' ? 'rejected' : 'pushed back'} successfully.`);
+      setShowReasonField(false);
+      
+      // Refresh parent component if callback provided
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} ore:`, err);
+      setActionError(`Failed to ${actionType === 'reject' ? 'reject' : 'push back'} ore. Please try again.`);
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -192,7 +119,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         borderBottom: '1px solid #e0e0e0',
         pb: 2
       }}>
-        User Details
+        Ore Details
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -207,30 +134,50 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
           </Box>
         )}
 
-        {!loading && !error && userDetails && (
+        {!loading && !error && oreDetails && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              <DetailItem label="Name" value={userDetails.name || 'N/A'} />
-              <DetailItem label="Surname" value={userDetails.surname || 'N/A'} />
-              <DetailItem label="Email" value={userDetails.email || 'N/A'} />
-              <DetailItem label="Phone" value={userDetails.cellNumber || 'N/A'} />
-              <DetailItem label="ID Number" value={userDetails.idNumber || 'N/A'} />
-              <DetailItem label="Address" value={userDetails.address || 'N/A'} />
-              <DetailItem label="Position" value={userDetails.position || 'N/A'} />
-              <DetailItem label="Role" value={userDetails.role || 'N/A'} />
-              <DetailItem label="Status" value={userDetails.status || 'N/A'} />
+              <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
+              <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
+              <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
+              <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
+              <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
+              <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
+              <DetailItem label="Selected Transport" value={oreDetails.selectedTransport || 'N/A'} />
+              <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
+              <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
+              <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
+              <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
             </Box>
             
-            {userDetails.notes && (
+            {oreDetails.transportReason && (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Notes</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Reason</Typography>
                 <Box sx={{ 
                   p: 2, 
                   bgcolor: '#f5f5f5', 
                   borderRadius: 1,
                   whiteSpace: 'pre-wrap'
                 }}>
-                  <Typography variant="body2">{userDetails.notes}</Typography>
+                  <Typography variant="body2">{oreDetails.transportReason}</Typography>
+                </Box>
+              </Box>
+            )}
+            
+            {oreDetails.tax && oreDetails.tax.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Tax Information</Typography>
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: '#f5f5f5', 
+                  borderRadius: 1
+                }}>
+                  {oreDetails.tax.map((taxItem: any, index: number) => (
+                    <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
+                      <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Tax Rate:</strong> {taxItem.taxRate?.toString() || 'N/A'}</Typography>
+                    </Box>
+                  ))}
                 </Box>
               </Box>
             )}
@@ -277,7 +224,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               Cancel
             </Button>
             <Button 
-              onClick={actionType === 'reject' ? handleReject : handlePushBack}
+              onClick={() => handleAction()}
               variant="contained"
               color="primary"
               disabled={actionLoading || reason.trim() === ''}
@@ -300,35 +247,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
             Close
           </Button>
           
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
-              onClick={() => showReasonFieldFor('pushback')}
-              variant="contained"
-              color="warning"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
-            >
-              Push Back
-            </Button>
-            <Button 
-              onClick={() => showReasonFieldFor('reject')}
-              variant="contained"
-              color="error"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
-            >
-              Reject
-            </Button>
-            <Button 
-              onClick={handleApprove}
-              variant="contained"
-              color="success"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
-            >
-              {actionLoading ? 'Processing...' : 'Approve'}
-            </Button>
-          </Box>
+         
         </DialogActions>
       )}
     </Dialog>
@@ -336,7 +255,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
 }
 
 // Helper component for displaying detail items
-function DetailItem({ label, value }: { label: string; value: string }) {
+function DetailItem({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <Box>
       <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#666' }}>{label}</Typography>

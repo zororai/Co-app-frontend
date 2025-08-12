@@ -159,13 +159,13 @@ export function CustomersTable({
       // Call the appropriate API method based on the status
       switch (actionStatus) {
         case 'APPROVED':
-          await authClient.setSectionForApproval(discussionCustomer.id);
+          await authClient.setShaftForApproval(discussionCustomer.id);
           break;
         case 'REJECTED':
-          await authClient.setSectionForRejection(discussionCustomer.id, discussionReason);
+          await authClient.setShaftForRejection(discussionCustomer.id, discussionReason);
           break;
         case 'PUSHED_BACK':
-          await authClient.setSectionForPushBack(discussionCustomer.id, discussionReason);
+          await authClient.setShaftForPushBack(discussionCustomer.id, discussionReason);
           break;
         default:
           throw new Error(`Unsupported status: ${actionStatus}`);
@@ -178,8 +178,10 @@ export function CustomersTable({
       setDiscussionReason('');
       setShowReasonField(false);
 
-      // Always refresh the table data
-      refreshTableData();
+      // Refresh the table data
+      if (onRefresh) {
+        onRefresh(); // Call the parent's refresh function
+      }
 
     } catch (error) {
       console.error('Error updating section status:', error);

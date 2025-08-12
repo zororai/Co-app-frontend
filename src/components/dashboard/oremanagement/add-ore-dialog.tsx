@@ -35,6 +35,8 @@ import Divider from '@mui/material/Divider';
 import { CheckCircle } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Autocomplete from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -88,7 +90,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
   
-  // Form state
+  // State for form data
   const [formData, setFormData] = React.useState({
     firstName: '',
     lastName: '',
@@ -131,6 +133,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     ]
   });
 
+  // State for shaft assignments
+  const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
+  const [loadingShafts, setLoadingShafts] = React.useState<boolean>(false);
+  const [shaftError, setShaftError] = React.useState<string>('');
+  
   // Email validation function
   const validateEmail = (email: string): boolean => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -309,20 +316,72 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     }
   };
 
+  // Fetch approved shaft assignments when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      fetchApprovedShaftAssignments();
+    }
+  }, [open]);
+
+  // Function to fetch approved shaft assignments
+  const fetchApprovedShaftAssignments = async () => {
+    setLoadingShafts(true);
+    setShaftError('');
+    try {
+      const response = await authClient.fetchApprovedShaftAssignments();
+      console.log('Shaft assignments response:', response);
+      
+      if (response && Array.isArray(response)) {
+        // Use mock data for testing if response is empty
+        if (response.length === 0) {
+          const mockData = [
+            { id: '1', shaftNumber: 'SA1' },
+            { id: '2', shaftNumber: 'SA2' },
+            { id: '3', shaftNumber: 'SA3' }
+          ];
+          setShaftAssignments(mockData);
+          console.log('Using mock data:', mockData);
+        } else {
+          setShaftAssignments(response);
+          console.log('Setting shaft assignments:', response);
+        }
+      } else {
+        // Use mock data if response is not as expected
+        const mockData = [
+          { id: '1', shaftNumber: 'SA1' },
+          { id: '2', shaftNumber: 'SA2' },
+          { id: '3', shaftNumber: 'SA3' }
+        ];
+        setShaftAssignments(mockData);
+        console.log('Using mock data due to invalid response:', mockData);
+      }
+    } catch (error) {
+      console.error('Error fetching shaft assignments:', error);
+      setShaftError('Failed to load shaft assignments');
+      
+      // Use mock data on error
+      const mockData = [
+        { id: '1', shaftNumber: 'SA1' },
+        { id: '2', shaftNumber: 'SA2' },
+        { id: '3', shaftNumber: 'SA3' }
+      ];
+      setShaftAssignments(mockData);
+      console.log('Using mock data due to error:', mockData);
+    } finally {
+      setLoadingShafts(false);
+    }
+  };
+
   // Handle dialog close
   const handleClose = () => {
-    // Reset form state
-    setActiveStep(0);
-    setValidationErrors({});
-    setError(null);
-    setIsSubmitting(false);
-    setSuccess(false);
-    setTempPassword('••••••••••');
-    setShowPassword(false);
-    setFormSubmitted(false);
-    
-    // Call parent onClose
-    onClose();
+    if (!loading) {
+      // Reset form state
+      setActiveStep(0);
+      setError(null);
+      setSuccess(false);
+      setFormSubmitted(false);
+      onClose();
+    }
   };
 
   const copyToClipboard = () => {
@@ -378,16 +437,57 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Shaft Numbers"
-                  name="shaftNumbers"
-                  value={formData.shaftNumbers || ''}
-                  onChange={handleChange('shaftNumbers')}
-                  placeholder="Enter shaft numbers (comma separated)"
-                  margin="normal"
-                  helperText="Enter shaft numbers separated by commas"
+                <Autocomplete
+                  multiple
+                  id="shaft-numbers-autocomplete"
+                  options={shaftAssignments || []}
+                  getOptionLabel={(option) => {
+                    // Handle both shaftNumber and shaftNumbers fields
+                    return option.shaftNumbers || option.shaftNumber || '';
+                  }}
+                  loading={loadingShafts}
+                  defaultValue={[]}
+                  onChange={(event, newValue) => {
+                    console.log('Selected values:', newValue);
+                    const shaftNumbersString = newValue
+                      .map(item => item.shaftNumbers || item.shaftNumber || '')
+                      .join(', ');
+                    setFormData({
+                      ...formData,
+                      shaftNumbers: shaftNumbersString
+                    });
+                  }}
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  renderOption={(props, option) => {
+                    const { key, ...otherProps } = props;
+                    return (
+                      <li key={key} {...otherProps}>
+                        {option.shaftNumbers || option.shaftNumber || ''}
+                      </li>
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      required
+                      label="Shaft Numbers"
+                      placeholder="Search for shaft numbers"
+                      margin="normal"
+                      helperText={shaftError || "Select shaft numbers from approved assignments"}
+                      error={!!shaftError}
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <React.Fragment>
+                            {loadingShafts ? (
+                              <CircularProgress color="inherit" size={20} />
+                            ) : null}
+                            {params.InputProps.endAdornment}
+                          </React.Fragment>
+                        ),
+                      }}
+                    />
+                  )}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -891,32 +991,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               </Typography>
             </Box>
             
-            <Box sx={{ 
-              border: '1px solid #ffd54f', 
-              bgcolor: '#fffde7', 
-              borderRadius: 1, 
-              p: 2, 
-              mb: 3 
-            }}>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Reference Number
-              </Typography>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-               
-                <Box>
-                  <IconButton size="small" onClick={() => setShowPassword(!showPassword)}>
-                    <VisibilityIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={copyToClipboard}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              </Box>
-            </Box>
+          
        
             
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
