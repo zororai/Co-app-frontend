@@ -30,5 +30,5 @@ export const iconMap = {
   'key': VpnKey,
   'driver': DriveEta,
   'user': AssignmentInd,
-  'truck': Agriculture,
+  'v': Agriculture,
 };

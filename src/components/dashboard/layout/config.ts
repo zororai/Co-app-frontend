@@ -50,7 +50,8 @@ export const navItems = [
     title: 'Transport Management',
     icon: 'truck',
     items: [
-      { key: 'transport-list', title: 'Transport List', href: '/transport-management/list', icon: 'truck' },
+      { key: 'transport-list', title: 'Transport Ore', href: '/transport-management/list', icon: 'truck' },
+      { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
       { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },
@@ -74,7 +75,7 @@ export const navItems = [
       { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'id-card' },
       { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'id-card' },
       { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'id-card' },
-   
+      { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'id-card' },
     ],
   },
 ] satisfies NavItemConfig[];

@@ -18,6 +18,7 @@ import { Logo } from '@/components/core/logo';
 
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
+// No need to import height from @mui/system
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
@@ -52,8 +53,15 @@ export function SideNav(): React.JSX.Element {
     >
       <Stack spacing={2} sx={{ p: 3 }}>
         <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }}>
-         
-          <Logo color="dark" height={32} width={122} />
+          <Box
+            component="img"
+            src="/assets/logo-emblem.png"
+            alt="Logo"
+            sx={{
+              height: 32,
+              width: 122
+            }}
+          />
         </Box>
         <Box
           sx={{
