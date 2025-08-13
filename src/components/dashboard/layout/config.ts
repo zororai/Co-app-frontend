@@ -49,9 +49,8 @@ export const navItems = [
     title: 'Transport Management',
     icon: 'truck',
     items: [
-      { key: 'transport-list', title: 'Transport Ore', href: '/transport-management/list', icon: 'truck' },
-      { key: 'approved-vehicles', title: 'List of Approved Vehicles', href: paths.dashboard.approvedvehicles, icon: 'mountain' },
-      { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
+      { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehicl, icon: 'mountain' },
+       { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },
   {

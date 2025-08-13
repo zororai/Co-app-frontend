@@ -1,7 +1,7 @@
 export const paths = {
   home: '/',
   auth: { signIn: '/auth/sign-in', signUp: '/auth/sign-up', resetPassword: '/auth/reset-password' },
-  dashboard: {
+   dashboard: {
     overview: '/dashboard',
     account: '/dashboard/account',
     customers: '/dashboard/customers',
@@ -16,6 +16,7 @@ export const paths = {
     minerDetails: '/dashboard/miner-details',
     oremanagement: '/dashboard/oremanagement',
 oreTransport: '/dashboard/oreTransport',
+approvedvehicl: '/dashboard/approvedvehicles',
     securityonboardingstatus: '/dashboard/securityonboardingstatus',
     driveronboarding: '/dashboard/driveronboarding',
     vehicleonboarding: '/dashboard/vehicleonboarding',
