@@ -1365,6 +1365,35 @@ class AuthClient {
           return null;
       }
   }
+
+  async fetchSecurityDetails(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return null;
+    }
+    try {
+        const response = await fetch(`http://localhost:1000/api/security-companies/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch customer details');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching customer details:', error);
+        return null;
+    }
+}
+
+  
     async fetchCustomerDetails(id: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

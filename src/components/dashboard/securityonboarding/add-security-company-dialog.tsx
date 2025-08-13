@@ -208,6 +208,11 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
     if (activeStep === steps.length - 2) {
       // Submit form before going to confirmation step
       handleSubmit();
+      
+      // Refresh the table immediately when moving to confirmation step
+      if (onRefresh) {
+        onRefresh();
+      }
     }
     
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -282,6 +287,12 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
   // Handle dialog close
   const handleDialogClose = () => {
     if (!loading) {
+      // Refresh the parent component if needed
+      if (onRefresh && success) {
+        onRefresh();
+      }
+      
+      // Reset the form
       setActiveStep(0);
       setError(null);
       setSuccess(false);
@@ -738,24 +749,52 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
       case 4:
         return (
           <Box sx={{ textAlign: 'center', py: 2 }}>
-            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
-            <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
-              Company Submitted Successfully!
-            </Typography>
-            <Typography variant="body2" sx={{ mb: 3 }}>
-              {formData.companyName} has been submitted for approval and is now pending review.
-            </Typography>
+            {error ? (
+              <>
+                <CheckCircleOutlineIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
+                <Typography variant="h6" color="error.main" sx={{ mb: 1 }}>
+                  Error Submitting Company
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3 }}>
+                  {error}
+                </Typography>
+              </>
+            ) : (
+              <>
+                <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
+                <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
+                  Company Submitted Successfully!
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 3 }}>
+                  {formData.companyName} has been submitted for approval and is now pending review.
+                </Typography>
+              </>
+            )}
             
-            <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
-              <Typography variant="subtitle2">Next Steps:</Typography>
-              <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
-                <li>Company profile has been created with "Pending Approval" status</li>
-                <li>Notification sent to Loss Control Manager and Mine Manager for review</li>
-                <li>Managers will review company details and uploaded documents</li>
-                <li>You will be notified once the approval decision is made</li>
-                <li>Upon approval, the company can begin onboarding workers</li>
-              </ul>
-            </Alert>
+            {!error && (
+              <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+                <Typography variant="subtitle2">Next Steps:</Typography>
+                <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
+                  <li>Company profile has been created with "Pending Approval" status</li>
+                  <li>Notification sent to Loss Control Manager and Mine Manager for review</li>
+                  <li>Managers will review company details and uploaded documents</li>
+                  <li>You will be notified once the approval decision is made</li>
+                  <li>Upon approval, the company can begin onboarding workers</li>
+                </ul>
+              </Alert>
+            )}
+            
+            {error && (
+              <Alert severity="warning" sx={{ mb: 3, textAlign: 'left' }}>
+                <Typography variant="subtitle2">Troubleshooting Steps:</Typography>
+                <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
+                  <li>Check your network connection</li>
+                  <li>Verify all required fields are filled correctly</li>
+                  <li>Try submitting the form again</li>
+                  <li>Contact system administrator if the issue persists</li>
+                </ul>
+              </Alert>
+            )}
       
           </Box>
         );

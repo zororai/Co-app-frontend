@@ -139,12 +139,12 @@ export function CustomersTable({
     fetchUserData();
   }, [refreshTrigger]);
 
-  const handleViewCustomer = async (customerId: string) => {
+  const handleViewUserDetails = async (userId: string) => {
     try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
+      const customerDetails = await authClient.fetchSecurityDetails(userId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
+        setIsUserDetailsDialogOpen(true);
       }
     } catch (error) {
       console.error('Error fetching customer details:', error);
@@ -152,12 +152,6 @@ export function CustomersTable({
     }
   };
   
-  // Function to handle viewing user details
-  const handleViewUserDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsUserDetailsDialogOpen(true);
-  };
-
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
@@ -428,7 +422,8 @@ export function CustomersTable({
       <SecurityDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
-        customer={rows.find(row => row.id === selectedUserId) || null}
+        customer={selectedCustomer}
+        onRefresh={refreshTableData}
       />
     </Card>
   );
