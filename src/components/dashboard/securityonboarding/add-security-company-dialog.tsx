@@ -756,11 +756,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                 <li>Upon approval, the company can begin onboarding workers</li>
               </ul>
             </Alert>
-            
-            <Alert severity="warning" sx={{ textAlign: 'left' }}>
-              <Typography variant="subtitle2">Reference Number: {referenceNumber}</Typography>
-              <Typography variant="body2">Please keep this reference number for your records.</Typography>
-            </Alert>
+      
           </Box>
         );
       default:

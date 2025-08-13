@@ -27,8 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { SecurityDetailsDialog } from '@/components/dashboard/securityonboarding/securityonboard-details';
 
 
 function noop(): void {
@@ -354,7 +353,7 @@ export function CustomersTable({
                     />
                   </TableCell>
                   <TableCell>{row.companyName || row.name || ''}</TableCell>
-                  <TableCell>{row.contactPerson || `${row.name || ''} ${row.surname || ''}`}</TableCell>
+                  <TableCell>{row.contactPersonName || ''}</TableCell>
                   <TableCell>{row.type || 'Security'}</TableCell>
                   <TableCell>
                     <Box sx={{
@@ -378,32 +377,10 @@ export function CustomersTable({
                       {row.status}
                     </Box>
                   </TableCell>
-                  <TableCell>{row.workers || '0'}</TableCell>
-                  <TableCell>{row.contractExpiry || 'N/A'}</TableCell>
+                  <TableCell>{row.numberOfWorks || '0'}</TableCell>
+                  <TableCell>{row.endContractDate || 'N/A'}</TableCell>
                   
                   
-                  <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status}
-                    </Box>
-                  </TableCell>
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -417,7 +394,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View User Details</button>
+                      }}>View Security Details</button>
                     </Box>
                   </TableCell>
                
@@ -440,7 +417,7 @@ export function CustomersTable({
       
       {/* Customer Details Dialog */}
       {selectedCustomer && (
-        <MinerDetailsDialog
+        <SecurityDetailsDialog
           open={isViewDialogOpen}
           onClose={() => setIsViewDialogOpen(false)}
           customer={selectedCustomer}
@@ -448,10 +425,10 @@ export function CustomersTable({
       )}
       
       {/* User details dialog */}
-      <UserDetailsDialog
+      <SecurityDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
+        customer={rows.find(row => row.id === selectedUserId) || null}
       />
     </Card>
   );

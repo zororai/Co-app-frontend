@@ -22,7 +22,7 @@ interface CustomerDetailsDialogProps {
   onRefresh?: () => void; // Optional callback to refresh the table data
 }
 
-export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: CustomerDetailsDialogProps): React.JSX.Element | null {
+export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: CustomerDetailsDialogProps): React.JSX.Element | null {
   const [status, setStatus] = React.useState<string>('');
   const [reason, setReason] = React.useState<string>('');
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
