@@ -321,7 +321,7 @@ export function CustomersTable({
               <TableCell>Email</TableCell>
               <TableCell>Position</TableCell>
               <TableCell>Role</TableCell>
-              <TableCell>Location</TableCell>
+            
               <TableCell>Status</TableCell>
               <TableCell>View User Details</TableCell>
 
@@ -362,7 +362,7 @@ export function CustomersTable({
                   <TableCell>{row.email || ''}</TableCell>
                   <TableCell>{row.position || ''}</TableCell>
                   <TableCell>{row.role || ''}</TableCell>
-                  <TableCell>{row.Location || ''}</TableCell>
+                
                   
                   
                   <TableCell>

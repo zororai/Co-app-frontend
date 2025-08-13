@@ -16,8 +16,18 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/securityonboarding/security-status-table';
-import type { Customer } from '@/components/dashboard/securityonboarding/security-status-table';
+import { CustomersTable } from '@/components/dashboard/securityonboardingstatus/securityonboardtatus-table';
+import type { Customer } from '@/components/dashboard/securityonboardingstatus/securityonboardtatus-table';
+
+
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { authClient } from '@/lib/auth/client';
+import { AddSecurityCompanyDialog } from '@/components/dashboard/securityonboarding/add-security-company-dialog';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -32,15 +42,6 @@ function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: C
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
 }
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
-import { authClient } from '@/lib/auth/client';
-import { AddSecurityCompanyDialog } from '@/components/dashboard/securityonboarding/add-security-company-dialog';
-
 
 export default function Page(): React.JSX.Element {
   const page = 0;
@@ -264,18 +265,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add New Security Company
-      </Button>
+
       
       {/* Add Security Company Dialog */}
       <AddSecurityCompanyDialog 

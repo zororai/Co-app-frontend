@@ -102,8 +102,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
     numberOfEmployees: '',
     contractStartDate: null as dayjs.Dayjs | null,
     contractExpiryDate: null as dayjs.Dayjs | null,
-    documents: {} as Record<string, string | null>, // Changed to store base64 strings instead of File objects
-    documentNames: {} as Record<string, string | null>, // Store original file names
+    documents: {} as Record<string, File | null>,
     locations: [] as string[],
     status: 'PENDING'
   });
@@ -132,49 +131,16 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
     });
   };
 
-  // Handle document upload and convert to base64 string
+  // Handle document upload
   const handleDocumentUpload = (documentId: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
-    
-    if (file) {
-      // Store the original file name
-      setFormData(prevData => ({
-        ...prevData,
-        documentNames: {
-          ...prevData.documentNames,
-          [documentId]: file.name
-        }
-      }));
-      
-      // Convert file to base64 string
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
-        const base64Content = base64String.split(',')[1];
-        
-        setFormData(prevData => ({
-          ...prevData,
-          documents: {
-            ...prevData.documents,
-            [documentId]: base64Content
-          }
-        }));
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setFormData(prevData => ({
-        ...prevData,
-        documents: {
-          ...prevData.documents,
-          [documentId]: null
-        },
-        documentNames: {
-          ...prevData.documentNames,
-          [documentId]: null
-        }
-      }));
-    }
+    setFormData({
+      ...formData,
+      documents: {
+        ...formData.documents,
+        [documentId]: file
+      }
+    });
   };
 
   // Handle location selection
@@ -285,13 +251,12 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
         emergencyContactPhone: formData.emergencyContactPhone,
         emergencyContactName: formData.emergencyContactName,
         locations: formData.locations,
-        // Include the base64-encoded document strings directly
-        validTaxClearance: formData.documents?.tax || '',
-        companyLogo: formData.documents?.registration || '',
-        getCertificateOfCooperation: formData.documents?.insurance || '',
-        operatingLicense: formData.documents?.license || '',
-        proofOfInsurance: formData.documents?.insurance || '',
-        siteRiskAssessmentReport: formData.documents?.risk || ''
+        validTaxClearance: formData.documents?.taxClearance ? 'Uploaded' : '',
+        companyLogo: formData.documents?.companyLogo ? 'Uploaded' : '',
+        getCertificateOfCooperation: formData.documents?.certificateOfCooperation ? 'Uploaded' : '',
+        operatingLicense: formData.documents?.operatingLicense ? 'Uploaded' : '',
+        proofOfInsurance: formData.documents?.proofOfInsurance ? 'Uploaded' : '',
+        siteRiskAssessmentReport: formData.documents?.riskAssessment ? 'Uploaded' : ''
       };
 
       // Submit the data using the authClient
@@ -347,7 +312,6 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
         contractStartDate: null,
         contractExpiryDate: null,
         documents: {},
-        documentNames: {},
         locations: [],
         status: 'PENDING'
       });

@@ -2456,6 +2456,8 @@ cooperativename: string;
       return null;
     }
   }
+}
+
 
   /**
    * Approve a security company by ID
@@ -2463,7 +2465,7 @@ cooperativename: string;
    * @returns A promise that resolves to the response data or error
    */
   async approveSecurityCompany(id: string): Promise<{ success: boolean; error?: string }> {
-    const token = this.getToken();
+    const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
       window.location.href = '/auth/signin';
@@ -2503,7 +2505,7 @@ cooperativename: string;
    * @returns A promise that resolves to the response data or error
    */
   async rejectSecurityCompany(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
-    const token = this.getToken();
+    const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
       window.location.href = '/auth/signin';
@@ -2543,7 +2545,7 @@ cooperativename: string;
    * @returns A promise that resolves to the response data or error
    */
   async pushBackSecurityCompany(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
-    const token = this.getToken();
+    const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
       window.location.href = '/auth/signin';
@@ -2576,13 +2578,6 @@ cooperativename: string;
     }
   }
 }
-
-
-
-
-
-
-
 
 export const authClient = new AuthClient();
 

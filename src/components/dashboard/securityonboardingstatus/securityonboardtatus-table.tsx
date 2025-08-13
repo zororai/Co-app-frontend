@@ -27,8 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { SecurityDetailsDialog } from '@/components/dashboard/securityonboardingstatus/securityonboardstatus-details';
 
 
 function noop(): void {
@@ -127,7 +126,7 @@ export function CustomersTable({
       setLoading(true);
       setError('');
       try {
-        const fetchedUsers = await authClient.fetchUsers();
+        const fetchedUsers = await authClient.fetchSecurityCompany();
         setUsers(fetchedUsers);
       } catch (err) {
         console.error('Error fetching users:', err);
@@ -140,12 +139,12 @@ export function CustomersTable({
     fetchUserData();
   }, [refreshTrigger]);
 
-  const handleViewCustomer = async (customerId: string) => {
+  const handleViewUserDetails = async (userId: string) => {
     try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
+      const customerDetails = await authClient.fetchSecurityDetails(userId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
+        setIsUserDetailsDialogOpen(true);
       }
     } catch (error) {
       console.error('Error fetching customer details:', error);
@@ -153,12 +152,6 @@ export function CustomersTable({
     }
   };
   
-  // Function to handle viewing user details
-  const handleViewUserDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsUserDetailsDialogOpen(true);
-  };
-
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
@@ -315,14 +308,12 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Phone number</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Role</TableCell>
-             
+              <TableCell>Company Name</TableCell>
+              <TableCell>Contact Person</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Workers</TableCell>
+              <TableCell>Contract Expiry</TableCell>
               <TableCell>Actions</TableCell>
               
      
@@ -355,15 +346,9 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.name || ''}</TableCell>
-                  <TableCell>{row.surname || ''}</TableCell>
-                  <TableCell>{row.cellNumber || ''}</TableCell>
-                  <TableCell>{row.email || ''}</TableCell>
-                  <TableCell>{row.position || ''}</TableCell>
-                  <TableCell>{row.role || ''}</TableCell>
-                
-                  
-                  
+                  <TableCell>{row.companyName || row.name || ''}</TableCell>
+                  <TableCell>{row.contactPersonName || ''}</TableCell>
+                  <TableCell>{row.type || 'Security'}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -386,6 +371,10 @@ export function CustomersTable({
                       {row.status}
                     </Box>
                   </TableCell>
+                  <TableCell>{row.numberOfWorks || '0'}</TableCell>
+                  <TableCell>{row.endContractDate || 'N/A'}</TableCell>
+                  
+                  
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -399,7 +388,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View User Details</button>
+                      }}>View Security Details</button>
                     </Box>
                   </TableCell>
                
@@ -422,7 +411,7 @@ export function CustomersTable({
       
       {/* Customer Details Dialog */}
       {selectedCustomer && (
-        <MinerDetailsDialog
+        <SecurityDetailsDialog
           open={isViewDialogOpen}
           onClose={() => setIsViewDialogOpen(false)}
           customer={selectedCustomer}
@@ -430,10 +419,11 @@ export function CustomersTable({
       )}
       
       {/* User details dialog */}
-      <UserDetailsDialog
+      <SecurityDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
+        customer={selectedCustomer}
+        onRefresh={refreshTableData}
       />
     </Card>
   );

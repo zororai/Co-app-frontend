@@ -23,8 +23,8 @@ export const navItems = [
     title: 'Shaft Management',
     icon: 'buildings',
     items: [
-      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-      { key: 'site-add', title: 'Create Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
+      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'ids'},
+      { key: 'site-add', title: 'Section Creation', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
     ],
   },
   {
@@ -72,10 +72,10 @@ export const navItems = [
       { key: 'permission-list', title: 'Miner Registration Status', href: paths.dashboard.Syndicate, icon: 'id-card' },
       { key: 'section-creation', title: 'Section Create Status', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
       { key: 'shaft-assignment-status', title: 'Shaft Assignment Status', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
-      { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'id-card' },
-      { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'id-card' },
-      { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'id-card' },
-      { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'id-card' },
+      { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'users' },
+      { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'user' },
+      { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
+      { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
     ],
   },
 ] satisfies NavItemConfig[];
