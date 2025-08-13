@@ -11,21 +11,21 @@ import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import UploadIcon from '@mui/icons-material/Upload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import Stack from '@mui/material/Stack';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import UploadIcon from '@mui/icons-material/Upload';
+import CancelIcon from '@mui/icons-material/Cancel';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+// Grid import removed as it's no longer used
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import Alert from '@mui/material/Alert';
 import { Snackbar } from '@mui/material';
 import Stepper from '@mui/material/Stepper';
@@ -337,356 +337,469 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     switch (activeStep) {
       case 0: // Vehicle Information
         return (
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Vehicle Information
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Registration Number"
-                    name="regNumber"
-                    value={formData.regNumber}
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Vehicle Information
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Enter the basic details of the vehicle
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Registration Number"
+                  name="regNumber"
+                  value={formData.regNumber}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.regNumber}
+                  helperText={formSubmitted && errors.regNumber}
+                  required
+                  placeholder="e.g., ABC123GP"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <FormControl fullWidth required error={!!errors.vehicleType} size="small">
+                  <InputLabel id="vehicle-type-label">Vehicle Type</InputLabel>
+                  <Select
+                    labelId="vehicle-type-label"
+                    name="vehicleType"
+                    value={formData.vehicleType}
+                    label="Vehicle Type"
                     onChange={handleChange}
-                    error={formSubmitted && !!errors.regNumber}
-                    helperText={formSubmitted && errors.regNumber}
-                    required
-                    placeholder="e.g., ABC123GP"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth required error={!!errors.vehicleType}>
-                    <InputLabel id="vehicle-type-label">Vehicle Type</InputLabel>
-                    <Select
-                      labelId="vehicle-type-label"
-                      name="vehicleType"
-                      value={formData.vehicleType}
-                      label="Vehicle Type"
-                      onChange={handleChange}
-                      disabled={loading}
-                    >
-                      {vehicleTypes.map((type) => (
-                        <MenuItem key={type.value} value={type.value}>
-                          {type.label}
+                    disabled={loading}
+                  >
+                    {vehicleTypes.map((type) => (
+                      <MenuItem key={type.value} value={type.value}>
+                        {type.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formSubmitted && errors.vehicleType && (
+                    <FormHelperText>{errors.vehicleType}</FormHelperText>
+                  )}
+                </FormControl>
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Make"
+                  name="make"
+                  value={formData.make}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.make}
+                  helperText={formSubmitted && errors.make}
+                  required
+                  placeholder="e.g., Toyota"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Model"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.model}
+                  helperText={formSubmitted && errors.model}
+                  required
+                  placeholder="e.g., Corolla"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Year"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.year}
+                  helperText={formSubmitted && errors.year}
+                  required
+                  placeholder="e.g., 2023"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <FormControl fullWidth error={formSubmitted && !!errors.assignedDriver} required size="small">
+                  <InputLabel id="assigned-driver-label">Assigned Driver</InputLabel>
+                  <Select
+                    labelId="assigned-driver-label"
+                    id="assigned-driver"
+                    name="assignedDriver"
+                    value={formData.assignedDriver}
+                    onChange={handleChange}
+                    label="Assigned Driver"
+                  >
+                    <MenuItem value=""><em>None</em></MenuItem>
+                    {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
+                      approvedDrivers.map((driver) => (
+                        <MenuItem key={driver.id || Math.random()} value={driver.id}>
+                          {driver.name || (driver as any).firstName} {driver.surname || (driver as any).lastName}
                         </MenuItem>
-                      ))}
-                    </Select>
-                    {formSubmitted && errors.vehicleType && (
-                      <FormHelperText>{errors.vehicleType}</FormHelperText>
+                      ))
+                    ) : (
+                      <MenuItem value=""><em>No drivers available</em></MenuItem>
                     )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Make"
-                    name="make"
-                    value={formData.make}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.make}
-                    helperText={formSubmitted && errors.make}
-                    required
-                    placeholder="e.g., Toyota"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Model"
-                    name="model"
-                    value={formData.model}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.model}
-                    helperText={formSubmitted && errors.model}
-                    required
-                    placeholder="e.g., Corolla"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Year"
-                    name="year"
-                    value={formData.year}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.year}
-                    helperText={formSubmitted && errors.year}
-                    required
-                    placeholder="e.g., 2023"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth error={formSubmitted && !!errors.assignedDriver} required>
-                    <InputLabel id="assigned-driver-label">Assigned Driver</InputLabel>
-                    <Select
-                      labelId="assigned-driver-label"
-                      id="assigned-driver"
-                      name="assignedDriver"
-                      value={formData.assignedDriver}
-                      onChange={handleChange}
-                      label="Assigned Driver"
-                    >
-                      <MenuItem value=""><em>None</em></MenuItem>
-                      {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
-                        approvedDrivers.map((driver) => (
-                          <MenuItem key={driver.id || Math.random()} value={driver.id}>
-                            {driver.name || (driver as any).firstName} {driver.surname || (driver as any).lastName}
-                          </MenuItem>
-                        ))
-                      ) : (
-                        <MenuItem value=""><em>No drivers available</em></MenuItem>
-                      )}
-                    </Select>
-                    {formSubmitted && errors.assignedDriver && (
-                      <FormHelperText>{errors.assignedDriver}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Last Service Date"
-                      value={formData.lastServiceDate}
-                      onChange={handleDateChange('lastServiceDate')}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          error: formSubmitted && !!errors.lastServiceDate,
-                          helperText: formSubmitted && errors.lastServiceDate,
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-              </Grid>
+                  </Select>
+                  {formSubmitted && errors.assignedDriver && (
+                    <FormHelperText>{errors.assignedDriver}</FormHelperText>
+                  )}
+                </FormControl>
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <DatePicker
+                  label="Last Service Date"
+                  value={formData.lastServiceDate}
+                  onChange={handleDateChange('lastServiceDate')}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: true,
+                      error: formSubmitted && !!errors.lastServiceDate,
+                      helperText: formSubmitted && errors.lastServiceDate,
+                      size: 'small',
+                    },
+                  }}
+                />
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 1: // Owner Details
         return (
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Owner Information
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Owner Name"
-                    name="ownerName"
-                    value={formData.ownerName}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.ownerName}
-                    helperText={formSubmitted && errors.ownerName}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="ID Number"
-                    name="ownerIdNumber"
-                    value={formData.ownerIdNumber}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.ownerIdNumber}
-                    helperText={formSubmitted && errors.ownerIdNumber}
-                    required
-                    placeholder="e.g., 80-101500D87"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Cell Number"
-                    name="ownerCellNumber"
-                    value={formData.ownerCellNumber}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.ownerCellNumber}
-                    helperText={formSubmitted && errors.ownerCellNumber}
-                    required
-                    placeholder="e.g., +27 11 123 4567"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    name="ownerAddress"
-                    value={formData.ownerAddress}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.ownerAddress}
-                    helperText={formSubmitted && errors.ownerAddress}
-                    required
-                    multiline
-                    rows={3}
-                  />
-                </Grid>
-              </Grid>
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Owner Information
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Enter the details of the vehicle owner
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Owner Name"
+                  name="ownerName"
+                  value={formData.ownerName}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.ownerName}
+                  helperText={formSubmitted && errors.ownerName}
+                  required
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="ID Number"
+                  name="ownerIdNumber"
+                  value={formData.ownerIdNumber}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.ownerIdNumber}
+                  helperText={formSubmitted && errors.ownerIdNumber}
+                  required
+                  placeholder="e.g., 80-101500D87"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
+                <TextField
+                  fullWidth
+                  label="Cell Number"
+                  name="ownerCellNumber"
+                  value={formData.ownerCellNumber}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.ownerCellNumber}
+                  helperText={formSubmitted && errors.ownerCellNumber}
+                  required
+                  placeholder="e.g., +27 11 123 4567"
+                  size="small"
+                />
+              </Box>
+              
+              <Box sx={{ flex: '1 1 100%' }}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  name="ownerAddress"
+                  value={formData.ownerAddress}
+                  onChange={handleChange}
+                  error={formSubmitted && !!errors.ownerAddress}
+                  helperText={formSubmitted && errors.ownerAddress}
+                  required
+                  multiline
+                  rows={3}
+                  size="small"
+                />
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 2: // Documents
         return (
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Required Documents
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Please upload the following required documents
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    fullWidth
-                    startIcon={formData.idPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                    sx={{ height: '56px' }}
-                    color={formData.idPicture ? 'success' : 'primary'}
-                  >
-                    {formData.idPicture ? 'ID Uploaded ✓' : 'Upload ID'}
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleFileChange('idPicture')}
-                    />
-                  </Button>
-                  {formSubmitted && errors.idPicture && (
-                    <FormHelperText error>{errors.idPicture}</FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    fullWidth
-                    startIcon={formData.truckPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                    sx={{ height: '56px' }}
-                    color={formData.truckPicture ? 'success' : 'primary'}
-                  >
-                    {formData.truckPicture ? 'Vehicle Photo Uploaded ✓' : 'Upload Vehicle Photo'}
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleFileChange('truckPicture')}
-                    />
-                  </Button>
-                  {formSubmitted && errors.truckPicture && (
-                    <FormHelperText error>{errors.truckPicture}</FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Button
-                    component="label"
-                    variant="outlined"
-                    fullWidth
-                    startIcon={formData.registrationBook ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                    sx={{ height: '56px' }}
-                    color={formData.registrationBook ? 'success' : 'primary'}
-                  >
-                    {formData.registrationBook ? 'Registration Uploaded ✓' : 'Upload Registration'}
-                    <input
-                      type="file"
-                      hidden
-                      onChange={handleFileChange('registrationBook')}
-                    />
-                  </Button>
-                  {formSubmitted && errors.registrationBook && (
-                    <FormHelperText error>{errors.registrationBook}</FormHelperText>
-                  )}
-                </Grid>
-              </Grid>
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Required Documents
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Please upload the following required documents
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ flex: '1 1 calc(33.33% - 8px)', minWidth: '200px' }}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={formData.idPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                  sx={{ 
+                    height: '56px',
+                    borderColor: formData.idPicture ? '#4caf50' : undefined,
+                    '&:hover': {
+                      borderColor: formData.idPicture ? '#388e3c' : undefined,
+                      backgroundColor: formData.idPicture ? 'rgba(76, 175, 80, 0.04)' : undefined
+                    }
+                  }}
+                  color={formData.idPicture ? 'success' : 'primary'}
+                >
+                  {formData.idPicture ? 'ID Uploaded ✓' : 'Upload ID'}
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleFileChange('idPicture')}
+                  />
+                </Button>
+                {formSubmitted && errors.idPicture && (
+                  <FormHelperText error sx={{ ml: 1.5 }}>{errors.idPicture}</FormHelperText>
+                )}
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(33.33% - 8px)', minWidth: '200px' }}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={formData.truckPicture ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                  sx={{ 
+                    height: '56px',
+                    borderColor: formData.truckPicture ? '#4caf50' : undefined,
+                    '&:hover': {
+                      borderColor: formData.truckPicture ? '#388e3c' : undefined,
+                      backgroundColor: formData.truckPicture ? 'rgba(76, 175, 80, 0.04)' : undefined
+                    }
+                  }}
+                  color={formData.truckPicture ? 'success' : 'primary'}
+                >
+                  {formData.truckPicture ? 'Vehicle Photo Uploaded ✓' : 'Upload Vehicle Photo'}
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleFileChange('truckPicture')}
+                  />
+                </Button>
+                {formSubmitted && errors.truckPicture && (
+                  <FormHelperText error sx={{ ml: 1.5 }}>{errors.truckPicture}</FormHelperText>
+                )}
+              </Box>
+              
+              <Box sx={{ flex: '1 1 calc(33.33% - 8px)', minWidth: '200px' }}>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  fullWidth
+                  startIcon={formData.registrationBook ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                  sx={{ 
+                    height: '56px',
+                    borderColor: formData.registrationBook ? '#4caf50' : undefined,
+                    '&:hover': {
+                      borderColor: formData.registrationBook ? '#388e3c' : undefined,
+                      backgroundColor: formData.registrationBook ? 'rgba(76, 175, 80, 0.04)' : undefined
+                    }
+                  }}
+                  color={formData.registrationBook ? 'success' : 'primary'}
+                >
+                  {formData.registrationBook ? 'Registration Uploaded ✓' : 'Upload Registration'}
+                  <input
+                    type="file"
+                    hidden
+                    onChange={handleFileChange('registrationBook')}
+                  />
+                </Button>
+                {formSubmitted && errors.registrationBook && (
+                  <FormHelperText error sx={{ ml: 1.5 }}>{errors.registrationBook}</FormHelperText>
+                )}
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 3: // Review Details
         return (
-          <Stack spacing={3}>
+          <Box sx={{ p: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Review Vehicle Details
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
               Please review all the information before submitting
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}>
+              <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '240px' }}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid #eee' }}>
                   Vehicle Information
                 </Typography>
                 <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2">
-                    <strong>Registration Number:</strong> {formData.regNumber}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Vehicle Type:</strong> {formData.vehicleType}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Make:</strong> {formData.make}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Model:</strong> {formData.model}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Year:</strong> {formData.year}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Last Service Date:</strong> {formData.lastServiceDate?.format('DD/MM/YYYY') || 'Not provided'}
-                  </Typography>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Registration Number:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.regNumber}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Vehicle Type:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.vehicleType}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Make:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.make}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Model:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.model}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Year:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.year}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Last Service Date:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.lastServiceDate?.format('DD/MM/YYYY') || 'Not provided'}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '240px' }}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid #eee' }}>
                   Owner Information
                 </Typography>
                 <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2">
-                    <strong>Owner Name:</strong> {formData.ownerName}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>ID Number:</strong> {formData.ownerIdNumber}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Cell Number:</strong> {formData.ownerCellNumber}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Address:</strong> {formData.ownerAddress}
-                  </Typography>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Owner Name:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.ownerName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      ID Number:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.ownerIdNumber}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Cell Number:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.ownerCellNumber}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Address:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.ownerAddress}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ flex: '1 1 100%' }}>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1, pb: 0.5, borderBottom: '1px solid #eee' }}>
                   Documents
                 </Typography>
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="body2">
-                    <strong>ID Picture:</strong> {formData.idPicture ? 'Uploaded' : 'Not uploaded'}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Vehicle Picture:</strong> {formData.truckPicture ? 'Uploaded' : 'Not uploaded'}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Registration Book:</strong> {formData.registrationBook ? 'Uploaded' : 'Not uploaded'}
-                  </Typography>
+                <Box sx={{ mt: 1, display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}>
+                  <Box sx={{ flex: '1 1 calc(33.33% - 12px)', minWidth: '200px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {formData.idPicture ? 
+                        <CheckCircleIcon color="success" sx={{ mr: 1, fontSize: 20 }} /> : 
+                        <CancelIcon color="error" sx={{ mr: 1, fontSize: 20 }} />}
+                      <Typography variant="body2">
+                        ID Picture: {formData.idPicture ? 'Uploaded' : 'Not uploaded'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ flex: '1 1 calc(33.33% - 12px)', minWidth: '200px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {formData.truckPicture ? 
+                        <CheckCircleIcon color="success" sx={{ mr: 1, fontSize: 20 }} /> : 
+                        <CancelIcon color="error" sx={{ mr: 1, fontSize: 20 }} />}
+                      <Typography variant="body2">
+                        Vehicle Picture: {formData.truckPicture ? 'Uploaded' : 'Not uploaded'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ flex: '1 1 calc(33.33% - 12px)', minWidth: '200px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {formData.registrationBook ? 
+                        <CheckCircleIcon color="success" sx={{ mr: 1, fontSize: 20 }} /> : 
+                        <CancelIcon color="error" sx={{ mr: 1, fontSize: 20 }} />}
+                      <Typography variant="body2">
+                        Registration Book: {formData.registrationBook ? 'Uploaded' : 'Not uploaded'}
+                      </Typography>
+                    </Box>
+                  </Box>
                 </Box>
-              </Grid>
-            </Grid>
-          </Stack>
+              </Box>
+            </Box>
+          </Box>
         );
       
       case 4: // Confirmation
         return (
-          <Stack spacing={3} alignItems="center">
+          <Box sx={{ spacing: 3, alignItems: "center" }}>
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60 }} />
             <Typography variant="h6" align="center">
               Vehicle Registration Successful!
@@ -700,7 +813,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             <Typography variant="body2" color="text.secondary" align="center">
               Please keep this reference number for your records.
             </Typography>
-          </Stack>
+          </Box>
         );
       
       default:
@@ -710,84 +823,99 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
 
   // Main render function
   return (
-    <Dialog
-      open={open}
-      onClose={loading ? undefined : handleClose}
-      maxWidth="md"
-      fullWidth
-      aria-labelledby="vehicle-dialog-title"
-    >
-      <DialogTitle id="vehicle-dialog-title" sx={{ m: 0, p: 2 }}>
-        {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
-          disabled={loading}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent dividers>
-        {/* Stepper */}
-        <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {/* Error message */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Step content */}
-        {renderStepContent()}
-      </DialogContent>
-
-      {/* Navigation buttons */}
-      {activeStep !== steps.length - 1 && (
-        <DialogActions sx={{ justifyContent: 'space-between', p: 2 }}>
-          <Button
-            onClick={handleBack}
-            disabled={activeStep === 0 || loading}
-            variant="outlined"
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Dialog
+        open={open}
+        onClose={loading ? undefined : handleClose}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2
+          }
+        }}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+            {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Register a new vehicle in the transport management system
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            disabled={loading}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
           >
-            Back
-          </Button>
-          <Box>
-            <Button
-              onClick={activeStep === steps.length - 2 ? handleSubmit : handleStepNext}
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              sx={{ ml: 1 }}
-            >
-              {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
-            </Button>
-          </Box>
-        </DialogActions>
-      )}
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <Box sx={{ width: '100%', px: 3, py: 2 }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label, index) => (
+              <Step key={label} completed={activeStep > index}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
 
-      {/* Confirmation step buttons */}
-      {activeStep === steps.length - 1 && (
+        <DialogContent dividers>
+          {/* Error message */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Step content */}
+          {renderStepContent()}
+        </DialogContent>
+
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleClose} variant="contained" color="primary">
-            Close
-          </Button>
+          {activeStep !== steps.length - 1 ? (
+            <Fragment>
+              <Button
+                color="inherit"
+                disabled={activeStep === 0 || loading}
+                onClick={handleBack}
+              >
+                Previous
+              </Button>
+              <Box sx={{ flex: '1 1 auto' }} />
+              <Button
+                variant="contained"
+                onClick={activeStep === steps.length - 2 ? handleSubmit : handleStepNext}
+                disabled={loading}
+                sx={{
+                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
+                  '&:hover': {
+                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
+                  }
+                }}
+              >
+                {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
+              </Button>
+            </Fragment>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ ml: 'auto' }}
+            >
+              Close
+            </Button>
+          )}
         </DialogActions>
-      )}
-
+      </Dialog>
+      
       {/* Notification snackbar */}
       <Snackbar
         open={!!notification}
@@ -795,16 +923,8 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         onClose={() => setNotification(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        {notification ? (
-          <Alert
-            onClose={() => setNotification(null)}
-            severity={notification.type}
-            sx={{ width: '100%' }}
-          >
-            {notification.message}
-          </Alert>
-        ) : null}
+ 
       </Snackbar>
-    </Dialog>
+    </LocalizationProvider>
   );
 }

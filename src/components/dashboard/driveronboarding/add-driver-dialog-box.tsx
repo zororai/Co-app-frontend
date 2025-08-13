@@ -21,7 +21,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Grid from '@mui/material/Grid';
+// Grid import removed as it's no longer used
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -54,8 +54,8 @@ export interface DriverFormData {
   address: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
-  licenseDocument: string | null; // Changed to string for base64
-  idDocument: string | null; // Changed to string for base64
+  licenseDocument: string ; // Changed to string for base64
+  idDocument: string ; // Changed to string for base64
   additionalNotes: string;
 }
 
@@ -99,8 +99,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     address: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
-    licenseDocument: null,
-    idDocument: null,
+    licenseDocument: '',
+    idDocument: '',
     additionalNotes: '',
   });
 
@@ -174,7 +174,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   };
 
   const validateIdNumber = (id: string): boolean => {
-    return id.length >= 6;
+    return id.length >= 11;
   };
 
   const validateCurrentStep = (): boolean => {
@@ -186,7 +186,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
         if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
         if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
-        else if (!validateIdNumber(formData.idNumber)) newErrors.idNumber = 'ID number must be at least 6 characters';
+        else if (!validateIdNumber(formData.idNumber)) newErrors.idNumber = 'ID number must be at least 11 characters';
         if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
         break;
       
@@ -236,7 +236,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     
     // ID number validation
     if (formData.idNumber && !validateIdNumber(formData.idNumber)) {
-      newErrors.idNumber = 'ID number must be at least 6 characters';
+      newErrors.idNumber = 'ID number must be at least 11 characters';
     }
     
     // Required documents
@@ -308,8 +308,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       address: '',
       emergencyContactName: '',
       emergencyContactPhone: '',
-      licenseDocument: null,
-      idDocument: null,
+      licenseDocument: '',
+      idDocument: '',
       additionalNotes: '',
     });
     setActiveStep(0);
@@ -325,298 +325,315 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     switch (activeStep) {
       case 0:
         return (
-          <Stack spacing={3}>
-            {/* Personal Information Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Personal Information
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={12}>
-                  <TextField
-                    fullWidth
-                    label="First Name"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.firstName}
-                    helperText={formSubmitted && errors.firstName}
-                    required
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Personal Information</Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+              {/* Row 1: First Name | Last Name */}
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="First Name *"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Enter first name"
+                  error={formSubmitted && !!errors.firstName}
+                  helperText={formSubmitted && errors.firstName}
+                />
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Last Name *"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Enter last name"
+                  error={formSubmitted && !!errors.lastName}
+                  helperText={formSubmitted && errors.lastName}
+                />
+              </Box>
+              
+              {/* Row 2: ID Number | Date of Birth */}
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="ID Number *"
+                  name="idNumber"
+                  value={formData.idNumber}
+                  onChange={handleChange}
+                  placeholder="Enter ID number"
+                  error={formSubmitted && !!errors.idNumber}
+                  helperText={formSubmitted && errors.idNumber}
+                />
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Date of Birth *"
+                    value={formData.dateOfBirth}
+                    onChange={handleDateChange('dateOfBirth')}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        required: true,
+                        error: formSubmitted && !!errors.dateOfBirth,
+                        helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : '',
+                      },
+                    }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Last Name"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.lastName}
-                    helperText={formSubmitted && errors.lastName}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="ID Number"
-                    name="idNumber"
-                    value={formData.idNumber}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.idNumber}
-                    helperText={formSubmitted && errors.idNumber}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Date of Birth"
-                      value={formData.dateOfBirth}
-                      onChange={handleDateChange('dateOfBirth')}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          error: formSubmitted && !!errors.dateOfBirth,
-                          helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : '',
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-              </Grid>
+                </LocalizationProvider>
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 1:
         return (
-          <Stack spacing={3}>
-            {/* License Details Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                License Details
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="License Number"
-                    name="licenseNumber"
-                    value={formData.licenseNumber}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.licenseNumber}
-                    helperText={formSubmitted && errors.licenseNumber}
-                    required
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>License Details</Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+              {/* Row 1: License Number | License Class */}
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="License Number *"
+                  name="licenseNumber"
+                  value={formData.licenseNumber}
+                  onChange={handleChange}
+                  placeholder="Enter license number"
+                  error={formSubmitted && !!errors.licenseNumber}
+                  helperText={formSubmitted && errors.licenseNumber}
+                />
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <FormControl fullWidth required error={formSubmitted && !!errors.licenseClass}>
+                  <InputLabel id="license-class-label">License Class *</InputLabel>
+                  <Select
+                    labelId="license-class-label"
+                    name="licenseClass"
+                    value={formData.licenseClass}
+                    onChange={(e) => handleSelectChange(e as any)}
+                    label="License Class *"
+                  >
+                    {licenseClasses.map((option) => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {formSubmitted && errors.licenseClass && (
+                    <FormHelperText>{errors.licenseClass}</FormHelperText>
+                  )}
+                </FormControl>
+              </Box>
+              
+              {/* Row 2: License Expiry Date | Years of Experience */}
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="License Expiry Date *"
+                    value={formData.licenseExpiryDate}
+                    onChange={handleDateChange('licenseExpiryDate')}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        required: true,
+                        error: formSubmitted && !!errors.licenseExpiryDate,
+                        helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : '',
+                      },
+                    }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth error={formSubmitted && !!errors.licenseClass} required>
-                    <InputLabel>License Class</InputLabel>
-                    <Select
-                      name="licenseClass"
-                      value={formData.licenseClass}
-                      onChange={handleSelectChange}
-                      label="License Class"
-                    >
-                      {licenseClasses.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formSubmitted && errors.licenseClass && (
-                      <FormHelperText>{errors.licenseClass}</FormHelperText>
-                    )}
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="License Expiry Date"
-                      value={formData.licenseExpiryDate}
-                      onChange={handleDateChange('licenseExpiryDate')}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          required: true,
-                          error: formSubmitted && !!errors.licenseExpiryDate,
-                          helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : '',
-                        },
-                      }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Years of Experience"
-                    name="yearsOfExperience"
-                    type="number"
-                    value={formData.yearsOfExperience}
-                    onChange={handleChange}
-                  />
-                </Grid>
-              </Grid>
+                </LocalizationProvider>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Years of Experience"
+                  name="yearsOfExperience"
+                  value={formData.yearsOfExperience}
+                  onChange={handleChange}
+                  placeholder="Enter years of experience"
+                  type="number"
+                />
+              </Box>
             </Box>
-
+            
             {/* Document Upload Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Document Upload
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5, mt: 2 }}>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <Box sx={{ border: '1px dashed #ccc', p: 2, borderRadius: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    License Document Copy *
+                  </Typography>
                   <Button
                     component="label"
                     variant="outlined"
-                    fullWidth
-                    startIcon={formData.licenseDocument ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                    sx={{ height: '56px' }}
-                    color={formData.licenseDocument ? 'success' : 'primary'}
+                    startIcon={<UploadIcon />}
+                    sx={{ mt: 1 }}
                   >
-                    {formData.licenseDocument ? 'License Uploaded ✓' : 'Upload License'}
+                    Upload License
                     <input
                       type="file"
                       hidden
+                      accept="image/*,.pdf"
                       onChange={handleFileChange('licenseDocument')}
                     />
                   </Button>
-                  {formSubmitted && errors.licenseDocument && (
-                    <FormHelperText error>{errors.licenseDocument}</FormHelperText>
-                  )}
-                </Grid>
-                <Grid item xs={12}>
+                  {formData.licenseDocument ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                      <CheckCircleIcon color="success" sx={{ mr: 1 }} />
+                      <Typography variant="body2">Document uploaded</Typography>
+                    </Box>
+                  ) : formSubmitted && errors.licenseDocument ? (
+                    <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                      {errors.licenseDocument}
+                    </Typography>
+                  ) : null}
+                </Box>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <Box sx={{ border: '1px dashed #ccc', p: 2, borderRadius: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    ID Document Copy *
+                  </Typography>
                   <Button
                     component="label"
                     variant="outlined"
-                    fullWidth
-                    startIcon={formData.idDocument ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                    sx={{ height: '56px' }}
-                    color={formData.idDocument ? 'success' : 'primary'}
+                    startIcon={<UploadIcon />}
+                    sx={{ mt: 1 }}
                   >
-                    {formData.idDocument ? 'ID Uploaded ✓' : 'Upload ID'}
+                    Upload ID
                     <input
                       type="file"
                       hidden
+                      accept="image/*,.pdf"
                       onChange={handleFileChange('idDocument')}
                     />
                   </Button>
-                  {formSubmitted && errors.idDocument && (
-                    <FormHelperText error>{errors.idDocument}</FormHelperText>
-                  )}
-                </Grid>
-              </Grid>
+                  {formData.idDocument ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                      <CheckCircleIcon color="success" sx={{ mr: 1 }} />
+                      <Typography variant="body2">Document uploaded</Typography>
+                    </Box>
+                  ) : formSubmitted && errors.idDocument ? (
+                    <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                      {errors.idDocument}
+                    </Typography>
+                  ) : null}
+                </Box>
+              </Box>
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 2:
         return (
-          <Stack spacing={3}>
-            {/* Contact Information Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Contact Information
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid component="div" item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Phone Number"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.phoneNumber}
-                    helperText={formSubmitted && errors.phoneNumber}
-                    required
-                  />
-                </Grid>
-                <Grid component="div" item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    name="emailAddress"
-                    type="email"
-                    value={formData.emailAddress}
-                    onChange={handleChange}
-                    error={formSubmitted && !!errors.emailAddress}
-                    helperText={formSubmitted && errors.emailAddress}
-                  />
-                </Grid>
-                <Grid component="div" item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    multiline
-                    rows={2}
-                  />
-                </Grid>
-              </Grid>
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Contact Information</Typography>
+            
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+              {/* Row 1: Phone Number | Email Address */}
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  required
+                  fullWidth
+                  label="Phone Number *"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  error={formSubmitted && !!errors.phoneNumber}
+                  helperText={formSubmitted && errors.phoneNumber}
+                />
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="emailAddress"
+                  type="email"
+                  value={formData.emailAddress}
+                  onChange={handleChange}
+                  placeholder="Enter email address"
+                  error={formSubmitted && !!errors.emailAddress}
+                  helperText={formSubmitted && errors.emailAddress}
+                />
+              </Box>
+              
+              {/* Row 2: Address */}
+              <Box sx={{ width: '100%', px: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Enter address"
+                  multiline
+                  rows={2}
+                />
+              </Box>
             </Box>
-
+            
             {/* Emergency Contact Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Emergency Contact
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid component="div" item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Emergency Contact Name"
-                    name="emergencyContactName"
-                    value={formData.emergencyContactName}
-                    onChange={handleChange}
-                  />
-                </Grid>
-                <Grid component="div" item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Emergency Contact Phone"
-                    name="emergencyContactPhone"
-                    value={formData.emergencyContactPhone}
-                    onChange={handleChange}
-                  />
-                </Grid>
-              </Grid>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, mt: 3 }}>Emergency Contact</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Emergency Contact Name"
+                  name="emergencyContactName"
+                  value={formData.emergencyContactName}
+                  onChange={handleChange}
+                  placeholder="Enter emergency contact name"
+                />
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Emergency Contact Phone"
+                  name="emergencyContactPhone"
+                  value={formData.emergencyContactPhone}
+                  onChange={handleChange}
+                  placeholder="Enter emergency contact phone"
+                />
+              </Box>
             </Box>
-
+            
             {/* Additional Notes Section */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Additional Notes
-              </Typography>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, mt: 3 }}>Additional Notes</Typography>
+            <Box sx={{ px: 1.5 }}>
               <TextField
                 fullWidth
                 name="additionalNotes"
                 value={formData.additionalNotes}
                 onChange={handleChange}
                 multiline
-                rows={2}
+                rows={3}
                 placeholder="Any additional information about the driver"
               />
             </Box>
-          </Stack>
+          </Box>
         );
       
       case 3:
         return (
-          <Stack spacing={3}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Review Driver Details
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Review Driver Details</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Please review all the information before submitting
             </Typography>
             
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   Personal Information
                 </Typography>
                 <Box sx={{ mt: 1 }}>
@@ -633,10 +650,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     <strong>Date of Birth:</strong> {formData.dateOfBirth?.format('DD/MM/YYYY') || 'Not provided'}
                   </Typography>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   License Information
                 </Typography>
                 <Box sx={{ mt: 1 }}>
@@ -653,10 +670,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     <strong>Years of Experience:</strong> {formData.yearsOfExperience || 'Not provided'}
                   </Typography>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   Contact Information
                 </Typography>
                 <Box sx={{ mt: 1 }}>
@@ -670,10 +687,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     <strong>Address:</strong> {formData.address || 'Not provided'}
                   </Typography>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   Emergency Contact
                 </Typography>
                 <Box sx={{ mt: 1 }}>
@@ -684,10 +701,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     <strong>Phone:</strong> {formData.emergencyContactPhone || 'Not provided'}
                   </Typography>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" fontWeight="bold">
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                   Documents
                 </Typography>
                 <Box sx={{ mt: 1 }}>
@@ -698,39 +715,39 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     <strong>ID Document:</strong> {formData.idDocument ? 'Uploaded' : 'Not uploaded'}
                   </Typography>
                 </Box>
-              </Grid>
+              </Box>
               
               {formData.additionalNotes && (
-                <Grid  item xs={12} sm={6}>
-                  <Typography variant="subtitle2" fontWeight="bold">
+                <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 3 }}>
+                  <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
                     Additional Notes
                   </Typography>
                   <Typography variant="body2">
                     {formData.additionalNotes}
                   </Typography>
-                </Grid>
+                </Box>
               )}
-            </Grid>
-          </Stack>
+            </Box>
+          </Box>
         );
       
       case 4:
         return (
-          <Stack spacing={3} alignItems="center">
-            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60 }} />
-            <Typography variant="h6" align="center">
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
+            <Typography variant="h6" sx={{ mb: 1 }}>
               Driver Registration Successful!
             </Typography>
-            <Typography variant="body1" align="center">
+            <Typography variant="body1" sx={{ mb: 1 }}>
               The driver has been successfully registered in the system.
             </Typography>
-            <Typography variant="body1" align="center" fontWeight="bold">
+            <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>
               Reference Number: {referenceNumber}
             </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
+            <Typography variant="body2" color="text.secondary">
               Please keep this reference number for your records.
             </Typography>
-          </Stack>
+          </Box>
         );
       
       default:
@@ -740,14 +757,24 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog 
-        open={open} 
+      <Dialog
+        open={open}
         onClose={handleClose}
-        fullWidth
         maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2
+          }
+        }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          Add New Driver
+        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+            Add New Driver
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Register a new driver in the transport management system
+          </Typography>
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -755,73 +782,65 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
               position: 'absolute',
               right: 8,
               top: 8,
+              color: (theme) => theme.palette.grey[500],
             }}
           >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <Typography variant="body2" color="text.secondary" sx={{ px: 3, pb: 2 }}>
-          Register a new driver in the transport management system
-        </Typography>
-        <DialogContent>
-          {/* Stepper */}
-          <Stepper activeStep={activeStep} sx={{ pt: 2, pb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
+        
+        <Box sx={{ width: '100%', px: 3, py: 2 }}>
+          <Stepper activeStep={activeStep} alternativeLabel>
+            {steps.map((label, index) => (
+              <Step key={label} completed={activeStep > index}>
                 <StepLabel>{label}</StepLabel>
               </Step>
             ))}
           </Stepper>
-          
-          {/* Form content based on active step */}
-          <Box sx={{ mt: 2 }}>
-            {renderStepContent()}
-          </Box>
-          
-          {/* Error message */}
+        </Box>
+        
+        <DialogContent dividers>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 3 }}>
               {error}
             </Alert>
           )}
+          
+          {renderStepContent()}
         </DialogContent>
         
-        <DialogActions sx={{ p: 3, pt: 0 }}>
-          {activeStep !== 4 && (
+        <DialogActions sx={{ p: 2 }}>
+          {activeStep !== steps.length - 1 ? (
+            <Fragment>
+              <Button
+                color="inherit"
+                disabled={activeStep === 0 || loading}
+                onClick={handleBack}
+              >
+                Previous
+              </Button>
+              <Box sx={{ flex: '1 1 auto' }} />
+              <Button
+                variant="contained"
+                onClick={handleStepNext}
+                disabled={loading}
+                sx={{
+                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
+                  '&:hover': {
+                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
+                  }
+                }}
+              >
+                {activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}
+              </Button>
+            </Fragment>
+          ) : (
             <Button
-              onClick={handleClose}
-              color="inherit"
-            >
-              Cancel
-            </Button>
-          )}
-          
-          {activeStep > 0 && activeStep !== 4 && (
-            <Button 
-              onClick={handleBack}
-              disabled={loading}
-            >
-              Back
-            </Button>
-          )}
-          
-          {activeStep < steps.length - 1 && (
-            <Button 
-              onClick={handleStepNext}
               variant="contained"
-              disabled={loading}
-            >
-              {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
-            </Button>
-          )}
-          
-          {activeStep === steps.length - 1 && (
-            <Button 
               onClick={handleClose}
-              variant="contained"
-              color="primary"
+              sx={{ ml: 'auto' }}
             >
-              Done
+              Close
             </Button>
           )}
         </DialogActions>

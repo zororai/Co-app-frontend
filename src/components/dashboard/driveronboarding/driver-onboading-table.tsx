@@ -27,8 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { DriverDetailsDialog } from '@/components/dashboard/driveronboarding/driver-details-dialog';
 
 
 function noop(): void {
@@ -115,10 +114,8 @@ export function CustomersTable({
     window.location.href = path;
   };
 
-  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-  const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
-  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
+  const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
+  const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch drivers from API when component mounts or refreshTrigger changes
@@ -140,23 +137,13 @@ export function CustomersTable({
     fetchDriverData();
   }, [refreshTrigger]);
 
-  const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
-    }
-  };
-  
-  // Function to handle viewing user details
-  const handleViewUserDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsUserDetailsDialogOpen(true);
+ 
+  const handleViewUserDetails = (driverId: string) => {
+    console.log('View driver details clicked for ID:', driverId);
+    setSelectedDriverId(driverId);
+    setTimeout(() => {
+      setIsDriverDetailsDialogOpen(true);
+    }, 0);
   };
 
   // Function to refresh the table data
@@ -322,7 +309,7 @@ export function CustomersTable({
               <TableCell>Contact</TableCell>
               <TableCell>Experience (Years)</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Make Discussion</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -384,17 +371,25 @@ export function CustomersTable({
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
+                      <Button 
+                        onClick={() => {
+                          console.log('Button clicked for driver ID:', row.id);
+                          setSelectedDriverId(row.id);
+                          setIsDriverDetailsDialogOpen(true);
+                        }}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: '#06131fff',
                           color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Driver Details</button>
+                          '&:hover': {
+                            borderColor: '#06131fff',
+                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                          }
+                        }}
+                      >
+                        View Details
+                      </Button>
                     </Box>
                   </TableCell>
                
@@ -415,21 +410,15 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
+      {/* Driver Details Dialog */}
+      {isDriverDetailsDialogOpen && (
+        <DriverDetailsDialog
+          open={isDriverDetailsDialogOpen}
+          onClose={() => setIsDriverDetailsDialogOpen(false)}
+          driverId={selectedDriverId}
         />
       )}
-      
-      {/* User details dialog */}
-      <UserDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
+
     </Card>
   );
 }
