@@ -49,7 +49,7 @@ export const navItems = [
     title: 'Transport Management',
     icon: 'truck',
     items: [
-      { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehicl, icon: 'mountain' },
+     { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehic, icon: 'mountain' },
        { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },

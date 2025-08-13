@@ -42,29 +42,35 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
     }
     setIsSubmitting(true);
     try {
-      switch (status) {
-        case 'APPROVED':
-          await authClient.setMinerForApproval(customer.id);
-          break;
-        case 'REJECTED':
-          if (!reason) {
-            alert('Please provide a reason for rejection');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForRejection(customer.id, reason);
-          break;
-        case 'PUSHED_BACK':
-          if (!reason) {
-            alert('Please provide a reason for pushing back');
-            setIsSubmitting(false);
-            return;
-          }
-          await authClient.setMinerForPushBack(customer.id, reason);
-          break;
-        default:
-          throw new Error(`Unsupported status: ${status}`);
-      }
+    switch (status) {
+         case 'APPROVED':
+           // Implement approve vehicle API call when available
+           await authClient.approveVehicle(customer.id);
+           
+           break;
+         case 'REJECTED':
+           if (!reason) {
+           
+             setIsSubmitting(false);  
+             return;
+           }
+           // Implement reject vehicle API call when available
+         await authClient.rejectVehicle(customer.id, reason);
+           
+           break;
+         case 'PUSHED_BACK':
+           if (!reason) {
+          
+             setIsSubmitting(false);
+             return;
+           }
+           // Implement push back vehicle API call when available
+           await authClient.pushBackVehicle(customer.id, reason);
+           
+           break;
+         default:
+           throw new Error(`Unsupported status: ${status}`);
+       }
 
       // Close the dialog after successful update
       onClose();

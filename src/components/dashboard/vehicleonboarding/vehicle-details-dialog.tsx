@@ -79,8 +79,8 @@ export function VehicleDetailsDialog({
       switch (status) {
         case 'APPROVED':
           // Implement approve vehicle API call when available
-          // await authClient.approveVehicle(vehicle.id);
-          alert('Vehicle approval functionality will be implemented soon');
+          await authClient.approveVehicle(vehicle.id);
+          
           break;
         case 'REJECTED':
           if (!reason) {
@@ -89,8 +89,8 @@ export function VehicleDetailsDialog({
             return;
           }
           // Implement reject vehicle API call when available
-          // await authClient.rejectVehicle(vehicle.id, reason);
-          alert('Vehicle rejection functionality will be implemented soon');
+          await authClient.rejectVehicle(vehicle.id, reason);
+          
           break;
         case 'PUSHED_BACK':
           if (!reason) {
@@ -99,8 +99,8 @@ export function VehicleDetailsDialog({
             return;
           }
           // Implement push back vehicle API call when available
-          // await authClient.pushBackVehicle(vehicle.id, reason);
-          alert('Vehicle push back functionality will be implemented soon');
+          await authClient.pushBackVehicle(vehicle.id, reason);
+          
           break;
         default:
           throw new Error(`Unsupported status: ${status}`);

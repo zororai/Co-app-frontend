@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
-import type { Customer } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
+import { CustomersTable } from '@/components/dashboard/approvedvehicles/vehicle-operation-table';
+import type { Customer } from '@/components/dashboard/approvedvehicles/vehicle-operation-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -48,7 +48,7 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
-  const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
+  const [tab, setTab] = React.useState<'Idle' | 'Loading' | 'Loaded' | 'Maintainance'>('Idle');
 
   // Function to refresh the miner data
   const refreshData = React.useCallback(() => {
@@ -93,10 +93,10 @@ export default function Page(): React.JSX.Element {
 
     // Determine which customers to export based on the current tab
     let filteredCustomers: Customer[] = [];
-    if (tab === 'PENDING') filteredCustomers = pendingCustomers;
-    else if (tab === 'PUSHED_BACK') filteredCustomers = pushedBackCustomers;
-    else if (tab === 'REJECTED') filteredCustomers = rejectedCustomers;
-    else if (tab === 'APPROVED') filteredCustomers = approvedCustomers;
+    if (tab === 'Idle') filteredCustomers = pendingCustomers;
+    else if (tab === 'Loading') filteredCustomers = pushedBackCustomers;
+    else if (tab === 'Loaded') filteredCustomers = rejectedCustomers;
+    else if (tab === 'Maintainance') filteredCustomers = approvedCustomers;
 
     const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
 
@@ -184,16 +184,16 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Vehicle Approved Registration </Typography>
+          <Typography variant="h4"> Approved Registered Vehicle </Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
             sx={{ mb: 2 }}
           >
-            <Tab label="Pending" value="PENDING" />
-            <Tab label="Pushed Back" value="PUSHED_BACK" />
-            <Tab label="Rejected" value="REJECTED" />
-            <Tab label="Approved" value="APPROVED" />
+            <Tab label="Idle" value="Idle" />
+            <Tab label="Loading" value="Loading" />
+            <Tab label="Loaded" value="Loaded" />
+            <Tab label="Maintainance" value="Maintainance" />
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button
@@ -218,16 +218,16 @@ export default function Page(): React.JSX.Element {
         <TopRightActions onRefresh={refreshData} />
       </Stack>
 
-      {tab === 'PENDING' && (
+      {tab === 'Idle' && (
         <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
-      {tab === 'PUSHED_BACK' && (
+      {tab === 'Loading' && (
         <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
-      {tab === 'REJECTED' && (
+      {tab === 'Loaded' && (
         <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
-      {tab === 'APPROVED' && (
+      {tab === 'Maintainance' && (
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
 
@@ -264,18 +264,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add New Vehicle
-      </Button>
+  
       
       {/* Add Vehicle Dialog */}
       <AddVehicleDialog 

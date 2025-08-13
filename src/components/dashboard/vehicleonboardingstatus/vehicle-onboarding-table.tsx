@@ -27,8 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+
 import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboardingstatus/vehicle-details-dialog';
 
 
@@ -347,7 +346,7 @@ export function CustomersTable({
               <TableCell>Owner ID</TableCell>
               <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Make Discussion</TableCell>
+              <TableCell>Make DiscussionF</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -439,21 +438,8 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
-      )}
       
-      {/* User details dialog */}
-      <UserDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
+      
       
       {/* Vehicle details dialog */}
       <VehicleDetailsDialog

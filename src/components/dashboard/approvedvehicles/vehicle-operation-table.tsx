@@ -342,9 +342,9 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Registration Number</TableCell>
-              <TableCell>Owner Name</TableCell>
-              <TableCell>Owner Contact</TableCell>
-              <TableCell>Owner ID</TableCell>
+              <TableCell>Driver</TableCell>
+              <TableCell>Operational Status</TableCell>
+              <TableCell>Vehicle Make</TableCell>
               <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
@@ -377,9 +377,9 @@ export function CustomersTable({
                     />
                   </TableCell>
                   <TableCell>{row.regNumber || 'N/A'}</TableCell>
-                  <TableCell>{row.ownerName || 'N/A'}</TableCell>
-                  <TableCell>{row.ownerCellNumber || 'N/A'}</TableCell>
-                  <TableCell>{row.ownerIdNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.assignedDriver || 'N/A'}</TableCell>
+                  <TableCell>{row.driverCellNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.make || 'N/A'}</TableCell>
                   <TableCell>{row.vehicleType || 'N/A'}</TableCell>
                   <TableCell>
                     <Box sx={{

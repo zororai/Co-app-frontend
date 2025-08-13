@@ -1879,6 +1879,38 @@ cooperativename: string;
     }
   }
 
+  async approveVehicle(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/vehicles/${id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to approve section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error approving section:', error);
+      return null;
+    }
+  }
+
   async setShaftAssignmentForApproval(id: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -2017,7 +2049,8 @@ cooperativename: string;
       return null;
     }
   }
-  async setSectionForPushBack(id: string, reason: string): Promise<any> {
+
+  async rejectVehicle(id: string, reason: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
@@ -2025,7 +2058,39 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`http://localhost:1000/api/sections/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`http://localhost:1000/api/vehicles/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to push back section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error pushing back section:', error);
+      return null;
+    }
+  }
+
+  async pushBackVehicle(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/vehicles/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

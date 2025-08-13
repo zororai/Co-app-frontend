@@ -261,6 +261,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   const handleStepNext = () => {
     if (validateCurrentStep()) {
       handleNext();
+      
+      // Call onRefresh if provided to refresh the table
+      if (onRefresh) {
+        onRefresh();
+      }
     }
   };
 
@@ -329,6 +334,12 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setSuccess(false);
     setError(null);
     setErrors({});
+    
+    // Call onRefresh if provided to refresh the table
+    if (onRefresh) {
+      onRefresh();
+    }
+    
     onClose();
   };
 
@@ -443,8 +454,8 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     <MenuItem value=""><em>None</em></MenuItem>
                     {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
                       approvedDrivers.map((driver) => (
-                        <MenuItem key={driver.id || Math.random()} value={driver.id}>
-                          {driver.name || (driver as any).firstName} {driver.surname || (driver as any).lastName}
+                        <MenuItem key={driver?.id || Math.random()} value={driver?.name || (driver as any)?.firstName || '' + ' ' + driver?.surname || (driver as any)?.lastName || ''} >
+                          {driver?.name || (driver as any)?.firstName || ''} {driver?.surname || (driver as any)?.lastName || ''}
                         </MenuItem>
                       ))
                     ) : (
