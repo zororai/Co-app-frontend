@@ -307,73 +307,7 @@ export function VehicleDetailsDialog({
           </Box>
         )}
       </DialogContent>
-      <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
-        {vehicle && showReasonField && (
-          <TextField
-            label="Reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            fullWidth
-            margin="normal"
-            multiline
-            rows={3}
-            sx={{ mb: 2 }}
-            required
-            error={showReasonField && !reason}
-            helperText={showReasonField && !reason ? 'Reason is required' : ''}
-          />
-        )}
-        {vehicle && ((!vehicle.status || (vehicle.status !== 'REJECTED' && vehicle.status !== 'APPROVED')) &&
-          (status !== 'REJECTED' && status !== 'APPROVED')) && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-            <Button 
-              onClick={() => handleStatusChange('APPROVED')}
-              variant={status === 'APPROVED' ? 'contained' : 'outlined'}
-              color="success"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Approve
-            </Button>
-            <Button 
-              onClick={() => handleStatusChange('PUSHED_BACK')}
-              variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
-              color="warning"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Push Back
-            </Button>
-            <Button 
-              onClick={() => handleStatusChange('REJECTED')}
-              variant={status === 'REJECTED' ? 'contained' : 'outlined'}
-              color="error"
-              disabled={isSubmitting}
-              sx={{ minWidth: '120px' }}
-            >
-              Reject
-            </Button>
-          </Box>
-        )}
-        {vehicle && status && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button 
-              onClick={handleSubmit}
-              variant="contained"
-              color="primary"
-              disabled={isSubmitting || (showReasonField && !reason)}
-              startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
-              sx={{ 
-                minWidth: '200px',
-                bgcolor: '#5f4bfa',
-                '&:hover': { bgcolor: '#4d3fd6' }
-              }}
-            >
-              {isSubmitting ? 'Submitting...' : `Submit ${status.toLowerCase()} status`}
-            </Button>
-          </Box>
-        )}
-      </DialogActions>
+     
     </Dialog>
   );
 }

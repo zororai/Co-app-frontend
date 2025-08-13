@@ -1,6 +1,5 @@
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
-import { iconMap } from './icon-map';
 
 export const navItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
@@ -23,7 +22,7 @@ export const navItems = [
     title: 'Shaft Management',
     icon: 'buildings',
     items: [
-      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'ids'},
+      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
       { key: 'site-add', title: 'Section Creation', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
     ],
   },
@@ -51,7 +50,7 @@ export const navItems = [
     icon: 'truck',
     items: [
       { key: 'transport-list', title: 'Transport Ore', href: '/transport-management/list', icon: 'truck' },
-      { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
+      { key: 'approved-vehicles', title: 'List of Approved Vehicles', href: paths.dashboard.approvedvehicles, icon: 'mountain' },
       { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },

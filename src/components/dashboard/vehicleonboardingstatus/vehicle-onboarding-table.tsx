@@ -29,7 +29,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
-import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboarding/vehicle-details-dialog';
+import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboardingstatus/vehicle-details-dialog';
 
 
 function noop(): void {
@@ -347,7 +347,7 @@ export function CustomersTable({
               <TableCell>Owner ID</TableCell>
               <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Make Discussion</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

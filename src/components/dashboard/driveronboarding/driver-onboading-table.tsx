@@ -309,7 +309,7 @@ export function CustomersTable({
               <TableCell>Contact</TableCell>
               <TableCell>Experience (Years)</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Make Discussion</TableCell>
+              <TableCell>View Details</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
