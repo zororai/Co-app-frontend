@@ -390,12 +390,10 @@ export function CustomersTable({
               <TableCell>Number of Bags</TableCell>
               <TableCell>Transport Status</TableCell>
               <TableCell>Driver</TableCell>
-              <TableCell>Transport</TableCell>
               <TableCell>Location</TableCell>
-              <TableCell>Process Status</TableCell>
-            
+              <TableCell>Process Status</TableCell>   
               <TableCell>View Details</TableCell>
-              
+              <TableCell>Assign Truck To Ore</TableCell>
      
               
             </TableRow>
@@ -428,7 +426,6 @@ export function CustomersTable({
                   <TableCell>{row.numberOfBags || 0}</TableCell>
                   <TableCell>{row.transportStatus || ''}</TableCell>
                   <TableCell>{row.selectedTransportdriver || ''}</TableCell>
-                  <TableCell>{row.selectedTransport || ''}</TableCell>
                   <TableCell>{row.location || ''}</TableCell>
                   <TableCell>{row.processStatus || ''}</TableCell>
                   
@@ -449,6 +446,21 @@ export function CustomersTable({
                           cursor: 'pointer',
                           fontWeight: 500,
                       }}>View Ore Details</button>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleViewUserDetails(row.id)}
+                        style={{
+                          background: 'none',
+                          border: '1px solid #06131fff',
+                          color: '#081b2fff',
+                          borderRadius: '6px',
+                          padding: '2px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                      }}>Assign Truck To Ore</button>
                     </Box>
                   </TableCell>
                

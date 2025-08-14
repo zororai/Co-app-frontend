@@ -221,6 +221,19 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       }
     }
     
+    // For the third step, validate additional details
+    if (activeStep === 2) {
+      setFormSubmitted(true);
+      
+      // Check if process status is selected
+      if (!formData.processStatus) {
+        setError('Please select a process status');
+        return; // Don't proceed if validation fails
+      }
+      
+      setError(null); // Clear any previous errors
+    }
+    
     if (activeStep === steps.length - 2) {
       // Submit form before going to confirmation step
       handleSubmit();
@@ -521,32 +534,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Transport Driver"
-                  name="selectedTransportdriver"
-                  value={formData.selectedTransportdriver || ''}
-                  onChange={handleChange('selectedTransportdriver')}
-                  placeholder="Enter transport driver name"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Transport Vehicle"
-                  name="selectedTransport"
-                  value={formData.selectedTransport || ''}
-                  onChange={handleChange('selectedTransport')}
-                  placeholder="Enter transport vehicle details"
-                  margin="normal"
-                />
-              </Grid>
               <Grid item xs={12}>
-                <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
               </Grid>
             </Grid>
@@ -668,17 +656,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               Additional Detailsi
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Transport Reason"
-                  name="transportReason"
-                  value={formData.transportReason || ''}
-                  onChange={handleChange('transportReason')}
-                  placeholder="Enter reason for transport"
-                  margin="normal"
-                />
-              </Grid>
+              
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth margin="normal">
                   <InputLabel id="process-status-label">Process Status</InputLabel>
@@ -793,6 +771,18 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                      formData.transportStatus || 'Not provided'}
                   </Typography>
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Transport Driver</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {formData.selectedTransportdriver || 'Not yet provided'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Transport Vehicle</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {formData.selectedTransport || 'Not provided'}
+                  </Typography>
+                </Grid>
               </Grid>
               
               <Divider sx={{ my: 3 }} />
@@ -827,6 +817,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 Additional Details
               </Typography>
               <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Transport Reason</Typography>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {formData.transportReason || 'Not provided'}
+                  </Typography>
+                </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">Process Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>

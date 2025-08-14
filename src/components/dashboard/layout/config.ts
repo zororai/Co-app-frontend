@@ -50,7 +50,7 @@ export const navItems = [
     icon: 'truck',
     items: [
      { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehic, icon: 'mountain' },
-       { key: 'transport-add', title: 'Ore Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
+       { key: 'transport-add', title: 'Assign Ore To Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },
   {

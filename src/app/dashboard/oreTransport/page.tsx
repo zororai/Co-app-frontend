@@ -162,7 +162,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Ore registration </Typography>
+          <Typography variant="h4">Assign Ore To Transport</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
@@ -242,18 +242,6 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add Ore
-      </Button>
       
       {/* Add Ore Dialog */}
       <AddOreDialog 
