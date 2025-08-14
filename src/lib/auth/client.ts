@@ -2746,6 +2746,40 @@ cooperativename: string;
       };
     }
   }
+
+  /**
+   * Fetch vehicles with approved status
+   * @returns A promise that resolves to the approved vehicles data
+   */
+  async fetchVehiclesByApprovedStatus(): Promise<any[]> {
+    const token = this.getToken();
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+    }
+
+    try {
+      const response = await fetch('http://localhost:1000/api/vehicles/status/approved', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch approved vehicles');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching approved vehicles by status:', error);
+      return [];
+    }
+  }
 }
 
 
