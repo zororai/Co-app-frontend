@@ -40,7 +40,7 @@ function LoadedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Cus
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loaded" />;
 }
 function MaintainanceTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="maintainance" />;
+  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="Maintainance" />;
 }
 
 export default function Page(): React.JSX.Element {

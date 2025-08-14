@@ -30,6 +30,7 @@ import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
 import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboarding/vehicle-details-dialog';
+import { VehicleMaintenanceDialog } from '@/components/dashboard/approvedvehicles/vehicle-maintenance-dialog';
 
 
 function noop(): void {
@@ -62,7 +63,7 @@ export interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   onRefresh?: () => void; // Optional callback to refresh data from parent
-  operationalStatusFilter?: 'idle' | 'loading' | 'loaded' | 'maintainance' | null; // Optional status filter
+  operationalStatusFilter?: 'idle' | 'loading' | 'loaded' | 'Maintainance' | null; // Optional status filter
 }
 
 export function CustomersTable({
@@ -77,6 +78,7 @@ export function CustomersTable({
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string>('');
+  const [maintenanceLoading, setMaintenanceLoading] = React.useState<string | null>(null); // Track vehicle ID being sent to maintenance
   const [filters, setFilters] = React.useState({
     search: '',
     operationalStatus: 'all',
@@ -122,6 +124,9 @@ export function CustomersTable({
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = React.useState<string | null>(null);
   const [isVehicleDetailsDialogOpen, setIsVehicleDetailsDialogOpen] = React.useState(false);
+  const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = React.useState(false);
+  const [selectedVehicleForMaintenance, setSelectedVehicleForMaintenance] = React.useState<string | null>(null);
+  const [selectedVehicleStatus, setSelectedVehicleStatus] = React.useState<string>('');
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch vehicles from API when component mounts or refreshTrigger changes
@@ -184,6 +189,24 @@ export function CustomersTable({
   const handleViewUserDetails = (vehicleId: string) => {
     setSelectedVehicleId(vehicleId);
     setIsVehicleDetailsDialogOpen(true);
+  };
+
+  const handleSendToMaintenance = (vehicleId: string) => {
+    // Find the vehicle to get its current status
+    const vehicle = users.find(user => user.id === vehicleId);
+    if (vehicle) {
+      setSelectedVehicleForMaintenance(vehicleId);
+      setSelectedVehicleStatus(vehicle.operationalStatus || '');
+      setIsMaintenanceDialogOpen(true);
+    }
+  };
+  
+  const handleMaintenanceStatusChange = () => {
+    // Refresh the data after status change
+    setRefreshTrigger(prev => prev + 1);
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   // Function to refresh the table data
@@ -349,6 +372,7 @@ export function CustomersTable({
               <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
+              <TableCell>Send Vehicle To Ore Maintenance</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -422,6 +446,25 @@ export function CustomersTable({
                       }}>View Vehicle Details</button>
                     </Box>
                   </TableCell>
+
+                  
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <button 
+                        onClick={() => handleSendToMaintenance(row.id)}
+                        style={{
+                          background: 'none',
+                          border: '1px solid #06131fff',
+                          color: '#081b2fff',
+                          borderRadius: '6px',
+                          padding: '2px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                      }}>
+                        {row.operationalStatus === 'Maintainance' ? 'Manage Status' : 'Manage Status'}
+                      </button>
+                    </Box>
+                  </TableCell>
                
                 </TableRow>
               );
@@ -457,12 +500,25 @@ export function CustomersTable({
       />
       
       {/* Vehicle details dialog */}
-      <VehicleDetailsDialog
-        open={isVehicleDetailsDialogOpen}
-        onClose={() => setIsVehicleDetailsDialogOpen(false)}
-        vehicleId={selectedVehicleId}
-        onRefresh={refreshTableData}
-      />
+      {selectedVehicleId && (
+        <VehicleDetailsDialog
+          open={isVehicleDetailsDialogOpen}
+          onClose={() => setIsVehicleDetailsDialogOpen(false)}
+          vehicleId={selectedVehicleId}
+          onRefresh={refreshTableData}
+        />
+      )}
+
+      {/* Vehicle Maintenance Dialog */}
+      {selectedVehicleForMaintenance && (
+        <VehicleMaintenanceDialog
+          open={isMaintenanceDialogOpen}
+          onClose={() => setIsMaintenanceDialogOpen(false)}
+          vehicleId={selectedVehicleForMaintenance}
+          vehicleStatus={selectedVehicleStatus}
+          onStatusChange={handleMaintenanceStatusChange}
+        />
+      )}
     </Card>
   );
 }

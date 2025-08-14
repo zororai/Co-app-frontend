@@ -2634,7 +2634,48 @@ cooperativename: string;
    * @returns A promise that resolves to the response data or error
    */
   async pushBackSecurityCompany(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
-    const token = this.getToken();
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return Promise.resolve({ success: false, error: 'Authentication required' });
+    }
+
+    try {
+      return fetch(`http://localhost:1000/api/security-companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().catch(() => ({}))
+            .then(errorData => {
+              throw new Error(errorData.message || `Failed to push back security company: ${response.status}`);
+            });
+        }
+        return { success: true };
+      });
+    } catch (error) {
+      console.error('Error pushing back security company:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Send a vehicle to maintenance
+   * @param vehicleId The ID of the vehicle to send to maintenance
+   * @returns A promise that resolves to the response data or error
+   */
+  async sendVehicleToMaintenance(vehicleId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
       window.location.href = '/auth/signin';
@@ -2642,7 +2683,7 @@ cooperativename: string;
     }
 
     try {
-      const response = await fetch(`http://localhost:1000/api/security-companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`http://localhost:1000/api/vehicles/${vehicleId}/maintainance`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2654,12 +2695,51 @@ cooperativename: string;
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to push back security company: ${response.status}`);
+        throw new Error(errorData.message || `Failed to send vehicle to maintenance: ${response.status}`);
       }
 
       return { success: true };
     } catch (error) {
-      console.error('Error pushing back security company:', error);
+      console.error('Error sending vehicle to maintenance:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Set a vehicle to idle status (functional)
+   * @param vehicleId The ID of the vehicle to set as idle
+   * @returns A promise that resolves to the response data or error
+   */
+  async setVehicleToIdle(vehicleId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      const response = await fetch(`http://localhost:1000/api/vehicles/${vehicleId}/idle`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to set vehicle to idle: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting vehicle to idle:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error occurred' 
