@@ -132,6 +132,7 @@ export function CustomersTable({
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
+  const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
@@ -227,7 +228,10 @@ export function CustomersTable({
     setSelectedUserId(userId);
     setIsUserDetailsDialogOpen(true);
   };
-
+  const handleAssignDetails = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsAssignDetailsDialogOpen(true);
+  };
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
@@ -449,19 +453,21 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>Assign Truck To Ore</button>
-                    </Box>
+                    {(!row.selectedTransport || row.selectedTransport === 'Not Selected') && (
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <button 
+                          onClick={() => handleAssignDetails(row.id)}
+                          style={{
+                            background: 'none',
+                            border: '1px solid #06131fff',
+                            color: '#081b2fff',
+                            borderRadius: '6px',
+                            padding: '2px 12px',
+                            cursor: 'pointer',
+                            fontWeight: 500,
+                        }}>Assign Truck To Ore</button>
+                      </Box>
+                    )}
                   </TableCell>
                
                 </TableRow>
@@ -483,13 +489,13 @@ export function CustomersTable({
       
       {/* Customer Details Dialog */}
       
-      {/* User details dialog */}
+      {/* Assign Ore Details dialog */}
       <AssignOreDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onClose={() => setIsUserDetailsDialogOpen(false)}
+        open={isAssignDetailsDialogOpen}
+        onClose={() => setIsAssignDetailsDialogOpen(false)}
         userId={selectedUserId}
       />
-      {/* User details dialog */}
+      {/* Ore Details dialog */}
       <OreDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}

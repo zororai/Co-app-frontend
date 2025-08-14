@@ -2780,6 +2780,57 @@ cooperativename: string;
       return [];
     }
   }
+
+  /**
+   * Update ore transport fields
+   * @param oreId The ID of the ore transport to update
+   * @param fields The fields to update (selectedTransportdriver, transportStatus, selectedTransport, transportReason)
+   * @returns A promise that resolves to the response data or error
+   */
+  async updateOreTransportFields(oreId: string, fields: {
+    selectedTransportdriver: string;
+    transportStatus: string;
+    selectedTransport: string;
+    transportReason: string;
+  }): Promise<{ success: boolean; error?: string }> {
+    const token = this.getToken();
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      // Construct the query string from the fields object
+      const queryParams = new URLSearchParams();
+      Object.entries(fields).forEach(([key, value]) => {
+        queryParams.append(key, value);
+      });
+
+      const response = await fetch(`http://localhost:1000/api/ore-transports/${oreId}/fields?${queryParams.toString()}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update ore transport fields: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating ore transport fields:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
+    }
+  }
 }
 
 

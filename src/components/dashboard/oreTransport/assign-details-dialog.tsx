@@ -10,6 +10,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 import { authClient } from '@/lib/auth/client';
 
 interface OreDetailsDialogProps {
@@ -19,7 +23,7 @@ interface OreDetailsDialogProps {
   onRefresh?: () => void; // Optional callback to refresh data after action
 }
 
-export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: OreDetailsDialogProps): React.JSX.Element {
+export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetailsDialogProps): React.JSX.Element {
   const [oreDetails, setOreDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -29,6 +33,21 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
   const [reason, setReason] = React.useState<string>('');
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
   const [actionType, setActionType] = React.useState<'reject' | 'pushback' | null>(null);
+  
+  // New state variables for vehicle selection
+  const [vehicles, setVehicles] = React.useState<any[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = React.useState<string>('');
+  const [selectedDriver, setSelectedDriver] = React.useState<string>('Not Selected');
+  const [transportStatus, setTransportStatus] = React.useState<string>('');
+  const [transportReason, setTransportReason] = React.useState<string>('picking ore from shaft to tax deduction');
+  
+  // Field validation states
+  const [fieldErrors, setFieldErrors] = React.useState<{
+    vehicle: boolean;
+    driver: boolean;
+    status: boolean;
+  }>({ vehicle: false, driver: false, status: false });
+  const [validationMessage, setValidationMessage] = React.useState<string>('');
 
   // Reset states when dialog opens/closes
   React.useEffect(() => {
@@ -38,6 +57,27 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
       setReason('');
       setShowReasonField(false);
       setActionType(null);
+      setSelectedVehicle('');
+      setSelectedDriver('Not Selected');
+      setTransportStatus('');
+      setTransportReason('picking ore from shaft to tax deduction');
+    }
+  }, [open]);
+  
+  // Fetch approved vehicles when dialog opens
+  React.useEffect(() => {
+    const fetchApprovedVehicles = async () => {
+      try {
+        const vehiclesData = await authClient.fetchVehiclesByApprovedStatus();
+        console.log('Fetched approved vehicles:', vehiclesData);
+        setVehicles(vehiclesData || []);
+      } catch (err) {
+        console.error('Error fetching approved vehicles:', err);
+      }
+    };
+
+    if (open) {
+      fetchApprovedVehicles();
     }
   }, [open]);
 
@@ -105,6 +145,108 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
       setActionLoading(false);
     }
   };
+  
+  // Handle vehicle selection change
+  const handleVehicleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    const vehicleId = event.target.value as string;
+    setSelectedVehicle(vehicleId);
+    
+    // Find the selected vehicle to get its assigned driver
+    const vehicle = vehicles.find(v => v.id === vehicleId);
+    if (vehicle && vehicle.assignedDriver) {
+      setSelectedDriver(vehicle.assignedDriver);
+    } else {
+      setSelectedDriver('Not Selected');
+    }
+  };
+  
+  // Handle transport status change
+  const handleTransportStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setTransportStatus(event.target.value as string);
+  };
+  
+  // Handle save changes
+  const handleSaveChanges = async () => {
+    console.log('Save Changes clicked');
+    console.log('Ore details ID:', oreDetails?.id);
+    console.log('Selected vehicle:', selectedVehicle);
+    console.log('Transport status:', transportStatus);
+    console.log('Selected driver:', selectedDriver);
+    console.log('Transport reason:', transportReason);
+    
+    // Reset validation states
+    setFieldErrors({ vehicle: false, driver: false, status: false });
+    setValidationMessage('');
+    
+    // Check for missing fields and highlight them
+    const missingVehicle = !selectedVehicle;
+    const missingStatus = !transportStatus;
+    const missingDriver = !selectedDriver || selectedDriver === 'Not Selected';
+    
+    if (!oreDetails?.id || missingVehicle || missingStatus || missingDriver) {
+      setFieldErrors({
+        vehicle: missingVehicle,
+        status: missingStatus,
+        driver: missingDriver
+      });
+      setValidationMessage('Missing required fields for save');
+      return;
+    }
+    
+    setActionLoading(true);
+    setActionError('');
+    setActionSuccess('');
+    
+    try {
+      console.log('Calling updateOreTransportFields with:', {
+        oreId: oreDetails.id.toString(),
+        fields: {
+          selectedTransport: selectedVehicle,
+          transportStatus: transportStatus,
+          selectedTransportdriver: selectedDriver,
+          transportReason: transportReason
+        }
+      });
+      
+      // Find the vehicle to get the correct driver name
+      const vehicle = vehicles.find(v => v.id === selectedVehicle);
+      const driverName = vehicle?.assignedDriver || selectedDriver;
+      
+      // Call the API to update ore transport fields
+      const result = await authClient.updateOreTransportFields(
+        oreDetails.id.toString(),
+        {
+          selectedTransport: selectedVehicle,
+          transportStatus: transportStatus,
+          selectedTransportdriver: driverName, // Use the driver name, not vehicle ID
+          transportReason: transportReason
+        }
+      );
+      
+      console.log('API response:', result);
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update transport details');
+      }
+      
+      setActionSuccess('Transport details updated successfully');
+      
+      // Refresh parent component if callback provided
+      if (onRefresh) {
+        onRefresh();
+      }
+      
+      // Close the dialog after a short delay to show success message
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err) {
+      console.error('Error updating ore transport details:', err);
+      setActionError(err instanceof Error ? err.message : 'Failed to update transport details. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   return (
     <Dialog 
@@ -119,7 +261,7 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
         borderBottom: '1px solid #e0e0e0',
         pb: 2
       }}>
-        Assign Ore To Vehicle 
+        Assign Ore To Vehicle
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -136,33 +278,90 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
 
         {!loading && !error && oreDetails && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {validationMessage && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {validationMessage}
+              </Alert>
+            )}
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
               <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
               <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
               <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
               <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
-              <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
-              <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
-              <DetailItem label="Selected Transport" value={oreDetails.selectedTransport || 'N/A'} />
+              
+              {/* Transport Status Dropdown */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Status</Typography>
+                <FormControl fullWidth size="small" error={fieldErrors.status}>
+                  <Select
+                    value={transportStatus || oreDetails.transportStatus || ''}
+                    onChange={handleTransportStatusChange as any}
+                    displayEmpty
+                    sx={{ 
+                      minWidth: 200,
+                      border: fieldErrors.status ? '1px solid #d32f2f' : 'none'
+                    }}
+                  >
+                    <MenuItem value="">Select Status</MenuItem>
+                    <MenuItem value="in_transit">In Transit</MenuItem>
+                    <MenuItem value="delivered">Delivered</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              
+              {/* Transport Driver (displays based on selected vehicle) */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Driver</Typography>
+                <Typography variant="body2" sx={{
+                  color: fieldErrors.driver ? '#d32f2f' : 'inherit',
+                  p: 1,
+                  border: fieldErrors.driver ? '1px solid #d32f2f' : 'none',
+                  borderRadius: '4px'
+                }}>{selectedDriver}</Typography>
+              </Box>
+              
+              {/* Vehicle Dropdown */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Selected Transport</Typography>
+                <FormControl fullWidth size="small" error={fieldErrors.vehicle}>
+                  <Select
+                    value={selectedVehicle}
+                    onChange={handleVehicleChange as any}
+                    displayEmpty
+                    sx={{ 
+                      minWidth: 200,
+                      border: fieldErrors.vehicle ? '1px solid #d32f2f' : 'none'
+                    }}
+                  >
+                    <MenuItem value="">Not Selected</MenuItem>
+                    {vehicles.map((vehicle) => (
+                      <MenuItem key={vehicle.id} value={vehicle.id}>
+                        {vehicle.regNumber || 'Unknown'}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              
               <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
               <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
               <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
               <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
             </Box>
             
-            {oreDetails.transportReason && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Reason</Typography>
-                <Box sx={{ 
-                  p: 2, 
-                  bgcolor: '#f5f5f5', 
-                  borderRadius: 1,
-                  whiteSpace: 'pre-wrap'
-                }}>
-                  <Typography variant="body2">{oreDetails.transportReason}</Typography>
-                </Box>
-              </Box>
-            )}
+            <Box sx={{ mt: 2, gridColumn: '1 / span 2' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Reason</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={2}
+                value={transportReason}
+                onChange={(e) => setTransportReason(e.target.value)}
+                variant="outlined"
+                size="small"
+              />
+            </Box>
             
             {oreDetails.tax && oreDetails.tax.length > 0 && (
               <Box sx={{ mt: 2 }}>
@@ -238,16 +437,21 @@ export function AssignOreDetailsDialog ({ open, onClose, userId, onRefresh }: Or
       
       {/* Action buttons */}
       {!showReasonField && (
-        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
-          <Button 
-            onClick={onClose} 
-            variant="outlined"
-            disabled={actionLoading}
-          >
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={onClose} color="inherit">
             Close
           </Button>
-          
-         
+          <Button 
+            variant="contained" 
+            color="primary"
+          //  disabled={!selectedVehicle || !transportStatus || !selectedDriver || !transportReason || actionLoading}
+            onClick={() => {
+              console.log('Button clicked directly');
+              handleSaveChanges();
+            }}
+          >
+            {actionLoading ? 'Saving...' : 'Save Changes'}
+          </Button>
         </DialogActions>
       )}
     </Dialog>

@@ -10,10 +10,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 import { authClient } from '@/lib/auth/client';
 
 interface OreDetailsDialogProps {
@@ -33,12 +29,6 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
   const [reason, setReason] = React.useState<string>('');
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
   const [actionType, setActionType] = React.useState<'reject' | 'pushback' | null>(null);
-  
-  // New state variables for vehicle selection
-  const [vehicles, setVehicles] = React.useState<any[]>([]);
-  const [selectedVehicle, setSelectedVehicle] = React.useState<string>('');
-  const [selectedDriver, setSelectedDriver] = React.useState<string>('Not Selected');
-  const [transportStatus, setTransportStatus] = React.useState<string>('');
 
   // Reset states when dialog opens/closes
   React.useEffect(() => {
@@ -48,26 +38,6 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       setReason('');
       setShowReasonField(false);
       setActionType(null);
-      setSelectedVehicle('');
-      setSelectedDriver('Not Selected');
-      setTransportStatus('');
-    }
-  }, [open]);
-  
-  // Fetch approved vehicles when dialog opens
-  React.useEffect(() => {
-    const fetchApprovedVehicles = async () => {
-      try {
-        const vehiclesData = await authClient.fetchVehiclesByApprovedStatus();
-        console.log('Fetched approved vehicles:', vehiclesData);
-        setVehicles(vehiclesData || []);
-      } catch (err) {
-        console.error('Error fetching approved vehicles:', err);
-      }
-    };
-
-    if (open) {
-      fetchApprovedVehicles();
     }
   }, [open]);
 
@@ -135,59 +105,6 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       setActionLoading(false);
     }
   };
-  
-  // Handle vehicle selection change
-  const handleVehicleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const vehicleId = event.target.value as string;
-    setSelectedVehicle(vehicleId);
-    
-    // Find the selected vehicle to get its assigned driver
-    const vehicle = vehicles.find(v => v.id === vehicleId);
-    if (vehicle && vehicle.assignedDriver) {
-      setSelectedDriver(vehicle.assignedDriver);
-    } else {
-      setSelectedDriver('Not Selected');
-    }
-  };
-  
-  // Handle transport status change
-  const handleTransportStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setTransportStatus(event.target.value as string);
-  };
-  
-  // Handle save changes
-  const handleSaveChanges = async () => {
-    if (!userId || !selectedVehicle || !transportStatus) return;
-    
-    setActionLoading(true);
-    setActionError('');
-    setActionSuccess('');
-    
-    try {
-      // Here you would implement the API call to update the ore transport details
-      // For example:
-      // const result = await authClient.updateOreTransport(userId, {
-      //   selectedTransport: selectedVehicle,
-      //   transportStatus: transportStatus,
-      //   selectedTransportdriver: selectedDriver
-      // });
-      
-      // For now, just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setActionSuccess('Transport details updated successfully');
-      
-      // Refresh parent component if callback provided
-      if (onRefresh) {
-        onRefresh();
-      }
-    } catch (err) {
-      console.error('Error updating ore transport details:', err);
-      setActionError('Failed to update transport details. Please try again.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   return (
     <Dialog 
@@ -202,7 +119,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
         borderBottom: '1px solid #e0e0e0',
         pb: 2
       }}>
-        Assign Ore To Vehicle
+        Assign Ore To Vehicle 
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -224,51 +141,9 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
               <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
               <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
               <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
-              
-              {/* Transport Status Dropdown */}
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Status</Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={transportStatus || oreDetails.transportStatus || ''}
-                    onChange={handleTransportStatusChange as any}
-                    displayEmpty
-                    sx={{ minWidth: 200 }}
-                  >
-                    <MenuItem value="">Select Status</MenuItem>
-                    <MenuItem value="in_transit">In Transit</MenuItem>
-                    <MenuItem value="delivered">Delivered</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-              
-              {/* Transport Driver (displays based on selected vehicle) */}
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Driver</Typography>
-                <Typography variant="body2">{selectedDriver}</Typography>
-              </Box>
-              
-              {/* Vehicle Dropdown */}
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Selected Transport</Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={selectedVehicle}
-                    onChange={handleVehicleChange as any}
-                    displayEmpty
-                    sx={{ minWidth: 200 }}
-                  >
-                    <MenuItem value="">Not Selected</MenuItem>
-                    {vehicles.map((vehicle) => (
-                      <MenuItem key={vehicle.id} value={vehicle.id}>
-                        {vehicle.regNumber || 'Unknown'}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              
+              <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
+              <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
+              <DetailItem label="Selected Transport" value={oreDetails.selectedTransport || 'N/A'} />
               <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
               <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
               <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
@@ -363,18 +238,16 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       
       {/* Action buttons */}
       {!showReasonField && (
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} color="inherit">
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
+          <Button 
+            onClick={onClose} 
+            variant="outlined"
+            disabled={actionLoading}
+          >
             Close
           </Button>
-          <Button 
-            variant="contained" 
-            color="primary"
-            disabled={!selectedVehicle || !transportStatus || actionLoading}
-            onClick={handleSaveChanges}
-          >
-            {actionLoading ? 'Saving...' : 'Save Changes'}
-          </Button>
+          
+         
         </DialogActions>
       )}
     </Dialog>

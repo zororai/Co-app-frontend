@@ -765,8 +765,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   <Typography variant="body2" color="text.secondary">Transport Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
                     {formData.transportStatus === 'pending' ? 'Pending' :
-                     formData.transportStatus === 'in_transit' ? 'In Transit' :
-                     formData.transportStatus === 'delivered' ? 'Delivered' :
                      formData.transportStatus === 'cancelled' ? 'Cancelled' :
                      formData.transportStatus || 'Not provided'}
                   </Typography>
