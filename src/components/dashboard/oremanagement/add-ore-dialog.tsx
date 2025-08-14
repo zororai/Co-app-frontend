@@ -665,7 +665,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {activeStep === 2 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Additional Details
+              Additional Detailsi
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -793,18 +793,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                      formData.transportStatus || 'Not provided'}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Driver</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.selectedTransportdriver || 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Vehicle</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.selectedTransport || 'Not provided'}
-                  </Typography>
-                </Grid>
               </Grid>
               
               <Divider sx={{ my: 3 }} />
@@ -839,12 +827,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 Additional Details
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Reason</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.transportReason || 'Not provided'}
-                  </Typography>
-                </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">Process Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>

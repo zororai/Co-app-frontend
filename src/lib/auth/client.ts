@@ -2413,6 +2413,32 @@ cooperativename: string;
     }
   }
 
+  async fetchApprovedVehicles() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        console.warn('No authentication token found');
+      }
+
+      const response = await fetch('http://localhost:1000/api/vehicles/status/approved', {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching vehicles: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+      throw error;
+    }
+  }
   /**
    * Fetch approved drivers from the API
    * @returns A promise that resolves to the approved drivers data

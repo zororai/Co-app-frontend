@@ -20,18 +20,7 @@ import { CustomersTable } from '@/components/dashboard/approvedvehicles/vehicle-
 import type { Customer } from '@/components/dashboard/approvedvehicles/vehicle-operation-table';
 
 // Tab content components
-function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
-}
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
-}
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
-}
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
-}
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -41,6 +30,18 @@ import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
 import { AddVehicleDialog } from '@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box';
 
+function IdleTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="idle" />;
+}
+function LoadingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loading" />;
+}
+function LoadedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loaded" />;
+}
+function MaintainanceTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="maintainance" />;
+}
 
 export default function Page(): React.JSX.Element {
   const page = 0;
@@ -80,10 +81,10 @@ export default function Page(): React.JSX.Element {
   }, []);
 
   // Filter customers by selected tab/status
-  const pendingCustomers = customers.filter(c => c.status === 'PENDING');
-  const pushedBackCustomers = customers.filter(c => c.status === 'PUSHED_BACK');
-  const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
-  const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
+  const idleCustomers = customers.filter(c => c.status === 'idle');
+  const loadingCustomers = customers.filter(c => c.status === 'loading');
+  const loadedCustomers = customers.filter(c => c.status === 'loaded');
+  const maintainanceCustomers = customers.filter(c => c.status === 'maintainance');
 
   // Export table data as CSV
   const handleExport = () => {
@@ -93,10 +94,10 @@ export default function Page(): React.JSX.Element {
 
     // Determine which customers to export based on the current tab
     let filteredCustomers: Customer[] = [];
-    if (tab === 'Idle') filteredCustomers = pendingCustomers;
-    else if (tab === 'Loading') filteredCustomers = pushedBackCustomers;
-    else if (tab === 'Loaded') filteredCustomers = rejectedCustomers;
-    else if (tab === 'Maintainance') filteredCustomers = approvedCustomers;
+    if (tab === 'Idle') filteredCustomers = idleCustomers;
+    else if (tab === 'Loading') filteredCustomers = loadingCustomers;
+    else if (tab === 'Loaded') filteredCustomers = loadedCustomers;
+    else if (tab === 'Maintainance') filteredCustomers = maintainanceCustomers;
 
     const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
 
@@ -131,53 +132,6 @@ export default function Page(): React.JSX.Element {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (!response.ok) {
-            console.error('Failed to import data:', await response.text());
-          } else {
-            console.log('Successfully imported data to backend');
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
   }
 
   return (
@@ -219,16 +173,16 @@ export default function Page(): React.JSX.Element {
       </Stack>
 
       {tab === 'Idle' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <IdleTab customers={idleCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
       {tab === 'Loading' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <LoadingTab customers={loadingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
       {tab === 'Loaded' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <LoadedTab customers={loadedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
       {tab === 'Maintainance' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <MaintainanceTab customers={maintainanceCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />

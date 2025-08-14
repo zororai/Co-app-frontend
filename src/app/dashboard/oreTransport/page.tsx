@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/oremanagement/ore-table';
-import type { Customer } from '@/components/dashboard/oremanagement/ore-table';
+import { CustomersTable } from '@/components/dashboard/oreTransport/ore-table';
+import type { Customer } from '@/components/dashboard/oreTransport/ore-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -39,7 +39,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/oremanagement/add-ore-dialog';
+import { AddOreDialog } from '@/components/dashboard/oreTransport/add-ore-dialog';
 
 
 export default function Page(): React.JSX.Element {

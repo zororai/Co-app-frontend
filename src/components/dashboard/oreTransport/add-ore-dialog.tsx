@@ -665,7 +665,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {activeStep === 2 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Additional Details
+              Additional Detailsi
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>

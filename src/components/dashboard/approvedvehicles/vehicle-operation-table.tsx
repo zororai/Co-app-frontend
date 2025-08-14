@@ -49,7 +49,7 @@ export interface Customer {
   position: string;
   cooperative: string;
   numShafts: number;
-  status: 'PENDING' | 'REJECTED' | 'PUSHED_BACK' | 'APPROVED';
+  operationalStatus: 'idle' | 'loading' | 'loaded' | 'maintainance';
   reason: string;
   attachedShaft: boolean;
   // Optionally, add index signature if you need dynamic keys:
@@ -62,7 +62,7 @@ export interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   onRefresh?: () => void; // Optional callback to refresh data from parent
-  statusFilter?: 'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED' | null; // Optional status filter
+  operationalStatusFilter?: 'idle' | 'loading' | 'loaded' | 'maintainance' | null; // Optional status filter
 }
 
 export function CustomersTable({
@@ -71,7 +71,7 @@ export function CustomersTable({
   page = 0,
   rowsPerPage = 0,
   onRefresh,
-  statusFilter = null,
+  operationalStatusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
@@ -79,7 +79,7 @@ export function CustomersTable({
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
     search: '',
-    status: 'all',
+    operationalStatus: 'all',
     position: 'all'
   });
 
@@ -92,15 +92,15 @@ export function CustomersTable({
         );
       
       // Apply dropdown filter
-      const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
+      const matchesDropdownStatus = filters.operationalStatus === 'all' || user.operationalStatus === filters.operationalStatus;
       const matchesPosition = filters.position === 'all' || user.position === filters.position;
       
       // Apply tab filter if provided
-      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
+      const matchesTabStatus = operationalStatusFilter === null || user.operationalStatus === operationalStatusFilter;
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-  }, [users, filters, statusFilter]);
+  }, [users, filters, operationalStatusFilter]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -130,7 +130,7 @@ export function CustomersTable({
       setLoading(true);
       setError('');
       try {
-        const fetchedVehicles = await authClient.fetchVehicles();
+        const fetchedVehicles = await authClient.fetchApprovedVehicles();
         console.log('Fetched vehicles:', fetchedVehicles);
         
         // Transform the vehicle data to match the expected format
@@ -143,6 +143,7 @@ export function CustomersTable({
           make: vehicle.make || '',
           model: vehicle.model || '',
           year: vehicle.year || '',
+          operationalStatus: vehicle.operationalStatus || 'idle',
           assignedDriver: vehicle.assignedDriver || '',
           lastServiceDate: vehicle.lastServiceDate || '',
           ownerName: vehicle.ownerName || '',
@@ -270,7 +271,7 @@ export function CustomersTable({
           </Box>
           <FormControl sx={{ minWidth: 150 }}>
             <Select
-              value={filters.status}
+              value={filters.operationalStatus}
               displayEmpty
               size="small"
               sx={{ 
@@ -279,13 +280,13 @@ export function CustomersTable({
                   fontSize: '14px'
                 }
               }}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) => setFilters(prev => ({ ...prev, operationalStatus: e.target.value }))}
             >
               <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="REJECTED">Rejected</MenuItem>
-              <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
-              <MenuItem value="APPROVED">Approved</MenuItem>
+              <MenuItem value="idle">Idle</MenuItem>
+              <MenuItem value="loading">Loading</MenuItem>
+              <MenuItem value="loaded">Loaded</MenuItem>
+              <MenuItem value="maintainance">Maintainance</MenuItem>
             </Select>
           </FormControl>
           <FormControl sx={{ minWidth: 150 }}>
@@ -378,7 +379,7 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>{row.regNumber || 'N/A'}</TableCell>
                   <TableCell>{row.assignedDriver || 'N/A'}</TableCell>
-                  <TableCell>{row.driverCellNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.operationalStatus }</TableCell>
                   <TableCell>{row.make || 'N/A'}</TableCell>
                   <TableCell>{row.vehicleType || 'N/A'}</TableCell>
                   <TableCell>
