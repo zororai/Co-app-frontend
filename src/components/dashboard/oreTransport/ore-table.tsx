@@ -27,8 +27,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { OreDetailsDialog } from '@/components/dashboard/oremanagement/ore-details-dialog';
+import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
+import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
 
 
 function noop(): void {
@@ -482,14 +482,13 @@ export function CustomersTable({
       />
       
       {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
-      )}
       
+      {/* User details dialog */}
+      <AssignOreDetailsDialog
+        open={isUserDetailsDialogOpen}
+        onClose={() => setIsUserDetailsDialogOpen(false)}
+        userId={selectedUserId}
+      />
       {/* User details dialog */}
       <OreDetailsDialog
         open={isUserDetailsDialogOpen}
