@@ -304,8 +304,8 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
                   >
                     <MenuItem value="">Select Status</MenuItem>
                     <MenuItem value="in_transit">In Transit</MenuItem>
-                    <MenuItem value="delivered">Delivered</MenuItem>
-                    <MenuItem value="pending">Pending</MenuItem>
+                 
+                   
                   </Select>
                 </FormControl>
               </Box>
@@ -375,6 +375,9 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
                     <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Tax Rate:</strong> {taxItem.taxRate?.toString() || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
+                    
                     </Box>
                   ))}
                 </Box>

@@ -440,6 +440,38 @@ class AuthClient {
     }
   }
   
+  /**
+   * Fetch only approved tax directions from the backend
+   * @returns A promise that resolves to an array of approved tax directions
+   */
+  async fetchApprovedTaxDirections(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
+    }
+    try {
+        const response = await fetch('http://localhost:1000/api/taxdidections/approved', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch approved tax directions');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.taxes || [];
+    } catch (error) {
+        console.error('Error fetching approved tax directions:', error);
+        return [];
+    }
+  }
+  
   async createTax(taxData: {
     taxType: string;
     taxRate: number;

@@ -2,26 +2,33 @@
 
 import * as React from 'react';
 import { Fragment } from 'react';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import Button from '@mui/material/Button';
+import { 
+  Box, 
+  Button, 
+  CircularProgress, 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle, 
+  Divider, 
+  FormControl,
+  FormHelperText,
+  IconButton, 
+  InputAdornment, 
+  InputLabel,
+  MenuItem,
+  Paper, 
+  Select,
+  Step, 
+  StepLabel, 
+  Stepper, 
+  TextField, 
+  Typography 
+} from '@mui/material';
 import { authClient } from '@/lib/auth/client';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import Switch from '@mui/material/Switch';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -30,13 +37,10 @@ import dayjs from 'dayjs';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
-import FormHelperText from '@mui/material/FormHelperText';
-import Divider from '@mui/material/Divider';
 import { CheckCircle } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
-import CircularProgress from '@mui/material/CircularProgress';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -123,6 +127,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const [loadingShafts, setLoadingShafts] = React.useState<boolean>(false);
   const [shaftError, setShaftError] = React.useState<string>('');
   
+  // State for tax directions
+  const [taxDirections, setTaxDirections] = React.useState<any[]>([]);
+  const [loadingTaxDirections, setLoadingTaxDirections] = React.useState<boolean>(false);
+  const [taxDirectionsError, setTaxDirectionsError] = React.useState<string>('');
+  
   // Email validation function
   const validateEmail = (email: string): boolean => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -163,18 +172,42 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
 
   // Handle tax field changes
-  const handleTaxChange = (index: number, field: 'taxType' | 'taxRate' | 'location' | 'description') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTaxChange = (index: number, field: 'taxType' | 'taxRate' | 'location' | 'description') => (event: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const newTax = [...formData.tax];
     if (field === 'taxRate') {
       newTax[index][field] = Number(event.target.value);
     } else {
-      newTax[index][field] = event.target.value;
+      newTax[index][field] = event.target.value as string;
     }
     
     setFormData({
       ...formData,
       tax: newTax
     });
+  };
+  
+  // Handle tax type selection from dropdown
+  const handleTaxTypeSelect = (index: number) => (event: React.ChangeEvent<HTMLInputElement> | { target: { value: unknown; name?: string } }) => {
+    const selectedTaxId = event.target.value as string;
+    const selectedTax = taxDirections.find(tax => tax.id === selectedTaxId);
+    
+    if (selectedTax) {
+      const newTax = [...formData.tax];
+      newTax[index] = {
+        taxType: selectedTaxId, // Store the ID as the taxType for backend reference
+        taxRate: selectedTax.taxRate || 0,
+        location: selectedTax.location || '',
+        description: selectedTax.description || ''
+      };
+      
+      console.log('Selected tax:', selectedTax);
+      console.log('Updated tax entry:', newTax[index]);
+      
+      setFormData({
+        ...formData,
+        tax: newTax
+      });
+    }
   };
 
   // Add new tax entry
@@ -317,12 +350,36 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     }
   };
 
-  // Fetch approved shaft assignments when dialog opens
+  // Fetch approved shaft assignments and tax directions when dialog opens
   React.useEffect(() => {
     if (open) {
       fetchApprovedShaftAssignments();
+      fetchApprovedTaxDirections();
     }
   }, [open]);
+  
+  // Function to fetch approved tax directions
+  const fetchApprovedTaxDirections = async () => {
+    setLoadingTaxDirections(true);
+    setTaxDirectionsError('');
+    try {
+      const response = await authClient.fetchApprovedTaxDirections();
+      console.log('Tax directions response:', response);
+      
+      if (response && Array.isArray(response)) {
+        setTaxDirections(response);
+        console.log('Setting tax directions:', response);
+      } else {
+        setTaxDirectionsError('Invalid response format');
+        console.error('Invalid tax directions response format');
+      }
+    } catch (error) {
+      console.error('Error fetching tax directions:', error);
+      setTaxDirectionsError('Failed to load tax directions');
+    } finally {
+      setLoadingTaxDirections(false);
+    }
+  };
 
   // Function to fetch approved shaft assignments
   const fetchApprovedShaftAssignments = async () => {
@@ -531,9 +588,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                     label="Transport Status"
                   >
                     <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="in_transit">In Transit</MenuItem>
-                    <MenuItem value="delivered">Delivered</MenuItem>
-                    <MenuItem value="cancelled">Cancelled</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -577,14 +631,34 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'flex-start' }}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={5}>
-                        <TextField
-                          fullWidth
-                          label="Tax Type"
-                          value={taxItem.taxType}
-                          onChange={handleTaxChange(index, 'taxType')}
-                          placeholder="Enter tax type"
-                          margin="normal"
-                        />
+                        <FormControl fullWidth margin="normal">
+                          <InputLabel id={`tax-type-label-${index}`}>Tax Type</InputLabel>
+                          <Select
+                            labelId={`tax-type-label-${index}`}
+                            id={`tax-type-${index}`}
+                            value={taxItem.taxType}
+                            onChange={handleTaxTypeSelect(index)}
+                            label="Tax Type"
+                            disabled={loadingTaxDirections}
+                          >
+                            {taxDirections.map((taxDirection) => (
+                              <MenuItem key={taxDirection.id} value={taxDirection.id}>
+                                {taxDirection.taxType || taxDirection.name || taxDirection.id}
+                              </MenuItem>
+                            ))}
+                            {loadingTaxDirections && (
+                              <MenuItem disabled>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                                  Loading...
+                                </Box>
+                              </MenuItem>
+                            )}
+                          </Select>
+                          {taxDirectionsError && (
+                            <FormHelperText error>{taxDirectionsError}</FormHelperText>
+                          )}
+                        </FormControl>
                       </Grid>
                       <Grid item xs={12} sm={5}>
                         <TextField
@@ -592,12 +666,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           label="Tax Rate (%)"
                           type="number"
                           value={taxItem.taxRate}
-                          onChange={handleTaxChange(index, 'taxRate')}
-                          placeholder="Enter tax rate"
-                          margin="normal"
                           InputProps={{
                             endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                            readOnly: true
                           }}
+                          placeholder="Auto-populated"
+                          margin="normal"
+                          disabled={!taxItem.taxType}
                         />
                       </Grid>
                       <Grid item xs={12} sm={5}>
@@ -605,9 +680,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           fullWidth
                           label="Location"
                           value={taxItem.location}
-                          onChange={handleTaxChange(index, 'location')}
-                          placeholder="Enter location"
+                          InputProps={{
+                            readOnly: true
+                          }}
+                          placeholder="Auto-populated"
                           margin="normal"
+                          disabled={!taxItem.taxType}
                         />
                       </Grid>
                       <Grid item xs={12} sm={5}>
@@ -615,9 +693,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           fullWidth
                           label="Description"
                           value={taxItem.description}
-                          onChange={handleTaxChange(index, 'description')}
-                          placeholder="Enter description"
+                          InputProps={{
+                            readOnly: true
+                          }}
+                          placeholder="Auto-populated"
                           margin="normal"
+                          disabled={!taxItem.taxType}
                         />
                       </Grid>
                       <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -691,9 +772,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                     label="Process Status"
                   >
                     <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="processing">Processing</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                    <MenuItem value="cancelled">Cancelled</MenuItem>
+      
                   </Select>
                 </FormControl>
               </Grid>
@@ -848,6 +927,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   <Typography variant="body2" color="text.secondary">Process Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
                     {formData.processStatus === 'pending' ? 'Pending' :
+
                      formData.processStatus || 'Not provided'}
                   </Typography>
                 </Grid>

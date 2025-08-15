@@ -176,6 +176,9 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                     <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Tax Rate:</strong> {taxItem.taxRate?.toString() || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
+                                          
                     </Box>
                   ))}
                 </Box>
