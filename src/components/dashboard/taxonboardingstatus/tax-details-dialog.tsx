@@ -48,7 +48,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchTaxDetails(userId);
+        const details = await authClient.fetchUserById(userId);
         setUserDetails(details);
       } catch (err) {
         console.error('Error fetching user details:', err);
@@ -80,7 +80,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       if (result.success) {
         setActionSuccess('User approved successfully');
         // Refresh user details
-        const updatedDetails = await authClient.fetchTaxDetails(userId);
+        const updatedDetails = await authClient.fetchUserById(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
@@ -210,12 +210,14 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         {!loading && !error && userDetails && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              
-              <DetailItem label="Tax Type" value={userDetails.taxType || 'N/A'} />
-              <DetailItem label="Tax Rate" value={userDetails.taxRate ? `${userDetails.taxRate}%` : 'N/A'} />
-              <DetailItem label="Location" value={userDetails.location || 'N/A'} />
-              <DetailItem label="Description" value={userDetails.description || 'N/A'} />
-              <DetailItem label="Reason" value={userDetails.reason || 'N/A'} />
+              <DetailItem label="Name" value={userDetails.name || 'N/A'} />
+              <DetailItem label="Surname" value={userDetails.surname || 'N/A'} />
+              <DetailItem label="Email" value={userDetails.email || 'N/A'} />
+              <DetailItem label="Phone" value={userDetails.cellNumber || 'N/A'} />
+              <DetailItem label="ID Number" value={userDetails.idNumber || 'N/A'} />
+              <DetailItem label="Address" value={userDetails.address || 'N/A'} />
+              <DetailItem label="Position" value={userDetails.position || 'N/A'} />
+              <DetailItem label="Role" value={userDetails.role || 'N/A'} />
               <DetailItem label="Status" value={userDetails.status || 'N/A'} />
             </Box>
             
@@ -288,7 +290,47 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
-    
+      {!showReasonField && (
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
+          <Button 
+            onClick={onClose} 
+            variant="outlined"
+            disabled={actionLoading}
+          >
+            Close
+          </Button>
+          
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button 
+              onClick={() => showReasonFieldFor('pushback')}
+              variant="contained"
+              color="warning"
+              disabled={actionLoading || loading || !!error || !userDetails}
+              sx={{ bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
+            >
+              Push Back
+            </Button>
+            <Button 
+              onClick={() => showReasonFieldFor('reject')}
+              variant="contained"
+              color="error"
+              disabled={actionLoading || loading || !!error || !userDetails}
+              sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
+            >
+              Reject
+            </Button>
+            <Button 
+              onClick={handleApprove}
+              variant="contained"
+              color="success"
+              disabled={actionLoading || loading || !!error || !userDetails}
+              sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+            >
+              {actionLoading ? 'Processing...' : 'Approve'}
+            </Button>
+          </Box>
+        </DialogActions>
+      )}
     </Dialog>
   );
 }

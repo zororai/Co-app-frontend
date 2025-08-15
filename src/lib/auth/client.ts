@@ -420,7 +420,7 @@ class AuthClient {
         return [];
     }
     try {
-        const response = await fetch('http://localhost:1000/api/taxes', {
+        const response = await fetch('http://localhost:1000/api/taxdidections', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -454,7 +454,7 @@ class AuthClient {
     }
 
     try {
-        const response = await fetch('http://localhost:1000/api/taxes', {
+        const response = await fetch('http://localhost:1000/api/taxdidections', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1460,7 +1460,33 @@ class AuthClient {
         return null;
     }
 }
-
+  
+    async fetchTaxDetails(id: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/taxdidections/${id}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch customer details');
+          }
+          return await response.json();
+      } catch (error) {
+          console.error('Error fetching customer details:', error);
+          return null;
+      }
+  }
   
     async fetchCustomerDetails(id: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
