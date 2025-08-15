@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
+
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
 
 
@@ -423,20 +423,14 @@ export function CustomersTable({
       />
       
       {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
-      )}
+
       
       {/* User details dialog */}
       <UserDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
-        onRefresh={refreshTableData}
+    
       />
     </Card>
   );

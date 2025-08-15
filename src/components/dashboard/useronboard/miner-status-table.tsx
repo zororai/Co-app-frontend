@@ -27,8 +27,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+
+import { UserDetailsDialog } from '@/components/dashboard/useronboardstatus/user-details-dialog';
 
 
 function noop(): void {
@@ -419,16 +419,11 @@ export function CustomersTable({
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25]}
       />
-      
-      {/* Customer Details Dialog */}
       {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
+        <div>
+          {/* This div is needed to wrap content inside the conditional */}
+        </div>
       )}
-      
       {/* User details dialog */}
       <UserDetailsDialog
         open={isUserDetailsDialogOpen}

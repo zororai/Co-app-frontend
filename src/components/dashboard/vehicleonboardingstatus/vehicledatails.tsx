@@ -49,6 +49,7 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
            
            break;
          case 'REJECTED':
+          
            if (!reason) {
            
              setIsSubmitting(false);  
