@@ -1,6 +1,7 @@
 // icon-map.ts
 import DriveEta from '@mui/icons-material/DriveEta';
 import {
+  Percent,
   PieChart,
   Security,
   Group,
@@ -30,5 +31,6 @@ export const iconMap = {
   'key': VpnKey,
   'driver': DriveEta,
   'user': AssignmentInd,
-  'v': Agriculture,
+  'vehicle': Agriculture,
+  'percent': Percent,
 };

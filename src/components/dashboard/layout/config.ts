@@ -5,14 +5,14 @@ export const navItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
   { key: 'user-admin-onboarding', 
-    title: 'User Onboarding',
+    title: 'Onboarding Process',
     icon: 'users',
     items: [
       { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'user'},
       { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
       { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
       { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    
+    { key: 'Taxonboard', title: 'Tax Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'}
     ], 
     
    },

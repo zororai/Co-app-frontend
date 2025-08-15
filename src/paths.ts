@@ -15,6 +15,7 @@ export const paths = {
     sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
     oremanagement: '/dashboard/oremanagement',
+    taxonboarding: '/dashboard/taxonboarding',
 oreTransport: '/dashboard/oreTransport',
 approvedvehic: '/dashboard/approvedvehicles',
     securityonboardingstatus: '/dashboard/securityonboardingstatus',

@@ -412,34 +412,102 @@ class AuthClient {
       }
   }
  
-    
-    async fetchUsers(): Promise<any[]> {
-        const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            window.location.href = '/auth/signin';
-            return [];
-        }
-        try {
-            const response = await fetch('http://localhost:1000/api/users', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch users');
-            }
-            const data = await response.json();
-            return Array.isArray(data) ? data : data.users || [];
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            return [];
-        }
+  async fetchtax(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
     }
+    try {
+        const response = await fetch('http://localhost:1000/api/taxes', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch tax data');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.taxes || [];
+    } catch (error) {
+        console.error('Error fetching tax data:', error);
+        return [];
+    }
+  }
+  
+  async createTax(taxData: {
+    taxType: string;
+    taxRate: number;
+    location: string;
+    description: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+        const response = await fetch('http://localhost:1000/api/taxes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(taxData),
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to create tax');
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error creating tax:', error);
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        };
+    }
+  }
+  
+  async fetchUsers(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
+    }
+    try {
+        const response = await fetch('http://localhost:1000/api/users', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.users || [];
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+    }
+  }
     
     /**
      * Fetch user details by ID
