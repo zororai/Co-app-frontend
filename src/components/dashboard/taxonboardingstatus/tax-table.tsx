@@ -27,8 +27,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/taxonboarding/tax-details-dialog';
+
+import { UserDetailsDialog } from '@/components/dashboard/taxonboardingstatus/tax-details-dialog';
 
 
 function noop(): void {
@@ -415,14 +415,6 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
-      )}
       
       {/* User details dialog */}
       <UserDetailsDialog
@@ -430,6 +422,7 @@ export function CustomersTable({
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
       />
+      
     </Card>
   );
 }

@@ -74,6 +74,7 @@ export const navItems = [
       { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'user' },
       { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
       { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
+      { key: 'taxonboard-status', title: 'Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
     ],
   },
 ] satisfies NavItemConfig[];

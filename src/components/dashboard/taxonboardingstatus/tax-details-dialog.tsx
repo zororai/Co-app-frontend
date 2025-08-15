@@ -48,7 +48,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchUserById(userId);
+        const details = await authClient.fetchTaxDetails(userId);
         setUserDetails(details);
       } catch (err) {
         console.error('Error fetching user details:', err);
@@ -76,11 +76,11 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setActionSuccess('');
     
     try {
-      const result = await authClient.approveUser(userId);
+      const result = await authClient.approveTax(userId);
       if (result.success) {
         setActionSuccess('User approved successfully');
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
+        const updatedDetails = await authClient.fetchTaxDetails(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
@@ -107,14 +107,14 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setActionSuccess('');
     
     try {
-      const result = await authClient.rejectUser(userId, reason);
+      const result = await authClient.rejectTax(userId, reason);
       if (result.success) {
         setActionSuccess('User rejected successfully');
         setShowReasonField(false);
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
+        const updatedDetails = await authClient.fetchTaxDetails(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
@@ -141,14 +141,14 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setActionSuccess('');
     
     try {
-      const result = await authClient.pushbackUser(userId, reason);
+      const result = await authClient.pushtax(userId, reason);
       if (result.success) {
         setActionSuccess('User pushed back successfully');
         setShowReasonField(false);
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
+        const updatedDetails = await authClient.fetchTaxDetails(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
@@ -210,15 +210,12 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         {!loading && !error && userDetails && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              <DetailItem label="Name" value={userDetails.name || 'N/A'} />
-              <DetailItem label="Surname" value={userDetails.surname || 'N/A'} />
-              <DetailItem label="Email" value={userDetails.email || 'N/A'} />
-              <DetailItem label="Phone" value={userDetails.cellNumber || 'N/A'} />
-              <DetailItem label="ID Number" value={userDetails.idNumber || 'N/A'} />
-              <DetailItem label="Address" value={userDetails.address || 'N/A'} />
-              <DetailItem label="Position" value={userDetails.position || 'N/A'} />
-              <DetailItem label="Role" value={userDetails.role || 'N/A'} />
+              <DetailItem label="Tax Type" value={userDetails.taxType || 'N/A'} />
+              <DetailItem label="Tax Rate" value={userDetails.taxRate?.toString() || 'N/A'} />
+              <DetailItem label="Location" value={userDetails.location || 'N/A'} />
+              <DetailItem label="Description" value={userDetails.description || 'N/A'} />
               <DetailItem label="Status" value={userDetails.status || 'N/A'} />
+              <DetailItem label="Reason" value={userDetails.reason || 'N/A'} />
             </Box>
             
             {userDetails.notes && (

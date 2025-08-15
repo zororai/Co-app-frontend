@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/taxonboarding/tax-table';
-import type { Customer } from '@/components/dashboard/taxonboarding/tax-table';
+import { CustomersTable } from '@/components/dashboard/taxonboardingstatus/tax-table';
+import type { Customer } from '@/components/dashboard/taxonboardingstatus/tax-table';
 
 
 import Dialog from '@mui/material/Dialog';
@@ -185,7 +185,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Onboarding Operational Tax </Typography>
+          <Typography variant="h4">Operational Tax Status Health </Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
@@ -265,18 +265,7 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add Operational Tax
-      </Button>
+
       
       {/* Add Tax Dialog */}
       <AddTaxDialog 

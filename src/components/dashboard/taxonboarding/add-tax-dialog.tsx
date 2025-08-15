@@ -279,6 +279,11 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
     setTaxReference('');
     setFormSubmitted(false);
     
+    // Refresh the table data if callback is provided
+    if (onRefresh) {
+      onRefresh();
+    }
+    
     // Call parent onClose
     onClose();
   };

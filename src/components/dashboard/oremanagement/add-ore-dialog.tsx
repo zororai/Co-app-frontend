@@ -110,7 +110,10 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     tax: [
       {
         taxType: '',
-        taxRate: 0
+        taxRate: 0,
+        location: '',
+        description: ''
+
       }
     ]
   });
@@ -160,7 +163,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
 
   // Handle tax field changes
-  const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTaxChange = (index: number, field: 'taxType' | 'taxRate' | 'location' | 'description') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTax = [...formData.tax];
     if (field === 'taxRate') {
       newTax[index][field] = Number(event.target.value);
@@ -178,7 +181,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const addTaxEntry = () => {
     setFormData({
       ...formData,
-      tax: [...formData.tax, { taxType: '', taxRate: 0 }]
+      tax: [...formData.tax, { taxType: '', taxRate: 0,location: '', description: ''}]
     });
   };
 
@@ -597,6 +600,26 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           }}
                         />
                       </Grid>
+                      <Grid item xs={12} sm={5}>
+                        <TextField
+                          fullWidth
+                          label="Location"
+                          value={taxItem.location}
+                          onChange={handleTaxChange(index, 'location')}
+                          placeholder="Enter location"
+                          margin="normal"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={5}>
+                        <TextField
+                          fullWidth
+                          label="Description"
+                          value={taxItem.description}
+                          onChange={handleTaxChange(index, 'description')}
+                          placeholder="Enter description"
+                          margin="normal"
+                        />
+                      </Grid>
                       <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
                         <IconButton 
                           onClick={() => removeTaxEntry(index)}
@@ -825,9 +848,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   <Typography variant="body2" color="text.secondary">Process Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
                     {formData.processStatus === 'pending' ? 'Pending' :
-                     formData.processStatus === 'processing' ? 'Processing' :
-                     formData.processStatus === 'completed' ? 'Completed' :
-                     formData.processStatus === 'cancelled' ? 'Cancelled' :
                      formData.processStatus || 'Not provided'}
                   </Typography>
                 </Grid>

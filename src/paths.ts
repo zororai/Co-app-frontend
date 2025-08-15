@@ -11,6 +11,7 @@ export const paths = {
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
     securityonboarding: '/dashboard/securityonboarding',
+    taxonboardingstatus: '/dashboard/taxonboardingstatus',
     sectioncreation: '/dashboard/sectioncreation',
     sectioncreationstatus: '/dashboard/sectioncreationstatus',
     minerDetails: '/dashboard/miner-details',
