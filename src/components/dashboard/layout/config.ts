@@ -59,8 +59,11 @@ export const navItems = [
     title: 'Security',
     icon: 'lock',
     items: [
-      { key: 'security-users', title: 'Users', href: '/security/users' },
-      { key: 'security-roles', title: 'Roles', href: '/security/roles' },
+
+      { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'mountain' },
+      { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'mountain' },
+      { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
+      { key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
     ],
   },
   {
