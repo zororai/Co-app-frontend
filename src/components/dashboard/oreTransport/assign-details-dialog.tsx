@@ -39,6 +39,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
   const [selectedVehicle, setSelectedVehicle] = React.useState<string>('');
   const [selectedDriver, setSelectedDriver] = React.useState<string>('Not Selected');
   const [transportStatus, setTransportStatus] = React.useState<string>('');
+  const [location, setLocation] = React.useState<string>('');
   const [transportReason, setTransportReason] = React.useState<string>('picking ore from shaft to tax deduction');
   
   // Field validation states
@@ -60,6 +61,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
       setSelectedVehicle('');
       setSelectedDriver('Not Selected');
       setTransportStatus('');
+      setLocation('');
       setTransportReason('picking ore from shaft to tax deduction');
     }
   }, [open]);
@@ -164,6 +166,11 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
   const handleTransportStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setTransportStatus(event.target.value as string);
   };
+
+  // Handle location change
+  const handleLocationChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setLocation(event.target.value as string);
+  };
   
   // Handle save changes
   const handleSaveChanges = async () => {
@@ -219,7 +226,8 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
           selectedTransport: selectedVehicle,
           transportStatus: transportStatus,
           selectedTransportdriver: driverName, // Use the driver name, not vehicle ID
-          transportReason: transportReason
+          transportReason: transportReason,
+          location: location || oreDetails.location // Use the selected location
         }
       );
       
@@ -345,7 +353,22 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
               </Box>
               
               <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
-              <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
+              {/* Location Dropdown */}
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Location</Typography>
+                <FormControl fullWidth size="small">
+                  <Select
+                    value={location || oreDetails.location || ''}
+                    onChange={handleLocationChange as any}
+                    displayEmpty
+                    sx={{ minWidth: 200 }}
+                  >
+                    <MenuItem value="">Select Location</MenuItem>
+                    <MenuItem value="on_site_processing">On site processing</MenuItem>
+                    <MenuItem value="off_site_processing">Off site processing</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
               <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
               <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
             </Box>

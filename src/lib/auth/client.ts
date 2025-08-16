@@ -411,7 +411,33 @@ class AuthClient {
           return [];
       }
   }
- 
+  async fetchOretaxData(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
+    }
+    try {
+        const response = await fetch('http://localhost:1000/api/ore-transports/with-selected-transportdriver-changed', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.users || [];
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+    }
+}
   async fetchtax(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -870,37 +896,77 @@ class AuthClient {
    * @returns A promise that resolves to the response data or error
    */
   async approveDriver(driverId: string): Promise<{ success: boolean; error?: string }> {
-    const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      window.location.href = '/auth/signin';
-      return { success: false, error: 'Authentication required' };
-    }
-    try {
-      const response = await fetch(`http://localhost:1000/api/drivers/${driverId}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to approve driver');
-      }
-      
-      return { success: true };
-    } catch (error) {
-      console.error(`Error approving driver with ID ${driverId}:`, error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
-      };
-    }
+  const token = localStorage.getItem('custom-auth-token');
+  if (!token) {
+    console.error('No token found in localStorage');
+    window.location.href = '/auth/signin';
+    return { success: false, error: 'Authentication required' };
   }
+  try {
+    const response = await fetch(`http://localhost:1000/api/drivers/${driverId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to approve driver');
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error(`Error approving driver with ID ${driverId}:`, error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+    };
+  }
+}
+
+/**
+ * Apply tax to an ore transport
+ * @param oreId The ID of the ore transport to apply tax to
+ * @returns A promise that resolves to the response data or error
+ */
+async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  const token = localStorage.getItem('custom-auth-token');
+  if (!token) {
+    console.error('No token found in localStorage');
+    window.location.href = '/auth/signin';
+    return { success: false, error: 'Authentication required' };
+  }
+
+  try {
+    const response = await fetch(`http://localhost:1000/api/ore-transports/${oreId}/apply-tax`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to apply tax to ore transport');
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error applying tax to ore transport:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred' 
+    };
+  }
+}
 
   /**
    * Reject a driver by ID with reason
@@ -3016,6 +3082,7 @@ cooperativename: string;
     transportStatus: string;
     selectedTransport: string;
     transportReason: string;
+    location:string
   }): Promise<{ success: boolean; error?: string }> {
     const token = this.getToken();
     if (!token) {

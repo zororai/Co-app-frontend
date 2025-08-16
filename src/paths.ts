@@ -10,6 +10,7 @@ export const paths = {
     useronboard: '/dashboard/useronboard',
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
+    oreTax: '/dashboard/oretax',
     securityonboarding: '/dashboard/securityonboarding',
     taxonboardingstatus: '/dashboard/taxonboardingstatus',
     sectioncreation: '/dashboard/sectioncreation',
