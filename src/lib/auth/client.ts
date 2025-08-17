@@ -438,6 +438,60 @@ class AuthClient {
         return [];
     }
 }
+async fetchOreDispatcher(): Promise<any[]> {
+  const token = localStorage.getItem('custom-auth-token');
+  if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+  }
+  try {
+      const response = await fetch('http://localhost:1000/api/ore-transports/security-dispatcher/not-specified', {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+      });
+      if (!response.ok) {
+          throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.users || [];
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+  }
+}
+async fetchOreRecieved(): Promise<any[]> {
+  const token = localStorage.getItem('custom-auth-token');
+  if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+  }
+  try {
+      const response = await fetch('http://localhost:1000/api/ore-transports/security-dispatcher/dispatched', {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+      });
+      if (!response.ok) {
+          throw new Error('Failed to fetch users');
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.users || [];
+  } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+  }
+}
   async fetchtax(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -2999,46 +3053,7 @@ cooperativename: string;
   }
 
   /**
-   * Set a vehicle to idle status (functional)
-   * @param vehicleId The ID of the vehicle to set as idle
-   * @returns A promise that resolves to the response data or error
-   */
-  async setVehicleToIdle(vehicleId: string): Promise<{ success: boolean; error?: string }> {
-    const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      window.location.href = '/auth/signin';
-      return { success: false, error: 'Authentication required' };
-    }
-
-    try {
-      const response = await fetch(`http://localhost:1000/api/vehicles/${vehicleId}/idle`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to set vehicle to idle: ${response.status}`);
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error setting vehicle to idle:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
-      };
-    }
-  }
-
-  /**
-   * Fetch vehicles with approved status
+   * Fetch vehicles by approved status
    * @returns A promise that resolves to the approved vehicles data
    */
   async fetchVehiclesByApprovedStatus(): Promise<any[]> {
@@ -3122,12 +3137,80 @@ cooperativename: string;
       };
     }
   }
+
+  /**
+   * Approve ore dispatch by security dispatcher
+   * @param oreId The ID of the ore transport to approve for dispatch
+   * @returns A promise that resolves to success status and optional error
+   */
+  async securityDispatchApprove(oreId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:1000/api/ore-transports/${oreId}/security-dispatcher/dispatched`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to approve dispatch: ${errorText}`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error approving ore dispatch:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
+
+  async securityRecievedApprove(oreId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:1000/api/ore-transports/${oreId}/security-dispatcher/received`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to approve dispatch: ${errorText}`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error approving ore dispatch:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
 }
-
-
-
-
-
 
 
 

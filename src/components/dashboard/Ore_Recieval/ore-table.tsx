@@ -89,7 +89,7 @@ export function CustomersTable({
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
-    console.log('Current users array:', users); // Debug: Log the users array
+ 
     
     if (!users || users.length === 0) {
       console.log('No users to filter');
@@ -147,78 +147,27 @@ export function CustomersTable({
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchOreDispatcherData = async () => {
+    const fetchOreRecievedData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedOres = await authClient.fetchOreDispatcher();
+        const fetchedOres = await authClient.fetchOreRecieved();
         console.log('API Response:', fetchedOres); // Debug: Log the API response
         
-        // If the API returns an empty array or undefined, use mock data
-        if (!fetchedOres || fetchedOres.length === 0) {
-          console.log('No data returned from API, using mock data');
-          const mockOreData = [
-            {
-              id: '1',
-              oreUniqueId: 'ORE-001',
-              shaftNumbers: ['S-123', 'S-124'],
-              weight: 500,
-              numberOfBags: 10,
-              transportStatus: 'In Transit',
-              selectedTransportdriver: 'John Doe',
-              selectedTransport: 'Truck A',
-              location: 'Mine Site A',
-              processStatus: 'Processing',
-
-              date: '2025-08-10',
-              status: 'APPROVED'
-            },
-            {
-              id: '2',
-              oreUniqueId: 'ORE-002',
-              shaftNumbers: ['S-125'],
-              weight: 350,
-              numberOfBags: 7,
-              transportStatus: 'Delivered',
-              selectedTransportdriver: 'Jane Smith',
-              selectedTransport: 'Truck B',
-              location: 'Processing Center',
-              processStatus: 'Completed',
-              date: '2025-08-09',
-              status: 'PENDING'
-            }
-          ];
-          setUsers(mockOreData);
-        } else {
+    
           setUsers(fetchedOres);
-        }
+        
       } catch (err) {
         console.error('Error fetching ore data:', err);
         setError('Failed to load ore data. Please try again.');
         
         // Use mock data on error
-        const mockOreData = [
-          {
-            id: '1',
-            oreUniqueId: 'ORE-001',
-            shaftNumbers: ['S-123', 'S-124'],
-            weight: 500,
-            numberOfBags: 10,
-            transportStatus: 'In Transit',
-            selectedTransportdriver: 'John Doe',
-            selectedTransport: 'Truck A',
-            location: 'Mine Site A',
-            processStatus: 'Processing',
-            date: '2025-08-10',
-            status: 'APPROVED'
-          }
-        ];
-        setUsers(mockOreData);
+      
       } finally {
         setLoading(false);
       }
     };
-    fetchOreDispatcherData();
+    fetchOreRecievedData();
   }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
@@ -269,19 +218,19 @@ export function CustomersTable({
   const handleSecurityDispatchApprove = async (oreId: string) => {
     try {
       // Show loading state or disable button if needed
-      const result = await authClient.securityDispatchApprove(oreId);
+      const result = await authClient.securityRecievedApprove(oreId);
       
       if (result.success) {
         // Show success message in dialog
         setFeedbackSuccess(true);
-        setFeedbackMessage('Security dispatch approved successfully');
+        setFeedbackMessage('Security Received approved successfully');
         setFeedbackDialogOpen(true);
         // Refresh the table data to show updated values
         refreshTableData();
       } else {
         // Show error message in dialog
         setFeedbackSuccess(false);
-        setFeedbackMessage(`Failed to approve dispatch: ${result.error || 'Unknown error'}`);
+        setFeedbackMessage(`Failed to approve Received: ${result.error || 'Unknown error'}`);
         setFeedbackDialogOpen(true);
       }
     } catch (error) {
@@ -525,7 +474,7 @@ export function CustomersTable({
                               padding: '2px 12px',
                               cursor: 'pointer',
                               fontWeight: 500,
-                          }}>Approve for Dispatch</button>
+                          }}>Approve for Recieved</button>
                         )}
                         {row.securityDispatcherStatus === 'APPROVED' && (
                           <span style={{ color: 'green', fontWeight: 500 }}>Approved</span>
