@@ -11,6 +11,7 @@ export const paths = {
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
     oreTax: '/dashboard/oretax',
+    mill: '/dashboard/mill',
     Ore_Dispatch: '/dashboard/Ore_Dispatch',
     Ore_Recieval: '/dashboard/Ore_Recieval',
     Patrol_Log: '/dashboard/Patrol_Log',

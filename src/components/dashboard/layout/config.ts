@@ -12,7 +12,8 @@ export const navItems = [
       { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
       { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
       { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    { key: 'Taxonboard', title: 'Tax Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'}
+    { key: 'Taxonboard', title: 'Tax Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
+    { key: 'mill', title: 'Mill Onboarding', href:  paths.dashboard.mill, icon: 'truck'}
     ], 
     
    },

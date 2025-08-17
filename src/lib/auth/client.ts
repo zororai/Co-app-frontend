@@ -323,7 +323,33 @@ class AuthClient {
             return null;
         }
     }
-
+    async fetchMillById(driverId: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${driverId}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch driver details');
+          }
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error fetching driver with ID ${driverId}:`, error);
+          return null;
+      }
+  }
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -858,6 +884,62 @@ async fetchOreRecieved(): Promise<any[]> {
         }
     }
 
+    /**
+     * Register a new mill
+     * @param millData The mill data to register
+     * @returns A promise that resolves to the response data or error
+     */
+    async registerMill(millData: {
+        millName: string;
+        millLocation: string;
+        millType: string;
+        owner: string;
+        idNumber: string;
+        address: string;
+        picture: string;
+        status: string;
+        reason: string;
+        statusHealth: string;
+    }): Promise<{ success: boolean; data?: any; error?: string; referenceNumber?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+
+        try {
+            const response = await fetch('http://localhost:1000/api/mill-onboarding/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(millData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to register mill');
+            }
+
+            const data = await response.json();
+            return { 
+                success: true, 
+                data,
+                referenceNumber: data.referenceNumber || `MILL-${Math.floor(Math.random() * 10000)}`
+            };
+        } catch (error) {
+            console.error('Error registering mill:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
     async fetchSections(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -943,7 +1025,33 @@ async fetchOreRecieved(): Promise<any[]> {
       return [];
     }
   }
-
+  async fetchMill(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+    }
+    try {
+      const response = await fetch('http://localhost:1000/api/mill-onboarding/all', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch mills');
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.drivers || [];
+    } catch (error) {
+      console.error('Error fetching mills:', error);
+      return [];
+    }
+  }
   /**
    * Approve a driver by ID
    * @param driverId The ID of the driver to approve

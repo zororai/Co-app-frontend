@@ -311,17 +311,6 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
               </Box>
             </Box>
             
-            {/* Additional Notes */}
-            {driver.additionalNotes && (
-              <>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Additional Notes
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 3 }}>
-                  {driver.additionalNotes}
-                </Typography>
-              </>
-            )}
             
             {/* Additional space at the bottom */}
             <Box sx={{ height: 20 }} />
