@@ -231,12 +231,83 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                 Documents
               </Typography>
               <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance || 'Not uploaded'}</Typography>
-                <Typography><strong>Company Logo:</strong> {customer.companyLogo || 'Not uploaded'}</Typography>
-                <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation || 'Not uploaded'}</Typography>
-                <Typography><strong>Operating License:</strong> {customer.operatingLicense || 'Not uploaded'}</Typography>
-                <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance || 'Not uploaded'}</Typography>
-                <Typography><strong>Risk Assessment Report:</strong> {customer.siteRiskAssessmentReport || 'Not uploaded'}</Typography>
+                <Box>
+                  <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.validTaxClearance && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.validTaxClearance} 
+                        alt="Tax Clearance" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box>
+                  <Typography><strong>Company Logo:</strong> {customer.companyLogo ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.companyLogo && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.companyLogo} 
+                        alt="Company Logo" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box>
+                  <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.getCertificateOfCooperation && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.getCertificateOfCooperation} 
+                        alt="Certificate of Cooperation" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box>
+                  <Typography><strong>Operating License:</strong> {customer.operatingLicense ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.operatingLicense && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.operatingLicense} 
+                        alt="Operating License" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box>
+                  <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.proofOfInsurance && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.proofOfInsurance} 
+                        alt="Proof of Insurance" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
+                
+                <Box>
+                  <Typography><strong>Risk Assessment Report:</strong> {customer.siteRiskAssessmentReport ? 'Uploaded' : 'Not uploaded'}</Typography>
+                  {customer.siteRiskAssessmentReport && (
+                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
+                      <img 
+                        src={customer.siteRiskAssessmentReport} 
+                        alt="Risk Assessment Report" 
+                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
               </Box>
             </Box>
 

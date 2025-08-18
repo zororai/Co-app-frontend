@@ -14,13 +14,13 @@ import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
-import { Chip, Stack } from '@mui/material';
+import { Chip, Stack, Link } from '@mui/material';
 import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
 
 // Define the MillDetails interface
 interface MillDetails {
-  millId: string;
+  id: string;
   millName: string;
   millType?: string;
   millLocation?: string;
@@ -31,15 +31,23 @@ interface MillDetails {
   statusHealth?: string;
   reason?: string;
   picture?: string;
+  certificateOfCooperation?: string;
+  operatingLicense?: string;
+  proofOfInsurance?: string;
+  taxClearance?: string;
+  companyLogo?: string;
 }
 
 interface MillDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   driverId: string | null;
+  onActionComplete?: () => void; // Callback to refresh the table
 }
 
-export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialogProps): React.JSX.Element {
+export function MillDetailsDialog({ open, onClose, driverId, onActionComplete }: MillDetailsDialogProps): React.JSX.Element {
+  // Add state to track if buttons should be shown
+  const [showActionButtons, setShowActionButtons] = useState<boolean>(true);
   const [mill, setMill] = useState<MillDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,18 +89,21 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
 
   // Handle approve action
   const handleApproveClick = () => {
+    setActionError(null);
+    setActionSuccess(null);
+    setShowActionButtons(false);
     setIsApproveDialogOpen(true);
   };
 
   const handleApproveConfirm = async () => {
-    if (!mill?.millId) return;
+    if (!mill?.id) return;
     
     setActionLoading(true);
     setActionError(null);
     setActionSuccess(null);
     
     try {
-      const result = await authClient.approveMill(mill.millId);
+      const result = await authClient.approveMill(mill.id);
       if (result.success) {
         setActionSuccess('Mill has been approved successfully');
         // Update the mill status in the local state
@@ -106,17 +117,24 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
     } finally {
       setActionLoading(false);
       setIsApproveDialogOpen(false);
+      // Call the refresh callback if provided
+      if (onActionComplete) {
+        onActionComplete();
+      }
     }
   };
 
   // Handle reject action
   const handleRejectClick = () => {
+    setActionError(null);
+    setActionSuccess(null);
+    setShowActionButtons(false);
     setIsRejectDialogOpen(true);
     setActionReason('');
   };
 
   const handleRejectConfirm = async () => {
-    if (!mill?.millId || !actionReason.trim()) {
+    if (!mill?.id || !actionReason.trim()) {
       setActionError('Please provide a reason for rejection');
       return;
     }
@@ -126,7 +144,7 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
     setActionSuccess(null);
     
     try {
-      const result = await authClient.rejectMill(mill.millId, actionReason);
+      const result = await authClient.rejectMill(mill.id, actionReason);
       if (result.success) {
         setActionSuccess('Mill has been rejected successfully');
         // Update the mill status in the local state
@@ -140,17 +158,24 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
     } finally {
       setActionLoading(false);
       setIsRejectDialogOpen(false);
+      // Call the refresh callback if provided
+      if (onActionComplete) {
+        onActionComplete();
+      }
     }
   };
 
   // Handle pushback action
   const handlePushbackClick = () => {
+    setActionError(null);
+    setActionSuccess(null);
+    setShowActionButtons(false);
     setIsPushbackDialogOpen(true);
     setActionReason('');
   };
 
   const handlePushbackConfirm = async () => {
-    if (!mill?.millId || !actionReason.trim()) {
+    if (!mill?.id || !actionReason.trim()) {
       setActionError('Please provide a reason for pushing back');
       return;
     }
@@ -160,7 +185,7 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
     setActionSuccess(null);
     
     try {
-      const result = await authClient.pushbackMill(mill.millId, actionReason);
+      const result = await authClient.pushbackMill(mill.id, actionReason);
       if (result.success) {
         setActionSuccess('Mill has been pushed back successfully');
         // Update the mill status in the local state
@@ -174,6 +199,10 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
     } finally {
       setActionLoading(false);
       setIsPushbackDialogOpen(false);
+      // Call the refresh callback if provided
+      if (onActionComplete) {
+        onActionComplete();
+      }
     }
   };
 
@@ -238,10 +267,6 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
             </Typography>
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
               <Box>
-                <Typography variant="body2" color="text.secondary">Mill ID</Typography>
-                <Typography variant="body1">{mill.millId || 'N/A'}</Typography>
-              </Box>
-              <Box>
                 <Typography variant="body2" color="text.secondary">Mill Name</Typography>
                 <Typography variant="body1">{mill.millName || 'N/A'}</Typography>
               </Box>
@@ -294,26 +319,10 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
             </Box>
             
             {/* Documents */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>
               Documents
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill Picture</Typography>
-                <Typography variant="body1">
-                  {mill.picture ? 'Uploaded' : 'Not uploaded'}
-                </Typography>
-                {mill.picture && (
-                  <Box sx={{ mt: 1, maxWidth: '300px' }}>
-                    <img 
-                      src={mill.picture} 
-                      alt="Mill" 
-                      style={{ maxWidth: '100%', borderRadius: '4px' }} 
-                    />
-                  </Box>
-                )}
-              </Box>
-            </Box>
+        
             
             {/* Additional space at the bottom */}
             <Box sx={{ height: 20 }} />
@@ -325,134 +334,139 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
         )}
       </DialogContent>
       
+      {/* Action feedback messages */}
+      {(actionError || actionSuccess) && (
+        <Box sx={{ px: 3, pb: 2 }}>
+          {actionError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {actionError}
+            </Alert>
+          )}
+          {actionSuccess && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {actionSuccess}
+            </Alert>
+          )}
+        </Box>
+      )}
+      
       {/* Action buttons */}
-      <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'flex-start', gap: 2 }}>
-        {mill && mill.status === 'PENDING' && (
-          <>
+      <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+        {mill && mill.status === 'PENDING' && showActionButtons && (
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Button 
-              variant="contained" 
-              color="success" 
               onClick={handleApproveClick}
+              variant="outlined"
+              color="success"
               disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
             >
               Approve
             </Button>
             <Button 
-              variant="contained" 
-              color="error" 
-              onClick={handleRejectClick}
-              disabled={actionLoading}
-            >
-              Reject
-            </Button>
-            <Button 
-              variant="contained" 
-              color="warning" 
               onClick={handlePushbackClick}
+              variant="outlined"
+              color="warning"
               disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
             >
               Push Back
             </Button>
-          </>
+            <Button 
+              onClick={handleRejectClick}
+              variant="outlined"
+              color="error"
+              disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
+            >
+              Reject
+            </Button>
+          </Box>
         )}
-        {actionSuccess && (
-          <Alert severity="success" sx={{ ml: 2 }}>
-            {actionSuccess}
-          </Alert>
-        )}
-        {actionError && (
-          <Alert severity="error" sx={{ ml: 2 }}>
-            {actionError}
-          </Alert>
-        )}
+  
       </DialogActions>
 
+      {/* Reason input field for reject/pushback */}
+      {(isRejectDialogOpen || isPushbackDialogOpen) && (
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          <TextField
+            label="Reason"
+            value={actionReason}
+            onChange={(e) => setActionReason(e.target.value)}
+            fullWidth
+            margin="normal"
+            multiline
+            rows={3}
+            sx={{ mb: 2 }}
+            required
+            error={!actionReason.trim()}
+            helperText={!actionReason.trim() ? `Please provide a reason for ${isRejectDialogOpen ? 'rejection' : 'pushing back'}` : ''}
+            disabled={actionLoading}
+            autoFocus
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button 
+              onClick={() => {
+                setIsRejectDialogOpen(false);
+                setIsPushbackDialogOpen(false);
+                setActionReason('');
+              }}
+              variant="outlined"
+              disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={isRejectDialogOpen ? handleRejectConfirm : handlePushbackConfirm}
+              variant="contained"
+              color="primary"
+              disabled={actionLoading || !actionReason.trim()}
+              startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : null}
+              sx={{ 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
+              }}
+            >
+              {actionLoading ? 'Submitting...' : isRejectDialogOpen ? 'Confirm Reject' : 'Confirm Push Back'}
+            </Button>
+          </Box>
+        </DialogActions>
+      )}
+      
       {/* Approve Dialog */}
-      <Dialog open={isApproveDialogOpen} onClose={() => setIsApproveDialogOpen(false)}>
-        <DialogTitle>Approve Mill</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
+      {isApproveDialogOpen && (
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          <Typography variant="body1" sx={{ mb: 2, textAlign: 'center' }}>
             Are you sure you want to approve this mill?
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsApproveDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleApproveConfirm} 
-            variant="contained" 
-            color="success"
-            disabled={actionLoading}
-          >
-            {actionLoading ? <CircularProgress size={24} /> : 'Approve'}
-          </Button>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button 
+              onClick={() => setIsApproveDialogOpen(false)}
+              variant="outlined"
+              disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleApproveConfirm}
+              variant="contained"
+              color="primary"
+              disabled={actionLoading}
+              startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : null}
+              sx={{ 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
+              }}
+            >
+              {actionLoading ? 'Submitting...' : 'Confirm Approve'}
+            </Button>
+          </Box>
         </DialogActions>
-      </Dialog>
-
-      {/* Reject Dialog */}
-      <Dialog open={isRejectDialogOpen} onClose={() => setIsRejectDialogOpen(false)}>
-        <DialogTitle>Reject Mill</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Please provide a reason for rejecting this mill:
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="reason"
-            label="Reason"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={actionReason}
-            onChange={(e) => setActionReason(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsRejectDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleRejectConfirm} 
-            variant="contained" 
-            color="error"
-            disabled={actionLoading || !actionReason.trim()}
-          >
-            {actionLoading ? <CircularProgress size={24} /> : 'Reject'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Pushback Dialog */}
-      <Dialog open={isPushbackDialogOpen} onClose={() => setIsPushbackDialogOpen(false)}>
-        <DialogTitle>Push Back Mill</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Please provide a reason for pushing back this mill:
-          </Typography>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="reason"
-            label="Reason"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={actionReason}
-            onChange={(e) => setActionReason(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setIsPushbackDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handlePushbackConfirm} 
-            variant="contained" 
-            color="warning"
-            disabled={actionLoading || !actionReason.trim()}
-          >
-            {actionLoading ? <CircularProgress size={24} /> : 'Push Back'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      )}
     </Dialog>
   );
 }

@@ -264,9 +264,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
 
   return (
     <React.Fragment>
-   
-      
-      {/* Add Security Company Dialog */}
+      {/* Add Mill Dialog */}
       <AddMillDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 

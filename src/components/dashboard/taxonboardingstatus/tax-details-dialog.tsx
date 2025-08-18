@@ -252,24 +252,27 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       
       {/* Reason input field for reject/pushback */}
       {showReasonField && (
-        <Box sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
           <TextField
             label="Reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             fullWidth
+            margin="normal"
             multiline
             rows={3}
+            sx={{ mb: 2 }}
             required
             error={actionType !== null && reason.trim() === ''}
             helperText={actionType !== null && reason.trim() === '' ? `Please provide a reason for ${actionType === 'reject' ? 'rejection' : 'pushing back'}` : ''}
-            sx={{ mb: 2 }}
+            disabled={actionLoading}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Button 
               onClick={cancelAction}
               variant="outlined"
               disabled={actionLoading}
+              sx={{ minWidth: '120px' }}
             >
               Cancel
             </Button>
@@ -278,52 +281,65 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               variant="contained"
               color="primary"
               disabled={actionLoading || reason.trim() === ''}
-              sx={{ bgcolor: actionType === 'reject' ? '#d32f2f' : '#ed6c02', '&:hover': { bgcolor: actionType === 'reject' ? '#b71c1c' : '#e65100' } }}
+              startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : null}
+              sx={{ 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
+              }}
             >
-              {actionLoading ? 'Processing...' : actionType === 'reject' ? 'Confirm Reject' : 'Confirm Push Back'}
+              {actionLoading ? 'Submitting...' : actionType === 'reject' ? 'Confirm Reject' : 'Confirm Push Back'}
             </Button>
           </Box>
-        </Box>
+        </DialogActions>
       )}
       
       {/* Action buttons */}
       {!showReasonField && (
-        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
-          <Button 
-            onClick={onClose} 
-            variant="outlined"
-            disabled={actionLoading}
-          >
-            Close
-          </Button>
-          
-          <Box sx={{ display: 'flex', gap: 1 }}>
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          {(!userDetails?.status || (userDetails?.status !== 'REJECTED' && userDetails?.status !== 'APPROVED')) && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+              <Button 
+                onClick={handleApprove}
+                variant="outlined"
+                color="success"
+                disabled={actionLoading || loading || !!error || !userDetails}
+                sx={{ minWidth: '120px' }}
+              >
+                Approve
+              </Button>
+              <Button 
+                onClick={() => showReasonFieldFor('pushback')}
+                variant="outlined"
+                color="warning"
+                disabled={actionLoading || loading || !!error || !userDetails}
+                sx={{ minWidth: '120px' }}
+              >
+                Push Back
+              </Button>
+              <Button 
+                onClick={() => showReasonFieldFor('reject')}
+                variant="outlined"
+                color="error"
+                disabled={actionLoading || loading || !!error || !userDetails}
+                sx={{ minWidth: '120px' }}
+              >
+                Reject
+              </Button>
+            </Box>
+          )}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button 
-              onClick={() => showReasonFieldFor('pushback')}
+              onClick={onClose}
               variant="contained"
-              color="warning"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
+              color="primary"
+              sx={{ 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
+              }}
             >
-              Push Back
-            </Button>
-            <Button 
-              onClick={() => showReasonFieldFor('reject')}
-              variant="contained"
-              color="error"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
-            >
-              Reject
-            </Button>
-            <Button 
-              onClick={handleApprove}
-              variant="contained"
-              color="success"
-              disabled={actionLoading || loading || !!error || !userDetails}
-              sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
-            >
-              {actionLoading ? 'Processing...' : 'Approve'}
+              Close
             </Button>
           </Box>
         </DialogActions>

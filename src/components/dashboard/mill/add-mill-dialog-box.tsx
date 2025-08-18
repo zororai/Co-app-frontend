@@ -249,7 +249,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
       if (result.success) {
         // Set success state and move to confirmation step
         setSuccess(true);
-        setReferenceNumber(result.referenceNumber || 'MILL-' + Math.floor(Math.random() * 10000));
+     
         setActiveStep(steps.length - 1); // Move to confirmation step
         
         // If onSubmit is provided, call it with the form data
@@ -309,7 +309,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
                 <TextField
                   required
                   fullWidth
-                  label="Mill Name *"
+                  label="Mill Model *"
                   name="millName"
                   value={formData.millName}
                   onChange={handleChange}
@@ -386,17 +386,23 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
               {/* Row 1: Mill Location | Address */}
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Mill Location *"
-                  name="millLocation"
-                  value={formData.millLocation}
-                  onChange={handleChange}
-                  placeholder="Enter mill location"
-                  error={formSubmitted && !!errors.millLocation}
-                  helperText={formSubmitted && errors.millLocation}
-                />
+                <FormControl fullWidth required error={formSubmitted && !!errors.millLocation}>
+                  <InputLabel id="mill-location-label">Mill Location *</InputLabel>
+                  <Select
+                    labelId="mill-location-label"
+                    name="millLocation"
+                    value={formData.millLocation}
+                    onChange={(e) => handleSelectChange(e as any)}
+                    label="Mill Location *"
+                  >
+                    <MenuItem value="">Select Location</MenuItem>
+                    <MenuItem value="on_site_processing">On site processing</MenuItem>
+                    <MenuItem value="off_site_processing">Off site processing</MenuItem>
+                  </Select>
+                  {formSubmitted && errors.millLocation && (
+                    <FormHelperText>{errors.millLocation}</FormHelperText>
+                  )}
+                </FormControl>
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
                 <TextField

@@ -364,6 +364,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
+
           const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/approve`, {
               method: 'PUT',
               headers: {
@@ -442,7 +443,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/push-back?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/pushback?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1023,7 +1024,7 @@ async fetchOreRecieved(): Promise<any[]> {
         }
 
         try {
-            const response = await fetch('http://localhost:1000/api/mill-onboarding/register', {
+            const response = await fetch('http://localhost:1000/api/mill-onboarding/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1057,38 +1058,6 @@ async fetchOreRecieved(): Promise<any[]> {
      * @param reason The reason for rejection
      * @returns A promise that resolves to a success object or error
      */
-    async rejectMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
-        const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            window.location.href = '/auth/signin';
-            return { success: false, error: 'Authentication required' };
-        }
-        try {
-            const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                credentials: 'include',
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to reject mill');
-            }
-            
-            return { success: true };
-        } catch (error) {
-            console.error(`Error rejecting mill with ID ${millId}:`, error);
-            return { 
-                success: false, 
-                error: error instanceof Error ? error.message : 'An unexpected error occurred' 
-            };
-        }
-    }
 
     /**
      * Push back a mill by ID with reason
@@ -2560,6 +2529,38 @@ cooperativename: string;
    * @param reason The reason for rejection
    * @returns A promise that resolves to the response data or null on error
    */
+  
+  async setSectionForPushBack(id: string, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`http://localhost:1000/api/sections/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to pushback section: ${response.statusText}`);
+      }
+      const text = await response.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text; // Return plain text if not JSON
+      }
+    } catch (error) {
+      console.error('Error pushing back section:', error);
+      return null;
+    }
+  }
   async setSectionForRejection(id: string, reason: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
