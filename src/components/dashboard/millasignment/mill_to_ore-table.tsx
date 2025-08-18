@@ -7,6 +7,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
@@ -140,6 +141,10 @@ export function CustomersTable({
   const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
   const [isMillAssignDialogOpen, setIsMillAssignDialogOpen] = React.useState(false);
   const [selectedMill, setSelectedMill] = React.useState<string>('');
+  const [mills, setMills] = React.useState<any[]>([]);
+  const [millsLoading, setMillsLoading] = React.useState<boolean>(false);
+  const [millsError, setMillsError] = React.useState<string>('');
+  const [selectedMillDetails, setSelectedMillDetails] = React.useState<{millName: string, millLocation: string, millType: string} | null>(null);
   const [notes, setNotes] = React.useState<string>('');
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
   
@@ -172,6 +177,25 @@ export function CustomersTable({
     };
     fetchOreRecievedData();
   }, [refreshTrigger]);
+  
+  // Fetch activated mills when component mounts
+  React.useEffect(() => {
+    const fetchActivatedMills = async () => {
+      setMillsLoading(true);
+      setMillsError('');
+      try {
+        const fetchedMills = await authClient.fetchActivatedMills();
+        console.log('Activated Mills:', fetchedMills); // Debug: Log the mills response
+        setMills(fetchedMills);
+      } catch (err) {
+        console.error('Error fetching activated mills:', err);
+        setMillsError('Failed to load mills. Please try again.');
+      } finally {
+        setMillsLoading(false);
+      }
+    };
+    fetchActivatedMills();
+  }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -193,11 +217,30 @@ export function CustomersTable({
   };
   
   // Function to handle assigning mill to ore
-  const handleAssignMill = (userId: string) => {
-    setSelectedUserId(userId);
+  const handleAssignMill = (oreId: string) => {
+    setSelectedUserId(oreId);
     setSelectedMill('');
+    setSelectedMillDetails(null);
     setNotes('');
     setIsMillAssignDialogOpen(true);
+  };
+  
+  // Function to handle mill selection change
+  const handleMillChange = (event: SelectChangeEvent) => {
+    const millId = event.target.value;
+    setSelectedMill(millId);
+    
+    // Find the selected mill details
+    const selectedMill = mills.find(mill => mill.id === millId);
+    if (selectedMill) {
+      setSelectedMillDetails({
+        millName: selectedMill.name || 'N/A',
+        millLocation: selectedMill.location || 'N/A',
+        millType: selectedMill.type || 'N/A'
+      });
+    } else {
+      setSelectedMillDetails(null);
+    }
   };
   
   // Function to handle mill assignment submission
@@ -552,41 +595,57 @@ export function CustomersTable({
         open={isMillAssignDialogOpen}
         onClose={() => setIsMillAssignDialogOpen(false)}
         aria-labelledby="mill-assignment-dialog-title"
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
       >
-        <DialogTitle id="mill-assignment-dialog-title">
-          Assign Mill to Ore
-        </DialogTitle>
+        <DialogTitle id="mill-assignment-dialog-title">Assign Mill</DialogTitle>
         <DialogContent>
-          <Box sx={{ mt: 2 }}>
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel id="mill-select-label">Select Mill</InputLabel>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="mill-select-label">Select Mill</InputLabel>
+            {millsLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                <CircularProgress size={24} />
+              </Box>
+            ) : millsError ? (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {millsError}
+              </Typography>
+            ) : (
               <Select
                 labelId="mill-select-label"
                 id="mill-select"
-                label="Select Mill"
                 value={selectedMill}
-                onChange={(e) => setSelectedMill(e.target.value)}
+                onChange={handleMillChange}
+                label="Select Mill"
               >
-                <MenuItem value="mill1">Mill 1</MenuItem>
-                <MenuItem value="mill2">Mill 2</MenuItem>
-                <MenuItem value="mill3">Mill 3</MenuItem>
-                <MenuItem value="mill4">Mill 4</MenuItem>
+                <MenuItem value=""><em>Select a mill</em></MenuItem>
+                {mills.map((mill) => (
+                  <MenuItem key={mill.id} value={mill.id}>
+                    {mill.millName}
+                  </MenuItem>
+                ))}
               </Select>
-            </FormControl>
-            
-            <TextField
-              fullWidth
-              label="Notes"
-              multiline
-              rows={4}
-              variant="outlined"
-              sx={{ mb: 2 }}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </Box>
+            )}
+          </FormControl>
+          
+          {selectedMillDetails && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'background.paper', borderRadius: 1, boxShadow: 1 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight="bold">
+                Mill Details
+              </Typography>
+              <Typography variant="body2">
+                <strong>Name:</strong> {selectedMillDetails.millName}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Location:</strong> {selectedMillDetails.millLocation}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Type:</strong> {selectedMillDetails.millType}
+              </Typography>
+            </Box>
+          )}
+          
+
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsMillAssignDialogOpen(false)} color="inherit">

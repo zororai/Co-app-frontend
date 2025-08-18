@@ -890,6 +890,38 @@ async fetchOreRecieved(): Promise<any[]> {
           };
       }
   }
+  
+  /**
+   * Fetch activated mills from the backend
+   * @returns A promise that resolves to an array of activated mills
+   */
+  async fetchActivatedMills(): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/mill-onboarding/activated', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch activated mills');
+          }
+          const data = await response.json();
+          return Array.isArray(data) ? data : [];
+      } catch (error) {
+          console.error('Error fetching activated mills:', error);
+          return [];
+      }
+  }
     /**
      * Reject a user by ID with reason
      */
