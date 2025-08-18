@@ -12,6 +12,7 @@ export const paths = {
     shaftreg: '/dashboard/shaftassign',
     oreTax: '/dashboard/oretax',
     mill: '/dashboard/mill',
+    Refined_Ore_to_Gold:'/dashboard/Refined_Ore_to_Gold',
     millasignment:'/dashboard/millasignment',
     millstatus: '/dashboard/millstatus',
     Ore_Dispatch: '/dashboard/Ore_Dispatch',
