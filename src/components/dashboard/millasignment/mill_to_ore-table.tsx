@@ -33,7 +33,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
+import { OreDetailsDialog } from '@/components/dashboard/millasignment/ore-details-dialog';
 import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
 
 
@@ -227,16 +227,16 @@ export function CustomersTable({
   
   // Function to handle mill selection change
   const handleMillChange = (event: SelectChangeEvent) => {
-    const millId = event.target.value;
-    setSelectedMill(millId);
+    const id = event.target.value;
+    setSelectedMill(id);
     
     // Find the selected mill details
-    const selectedMill = mills.find(mill => mill.id === millId);
+    const selectedMill = mills.find(mill => mill.id === id);
     if (selectedMill) {
       setSelectedMillDetails({
-        millName: selectedMill.name || 'N/A',
-        millLocation: selectedMill.location || 'N/A',
-        millType: selectedMill.type || 'N/A'
+        millName: selectedMill.millName || 'N/A',
+        millLocation: selectedMill.millLocation || 'N/A',
+        millType: selectedMill.millType || 'N/A'
       });
     } else {
       setSelectedMillDetails(null);
@@ -253,19 +253,35 @@ export function CustomersTable({
     }
     
     try {
-      // Here you would call your API to assign the mill
-      // For example: await authClient.assignMillToOre(selectedUserId, selectedMill, notes);
+      // Get the selected mill details
+      const millDetails = selectedMillDetails || {
+        millName: '',
+        millLocation: '',
+        millType: ''
+      };
       
-      // For now, we'll simulate a successful assignment
-      setIsMillAssignDialogOpen(false);
-      setFeedbackSuccess(true);
-      setFeedbackMessage('Mill assigned successfully');
-      setFeedbackDialogOpen(true);
-      refreshTableData();
+      // Call the API to assign the mill to the ore
+      const result = await authClient.assignMillToOre(
+        selectedUserId,
+        selectedMill,
+        millDetails.millName,
+        millDetails.millType,
+        millDetails.millLocation
+      );
+      
+      if (result.success) {
+        setIsMillAssignDialogOpen(false);
+        setFeedbackSuccess(true);
+        setFeedbackMessage('Mill assigned successfully');
+        setFeedbackDialogOpen(true);
+        refreshTableData();
+      } else {
+        throw new Error(result.error || 'Failed to assign mill');
+      }
     } catch (error) {
       console.error('Error assigning mill:', error);
       setFeedbackSuccess(false);
-      setFeedbackMessage('Failed to assign mill. Please try again.');
+      setFeedbackMessage(`Failed to assign mill: ${error instanceof Error ? error.message : 'Please try again.'}`);
       setFeedbackDialogOpen(true);
     }
   };
@@ -479,12 +495,11 @@ export function CustomersTable({
               </TableCell>
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Weight (After Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Tax Deduction)</TableCell>
-              <TableCell>Transport Status</TableCell>
-              <TableCell>Driver</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Security Status</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Number of Bags </TableCell>
+              <TableCell>Mill Name</TableCell>
+              <TableCell>Mill Location</TableCell>
+              <TableCell>Mill Type</TableCell>
               <TableCell>Mill Status</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Assign Mill</TableCell>
@@ -514,13 +529,12 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>{row.oreUniqueId}</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell>{row.weight || 0} kg</TableCell>
-                  <TableCell>{row.numberOfBags || 0}</TableCell>
-                  <TableCell>{row.transportStatus || ''}</TableCell>
-                  <TableCell>{row.selectedTransportdriver || ''}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
-                  <TableCell>{row.securityDispatcherStatus || ''}</TableCell>
-                  <TableCell>{row.millStatus || 'Not Assigned'}</TableCell>
+                  <TableCell>{row.newWeight || 0} kg</TableCell>
+                  <TableCell>{row.newnumberOfBags || 0}</TableCell>
+                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].millName : ''}</TableCell>
+                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].location : ''}</TableCell>
+                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].millType : ''}</TableCell>
+                  <TableCell>{row.processStatus || 'N/A'}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
@@ -634,13 +648,13 @@ export function CustomersTable({
                 Mill Details
               </Typography>
               <Typography variant="body2">
-                <strong>Name:</strong> {selectedMillDetails.millName}
+                <strong>Mill Model :</strong> {selectedMillDetails.millName}
               </Typography>
               <Typography variant="body2">
-                <strong>Location:</strong> {selectedMillDetails.millLocation}
+                <strong>Mill Location:</strong> {selectedMillDetails.millLocation}
               </Typography>
               <Typography variant="body2">
-                <strong>Type:</strong> {selectedMillDetails.millType}
+                <strong>Mill Type:</strong> {selectedMillDetails.millType}
               </Typography>
             </Box>
           )}

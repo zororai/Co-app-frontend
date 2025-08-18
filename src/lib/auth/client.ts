@@ -3538,6 +3538,58 @@ cooperativename: string;
       };
     }
   }
+
+  /**
+   * Assign a mill to an ore
+   * @param oreId The ID of the ore to assign
+   * @param millId The ID of the mill to assign
+   * @param millName The name of the mill
+   * @param millType The type of the mill
+   * @param millLocation The location of the mill
+   * @returns A promise that resolves to a success object or error
+   */
+  async assignMillToOre(
+    oreId: string,
+    millId: string,
+    millName: string,
+    millType: string,
+    millLocation: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const response = await fetch(
+        `http://localhost:1000/api/ore-transports/${oreId}/mills/unknown?millid=${millId}&millName=${encodeURIComponent(millName)}&millType=${encodeURIComponent(millType)}&location=${encodeURIComponent(millLocation)}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to assign mill: ${errorText}`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error assigning mill to ore:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
 }
 
 
