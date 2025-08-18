@@ -350,6 +350,122 @@ class AuthClient {
           return null;
       }
   }
+
+  /**
+   * Approve a mill by ID
+   * @param millId The ID of the mill to approve
+   * @returns A promise that resolves to a success object or error
+   */
+  async approveMill(millId: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/approve`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to approve mill');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error approving mill with ID ${millId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
+
+  /**
+   * Reject a mill by ID with reason
+   * @param millId The ID of the mill to reject
+   * @param reason The reason for rejection
+   * @returns A promise that resolves to a success object or error
+   */
+  async rejectMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to reject mill');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error rejecting mill with ID ${millId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
+
+  /**
+   * Push back a mill by ID with reason
+   * @param millId The ID of the mill to push back
+   * @param reason The reason for pushing back
+   * @returns A promise that resolves to a success object or error
+   */
+  async pushbackMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/push-back?reason=${encodeURIComponent(reason)}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to push back mill');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error pushing back mill with ID ${millId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -898,9 +1014,7 @@ async fetchOreRecieved(): Promise<any[]> {
         address: string;
         picture: string;
         status: string;
-        reason: string;
-        statusHealth: string;
-    }): Promise<{ success: boolean; data?: any; error?: string; referenceNumber?: string }> {
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
@@ -909,7 +1023,7 @@ async fetchOreRecieved(): Promise<any[]> {
         }
 
         try {
-            const response = await fetch('http://localhost:1000/api/mill-onboarding/create', {
+            const response = await fetch('http://localhost:1000/api/mill-onboarding/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -926,11 +1040,7 @@ async fetchOreRecieved(): Promise<any[]> {
             }
 
             const data = await response.json();
-            return { 
-                success: true, 
-                data,
-                referenceNumber: data.referenceNumber || `MILL-${Math.floor(Math.random() * 10000)}`
-            };
+            return { success: true, data };
         } catch (error) {
             console.error('Error registering mill:', error);
             return { 
@@ -939,6 +1049,55 @@ async fetchOreRecieved(): Promise<any[]> {
             };
         }
     }
+
+
+    /**
+     * Reject a mill by ID with reason
+     * @param millId The ID of the mill to reject
+     * @param reason The reason for rejection
+     * @returns A promise that resolves to a success object or error
+     */
+    async rejectMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, error: 'Authentication required' };
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to reject mill');
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error(`Error rejecting mill with ID ${millId}:`, error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+            };
+        }
+    }
+
+    /**
+     * Push back a mill by ID with reason
+     * @param millId The ID of the mill to push back
+     * @param reason The reason for pushing back
+     * @returns A promise that resolves to a success object or error
+     */
+  
+
 
     async fetchSections(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
@@ -2838,7 +2997,7 @@ cooperativename: string;
    * Fetch all vehicles from the API
    * @returns A promise that resolves to the vehicles data
    */
-  async fetchVehicles() {
+  async fetchVehicles(): Promise<any[]> {
     try {
       const token = this.getToken();
       if (!token) {
@@ -2865,7 +3024,7 @@ cooperativename: string;
     }
   }
 
-  async fetchApprovedVehicles() {
+  async fetchApprovedVehicles(): Promise<any[]> {
     try {
       const token = this.getToken();
       if (!token) {
@@ -2895,7 +3054,7 @@ cooperativename: string;
    * Fetch approved drivers from the API
    * @returns A promise that resolves to the approved drivers data
    */
-  async fetchApprovedDrivers() {
+  async fetchApprovedDrivers(): Promise<any[]> {
     try {
       const token = this.getToken();
       if (!token) {
@@ -2926,7 +3085,7 @@ cooperativename: string;
    * Fetch ore transport data
    * @returns A promise that resolves to the ore data
    */
-  async fetchOre() {
+  async fetchOre(): Promise<any[]> {
     try {
       const token = this.getToken();
       if (!token) {
@@ -2963,7 +3122,7 @@ cooperativename: string;
    * @param vehicleId The ID of the vehicle to fetch
    * @returns A promise that resolves to the vehicle details
    */
-  async fetchVehicleById(vehicleId: string) {
+  async fetchVehicleById(vehicleId: string): Promise<any | null> {
     try {
       // Get token from localStorage directly to ensure we have the latest token
       const token = localStorage.getItem('custom-auth-token');

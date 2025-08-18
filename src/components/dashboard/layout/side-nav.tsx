@@ -44,11 +44,9 @@ export function SideNav(): React.JSX.Element {
         left: 0,
         maxWidth: '100%',
         position: 'fixed',
-        scrollbarWidth: 'none',
         top: 0,
         width: 'var(--SideNav-width)',
         zIndex: 'var(--SideNav-zIndex)',
-        '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
@@ -84,8 +82,29 @@ export function SideNav(): React.JSX.Element {
         </Box>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
-        {renderNavItems({ pathname, items: navItems })}
+      <Box 
+        component="nav" 
+        sx={{ 
+          flexGrow: 1, 
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'background.paper',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'divider',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: 'text.disabled',
+          },
+        }}
+      >
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          {renderNavItems({ pathname, items: navItems })}
+        </Stack>
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       

@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { MillDetailsDialog } from '@/components/dashboard/mill/mill-details-dialog';
+import { MillDetailsDialog } from '@/components/dashboard/millstatus/millstatus-details-dialog';
 
 
 function noop(): void {
@@ -124,7 +124,7 @@ export function CustomersTable({
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchMill?.() || [];
+        const fetchedDrivers = await authClient.fetchMill();
         setUsers(fetchedDrivers);
       } catch (err) {
         setError('Failed to load drivers. Please try again.');

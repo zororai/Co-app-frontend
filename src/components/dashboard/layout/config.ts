@@ -80,6 +80,7 @@ export const navItems = [
       { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
       { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
       { key: 'taxonboard-status', title: 'Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
+      {key:'mill-status', title: 'Mill Status', href: paths.dashboard.millstatus, icon: 'truck' },
     ],
   },
 ] satisfies NavItemConfig[];
