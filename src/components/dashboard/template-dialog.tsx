@@ -15,15 +15,15 @@ import CloseIcon from '@mui/icons-material/Close';
 import Chip from '@mui/material/Chip';
 import { authClient } from '@/lib/auth/client';
 
-interface ProductionLoanDetailsDialogProps {
+interface TemplateDialogProps {
   open: boolean;
   onClose: () => void;
-  userId: string | null;
+  itemId: string | null;
   onRefresh?: () => void; // Optional callback to refresh data after action
 }
 
-export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }: ProductionLoanDetailsDialogProps): React.JSX.Element {
-  const [loanDetails, setLoanDetails] = React.useState<any>(null);
+export function TemplateDialog({ open, onClose, itemId, onRefresh }: TemplateDialogProps): React.JSX.Element {
+  const [details, setDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
   const [actionLoading, setActionLoading] = React.useState<boolean>(false);
@@ -45,32 +45,33 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
     }
   }, [open]);
 
-  // Fetch production loan details when dialog opens
+  // Fetch details when dialog opens
   React.useEffect(() => {
-    const fetchProductionloanDetails = async () => {
-      if (!userId) return;
+    const fetchDetails = async () => {
+      if (!itemId) return;
       
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchProductionloanDetails(userId);
-        setLoanDetails(details);
+        // Replace with your actual fetch method
+        const fetchedDetails = await authClient.fetchDetails(itemId);
+        setDetails(fetchedDetails);
       } catch (err) {
-        console.error('Error fetching production loan details:', err);
-        setError('Failed to load production loan details. Please try again.');
+        console.error('Error fetching details:', err);
+        setError('Failed to load details. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (open && userId) {
-      fetchProductionloanDetails();
+    if (open && itemId) {
+      fetchDetails();
     } else {
       // Reset state when dialog closes
-      setLoanDetails(null);
+      setDetails(null);
       setError('');
     }
-  }, [open, userId]);
+  }, [open, itemId]);
   
   // Cancel action
   const cancelAction = () => {
@@ -82,7 +83,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
 
   // Handle action (approve/reject/pushback)
   const handleAction = async () => {
-    if (!actionType || !reason.trim() || !userId || !status) return;
+    if (!actionType || !reason.trim() || !itemId || !status) return;
     
     setActionLoading(true);
     setActionError('');
@@ -93,11 +94,11 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       
       // Call the appropriate API method based on actionType
       if (actionType === 'approve') {
-        result = await authClient.approveProductionLoan(userId);
+        result = await authClient.approveItem(itemId);
       } else if (actionType === 'reject') {
-        result = await authClient.rejectProductionLoan(userId, reason);
+        result = await authClient.rejectItem(itemId, reason);
       } else if (actionType === 'pushback') {
-        result = await authClient.pushbackProductionLoan(userId, reason);
+        result = await authClient.pushbackItem(itemId, reason);
       }
       
       // Check if the API call was successful
@@ -112,7 +113,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
           actionMessage = 'pushed back';
         }
         
-        setActionSuccess(`Production Loan has been ${actionMessage} successfully.`);
+        setActionSuccess(`Item has been ${actionMessage} successfully.`);
         setShowReasonField(false);
         
         // Refresh parent component if callback provided
@@ -123,8 +124,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
         throw new Error(result?.error || 'Operation failed');
       }
     } catch (err) {
-      console.error(`Error updating production loan status:`, err);
-      setActionError(`Failed to update production loan status: ${err instanceof Error ? err.message : 'Please try again.'}`);
+      console.error(`Error updating status:`, err);
+      setActionError(`Failed to update status: ${err instanceof Error ? err.message : 'Please try again.'}`);
     } finally {
       setActionLoading(false);
     }
@@ -150,7 +151,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             borderBottom: '1px solid #e0e0e0'
           }}
         >
-          <Typography variant="subtitle1" component="span">Production Loan Details</Typography>
+          <Typography variant="subtitle1" component="span">Item Details</Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
@@ -179,7 +180,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             borderBottom: '1px solid #e0e0e0'
           }}
         >
-          <Typography variant="subtitle1" component="span">Production Loan Details</Typography>
+          <Typography variant="subtitle1" component="span">Item Details</Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
@@ -214,97 +215,90 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
           borderBottom: '1px solid #e0e0e0'
         }}
       >
-        <Typography variant="subtitle1" component="span">Production Loan Details / Make Decision</Typography>
+        <Typography variant="subtitle1" component="span">Item Details / Make Decision</Typography>
         <IconButton onClick={onClose} size="small">
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
-        {loanDetails && (
+        {details && (
           <Box sx={{ p: 2 }}>
             <Box sx={{ 
               display: 'grid', 
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
               gap: 3 
             }}>
-              {/* Section 1: Basic Information */}
+              {/* Section 1 */}
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
-                  Loan Information
+                  Basic Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                  <DetailItem label="Loan Name" value={loanDetails.loanName || 'N/A'} />
-                  <DetailItem label="Payment Method" value={loanDetails.paymentMethod || 'N/A'} />
-                  <DetailItem label="Amount/Grams" value={loanDetails.amountOrGrams?.toString() || 'N/A'} />
-                  <DetailItem label="Date" value={loanDetails.date ? new Date(loanDetails.date).toLocaleDateString() : 'N/A'} />
+                  <DetailItem label="Name" value={details.name || 'N/A'} />
+                  <DetailItem label="Type" value={details.type || 'N/A'} />
+                  <DetailItem label="Status" value={details.status || 'N/A'} />
+                  <DetailItem label="Date" value={details.date ? new Date(details.date).toLocaleDateString() : 'N/A'} />
                 </Box>
               </Box>
               
-              {/* Section 2: Status Information */}
+              {/* Section 2 */}
               <Box>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
-                  Status Information
+                  Additional Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                  <Box sx={{ mb: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#666' }}>Status</Typography>
-                    <Chip 
-                      label={loanDetails.status || 'N/A'}
-                      color={loanDetails.status === 'APPROVED' ? 'success' : 
-                             loanDetails.status === 'REJECTED' ? 'error' : 
-                             loanDetails.status === 'PUSHED_BACK' ? 'warning' : 'default'}
-                      size="small"
-                      sx={{ mt: 0.5 }}
-                    />
-                  </Box>
-                  <DetailItem label="Reason" value={loanDetails.reason || 'N/A'} />
+                  <DetailItem label="Category" value={details.category || 'N/A'} />
+                  <DetailItem label="Amount" value={details.amount?.toString() || 'N/A'} />
+                  <DetailItem label="Reference" value={details.reference || 'N/A'} />
                 </Box>
               </Box>
               
-              {/* Purpose Details - Full width section */}
-              {loanDetails.purpose && (
+              {/* Full width section */}
+              <Box sx={{ gridColumn: '1 / -1' }}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
+                  Description
+                </Typography>
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: '#f5f5f5', 
+                  borderRadius: 1,
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  <Typography variant="body2">{details.description || 'No description available'}</Typography>
+                </Box>
+              </Box>
+              
+              {/* Tags/Categories section */}
+              {details.tags && details.tags.length > 0 && (
                 <Box sx={{ gridColumn: '1 / -1' }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
-                    Purpose Details
+                    Tags
                   </Typography>
-                  <Box sx={{ 
-                    p: 2, 
-                    bgcolor: '#f5f5f5', 
-                    borderRadius: 1,
-                    whiteSpace: 'pre-wrap'
-                  }}>
-                    <Typography variant="body2">{loanDetails.purpose}</Typography>
+                  <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {details.tags.map((tag: string, index: number) => (
+                      <Chip 
+                        key={index}
+                        label={tag}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ))}
                   </Box>
                 </Box>
               )}
               
-              {/* Tax Information - Full width section */}
-              {loanDetails.tax && loanDetails.tax.length > 0 && (
+              {/* Reason section if available */}
+              {details.reason && (
                 <Box sx={{ gridColumn: '1 / -1' }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
-                    Tax Information
+                    Previous Decision Reason
                   </Typography>
-                  <Box sx={{ 
-                    p: 2, 
-                    bgcolor: '#f5f5f5', 
-                    borderRadius: 1
-                  }}>
-                    {loanDetails.tax.map((taxItem: any, index: number) => (
-                      <Box key={index} sx={{ 
-                        mb: index < loanDetails.tax.length - 1 ? 2 : 0,
-                        p: 2,
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 1,
-                        bgcolor: 'white'
-                      }}>
-                        <Typography variant="body2" sx={{ mb: 0.5 }}><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
-                        <Typography variant="body2" sx={{ mb: 0.5 }}><strong>Amount:</strong> {taxItem.amount || 'N/A'}</Typography>
-                        <Typography variant="body2" sx={{ mb: 0.5 }}><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
-                        <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
-                      </Box>
-                    ))}
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2">{details.reason}</Typography>
                   </Box>
                 </Box>
               )}
@@ -312,6 +306,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
           </Box>
         )}
       </DialogContent>
+      
       {/* Action feedback messages */}
       {(actionError || actionSuccess) && (
         <Box sx={{ px: 3, pb: 2 }}>
@@ -356,6 +351,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             <Button 
               onClick={handleAction}
               variant="contained"
+              color="primary"
               disabled={actionLoading || reason.trim() === ''}
               sx={{ 
                 bgcolor: actionType === 'reject' ? '#d32f2f' : 
@@ -394,7 +390,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               }}
               variant="contained"
               color="success"
-              disabled={actionLoading || (loanDetails?.status === 'APPROVED')}
+              disabled={actionLoading || (details?.status === 'APPROVED')}
               sx={{ minWidth: '120px' }}
             >
               Approve
@@ -407,7 +403,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               }}
               variant="contained"
               color="warning"
-              disabled={actionLoading || (loanDetails?.status === 'PUSHED_BACK')}
+              disabled={actionLoading || (details?.status === 'PUSHED_BACK')}
               sx={{ minWidth: '120px' }}
             >
               Push Back
@@ -420,7 +416,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               }}
               variant="contained"
               color="error"
-              disabled={actionLoading || (loanDetails?.status === 'REJECTED')}
+              disabled={actionLoading || (details?.status === 'REJECTED')}
               sx={{ minWidth: '120px' }}
             >
               Reject

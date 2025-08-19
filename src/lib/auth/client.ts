@@ -891,6 +891,122 @@ async fetchOreRecieved(): Promise<any[]> {
       }
   }
 
+  /**
+   * Approve a production loan by ID
+   * @param loanId The ID of the production loan to approve
+   * @returns A promise that resolves to a success object or error
+   */
+  async approveProductionLoan(loanId: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/production-loan/${loanId}/approve`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to approve production loan');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error approving production loan with ID ${loanId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
+
+  /**
+   * Reject a production loan by ID with reason
+   * @param loanId The ID of the production loan to reject
+   * @param reason The reason for rejection
+   * @returns A promise that resolves to a success object or error
+   */
+  async rejectProductionLoan(loanId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/production-loan/${loanId}/reject?reason=${encodeURIComponent(reason)}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to reject production loan');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error rejecting production loan with ID ${loanId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
+
+  /**
+   * Push back a production loan by ID with reason
+   * @param loanId The ID of the production loan to push back
+   * @param reason The reason for pushing back
+   * @returns A promise that resolves to a success object or error
+   */
+  async pushbackProductionLoan(loanId: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/production-loan/${loanId}/push-back?reason=${encodeURIComponent(reason)}`, {
+              method: 'PUT',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to push back production loan');
+          }
+          
+          return { success: true };
+      } catch (error) {
+          console.error(`Error pushing back production loan with ID ${loanId}:`, error);
+          return { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+          };
+      }
+  }
+
 
     async fetchUserById(userId: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
