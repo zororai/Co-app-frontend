@@ -497,12 +497,15 @@ export function CustomersTable({
               <TableCell>Shaft Numbers</TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Number of Bags </TableCell>
-              <TableCell>Mill Name</TableCell>
-              <TableCell>Mill Location</TableCell>
-              <TableCell>Mill Type</TableCell>
-              <TableCell>Mill Status</TableCell>
+              <TableCell>Sample Type</TableCell>
+              <TableCell>Sample Weight</TableCell>
+              <TableCell>Sample Size</TableCell>
+              <TableCell>Sample Status</TableCell>
+              <TableCell>Sample Reason</TableCell>
+              <TableCell>Sample Results</TableCell>
               <TableCell>View Details</TableCell>
-              <TableCell>Assign Mill</TableCell>
+              <TableCell>Collect Sample </TableCell>
+              <TableCell>Sample Results</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -531,10 +534,12 @@ export function CustomersTable({
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.newWeight || 0} kg</TableCell>
                   <TableCell>{row.newnumberOfBags || 0}</TableCell>
-                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].millName : ''}</TableCell>
-                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].location : ''}</TableCell>
-                  <TableCell>{row.mills && row.mills[0] ? row.mills[0].millType : ''}</TableCell>
-                  <TableCell>{row.processStatus || 'N/A'}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleSize : ''}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].status : ''}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleReason : ''}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
@@ -556,22 +561,44 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => handleAssignMill(row.id)}
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                        disabled={row.millStatus === 'Assigned'}
-                      >
-                        {row.millStatus === 'Assigned' ? 'Already Assigned' : 'Assign Mill'}
-                      </Button>
-                    </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                 
+
+                 <Button 
+                                   onClick={() => handleViewUserDetails(row.id)}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                borderColor: '#06131fff',
+                                color: '#081b2fff',
+                                '&:hover': {
+                                  borderColor: '#06131fff',
+                                  backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                                }
+                              }}
+                            >Collect Sample</Button>
+      
+  </Box>
+                  </TableCell>
+                  <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                 
+
+                 <Button 
+                                   onClick={() => handleViewUserDetails(row.id)}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                borderColor: '#06131fff',
+                                color: '#081b2fff',
+                                '&:hover': {
+                                  borderColor: '#06131fff',
+                                  backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                                }
+                              }}
+                            >Add Sample Results</Button>
+      
+  </Box>
                   </TableCell>
                 </TableRow>
               );

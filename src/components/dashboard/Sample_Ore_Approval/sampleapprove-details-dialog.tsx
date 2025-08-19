@@ -119,7 +119,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
         borderBottom: '1px solid #e0e0e0',
         pb: 2
       }}>
-        Assign Ore To Vehicle 
+        Ore Details
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -199,6 +199,29 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                       <Typography variant="body2"><strong>Mill Name:</strong> {mill.millName || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Mill Type:</strong> {mill.millType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Location:</strong> {mill.location || 'N/A'}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+            
+            {/* Sample Information Section */}
+            {oreDetails.oreSample && oreDetails.oreSample.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Sample Information</Typography>
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: '#f5f5f5', 
+                  borderRadius: 1
+                }}>
+                  {oreDetails.oreSample.map((sample: any, index: number) => (
+                    <Box key={index} sx={{ mb: index < oreDetails.oreSample.length - 1 ? 2 : 0 }}>
+                      <Typography variant="body2"><strong>Sample Type:</strong> {sample.sampleType || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Sample Weight:</strong> {sample.sampleWeight || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Sample Size:</strong> {sample.sampleSize || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Result:</strong> {sample.result || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Status:</strong> {sample.status || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Reason:</strong> {sample.reason?.toString() || 'N/A'}</Typography>
                     </Box>
                   ))}
                 </Box>
