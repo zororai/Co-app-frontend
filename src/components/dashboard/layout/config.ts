@@ -36,7 +36,10 @@ export const navItems = [
       { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
       { key: 'ore-tax', title: 'Tax Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
-      { key: 'ore-transport', title: 'Refined Ore to Gold', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+      { key: 'ore-transport', title: 'Refine Ore to Gold', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+      { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
+      
+   
     ],
   },
   {
