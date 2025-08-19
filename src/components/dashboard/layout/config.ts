@@ -14,7 +14,7 @@ export const navItems = [
       { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
     { key: 'Taxonboard', title: 'Tax Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
     { key: 'mill', title: 'Mill Onboarding', href:  paths.dashboard.mill, icon: 'truck'},
-    { key: 'Production_Loan', title: 'Production Loan', href:  paths.dashboard.Production_Loan, icon: 'truck'}
+    { key: 'Production_Loan', title: 'Production Loan Onboarding', href:  paths.dashboard.Production_Loan, icon: 'truck'}
     ], 
     
    },

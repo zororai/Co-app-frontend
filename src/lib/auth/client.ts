@@ -554,34 +554,7 @@ class AuthClient {
           return [];
       }
   }
-  
-  async fetchProductionData(): Promise<any[]> {
-    const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        window.location.href = '/auth/signin';
-        return [];
-    }
-    try {
-        const response = await fetch('http://localhost:1000/api/production-loan/all', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            credentials: 'include',
-        });
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        return Array.isArray(data) ? data : data.users || [];
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
-    }
-}
+
 
   async fetchOretaxData(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
@@ -822,8 +795,103 @@ async fetchOreRecieved(): Promise<any[]> {
   }
     
     /**
-     * Fetch user details by ID
+     * Fetch production loan details by ID
      */
+    async fetchProductionDetails(customerId: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/production-loan/${customerId}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch production loan details');
+          }
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error fetching production loan with ID ${customerId}:`, error);
+          return null;
+      }
+  }
+
+  /**
+   * Fetch all production loans
+   */
+  async fetchProductionData(): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/production-loan/all', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch production loans');
+          }
+          const data = await response.json();
+          return Array.isArray(data) ? data : [];
+      } catch (error) {
+          console.error('Error fetching production loans:', error);
+          return [];
+      }
+  }
+
+  /**
+   * Create a new production loan
+   */
+  async createProductionLoan(loanData: any): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/production-loan/create', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+              body: JSON.stringify(loanData)
+          });
+
+          const data = await response.json();
+          
+          if (!response.ok) {
+              return { success: false, error: data.message || 'Failed to create production loan' };
+          }
+          
+          return { success: true, data };
+      } catch (error) {
+          console.error('Error creating production loan:', error);
+          return { success: false, error: 'Failed to create production loan' };
+      }
+  }
+
+
     async fetchUserById(userId: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -1951,6 +2019,32 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
     }
+    async fetchProductionloanDetails(id: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return null;
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/production-loan/${id}`, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch customer details');
+          }
+          return await response.json();
+      } catch (error) {
+          console.error('Error fetching customer details:', error);
+          return null;
+      }
+  }
     async fetchOreDetails(id: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {

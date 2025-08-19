@@ -22,10 +22,6 @@ import Switch from '@mui/material/Switch';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from 'dayjs';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import Alert from '@mui/material/Alert';
@@ -44,11 +40,25 @@ interface AddUserDialogProps {
   onRefresh?: () => void;
 }
 
+interface TaxItem {
+  taxType: string;
+  taxRate: number;
+}
+
+interface FormData {
+  loanName: string;
+  paymentMethod: string;
+  amountOrGrams: number;
+  purpose: string;
+  tax: TaxItem[];
+  transportReason?: string;
+  processStatus?: string;
+  location?: string;
+}
+
 // Define steps for the stepper
 const steps = [
-  'Ore Information',
-  'Tax Information',
-  'Transport Information',
+  'Loan Information',
   'Review',
   'Confirmation'
 ];
@@ -80,7 +90,7 @@ const locationOptions = [
   { value: 'head_office', label: 'Head Office' }
 ];
 
-export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -91,28 +101,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
   
   // State for form data
-  const [formData, setFormData] = React.useState({
-
-    shaftNumbers: '',
-    weight: '',
-    numberOfBags: '',
-    transportStatus: '',
-    selectedTransportdriver: '',
-    selectedTransport: '',
-    originLocation: '',
-    destination: '',
-    location: '',
-    // Additional fields
-    transportReason: '',
-    processStatus: '',
-    date: dayjs() as dayjs.Dayjs,
-    time: dayjs() as dayjs.Dayjs,
-    tax: [
-      {
-        taxType: '',
-        taxRate: 0
-      }
-    ]
+  const [formData, setFormData] = React.useState<FormData>({
+    loanName: '',
+    paymentMethod: '',
+    amountOrGrams: 0,
+    purpose: '',
+    tax: [{ taxType: '', taxRate: 0 }]
   });
 
   // State for shaft assignments
@@ -148,13 +142,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     });
   };
 
-  // Handle date changes
-  const handleDateChange = (field: string) => (date: dayjs.Dayjs | null) => {
-    setFormData({
-      ...formData,
-      [field]: date
-    });
-  };
 
   // Handle switch change
 
@@ -200,23 +187,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       
       // Check required fields
       if (
-        !formData.shaftNumbers ||
-        !formData.weight ||
-        !formData.numberOfBags ||
-        !formData.transportStatus
+        !formData.loanName ||
+        !formData.paymentMethod ||
+        !formData.amountOrGrams ||
+        !formData.purpose
       ) {
-        return; // Don't proceed if validation fails
-      }
-    }
-    
-    // For the second step, validate tax information
-    if (activeStep === 1) {
-      setFormSubmitted(true);
-      
-      // Check if at least one tax entry has both fields filled
-      const hasValidTax = formData.tax.some(item => item.taxType && item.taxRate > 0);
-      
-      if (!hasValidTax) {
         return; // Don't proceed if validation fails
       }
     }
@@ -243,45 +218,24 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     setError(null);
     
     try {
-      // Create ore data object with all fields
-      const oreData = {
-        // Ore specific fields
-        shaftNumbers: formData.shaftNumbers,
-        weight: formData.weight,
-        numberOfBags: formData.numberOfBags,
-        transportStatus: formData.transportStatus,
-        selectedTransportdriver: formData.selectedTransportdriver || '',
-        selectedTransport: formData.selectedTransport || '',
-        originLocation: formData.originLocation || '',
-        destination: formData.destination || '',
-        // Additional fields
-        transportReason: formData.transportReason || '',
-        processStatus: formData.processStatus || '',
-        date: formData.date ? formData.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-        // Convert dayjs time object to the required format
-        time: {
-          hour: formData.time.hour(),
-          minute: formData.time.minute(),
-          second: formData.time.second(),
-          nano: 0 // dayjs doesn't have nanoseconds, so we set it to 0
-        },
-        // Filter out empty tax entries
-        tax: formData.tax.filter(item => item.taxType.trim() !== ''),
-        location: formData.location || ''
+      // Create production loan data object with all fields
+      const loanData = {
+        loanName: formData.loanName,
+        paymentMethod: formData.paymentMethod,
+        amountOrGrams: formData.amountOrGrams,
+        purpose: formData.purpose
       };
       
-      // Call API to create ore record
-      console.log('Sending ore data to API:', oreData);
-      const response = await authClient.createOre(oreData);
+      // Call API to create production loan record
+      console.log('Sending production loan data to API:', loanData);
+      const response = await authClient.createProductionLoan(loanData);
       console.log('API response:', response);
       
       // Check if the response was successful
       if (!response.success) {
-        throw new Error(response.error || 'Failed to create ore record');
+        throw new Error(response.error || 'Failed to create production loan record');
       }
       
-      // Generate reference number for the ore
-    
       setSuccess(true);
       
       // Move to success step
@@ -292,8 +246,8 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         onRefresh();
       }
     } catch (err) {
-      console.error('Error creating ore record:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create ore record');
+      console.error('Error creating production loan record:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create production loan record');
       // Show error in UI
       setActiveStep(activeStep); // Stay on current step
     } finally {
@@ -391,7 +345,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         pb: 1
       }}>
         <Typography variant="h6" component="div">
-          Assign Ore to Transport
+          Add Production Loan
         </Typography>
         <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
           <CloseIcon />
@@ -418,136 +372,64 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {activeStep === 0 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Basic Information
+              Loan Information
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Autocomplete
-                  multiple
-                  id="shaft-numbers-autocomplete"
-                  options={shaftAssignments || []}
-                  getOptionLabel={(option) => {
-                    // Handle both shaftNumber and shaftNumbers fields
-                    return option.shaftNumbers || option.shaftNumber || '';
-                  }}
-                  loading={loadingShafts}
-                  defaultValue={[]}
-                  onChange={(event, newValue) => {
-                    console.log('Selected values:', newValue);
-                    const shaftNumbersString = newValue
-                      .map(item => item.shaftNumbers || item.shaftNumber || '')
-                      .join(', ');
-                    setFormData({
-                      ...formData,
-                      shaftNumbers: shaftNumbersString
-                    });
-                  }}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
-                  renderOption={(props, option) => {
-                    const { key, ...otherProps } = props;
-                    return (
-                      <li key={key} {...otherProps}>
-                        {option.shaftNumbers || option.shaftNumber || ''}
-                      </li>
-                    );
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      required
-                      label="Shaft Numbers"
-                      placeholder="Search for shaft numbers"
-                      margin="normal"
-                      helperText={shaftError || "Select shaft numbers from approved assignments"}
-                      error={!!shaftError}
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                          <React.Fragment>
-                            {loadingShafts ? (
-                              <CircularProgress color="inherit" size={20} />
-                            ) : null}
-                            {params.InputProps.endAdornment}
-                          </React.Fragment>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
                 <TextField
                   required
                   fullWidth
-                  label="Weight (kg)"
-                  name="weight"
-                  type="number"
-                  value={formData.weight || ''}
-                  onChange={handleChange('weight')}
-                  placeholder="Enter weight in kg"
-                  margin="normal"
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">kg</InputAdornment>,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  label="Number of Bags"
-                  name="numberOfBags"
-                  type="number"
-                  value={formData.numberOfBags || ''}
-                  onChange={handleChange('numberOfBags')}
-                  placeholder="Enter number of bags"
+                  label="Loan Name"
+                  name="loanName"
+                  value={formData.loanName}
+                  onChange={handleChange('loanName')}
+                  placeholder="Enter loan name/purpose"
                   margin="normal"
                 />
               </Grid>
               <Grid item xs={12}>
                 <FormControl fullWidth margin="normal">
-                  <InputLabel id="transport-status-label">Transport Status</InputLabel>
+                  <InputLabel id="payment-method-label">Payment Method</InputLabel>
                   <Select
-                    labelId="transport-status-label"
-                    id="transport-status"
-                    value={formData.transportStatus || ''}
-                    onChange={handleSelectChange('transportStatus')}
-                    label="Transport Status"
+                    labelId="payment-method-label"
+                    id="payment-method"
+                    value={formData.paymentMethod || ''}
+                    onChange={handleSelectChange('paymentMethod')}
+                    label="Payment Method"
                   >
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="in_transit">In Transit</MenuItem>
-                    <MenuItem value="delivered">Delivered</MenuItem>
-                    <MenuItem value="cancelled">Cancelled</MenuItem>
+                    <MenuItem value="Cash">Cash</MenuItem>
+                    <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
+                    <MenuItem value="Gold Grams">Gold Grams</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <TextField
+                  required
                   fullWidth
-                  label="Transport Driver"
-                  name="selectedTransportdriver"
-                  value={formData.selectedTransportdriver || ''}
-                  onChange={handleChange('selectedTransportdriver')}
-                  placeholder="Enter transport driver name"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Transport Vehicle"
-                  name="selectedTransport"
-                  value={formData.selectedTransport || ''}
-                  onChange={handleChange('selectedTransport')}
-                  placeholder="Enter transport vehicle details"
+                  label="Amount/Grams"
+                  name="amountOrGrams"
+                  type="number"
+                  value={formData.amountOrGrams || ''}
+                  onChange={handleChange('amountOrGrams')}
+                  placeholder="Enter amount or grams"
                   margin="normal"
                 />
               </Grid>
               <Grid item xs={12}>
-                <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
+                <TextField
+                  required
+                  fullWidth
+                  label="Purpose"
+                  name="purpose"
+                  multiline
+                  rows={3}
+                  value={formData.purpose || ''}
+                  onChange={handleChange('purpose')}
+                  placeholder="Describe the purpose of this loan"
+                  margin="normal"
+                />
               </Grid>
             </Grid>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
@@ -567,192 +449,18 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         )}
 
         {/* Step 2: Tax */}
+       
+
+      
+        
+        {/* Step 2: Review */}
         {activeStep === 1 && (
           <Box>
-            
-            <Grid container spacing={2}>
-             
-              
-             
-              
-              {/* Tax Information */}
-              <Grid item xs={12}>
-                <Typography variant="body1" sx={{ mt: 2, mb: 1, fontWeight: 500 }}>
-                  Tax Information
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                
-                {formData.tax.map((taxItem, index) => (
-                  <Box key={index} sx={{ display: 'flex', mb: 2, alignItems: 'flex-start' }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={5}>
-                        <TextField
-                          fullWidth
-                          label="Tax Type"
-                          value={taxItem.taxType}
-                          onChange={handleTaxChange(index, 'taxType')}
-                          placeholder="Enter tax type"
-                          margin="normal"
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={5}>
-                        <TextField
-                          fullWidth
-                          label="Tax Rate (%)"
-                          type="number"
-                          value={taxItem.taxRate}
-                          onChange={handleTaxChange(index, 'taxRate')}
-                          placeholder="Enter tax rate"
-                          margin="normal"
-                          InputProps={{
-                            endAdornment: <InputAdornment position="end">%</InputAdornment>,
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                        <IconButton 
-                          onClick={() => removeTaxEntry(index)}
-                          disabled={formData.tax.length === 1}
-                          color="error"
-                          sx={{ mt: 1 }}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                ))}
-                
-                <Button
-                  variant="outlined"
-                  onClick={addTaxEntry}
-                  startIcon={<AddIcon />}
-                  sx={{ mt: 1 }}
-                >
-                  Add Tax
-                </Button>
-              </Grid>
-              
-             
-            
-              
-            </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
-          </Box>
-        )}
-
-        {/* Step 3: Additional Details */}
-        {activeStep === 2 && (
-          <Box>
             <Typography variant="h6" gutterBottom>
-              Additional Detailsi
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Transport Reason"
-                  name="transportReason"
-                  value={formData.transportReason || ''}
-                  onChange={handleChange('transportReason')}
-                  placeholder="Enter reason for transport"
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel id="process-status-label">Process Status</InputLabel>
-                  <Select
-                    labelId="process-status-label"
-                    id="process-status"
-                    value={formData.processStatus || ''}
-                    onChange={handleSelectChange('processStatus')}
-                    label="Process Status"
-                  >
-                    <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="processing">Processing</MenuItem>
-                    <MenuItem value="completed">Completed</MenuItem>
-                    <MenuItem value="cancelled">Cancelled</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-           
-           
-          
-          
-       
-           
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal">
-                  <InputLabel id="process-status-label">Collection Location</InputLabel>
-                  <Select
-                    labelId="process-status-label"
-                    id="process-status"
-                    value={formData.location ||''}
-                    onChange={handleSelectChange('location')}
-                    label="Collection Location"
-                  >
-                    <MenuItem value="pending">Still on the ground</MenuItem>
-                    <MenuItem value="processing">Loaded in Truck </MenuItem>
-                  
-                  
-                  </Select>
-                </FormControl>
-              </Grid>
-          
-            </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
-          </Box>
-        )}
-        
-        {/* Step 4: Review */}
-        {activeStep === 3 && (
-          <Box>
-            <Typography variant="h6" gutterBottom>
-              Review Ore Details
+              Review Production Loan Details
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Please review the information before creating the ore record.
+              Please review the information before creating the production loan record.
             </Typography>
             
             <Box sx={{ 
@@ -762,47 +470,25 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               mb: 3 
             }}>
               <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                Basic Information
+                Loan Information
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Shaft Numbers</Typography>
+                  <Typography variant="body2" color="text.secondary">Loan Name</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.shaftNumbers || 'Not provided'}
+                    {formData.loanName || 'Not provided'}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Weight</Typography>
+                  <Typography variant="body2" color="text.secondary">Payment Method</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.weight ? `${formData.weight} kg` : 'Not provided'}
+                    {formData.paymentMethod || 'Not provided'}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Number of Bags</Typography>
+                  <Typography variant="body2" color="text.secondary">Amount/Grams</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.numberOfBags || 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Status</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.transportStatus === 'pending' ? 'Pending' :
-                     formData.transportStatus === 'in_transit' ? 'In Transit' :
-                     formData.transportStatus === 'delivered' ? 'Delivered' :
-                     formData.transportStatus === 'cancelled' ? 'Cancelled' :
-                     formData.transportStatus || 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Driver</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.selectedTransportdriver || 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Vehicle</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.selectedTransport || 'Not provided'}
+                    {formData.amountOrGrams || 'Not provided'}
                   </Typography>
                 </Grid>
               </Grid>
@@ -810,70 +496,15 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Divider sx={{ my: 3 }} />
               
               <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                Tax Information
+                Purpose
               </Typography>
               <Grid container spacing={2}>
-                {formData.tax.length > 0 ? (
-                  formData.tax.map((taxItem, index) => (
-                    <React.Fragment key={index}>
-                      {taxItem.taxType && (
-                        <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" color="text.secondary">{taxItem.taxType}</Typography>
-                          <Typography variant="body1" sx={{ mb: 2 }}>
-                            {taxItem.taxRate}%
-                          </Typography>
-                        </Grid>
-                      )}
-                    </React.Fragment>
-                  ))
-                ) : (
-                  <Grid item xs={12}>
-                    <Typography variant="body1">No tax information provided</Typography>
-                  </Grid>
-                )}
-              </Grid>
-              
-              <Divider sx={{ my: 3 }} />
-              
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
-                Additional Details
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Transport Reason</Typography>
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">Purpose</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.transportReason || 'Not provided'}
+                    {formData.purpose || 'Not provided'}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Process Status</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.processStatus === 'pending' ? 'Pending' :
-                     formData.processStatus === 'processing' ? 'Processing' :
-                     formData.processStatus === 'completed' ? 'Completed' :
-                     formData.processStatus === 'cancelled' ? 'Cancelled' :
-                     formData.processStatus || 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Date</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.date ? formData.date.format('DD/MM/YYYY') : 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Time</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.date ? formData.date.format('HH:mm') : 'Not provided'}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Origin Location</Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.originLocation || 'Not provided'}
-                  </Typography>
-                </Grid>
-             
               </Grid>
             </Box>
             
@@ -895,28 +526,24 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   '&:hover': { bgcolor: '#333' } 
                 }}
               >
-                {isSubmitting ? 'Creating...' : 'Save ore record'}
+                {isSubmitting ? 'Creating...' : 'Save Production Loan'}
               </Button>
             </Box>
           </Box>
         )}
 
-        {/* Step 5: Confirmation */}
-        {/* Make sure we're accessing the correct activeStep variable */}
-        {activeStep === 4 && (
+        {/* Step 3: Confirmation */}
+        {activeStep === 2 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
               <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
-                Ore Created Successfully!
+                Production Loan Created Successfully!
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                The ore record has been created. Here is the reference number:
+                The production loan record has been created and saved to the system.
               </Typography>
             </Box>
-            
-          
-       
             
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
               <Button

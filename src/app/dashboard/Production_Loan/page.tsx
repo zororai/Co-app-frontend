@@ -39,7 +39,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/oreTransport/add-ore-dialog';
+import { AddProductionLoanDialog } from '@/components/dashboard/Production_Loan/add-productionloan-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -193,7 +193,7 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-        <TopRightActions />
+        <TopRightActions refreshData={refreshData} />
       </Stack>
 
       {tab === 'PENDING' && (
@@ -219,7 +219,7 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions(): React.JSX.Element {
+function TopRightActions({ refreshData }: { refreshData: () => void }): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const open = Boolean(anchorEl);
@@ -242,11 +242,23 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-      
-      {/* Add Ore Dialog */}
-      <AddOreDialog 
+            <Button
+        variant="contained"
+        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+        onClick={handleOpenDialog}
+        sx={{
+          bgcolor: '#5f4bfa',
+          color: '#fff',
+          '&:hover': { bgcolor: '#4aa856' }
+        }}
+      >
+        Add New Production Loan
+      </Button>
+      {/* Add Production Loan Dialog */}
+      <AddProductionLoanDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 
+        onRefresh={refreshData}
       />
     </React.Fragment>
   );

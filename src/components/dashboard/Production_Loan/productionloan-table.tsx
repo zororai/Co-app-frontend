@@ -32,8 +32,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
-import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+import { ProductionLoanDetailsDialog } from '@/components/dashboard/Production_Loan/Production_Loan-details-dialog';
+
 
 
 function noop(): void {
@@ -147,39 +147,17 @@ export function CustomersTable({
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchOretaxData = async () => {
+    const fetchProductionData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedOres = await authClient.fetchOretaxData();
+        const fetchedOres = await authClient.fetchProductionData();
         console.log('API Response:', fetchedOres); // Debug: Log the API response
         
         // If the API returns an empty array or undefined, use mock data
         if (!fetchedOres || fetchedOres.length === 0) {
           console.log('No data returned from API, using mock data');
-          const mockLoanData = [
-            {
-              id: '1',
-              loanName: 'Equipment Purchase',
-              paymentMethod: 'Cash',
-              amountOrGrams: 5000,
-              purpose: 'Mining Equipment',
-              status: 'APPROVED',
-              reason: 'Business expansion',
-              date: '2025-08-10'
-            },
-            {
-              id: '2',
-              loanName: 'Operational Costs',
-              paymentMethod: 'Gold Grams',
-              amountOrGrams: 250,
-              purpose: 'Staff Salaries',
-              status: 'PENDING',
-              reason: 'Monthly operations',
-              date: '2025-08-09'
-            }
-          ];
-          setUsers(mockLoanData);
+         
         } else {
           setUsers(fetchedOres);
         }
@@ -205,12 +183,12 @@ export function CustomersTable({
         setLoading(false);
       }
     };
-    fetchOretaxData();
+    fetchProductionData();
   }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
-      const customerDetails = await authClient.fetchOreDetails(customerId);
+      const customerDetails = await authClient.fetchProductionDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
         setIsViewDialogOpen(true);
@@ -464,7 +442,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View Ore Details</button>
+                      }}>View Production Loan Details</button>
                     </Box>
                   </TableCell>
        
@@ -489,13 +467,9 @@ export function CustomersTable({
       {/* Customer Details Dialog */}
       
       {/* Assign Ore Details dialog */}
-      <AssignOreDetailsDialog
-        open={isAssignDetailsDialogOpen}
-        onClose={() => setIsAssignDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
-      {/* Ore Details dialog */}
-      <OreDetailsDialog
+
+      {/* Production Loan Details dialog */}
+      <ProductionLoanDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
