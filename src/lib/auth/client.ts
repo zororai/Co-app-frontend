@@ -554,6 +554,35 @@ class AuthClient {
           return [];
       }
   }
+  
+  async fetchProductionData(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
+    }
+    try {
+        const response = await fetch('http://localhost:1000/api/production-loan/all', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch users');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.users || [];
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        return [];
+    }
+}
+
   async fetchOretaxData(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {

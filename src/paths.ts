@@ -10,6 +10,7 @@ export const paths = {
     useronboard: '/dashboard/useronboard',
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',
+    Production_Loan:'/dashboard/Production_Loan',
     oreTax: '/dashboard/oretax',
     mill: '/dashboard/mill',
     Refined_Ore_to_Gold:'/dashboard/Refined_Ore_to_Gold',
