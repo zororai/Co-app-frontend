@@ -82,7 +82,10 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
 
   // Handle action (approve/reject/pushback)
   const handleAction = async () => {
-    if (!actionType || !reason.trim() || !userId || !status) return;
+    if (!actionType || !userId) return;
+    
+    // For reject and pushback, we need a reason
+    if ((actionType === 'reject' || actionType === 'pushback') && !reason.trim()) return;
     
     setActionLoading(true);
     setActionError('');
@@ -103,21 +106,33 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       // Check if the API call was successful
       if (result && result.success) {
         // Different success messages based on action type
-        let actionMessage = '';
+        let successMessage = '';
         if (actionType === 'approve') {
-          actionMessage = 'approved';
+          successMessage = 'Production Loan has been approved successfully. The loan is now ready for processing.';
         } else if (actionType === 'reject') {
-          actionMessage = 'rejected';
+          successMessage = 'Production Loan has been rejected. The applicant will be notified of this decision.';
         } else if (actionType === 'pushback') {
-          actionMessage = 'pushed back';
+          successMessage = 'Production Loan has been pushed back for further review. The applicant will be asked to provide additional information.';
         }
         
-        setActionSuccess(`Production Loan has been ${actionMessage} successfully.`);
+        setActionSuccess(successMessage);
         setShowReasonField(false);
+        
+        // Update the loan details to reflect the new status
+        if (loanDetails) {
+          setLoanDetails({
+            ...loanDetails,
+            status: actionType === 'approve' ? 'APPROVED' : 
+                    actionType === 'reject' ? 'REJECTED' : 'PUSHED_BACK',
+            reason: reason || loanDetails.reason
+          });
+        }
         
         // Refresh parent component if callback provided
         if (onRefresh) {
-          onRefresh();
+          setTimeout(() => {
+            onRefresh();
+          }, 1000); // Small delay to ensure UI updates first
         }
       } else {
         throw new Error(result?.error || 'Operation failed');
@@ -189,9 +204,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             <Typography>{error}</Typography>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Close</Button>
-        </DialogActions>
+      
       </Dialog>
     );
   }
@@ -321,7 +334,15 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             </Alert>
           )}
           {actionSuccess && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert 
+              severity="success" 
+              sx={{ mb: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={onClose}>
+                  Close
+                </Button>
+              }
+            >
               {actionSuccess}
             </Alert>
           )}
@@ -330,40 +351,40 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       
       {/* Reason input field for approve/reject/pushback */}
       {showReasonField && (
-        <Box sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
           <TextField
-            label={actionType === 'approve' ? 'Approval Comment' : 'Reason'}
+            label="Reason"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             fullWidth
+            margin="normal"
             multiline
             rows={3}
-            required
-            error={actionType !== null && reason.trim() === ''}
-            helperText={actionType !== null && reason.trim() === '' ? 
-              `Please provide a ${actionType === 'approve' ? 'comment for approval' : 
-                actionType === 'reject' ? 'reason for rejection' : 'reason for pushing back'}` : ''}
             sx={{ mb: 2 }}
+            required
+            error={!reason.trim() && actionType !== 'approve'}
+            helperText={!reason.trim() && actionType !== 'approve' ? 'Reason is required' : ''}
+            disabled={actionLoading}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button 
-              onClick={cancelAction}
+              onClick={cancelAction} 
+              sx={{ mr: 2 }}
               variant="outlined"
               disabled={actionLoading}
             >
               Cancel
             </Button>
             <Button 
-              onClick={handleAction}
-              variant="contained"
-              disabled={actionLoading || reason.trim() === ''}
+              onClick={handleAction} 
+              variant="contained" 
+              color="primary"
+              disabled={actionLoading || (!reason.trim() && actionType !== 'approve')}
+              startIcon={actionLoading ? <CircularProgress size={20} color="inherit" /> : null}
               sx={{ 
-                bgcolor: actionType === 'reject' ? '#d32f2f' : 
-                        actionType === 'approve' ? '#2e7d32' : '#ed6c02', 
-                '&:hover': { 
-                  bgcolor: actionType === 'reject' ? '#b71c1c' : 
-                           actionType === 'approve' ? '#1b5e20' : '#e65100' 
-                } 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
               }}
             >
               {actionLoading ? 'Processing...' : 
@@ -371,30 +392,25 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
                actionType === 'approve' ? 'Confirm Approve' : 'Confirm Push Back'}
             </Button>
           </Box>
-        </Box>
+        </DialogActions>
       )}
       
-      {/* Action buttons */}
-      {!showReasonField && (
-        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
-          <Button 
-            onClick={onClose} 
-            variant="outlined"
-            disabled={actionLoading}
-          >
-            Close
-          </Button>
-          
-          <Box sx={{ display: 'flex', gap: 1 }}>
+      {/* Action buttons - only show if status is PENDING */}
+      {!showReasonField && loanDetails?.status === 'PENDING' && (
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
             <Button
               onClick={() => {
                 setActionType('approve');
                 setStatus('APPROVED');
-                setShowReasonField(true);
+                // For approve, we'll show a default reason if none provided
+                setReason('Loan approved after review');
+                // Direct approval without showing reason field
+                handleAction();
               }}
-              variant="contained"
+              variant="outlined"
               color="success"
-              disabled={actionLoading || (loanDetails?.status === 'APPROVED')}
+              disabled={actionLoading}
               sx={{ minWidth: '120px' }}
             >
               Approve
@@ -405,9 +421,9 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
                 setStatus('PUSHED_BACK');
                 setShowReasonField(true);
               }}
-              variant="contained"
+              variant="outlined"
               color="warning"
-              disabled={actionLoading || (loanDetails?.status === 'PUSHED_BACK')}
+              disabled={actionLoading}
               sx={{ minWidth: '120px' }}
             >
               Push Back
@@ -418,12 +434,32 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
                 setStatus('REJECTED');
                 setShowReasonField(true);
               }}
-              variant="contained"
+              variant="outlined"
               color="error"
-              disabled={actionLoading || (loanDetails?.status === 'REJECTED')}
+              disabled={actionLoading}
               sx={{ minWidth: '120px' }}
             >
               Reject
+            </Button>
+          </Box>
+        </DialogActions>
+      )}
+      
+      {/* Show a message when status is not PENDING */}
+      {!showReasonField && loanDetails?.status !== 'PENDING' && (
+        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              onClick={onClose}
+              variant="contained"
+              color="primary"
+              sx={{ 
+                minWidth: '200px',
+                bgcolor: '#5f4bfa',
+                '&:hover': { bgcolor: '#4d3fd6' }
+              }}
+            >
+              Close
             </Button>
           </Box>
         </DialogActions>

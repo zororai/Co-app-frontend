@@ -40,8 +40,8 @@ export const navItems = [
     ],
   },
   {
-    key: 'shaft-management',
-    title: 'Shaft Management',
+    key: 'Site-management',
+    title: 'Site Management',
     icon: 'tools',
     items: [
       { key: 'shaft-list', title: 'Shaft List', href: '/shaft-management/list' },
