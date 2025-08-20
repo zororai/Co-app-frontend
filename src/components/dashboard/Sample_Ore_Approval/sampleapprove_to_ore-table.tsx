@@ -141,12 +141,18 @@ export function CustomersTable({
   const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
   const [isMillAssignDialogOpen, setIsMillAssignDialogOpen] = React.useState(false);
   const [isSampleUpdateDialogOpen, setIsSampleUpdateDialogOpen] = React.useState(false);
+  const [isSampleResultsDialogOpen, setIsSampleResultsDialogOpen] = React.useState(false);
   
   // Sample update form state
   const [sampleType, setSampleType] = React.useState('');
   const [sampleWeight, setSampleWeight] = React.useState('');
   const [sampleSize, setSampleSize] = React.useState('');
   const [sampleStatus, setSampleStatus] = React.useState('pending for results');
+  
+  // Sample results form state
+  const [sampleReason, setSampleReason] = React.useState('');
+  const [sampleResult, setSampleResult] = React.useState('0.0');
+  const [sampleResultStatus, setSampleResultStatus] = React.useState('');
   const [selectedMill, setSelectedMill] = React.useState<string>('');
   const [mills, setMills] = React.useState<any[]>([]);
   const [millsLoading, setMillsLoading] = React.useState<boolean>(false);
@@ -159,6 +165,9 @@ export function CustomersTable({
   const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
   const [feedbackMessage, setFeedbackMessage] = React.useState('');
   const [feedbackSuccess, setFeedbackSuccess] = React.useState(true);
+  
+  // Loading state for form submissions
+  const [isLoading, setIsLoading] = React.useState(false);
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
@@ -234,6 +243,16 @@ export function CustomersTable({
     setIsSampleUpdateDialogOpen(true);
   };
   
+  // Function to handle opening the sample results dialog
+  const handleOpenSampleResultsDialog = (userId: string) => {
+    setSelectedUserId(userId);
+    // Reset form fields with appropriate default values
+    setSampleReason('Sample analysis complete');
+    setSampleResult('0.0'); // Default numeric value as string
+    setSampleResultStatus('Approved'); // Default status
+    setIsSampleResultsDialogOpen(true);
+  };
+  
   // Function to handle assigning mill to ore
   const handleAssignMill = (oreId: string) => {
     setSelectedUserId(oreId);
@@ -303,6 +322,85 @@ export function CustomersTable({
       console.error('Error updating sample data:', error);
       setFeedbackSuccess(false);
       setFeedbackMessage(`Failed to update sample data: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      setFeedbackDialogOpen(true);
+    }
+  };
+  
+  // Function to handle sample results form submission
+  const handleSubmitSampleResults = async () => {
+    if (!selectedUserId) {
+      setFeedbackSuccess(false);
+      setFeedbackMessage('No ore transport selected');
+      setFeedbackDialogOpen(true);
+      return;
+    }
+    
+    // Validate form fields
+    if (!sampleReason || !sampleResult || !sampleResultStatus) {
+      setFeedbackSuccess(false);
+      setFeedbackMessage('Please fill in all sample result fields');
+      setFeedbackDialogOpen(true);
+      return;
+    }
+    
+    // Show loading state
+    setIsLoading(true);
+    
+    try {
+      // Convert sampleResult to a number if it's a numeric string
+      const numericResult = parseFloat(sampleResult) || 0;
+      console.log('Submitting sample results:', {
+        oreId: selectedUserId,
+        reason: sampleReason,
+        result: numericResult,
+        status: sampleResultStatus
+      });
+      
+      // Call the API to update the sample results
+      const result = await authClient.updateSampleResults(
+        selectedUserId,
+        sampleReason,
+        numericResult.toString(), // Convert back to string for API parameter
+        sampleResultStatus
+      );
+      
+      // Hide loading state
+      setIsLoading(false);
+      
+      if (result.success) {
+        // Close the dialog and show success message
+        setIsSampleResultsDialogOpen(false);
+        setFeedbackSuccess(true);
+        setFeedbackMessage('Sample results updated successfully');
+        setFeedbackDialogOpen(true);
+        // Refresh the table data
+        refreshTableData();
+      } else {
+        throw new Error(result.error || 'Failed to update sample results');
+      }
+    } catch (error) {
+      // Hide loading state
+      setIsLoading(false);
+      
+      console.error('Error updating sample results:', error);
+      setFeedbackSuccess(false);
+      
+      // Provide more specific error messages based on common issues
+      let errorMessage = 'Failed to update sample results';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('unauthorized')) {
+          errorMessage = 'Authentication error. Please log in again.';
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Ore transport record not found. It may have been deleted.';
+        } else if (error.message.includes('network') || error.message.includes('failed to fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = `${error.message}`;
+        }
+      }
+      
+      setFeedbackMessage(errorMessage);
       setFeedbackDialogOpen(true);
     }
   };
@@ -626,41 +724,47 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                 
-
-                 <Button 
-                              onClick={() => handleOpenSampleUpdateDialog(row.id)}
-                              variant="outlined"
-                              size="small"
-                              sx={{
-                                borderColor: '#06131fff',
-                                color: '#081b2fff',
-                                '&:hover': {
-                                  borderColor: '#06131fff',
-                                  backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                                }
-                              }}
-                            >Collect Sample</Button>
+                    {/* Show the 'Collect Sample' button when status is not 'Approved' */}
+                    {/* Don't hide the button based on sampleType anymore */}
+                    {!(row.oreSample && row.oreSample[0] && 
+                       row.oreSample[0].status === 'Approved' || row.oreSample[0].sampleType === 'Unknown') && (
+                      <Button 
+                        onClick={() => handleOpenSampleUpdateDialog(row.id)}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: '#06131fff',
+                          color: '#081b2fff',
+                          '&:hover': {
+                            borderColor: '#06131fff',
+                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                          }
+                        }}
+                      >Collect Sample</Button>
+                    )}
       
   </Box>
                   </TableCell>
                   <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
-
-                 <Button 
-                                   onClick={() => handleViewUserDetails(row.id)}
-                              variant="outlined"
-                              size="small"
-                              sx={{
-                                borderColor: '#06131fff',
-                                color: '#081b2fff',
-                                '&:hover': {
-                                  borderColor: '#06131fff',
-                                  backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                                }
-                              }}
-                            >Add Sample Results</Button>
+                  {/* Only hide the 'Add Sample Results' button when status is 'Approved' */}
+                  {!(row.oreSample && row.oreSample[0] && 
+                      row.oreSample[0].status === 'Approved' || row.oreSample[0].sampleType === 'Unknown') && (
+                    <Button 
+                      onClick={() => handleOpenSampleResultsDialog(row.id)}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        borderColor: '#06131fff',
+                        color: '#081b2fff',
+                        '&:hover': {
+                          borderColor: '#06131fff',
+                          backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                        }
+                      }}
+                    >Add Sample Results</Button>
+                  )}
       
   </Box>
                   </TableCell>
@@ -767,71 +871,128 @@ export function CustomersTable({
       <Dialog
         open={isSampleUpdateDialogOpen}
         onClose={() => setIsSampleUpdateDialogOpen(false)}
-        aria-labelledby="sample-update-dialog-title"
-        maxWidth="sm"
-        fullWidth
+        PaperProps={{
+          sx: {
+            width: '100%',
+            maxWidth: '600px'
+          }
+        }}
       >
-        <DialogTitle id="sample-update-dialog-title">Collect Sample</DialogTitle>
+        <DialogTitle>Update Sample Information</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="sampleType"
-            label="Sample Type"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={sampleType}
-            onChange={(e) => setSampleType(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            id="sampleWeight"
-            label="Sample Weight"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={sampleWeight}
-            onChange={(e) => setSampleWeight(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            margin="dense"
-            id="sampleSize"
-            label="Sample Size"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={sampleSize}
-            onChange={(e) => setSampleSize(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
-            <InputLabel id="sample-status-label">Status</InputLabel>
-            <Select
-              labelId="sample-status-label"
-              id="sample-status"
-              value={sampleStatus}
-              label="Status"
-              onChange={(e) => setSampleStatus(e.target.value)}
-            >
-              <MenuItem value="pending for results">Pending for Results</MenuItem>
-              <MenuItem value="completed">Completed</MenuItem>
-              <MenuItem value="in progress">In Progress</MenuItem>
-            </Select>
-          </FormControl>
+          <Stack spacing={3}>
+            <TextField
+              fullWidth
+              label="Sample Type"
+              name="sampleType"
+              value={sampleType}
+              onChange={(e) => setSampleType(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Sample Weight"
+              name="sampleWeight"
+              value={sampleWeight}
+              onChange={(e) => setSampleWeight(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Sample Size"
+              name="sampleSize"
+              value={sampleSize}
+              onChange={(e) => setSampleSize(e.target.value)}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={sampleStatus}
+                label="Status"
+                onChange={(e) => setSampleStatus(e.target.value)}
+              >
+                <MenuItem value="pending for results">Pending for Results</MenuItem>
+                <MenuItem value="in progress">In Progress</MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsSampleUpdateDialogOpen(false)} color="inherit">
+          <Button 
+            onClick={() => setIsSampleUpdateDialogOpen(false)}
+            sx={{ color: 'text.secondary' }}
+          >
             Cancel
           </Button>
           <Button 
             onClick={handleSubmitSampleUpdate}
-            color="primary"
             variant="contained"
           >
-            Submit
+            Update Sample
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Sample Results Dialog */}
+      <Dialog
+        open={isSampleResultsDialogOpen}
+        onClose={() => setIsSampleResultsDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            width: '100%',
+            maxWidth: '600px'
+          }
+        }}
+      >
+        <DialogTitle>Add Sample Results</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 2 }}>
+       
+            <TextField
+              fullWidth
+              label="Result In Grams Per Load"
+              name="sampleResult"
+              type="number"
+              inputProps={{ step: '0.01', min: '0' }}
+              value={sampleResult}
+              onChange={(e) => setSampleResult(e.target.value)}
+              placeholder="Enter sample result value in grams"
+              helperText="Enter a numeric value (e.g., 12.5)"
+            />
+                 <TextField
+              fullWidth
+              label="Reason"
+              name="sampleReason"
+              value={sampleReason}
+              onChange={(e) => setSampleReason(e.target.value)}
+              placeholder="Enter reason for the sample result"
+            /> 
+
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={sampleResultStatus}
+                label="Status"
+                onChange={(e) => setSampleResultStatus(e.target.value)}
+              >
+                <MenuItem value="Approved">Approved</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setIsSampleResultsDialogOpen(false)}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmitSampleResults}
+            variant="contained"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Submitting...' : 'Submit Results'}
           </Button>
         </DialogActions>
       </Dialog>

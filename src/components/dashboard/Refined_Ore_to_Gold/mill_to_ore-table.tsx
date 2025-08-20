@@ -500,7 +500,7 @@ export function CustomersTable({
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Weight</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Price</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Buyer</TableCell>
-              <TableCell>Mill Status</TableCell>
+              <TableCell>Milling Progress Status</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Assign Mill</TableCell>
             </TableRow>

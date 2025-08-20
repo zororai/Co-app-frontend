@@ -124,7 +124,7 @@ export function CustomersTable({
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchMill?.() || [];
+        const fetchedDrivers = await authClient.fetchMill() || [];
         setUsers(fetchedDrivers);
       } catch (err) {
         setError('Failed to load drivers. Please try again.');

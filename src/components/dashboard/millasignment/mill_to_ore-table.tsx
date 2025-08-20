@@ -500,7 +500,7 @@ export function CustomersTable({
               <TableCell>Mill Name</TableCell>
               <TableCell>Mill Location</TableCell>
               <TableCell>Mill Type</TableCell>
-              <TableCell>Mill Status</TableCell>
+              <TableCell>Milling Process Status</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Assign Mill</TableCell>
             </TableRow>
@@ -557,6 +557,9 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {!(row.oreSample && row.oreSample[0] && 
+                      row.oreSample[0].status === 'Approved' || row.oreSample[0].sampleType === 'Unknown' || row.processStatus ==='In Progress'  ) && (
+                        
                       <Button 
                         onClick={() => handleAssignMill(row.id)}
                         sx={{
@@ -571,6 +574,7 @@ export function CustomersTable({
                       >
                         {row.millStatus === 'Assigned' ? 'Already Assigned' : 'Assign Mill'}
                       </Button>
+                    )}
                     </Box>
                   </TableCell>
                 </TableRow>

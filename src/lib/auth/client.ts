@@ -3887,6 +3887,70 @@ cooperativename: string;
       };
     }
   }
+
+  /**
+   * Update sample results for an ore transport
+   * @param oreId The ID of the ore transport
+   * @param reason The reason for the sample result
+   * @param result The result of the sample
+   * @param status The status of the sample result (e.g., "Approved", "Rejected")
+   * @returns A promise that resolves to success status and optional error
+   */
+  async updateSampleResults(
+    oreId: string,
+    reason: string,
+    result: string,
+    status: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      console.log('updateSampleResults - Input parameters:', { oreId, reason, result, status });
+      
+      const queryParams = new URLSearchParams();
+      queryParams.append('newReason', reason);
+      queryParams.append('newResult', result);
+      queryParams.append('newStatus', status);
+      
+      const url = `http://localhost:1000/api/ore-transports/${oreId}/update-sample-if-default?${queryParams.toString()}`;
+      console.log('updateSampleResults - Request URL:', url);
+      
+      const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        }
+      );
+      
+      console.log('updateSampleResults - Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('updateSampleResults - Error response:', errorText);
+        throw new Error(`Failed to update sample results: ${errorText}`);
+      }
+      
+      const responseData = await response.text();
+      console.log('updateSampleResults - Success response:', responseData);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating sample results for ore transport:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
 }
 
 
