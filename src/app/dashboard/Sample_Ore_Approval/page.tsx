@@ -17,7 +17,7 @@ import Papa from 'papaparse';
 
 import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table';
-import type { Customer } from '@/components/dashboard/Sample_ore_approval/sampleapprove_to_ore-table';
+import type { Customer } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -39,7 +39,6 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/Sample_ore_approval/add-sample_to_ore-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -244,10 +243,7 @@ function TopRightActions(): React.JSX.Element {
     <React.Fragment>
       
       {/* Add Ore Dialog */}
-      <AddOreDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-      />
+   
     </React.Fragment>
   );
 }

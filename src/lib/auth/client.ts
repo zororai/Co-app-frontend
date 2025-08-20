@@ -3829,6 +3829,64 @@ cooperativename: string;
       };
     }
   }
+
+  /**
+   * Collect sample for an ore transport
+   * @param oreId The ID of the ore transport
+   * @param sampleType The type of sample
+   * @param sampleWeight The weight of the sample
+   * @param sampleSize The size of the sample
+   * @param status The status of the sample (e.g., "pending for results")
+   * @returns A promise that resolves to success status and optional error
+   */
+  async collectSample(
+    oreId: string,
+    sampleType: string,
+    sampleWeight: string,
+    sampleSize: string,
+    status: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('sampleType', sampleType);
+      queryParams.append('sampleWeight', sampleWeight);
+      queryParams.append('sampleSize', sampleSize);
+      queryParams.append('status', status);
+      
+      const response = await fetch(
+        `http://localhost:1000/api/ore-transports/${oreId}/collect-sample?${queryParams.toString()}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to collect sample: ${errorText}`);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error collecting sample for ore transport:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : String(error) 
+      };
+    }
+  }
 }
 
 

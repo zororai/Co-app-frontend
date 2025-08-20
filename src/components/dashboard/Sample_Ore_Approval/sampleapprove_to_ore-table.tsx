@@ -33,8 +33,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { OreDetailsDialog } from '@/components/dashboard/millasignment/ore-details-dialog';
-import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+//import { OreDetailsDialog } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove-details-dialog';
+import { OreDetailsDialog  } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove-details-dialog';
 
 
 function noop(): void {
@@ -140,6 +140,13 @@ export function CustomersTable({
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
   const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
   const [isMillAssignDialogOpen, setIsMillAssignDialogOpen] = React.useState(false);
+  const [isSampleUpdateDialogOpen, setIsSampleUpdateDialogOpen] = React.useState(false);
+  
+  // Sample update form state
+  const [sampleType, setSampleType] = React.useState('');
+  const [sampleWeight, setSampleWeight] = React.useState('');
+  const [sampleSize, setSampleSize] = React.useState('');
+  const [sampleStatus, setSampleStatus] = React.useState('pending for results');
   const [selectedMill, setSelectedMill] = React.useState<string>('');
   const [mills, setMills] = React.useState<any[]>([]);
   const [millsLoading, setMillsLoading] = React.useState<boolean>(false);
@@ -216,6 +223,17 @@ export function CustomersTable({
     setIsUserDetailsDialogOpen(true);
   };
   
+  // Function to handle opening the sample update dialog
+  const handleOpenSampleUpdateDialog = (userId: string) => {
+    setSelectedUserId(userId);
+    // Reset form fields
+    setSampleType('');
+    setSampleWeight('');
+    setSampleSize('');
+    setSampleStatus('pending for results');
+    setIsSampleUpdateDialogOpen(true);
+  };
+  
   // Function to handle assigning mill to ore
   const handleAssignMill = (oreId: string) => {
     setSelectedUserId(oreId);
@@ -227,19 +245,65 @@ export function CustomersTable({
   
   // Function to handle mill selection change
   const handleMillChange = (event: SelectChangeEvent) => {
-    const id = event.target.value;
-    setSelectedMill(id);
+    const millId = event.target.value;
+    setSelectedMill(millId);
     
     // Find the selected mill details
-    const selectedMill = mills.find(mill => mill.id === id);
+    const selectedMill = mills.find(mill => mill.id === millId);
     if (selectedMill) {
       setSelectedMillDetails({
-        millName: selectedMill.millName || 'N/A',
-        millLocation: selectedMill.millLocation || 'N/A',
-        millType: selectedMill.millType || 'N/A'
+        millName: selectedMill.name,
+        millLocation: selectedMill.location || '',
+        millType: selectedMill.type || ''
       });
     } else {
       setSelectedMillDetails(null);
+    }
+  };
+  
+  // Function to handle sample update form submission
+  const handleSubmitSampleUpdate = async () => {
+    if (!selectedUserId) {
+      setFeedbackSuccess(false);
+      setFeedbackMessage('No ore transport selected');
+      setFeedbackDialogOpen(true);
+      return;
+    }
+    
+    // Validate form fields
+    if (!sampleType || !sampleWeight || !sampleSize || !sampleStatus) {
+      setFeedbackSuccess(false);
+      setFeedbackMessage('Please fill in all sample fields');
+      setFeedbackDialogOpen(true);
+      return;
+    }
+    
+    try {
+      // Call the API to update the sample data
+      const result = await authClient.collectSample(
+        selectedUserId,
+        sampleType,
+        sampleWeight,
+        sampleSize,
+        sampleStatus
+      );
+      
+      if (result.success) {
+        // Close the dialog and show success message
+        setIsSampleUpdateDialogOpen(false);
+        setFeedbackSuccess(true);
+        setFeedbackMessage('Sample data updated successfully');
+        setFeedbackDialogOpen(true);
+        // Refresh the table data
+        refreshTableData();
+      } else {
+        throw new Error(result.error || 'Failed to update sample data');
+      }
+    } catch (error) {
+      console.error('Error updating sample data:', error);
+      setFeedbackSuccess(false);
+      setFeedbackMessage(`Failed to update sample data: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      setFeedbackDialogOpen(true);
     }
   };
   
@@ -538,8 +602,8 @@ export function CustomersTable({
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleSize : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].status : ''}</TableCell>
+                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].reason  : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleReason : ''}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
@@ -565,7 +629,7 @@ export function CustomersTable({
                  
 
                  <Button 
-                                   onClick={() => handleViewUserDetails(row.id)}
+                              onClick={() => handleOpenSampleUpdateDialog(row.id)}
                               variant="outlined"
                               size="small"
                               sx={{
@@ -620,11 +684,7 @@ export function CustomersTable({
       {/* Customer Details Dialog */}
       
       {/* Assign Ore Details dialog */}
-      <AssignOreDetailsDialog
-        open={isAssignDetailsDialogOpen}
-        onClose={() => setIsAssignDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
+   
       {/* Ore Details dialog */}
       <OreDetailsDialog
         open={isUserDetailsDialogOpen}
@@ -699,6 +759,79 @@ export function CustomersTable({
             disabled={!selectedMill}
           >
             Assign Mill
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Sample Update Dialog */}
+      <Dialog
+        open={isSampleUpdateDialogOpen}
+        onClose={() => setIsSampleUpdateDialogOpen(false)}
+        aria-labelledby="sample-update-dialog-title"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle id="sample-update-dialog-title">Collect Sample</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="sampleType"
+            label="Sample Type"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={sampleType}
+            onChange={(e) => setSampleType(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            id="sampleWeight"
+            label="Sample Weight"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={sampleWeight}
+            onChange={(e) => setSampleWeight(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            id="sampleSize"
+            label="Sample Size"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={sampleSize}
+            onChange={(e) => setSampleSize(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
+            <InputLabel id="sample-status-label">Status</InputLabel>
+            <Select
+              labelId="sample-status-label"
+              id="sample-status"
+              value={sampleStatus}
+              label="Status"
+              onChange={(e) => setSampleStatus(e.target.value)}
+            >
+              <MenuItem value="pending for results">Pending for Results</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="in progress">In Progress</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsSampleUpdateDialogOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmitSampleUpdate}
+            color="primary"
+            variant="contained"
+          >
+            Submit
           </Button>
         </DialogActions>
       </Dialog>
