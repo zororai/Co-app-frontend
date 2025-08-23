@@ -264,18 +264,7 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add User
-      </Button>
+
       
       {/* Add User Dialog */}
       <AddUserDialog 

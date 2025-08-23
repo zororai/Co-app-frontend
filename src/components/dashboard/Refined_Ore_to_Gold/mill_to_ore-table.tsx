@@ -502,7 +502,7 @@ export function CustomersTable({
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Buyer</TableCell>
               <TableCell>Milling Progress Status</TableCell>
               <TableCell>View Details</TableCell>
-              <TableCell>Assign Mill</TableCell>
+              <TableCell>Payout</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -569,7 +569,7 @@ export function CustomersTable({
                         }}
                         disabled={row.millStatus === 'Assigned'}
                       >
-                        {row.millStatus === 'Assigned' ? 'Already Assigned' : 'Assign Mill'}
+                        {row.millStatus === 'Assigned' ? 'Already Assigned' : 'Pay Out'}
                       </Button>
                     </Box>
                   </TableCell>

@@ -246,7 +246,9 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>RegistrationNumber</TableCell>
+              {/* Action Buttons 
                        <TableCell>Name Of Cooperative</TableCell>
+                       */}
               <TableCell>Name</TableCell>
               <TableCell>Surname</TableCell>
               <TableCell>Nationality ID Number</TableCell>
@@ -274,7 +276,7 @@ export function CustomersTable({
                     />
                   </TableCell>
                    <TableCell>{row.registrationNumber}</TableCell>
-                     <TableCell>{row.cooperativename}</TableCell>
+                    {/* <TableCell>{row.cooperativename}</TableCell> */}
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>
