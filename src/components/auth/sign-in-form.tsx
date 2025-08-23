@@ -91,7 +91,7 @@ export function SignInForm(): React.JSX.Element {
   return (
     <div style={{
       display: 'flex',
-      minHeight: '100vh',
+      minHeight: '100px',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '2rem 0'
