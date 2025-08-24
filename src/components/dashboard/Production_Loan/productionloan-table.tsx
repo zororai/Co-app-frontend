@@ -28,6 +28,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import dayjs from 'dayjs';
+import { sortNewestFirst } from '@/utils/sort';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -87,7 +88,7 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the users based on search, filters, and tab status
+  // Filter the users based on search, filters, and tab status, then sort newest first
   const filteredRows = React.useMemo(() => {
     console.log('Current users array:', users); // Debug: Log the users array
     
@@ -116,7 +117,7 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {

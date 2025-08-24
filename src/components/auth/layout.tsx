@@ -19,13 +19,18 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
       <Paper elevation={4} sx={{ width: '100%', maxWidth: 1080, borderRadius: 3, overflow: 'hidden' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, minHeight: { xs: 'auto', lg: 560 }, position: 'relative' }}>
           {/* Left - Dark welcome panel */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 4, md: 6 }, bgcolor: '#0B1220', color: 'common.white' }}>
-            <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-              <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-block', fontSize: 0 }}>
-                <DynamicLogo colorDark="light" colorLight="light" height={40} width={40} />
-              </Box>
-            </Box>
-            <Box sx={{ mt: { xs: 0, lg: 8 } }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', p: { xs: 4, md: 6 }, bgcolor: '#0B1220', color: 'common.white' }}>
+         
+               <Box
+                  component="img"
+                  src="/assets/Logo.png"
+                  alt="Logo"
+                  height={150}
+                  width={150}
+                />
+            
+            
+            <Box >
               <Typography variant="subtitle2" sx={{ opacity: 0.85 }}>Welcome to</Typography>
               <Typography variant="h4" sx={{ mt: 1, fontWeight: 700 }}>Co-app</Typography>
               <Typography variant="body2" sx={{ mt: 3, opacity: 0.7 }}>Powered By Commstack</Typography>

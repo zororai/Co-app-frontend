@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Fragment } from 'react';
+import { useRouter } from 'next/navigation';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -75,6 +76,7 @@ const locationOptions = [
 ];
 
 export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const router = useRouter();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -230,6 +232,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       if (onRefresh) {
         onRefresh();
       }
+
+      // Revalidate and refresh the current route so lists reflect the new user
+      router.refresh();
     } catch (err) {
       console.error('Error creating user:', err);
       setError(err instanceof Error ? err.message : 'Failed to create user');
