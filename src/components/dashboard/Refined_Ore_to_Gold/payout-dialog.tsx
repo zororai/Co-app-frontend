@@ -23,10 +23,21 @@ export type PayoutAssignment = {
   defaultPricePerGram?: number;
 };
 
+export type LoanDetails = {
+  loanName?: string;
+  paymentMethod?: string;
+  amountOrGrams?: number;
+  purpose?: string;
+  paymentStatus?: string;
+  amountPaid?: number;
+  balance?: number;
+};
+
 export interface PayoutDialogProps {
   open: boolean;
   onClose: () => void;
   assignment?: PayoutAssignment;
+  loanDetails?: LoanDetails;
   onSubmit?: (payload: {
     receiptNumber: string;
     shaftOwner: string;
@@ -39,7 +50,7 @@ export interface PayoutDialogProps {
   }) => Promise<void> | void;
 }
 
-export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDialogProps) {
+export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit }: PayoutDialogProps) {
   const generatedReceipt = React.useMemo(
     () => `RCP-${dayjs().format("YYYYMMDD-HHmmss")}`,
     []
@@ -102,8 +113,7 @@ export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDial
         <Grid container spacing={2} sx={{ mt: 0 }}>
           {/* Assignment Information */}
           <Grid item xs={12} md={4}>
-            <Card variant="outlined">
-              <CardContent>
+            <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Assignment Information
                 </Typography>
@@ -111,10 +121,7 @@ export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDial
                   Details of the current assignment
                 </Typography>
                 <Box sx={{ display: "grid", rowGap: 1.25 }}>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Assignment ID</Typography>
-                    <Typography variant="body2">{assignment?.assignmentId ?? "-"}</Typography>
-                  </Box>
+                  
                   <Box>
                     <Typography variant="caption" color="text.secondary">Shaft Number</Typography>
                     <Typography variant="body2">{assignment?.shaftNumber ?? "-"}</Typography>
@@ -132,18 +139,90 @@ export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDial
                     <Typography variant="body2">{assignment?.mill ?? "-"}</Typography>
                   </Box>
                 </Box>
-              </CardContent>
-            </Card>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Payout Summary
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mb: 2 }}>
+                  Calculated payout breakdown
+                </Typography>
+
+                <Box sx={{ display: "grid", rowGap: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Gold Weight:</Typography>
+                    <Typography variant="body2">{goldWeightGrams || 0} g</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Price per gram:</Typography>
+                    <Typography variant="body2">${pricePerGram || 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Gross Amount:</Typography>
+                    <Typography variant="body2">${grossAmount.toFixed(2)}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
+                    <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
+                  </Box>
+                  
+                </Box>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Loan Details
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
+                  Details of the Current Loan
+                </Typography>
+                
+                <Box sx={{ display: "grid", rowGap: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Loan Name:</Typography>
+                    <Typography variant="body2">{loanDetails?.loanName ?? '-'}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Payment Method:</Typography>
+                    <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Amount/Grams:</Typography>
+                    <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Purpose:</Typography>
+                    <Typography variant="body2">{loanDetails?.purpose ?? '-'}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Payment Status:</Typography>
+                    <Typography variant="body2">{loanDetails?.paymentStatus ?? '-'}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Amount Paid:</Typography>
+                    <Typography variant="body2">{loanDetails?.amountPaid ?? 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Balance:</Typography>
+                    <Typography variant="body2">{loanDetails?.balance ?? 0}</Typography>
+                  </Box>
+                </Box>
+            </Box>
           </Grid>
 
           {/* Payout Details */}
-          <Grid item xs={12} md={5}>
+          
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   Payout Details
                 </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
                   Enter payout information
                 </Typography>
 
@@ -154,20 +233,7 @@ export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDial
                   value={generatedReceipt}
                   InputProps={{ readOnly: true }}
                 />
-                <TextField
-                  fullWidth
-                  margin="dense"
-                  label="Shaft Owner"
-                  value={shaftOwner}
-                  onChange={(e) => setShaftOwner(e.target.value)}
-                />
-                <TextField
-                  fullWidth
-                  margin="dense"
-                  label="Shaft Number"
-                  value={shaftNumber}
-                  onChange={(e) => setShaftNumber(e.target.value)}
-                />
+              
                 <TextField
                   fullWidth
                   margin="dense"
@@ -186,70 +252,21 @@ export function PayoutDialog({ open, onClose, assignment, onSubmit }: PayoutDial
                   value={pricePerGram}
                   onChange={(e) => setPricePerGram(Number(e.target.value))}
                 />
-                <TextField
-                  select
-                  fullWidth
-                  margin="dense"
-                  label="Loan Type"
-                  value={loanType}
-                  onChange={(e) => setLoanType(e.target.value)}
-                >
-                  <MenuItem value="">None</MenuItem>
-                  <MenuItem value="short_term">Short Term</MenuItem>
-                  <MenuItem value="long_term">Long Term</MenuItem>
-                </TextField>
+             
                 <TextField
                   fullWidth
                   margin="dense"
-                  label="Transport Cost"
-                  type="number"
-                  inputProps={{ min: 0, step: 0.01 }}
+                  label="Buyer"
+                  type="Text"
                   value={transportCost}
                   onChange={(e) => setTransportCost(Number(e.target.value))}
                 />
               </CardContent>
             </Card>
-          </Grid>
+        
 
           {/* Payout Summary */}
-          <Grid item xs={12} md={3}>
-            <Card variant="outlined">
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Payout Summary
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-                  Calculated payout breakdown
-                </Typography>
-
-                <Box sx={{ display: "grid", rowGap: 1 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gold Weight:</Typography>
-                    <Typography variant="body2">{goldWeightGrams || 0} g</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Price per gram:</Typography>
-                    <Typography variant="body2">${pricePerGram || 0}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gross Amount:</Typography>
-                    <Typography variant="body2">${grossAmount.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Transport Cost:</Typography>
-                    <Typography variant="body2">-${(transportCost || 0).toFixed(0)}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
-                    <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", mt: 1 }}>
-                    * All calculations are in USD
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+         
         </Grid>
       </DialogContent>
       <DialogActions>

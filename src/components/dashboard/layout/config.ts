@@ -12,7 +12,7 @@ export const navItems = [
       { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
       { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
       { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    { key: 'Taxonboard', title: 'Tax Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
+    { key: 'Taxonboard', title: 'OperationalTaxs Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
     { key: 'mill', title: 'Mill Onboarding', href:  paths.dashboard.mill, icon: 'truck'},
     { key: 'Production_loan', title: 'Production Loan Onboarding', href:  paths.dashboard.Production_loan, icon: 'truck'}
     ], 
@@ -26,7 +26,7 @@ export const navItems = [
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
       { key: 'site-add', title: 'Section Creation', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
-      { key: 'Borrowing', title: 'Borrowing For Resources ', href:  paths.dashboard.borrowing, icon: 'id-card'},
+      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
     ],
   },
   {
@@ -37,7 +37,7 @@ export const navItems = [
       { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
       { key: 'ore-tax', title: 'Tax Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
-      { key: 'ore-transport', title: 'Refine Ore to Gold', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+      { key: 'ore-transport', title: 'Ore to Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
       { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
       
    

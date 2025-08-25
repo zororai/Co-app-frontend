@@ -500,6 +500,40 @@ class AuthClient {
   }
   
   /**
+   * Fetch loans by shaft number
+   * GET /api/shaft-assignments/by-shaft-number/{shaftNumber}/loans
+   */
+  async fetchLoansByShaftNumber(shaftNumber: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const safeShaft = encodeURIComponent(String(shaftNumber).trim());
+          const url = `http://localhost:1000/api/shaft-assignments/by-shaft-number/${safeShaft}/loans`;
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const text = await response.text().catch(() => '');
+              throw new Error(text || 'Failed to fetch loans by shaft number');
+          }
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error fetching loans for shaft ${shaftNumber}:`, error);
+          return [];
+      }
+  }
+
+  /**
    * Approve a shaft loan by shaft assignment ID
    * PUT /api/shaft-assignments/{assignmentId}/loan/approve
    */

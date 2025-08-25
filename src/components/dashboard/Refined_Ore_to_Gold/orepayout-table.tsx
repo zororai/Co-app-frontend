@@ -35,7 +35,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { OreDetailsDialog } from '@/components/dashboard/millasignment/ore-details-dialog';
 import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
-import { PayoutDialog, type PayoutAssignment } from '@/components/dashboard/Refined_Ore_to_Gold/payout-dialog';
+import { PayoutDialog, type PayoutAssignment, type LoanDetails } from '@/components/dashboard/Refined_Ore_to_Gold/payout-dialog';
 
 // ... rest of the code remains the same ...
 
@@ -153,6 +153,7 @@ export function CustomersTable({
   // Payout dialog state
   const [payoutOpen, setPayoutOpen] = React.useState(false);
   const [payoutAssignment, setPayoutAssignment] = React.useState<PayoutAssignment | undefined>(undefined);
+  const [payoutLoanDetails, setPayoutLoanDetails] = React.useState<LoanDetails | undefined>(undefined);
   
   // States for feedback dialog
   const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
@@ -231,8 +232,8 @@ export function CustomersTable({
     setIsMillAssignDialogOpen(true);
   };
 
-  // Open payout dialog with row data
-  const handleOpenPayout = (row: any) => {
+  // Open payout dialog with row data and fetch loan details by shaft number
+  const handleOpenPayout = async (row: any) => {
     const assignment: PayoutAssignment = {
       assignmentId: row?.oreUniqueId ?? row?.id,
       shaftNumber: row?.shaftNumbers ?? '',
@@ -242,6 +243,32 @@ export function CustomersTable({
       defaultPricePerGram: row?.goldSales && row.goldSales[0] ? Number(row.goldSales[0].price) || 0 : 0,
     };
     setPayoutAssignment(assignment);
+
+    try {
+      const shaftNum = String(assignment.shaftNumber ?? '').trim();
+      let loan: LoanDetails | undefined = undefined;
+      if (shaftNum) {
+        const data = await authClient.fetchLoansByShaftNumber(shaftNum);
+        // Map backend response to LoanDetails. If array, take first item.
+        const item = Array.isArray(data) ? data[0] : data;
+        if (item) {
+          loan = {
+            loanName: item.loanName || item.name || item.type || '-',
+            paymentMethod: item.paymentMethod || item.method || '-',
+            amountOrGrams: Number(item.amountOrGrams ?? item.amount ?? item.grams ?? 0) || 0,
+            purpose: item.purpose || '-',
+            paymentStatus: item.paymentStatus || item.status || '-',
+            amountPaid: Number(item.amountPaid ?? item.paid ?? 0) || 0,
+            balance: Number(item.balance ?? item.remaining ?? 0) || 0,
+          };
+        }
+      }
+      setPayoutLoanDetails(loan);
+    } catch (e) {
+      console.error('Failed to fetch loans for shaft number', e);
+      setPayoutLoanDetails(undefined);
+    }
+
     setPayoutOpen(true);
   };
 
@@ -587,6 +614,8 @@ export function CustomersTable({
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
                         onClick={() => handleOpenPayout(row)}
+                        variant="outlined"
+                                                size="small"
                         sx={{
                           borderColor: '#06131fff',
                           color: '#081b2fff',
@@ -708,6 +737,7 @@ export function CustomersTable({
         open={payoutOpen}
         onClose={() => setPayoutOpen(false)}
         assignment={payoutAssignment}
+        loanDetails={payoutLoanDetails}
         onSubmit={handlePayoutSubmit}
       />
 
