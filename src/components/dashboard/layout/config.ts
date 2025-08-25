@@ -88,6 +88,8 @@ export const navItems = [
       { key: 'taxonboard-status', title: 'Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
       {key:'mill-status', title: 'Mill Status', href: paths.dashboard.millstatus, icon: 'truck' },
       {key:'Production_LoanStatus', title: 'Production Loan Status', href: paths.dashboard.Production_LoanStatus, icon: 'truck' },
+      {key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'truck' },
+   
     ],
   },
 ] satisfies NavItemConfig[];

@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/borrowing/shaftloan-table';
-import type { Customer } from '@/components/dashboard/borrowing/shaftloan-table';
+import { CustomersTable } from '@/components/dashboard/ShaftLoanStatus/shaftloan-table';
+import type { Customer } from '@/components/dashboard/ShaftLoanStatus/shaftloan-table';
 
 // 
 import Dialog from '@mui/material/Dialog';
@@ -172,7 +172,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Resources Borrowing </Typography>
+          <Typography variant="h4">Shaft Loan Status </Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
