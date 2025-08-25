@@ -367,7 +367,7 @@ export function CustomersTable({
                       <Button 
                         onClick={() => {
                           const minerId = (row as any).minerId || row.id;
-                          console.log('View Details for miner ID:', minerId);
+                        
                           setSelectedDriverId(minerId);
                           setIsDriverDetailsDialogOpen(true);
                         }}
@@ -388,27 +388,29 @@ export function CustomersTable({
                   </TableCell>
 
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          const assignmentId = (row as any).assignmentId || row.id;
-                          setSelectedAssignmentId(assignmentId);
-                          setIsBorrowDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
+                {(Array.isArray(row.loans) && row.loans.some((l: any) => String(l?.loanName ?? '').trim().toLowerCase() === 'not yet specified')) && (
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Button 
+                          onClick={() => {
+                            const assignmentId = (row as any).assignmentId || row.id;
+                            setSelectedAssignmentId(assignmentId);
+                            setIsBorrowDialogOpen(true);
+                          }}
+                          variant="outlined"
+                          size="small"
+                          sx={{
                             borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        Shaft Borrowing
-                      </Button>
-                    </Box>
+                            color: '#081b2fff',
+                            '&:hover': {
+                              borderColor: '#06131fff',
+                              backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                            }
+                          }}
+                        >
+                          Shaft Borrowing
+                        </Button>
+                      </Box>
+                    )}
                   </TableCell>
                
                 </TableRow>

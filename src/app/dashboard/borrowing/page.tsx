@@ -185,7 +185,16 @@ export default function Page(): React.JSX.Element {
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Resources Borrowing </Typography>
-  
+          <Tabs
+            value={tab}
+            onChange={(_e, newValue) => setTab(newValue)}
+            sx={{ mb: 2 }}
+          >
+            <Tab label="Pending" value="PENDING" />
+            <Tab label="Pushed Back" value="PUSHED_BACK" />
+            <Tab label="Rejected" value="REJECTED" />
+            <Tab label="Approved" value="APPROVED" />
+          </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button
               color="inherit"
@@ -255,7 +264,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
 
   return (
     <React.Fragment>
-
+    
       
       {/* Add Security Company Dialog */}
       <AddDriverDialog 

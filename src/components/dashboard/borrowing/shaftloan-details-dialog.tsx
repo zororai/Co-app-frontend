@@ -33,7 +33,12 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
       authClient.fetchShaftAssignmentsByMiner(minerId)
         .then((data) => {
           if (data) {
-            setAssignment(data);
+            const item = Array.isArray(data) ? (data[0] ?? null) : data;
+            if (item) {
+              setAssignment(item);
+            } else {
+              setError('No shaft assignment found for this miner');
+            }
           } else {
             setError('Failed to load shaft assignment details');
           }

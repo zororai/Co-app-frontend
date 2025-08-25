@@ -111,6 +111,38 @@ class AuthClient {
     }
 
     /**
+     * Fetch approved production loans
+     * GET /api/production-loan/approved
+     */
+    async fetchApprovedProductionLoans(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/production-loan/approved', {
+                method: 'GET',
+                headers: {
+                    Accept: '*/*',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                const text = await response.text().catch(() => '');
+                throw new Error(text || 'Failed to fetch approved production loans');
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : (data?.items ?? []);
+        } catch (error) {
+            console.error('Error fetching approved production loans:', error);
+            return [];
+        }
+    }
+
+    /**
      * Fetch only approved sections from the backend
      */
     async fetchSectionsApproved(): Promise<any[]> {

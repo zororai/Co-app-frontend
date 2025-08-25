@@ -9,6 +9,10 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 interface ShaftBorrowingDialogProps {
   open: boolean;
@@ -29,6 +33,8 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
+  const [loanOptions, setLoanOptions] = React.useState<any[]>([]);
+  const [loadingLoans, setLoadingLoans] = React.useState(false);
 
   React.useEffect(() => {
     if (!open) {
@@ -40,9 +46,66 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
     }
   }, [open]);
 
+  // Load approved production loans when dialog opens
+  React.useEffect(() => {
+    const loadLoans = async () => {
+      if (!open) return;
+      setLoadingLoans(true);
+      try {
+        const items = await authClient.fetchApprovedProductionLoans();
+        setLoanOptions(items || []);
+      } catch (e) {
+        console.error('Failed to load loans', e);
+      } finally {
+        setLoadingLoans(false);
+      }
+    };
+    loadLoans();
+  }, [open]);
+
   const handleChange = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = key === 'amountOrGrams' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value;
     setForm(prev => ({ ...prev, [key]: value }));
+  };
+
+  // When user selects a loan, auto-fill fields from selected option if present
+  const handleLoanSelectChange = (value: string) => {
+    const selected = loanOptions.find((opt: any) => opt.loanName === value);
+    if (!selected) {
+      setForm(prev => ({ ...prev, loanName: value }));
+      setError('Selected loan was not found. Please choose another or fill fields manually.');
+      return;
+    }
+
+    // Coerce amountOrGrams to a valid non-negative number if present
+    const rawAmount = (selected as any).amountOrGrams;
+    const coercedAmount = typeof rawAmount === 'number' ? rawAmount : Number(rawAmount);
+    const validAmount = Number.isFinite(coercedAmount) && coercedAmount >= 0 ? coercedAmount : '';
+
+    // Build new form values
+    const nextForm = {
+      loanName: value,
+      paymentMethod: selected?.paymentMethod ?? '',
+      amountOrGrams: validAmount as any,
+      purpose: selected?.purpose ?? '',
+      status: selected?.status ?? '',
+      reason: selected?.reason ?? '',
+    };
+
+    // Determine missing fields to guide the user
+    const missing: string[] = [];
+    if (!nextForm.paymentMethod) missing.push('Payment Method');
+    if (nextForm.amountOrGrams === '') missing.push('Amount or Grams');
+    if (!nextForm.purpose) missing.push('Purpose');
+    if (!nextForm.status) missing.push('Status');
+    if (!nextForm.reason) missing.push('Reason');
+
+    setForm(prev => ({ ...prev, ...nextForm }));
+    if (missing.length > 0) {
+      setError(`Some details are missing from this loan: ${missing.join(', ')}. Please fill them before submitting.`);
+    } else {
+      setError(null);
+    }
   };
 
   const handleSubmit = async () => {
@@ -92,19 +155,27 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mt: 2 }}>
-          <TextField
-            required
-            label="Loan Name"
-            value={form.loanName}
-            onChange={handleChange('loanName')}
-            fullWidth
-          />
+          <FormControl fullWidth required>
+            <InputLabel id="loan-name-label">Loan Name</InputLabel>
+            <Select
+              labelId="loan-name-label"
+              label="Loan Name"
+              value={form.loanName}
+              onChange={(e) => handleLoanSelectChange(e.target.value as string)}
+              disabled={loadingLoans}
+            >
+              {loanOptions.map((opt, idx) => (
+                <MenuItem key={opt.id ?? idx} value={opt.loanName}>{opt.loanName}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <TextField
             required
             label="Payment Method"
             value={form.paymentMethod}
             onChange={handleChange('paymentMethod')}
             fullWidth
+            disabled={!!form.loanName}
           />
           <TextField
             required
@@ -114,6 +185,7 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
             onChange={handleChange('amountOrGrams')}
             fullWidth
             inputProps={{ min: 0, step: 'any' }}
+            disabled={!!form.loanName}
           />
           <TextField
             required
@@ -121,12 +193,13 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
             value={form.purpose}
             onChange={handleChange('purpose')}
             fullWidth
+            disabled={!!form.loanName}
           />
           <TextField
             required
             label="Status"
-            value={form.status}
-            onChange={handleChange('status')}
+            value="Pending"
+
             fullWidth
           />
           <TextField
