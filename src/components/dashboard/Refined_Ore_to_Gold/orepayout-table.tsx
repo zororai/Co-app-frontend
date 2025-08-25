@@ -35,8 +35,11 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { OreDetailsDialog } from '@/components/dashboard/millasignment/ore-details-dialog';
 import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+import { PayoutDialog, type PayoutAssignment } from '@/components/dashboard/Refined_Ore_to_Gold/payout-dialog';
 
+// ... rest of the code remains the same ...
 
+// Local no-op handler for pagination callbacks
 function noop(): void {
   // do nothing
 }
@@ -147,6 +150,9 @@ export function CustomersTable({
   const [selectedMillDetails, setSelectedMillDetails] = React.useState<{millName: string, millLocation: string, millType: string} | null>(null);
   const [notes, setNotes] = React.useState<string>('');
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  // Payout dialog state
+  const [payoutOpen, setPayoutOpen] = React.useState(false);
+  const [payoutAssignment, setPayoutAssignment] = React.useState<PayoutAssignment | undefined>(undefined);
   
   // States for feedback dialog
   const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
@@ -223,6 +229,28 @@ export function CustomersTable({
     setSelectedMillDetails(null);
     setNotes('');
     setIsMillAssignDialogOpen(true);
+  };
+
+  // Open payout dialog with row data
+  const handleOpenPayout = (row: any) => {
+    const assignment: PayoutAssignment = {
+      assignmentId: row?.oreUniqueId ?? row?.id,
+      shaftNumber: row?.shaftNumbers ?? '',
+      shaftOwner: row?.shaftOwner ?? row?.cooperativeName ?? '',
+      oreWeightKg: row?.newWeight ?? row?.weight ?? 0,
+      mill: row?.millName ?? row?.assignedMill ?? '',
+      defaultPricePerGram: row?.goldSales && row.goldSales[0] ? Number(row.goldSales[0].price) || 0 : 0,
+    };
+    setPayoutAssignment(assignment);
+    setPayoutOpen(true);
+  };
+
+  const handlePayoutSubmit = async (payload: any) => {
+    // TODO: integrate with backend payout API when available
+    console.log('Payout submit payload:', payload);
+    setPayoutOpen(false);
+    // Optionally refresh
+    refreshTableData();
   };
   
   // Function to handle mill selection change
@@ -558,7 +586,7 @@ export function CustomersTable({
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
-                        onClick={() => handleAssignMill(row.id)}
+                        onClick={() => handleOpenPayout(row)}
                         sx={{
                           borderColor: '#06131fff',
                           color: '#081b2fff',
@@ -567,9 +595,8 @@ export function CustomersTable({
                             backgroundColor: 'rgba(6, 19, 31, 0.04)',
                           }
                         }}
-                        disabled={row.millStatus === 'Assigned'}
                       >
-                        {row.millStatus === 'Assigned' ? 'Already Assigned' : 'Pay Out'}
+                        Pay Out
                       </Button>
                     </Box>
                   </TableCell>
@@ -675,7 +702,15 @@ export function CustomersTable({
           </Button>
         </DialogActions>
       </Dialog>
-      
+
+      {/* Payout Dialog */}
+      <PayoutDialog
+        open={payoutOpen}
+        onClose={() => setPayoutOpen(false)}
+        assignment={payoutAssignment}
+        onSubmit={handlePayoutSubmit}
+      />
+
       {/* Feedback Dialog */}
       <Dialog
         open={feedbackDialogOpen}

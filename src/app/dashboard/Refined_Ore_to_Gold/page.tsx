@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/Refined_Ore_to_Gold/mill_to_ore-table';
-import type { Customer } from '@/components/dashboard/Refined_Ore_to_Gold/mill_to_ore-table';
+import { CustomersTable } from '@/components/dashboard/Refined_Ore_to_Gold/orepayout-table';
+import type { Customer } from '@/components/dashboard/Refined_Ore_to_Gold/orepayout-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
