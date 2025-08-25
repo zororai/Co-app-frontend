@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
 import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
 
@@ -24,6 +25,10 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
   const [assignment, setAssignment] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [status, setStatus] = React.useState<string>('');
+  const [reason, setReason] = React.useState<string>('');
+  const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
 
   // Fetch shaft assignment details by miner when dialog opens
   React.useEffect(() => {
@@ -50,6 +55,61 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
         .finally(() => setLoading(false));
     }
   }, [open, minerId]);
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setShowReasonField(newStatus === 'REJECTED' || newStatus === 'PUSHED_BACK');
+  };
+
+  const refreshAssignment = async () => {
+    if (!minerId) return;
+    try {
+      const data = await authClient.fetchShaftAssignmentsByMiner(minerId);
+      const item = Array.isArray(data) ? (data[0] ?? null) : data;
+      setAssignment(item);
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const handleSubmit = async (): Promise<void> => {
+    if (!status || !assignment?.id) return;
+    setIsSubmitting(true);
+    try {
+      switch (status) {
+        case 'APPROVED':
+          await authClient.approveShaftLoan(assignment.id);
+          break;
+        case 'REJECTED':
+          if (!reason) {
+            alert('Please provide a reason for rejection');
+            setIsSubmitting(false);
+            return;
+          }
+          await authClient.rejectShaftLoan(assignment.id, reason);
+          break;
+        case 'PUSHED_BACK':
+          if (!reason) {
+            alert('Please provide a reason for pushing back');
+            setIsSubmitting(false);
+            return;
+          }
+          await authClient.pushBackShaftLoan(assignment.id, reason);
+          break;
+        default:
+          throw new Error(`Unsupported status: ${status}`);
+      }
+      await refreshAssignment();
+      onClose();
+    } catch (err) {
+      alert(`Failed to update status to ${status}. Please try again.`);
+    } finally {
+      setIsSubmitting(false);
+      setStatus('');
+      setReason('');
+      setShowReasonField(false);
+    }
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -187,6 +247,59 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
       </DialogContent>
       
       <DialogActions sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'flex-end' }}>
+        {/* Action Buttons */}
+        <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
+          <Button
+            variant={status === 'APPROVED' ? 'contained' : 'outlined'}
+            color="success"
+            size="small"
+            onClick={() => handleStatusChange('APPROVED')}
+            disabled={isSubmitting || loading || !assignment}
+          >
+            Approve
+          </Button>
+          <Button
+            variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
+            color="warning"
+            size="small"
+            onClick={() => handleStatusChange('PUSHED_BACK')}
+            disabled={isSubmitting || loading || !assignment}
+          >
+            Push Back
+          </Button>
+          <Button
+            variant={status === 'REJECTED' ? 'contained' : 'outlined'}
+            color="error"
+            size="small"
+            onClick={() => handleStatusChange('REJECTED')}
+            disabled={isSubmitting || loading || !assignment}
+          >
+            Reject
+          </Button>
+        </Box>
+
+        {showReasonField && (
+          <TextField
+            size="small"
+            label="Reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            sx={{ minWidth: 260, mr: 1 }}
+            disabled={isSubmitting}
+          />
+        )}
+
+        {status && (
+          <Button
+            onClick={handleSubmit}
+            color="primary"
+            variant="contained"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </Button>
+        )}
+
         <Button onClick={onClose} color="primary">Close</Button>
       </DialogActions>
 

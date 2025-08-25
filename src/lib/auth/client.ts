@@ -65,7 +65,6 @@ class AuthClient {
             window.location.href = '/auth/signin';
             return { success: false, error: 'Authentication required' };
         }
-
         try {
             // Map frontend fields to backend expected fields
             const requestData = {
@@ -497,6 +496,103 @@ class AuthClient {
               success: false, 
               error: error instanceof Error ? error.message : 'An unexpected error occurred' 
           };
+      }
+  }
+  
+  /**
+   * Approve a shaft loan by shaft assignment ID
+   * PUT /api/shaft-assignments/{assignmentId}/loan/approve
+   */
+  async approveShaftLoan(assignmentId: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const response = await fetch(`http://localhost:1000/api/shaft-assignments/${assignmentId}/loan/approve`, {
+              method: 'PUT',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to approve shaft loan');
+          }
+          return { success: true };
+      } catch (error) {
+          console.error(`Error approving shaft loan for assignment ${assignmentId}:`, error);
+          return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+  }
+
+  /**
+   * Reject a shaft loan by shaft assignment ID, optional reason
+   * PUT /api/shaft-assignments/{assignmentId}/loan/reject
+   */
+  async rejectShaftLoan(assignmentId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const url = new URL(`http://localhost:1000/api/shaft-assignments/${assignmentId}/loan/reject`);
+          if (reason) url.searchParams.set('reason', reason);
+          const response = await fetch(url.toString(), {
+              method: 'PUT',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to reject shaft loan');
+          }
+          return { success: true };
+      } catch (error) {
+          console.error(`Error rejecting shaft loan for assignment ${assignmentId}:`, error);
+          return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+  }
+
+  /**
+   * Push back a shaft loan by shaft assignment ID, optional reason
+   * PUT /api/shaft-assignments/{assignmentId}/loan/pushback
+   */
+  async pushBackShaftLoan(assignmentId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const url = new URL(`http://localhost:1000/api/shaft-assignments/${assignmentId}/loan/pushback`);
+          if (reason) url.searchParams.set('reason', reason);
+          const response = await fetch(url.toString(), {
+              method: 'PUT',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to push back shaft loan');
+          }
+          return { success: true };
+      } catch (error) {
+          console.error(`Error pushing back shaft loan for assignment ${assignmentId}:`, error);
+          return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
       }
   }
     async  fetchsecurityonboarding(): Promise<any[]> {
