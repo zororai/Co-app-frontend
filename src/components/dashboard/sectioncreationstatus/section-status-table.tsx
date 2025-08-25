@@ -30,6 +30,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
+import { sortNewestFirst } from '@/utils/sort';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -81,9 +82,9 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the rows based on search and filters
+  // Filter the rows based on search and filters, then sort newest first
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    const filtered = rows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -94,6 +95,7 @@ export function CustomersTable({
 
       return matchesSearch && matchesStatus && matchesPosition;
     });
+    return sortNewestFirst(filtered);
   }, [rows, filters]);
 
   const rowIds = React.useMemo(() => {
