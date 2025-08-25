@@ -283,7 +283,7 @@ export function CustomersTable({
                         <TableCell>Reason</TableCell>
                        
               
-              <TableCell>Discussion Panel</TableCell>
+              <TableCell>Decision Panel</TableCell>
               
             </TableRow>
           </TableHead>
@@ -343,7 +343,7 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>Make A Discussion</button>
+                      }}>Make A Decision</button>
                     </Box>
                   </TableCell>
                

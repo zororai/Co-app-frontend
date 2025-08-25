@@ -28,7 +28,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 
-import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { UserDetailsDialog } from '@/components/dashboard/useronboardstatus/user-details-dialog';
 
 
 function noop(): void {

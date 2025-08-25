@@ -74,7 +74,7 @@ export const navItems = [
   },
   {
     key: 'permission',
-    title: 'Permission Management',
+    title: 'Record Approval Management',
     icon: 'key',
     items: [
       { key: 'permission-list', title: 'Miner Registration Status', href: paths.dashboard.Syndicate, icon: 'id-card' },

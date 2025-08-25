@@ -404,40 +404,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
-      {!showReasonField && (
-        <DialogActions>
-          <Button onClick={onClose}>
-            Close
-          </Button>
-          
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button 
-              onClick={() => showReasonFieldFor('pushback')}
-              variant="contained"
-              color="warning"
-              disabled={actionLoading || loading || !!error || !userDetails}
-            >
-              Push Back
-            </Button>
-            <Button 
-              onClick={() => showReasonFieldFor('reject')}
-              variant="contained"
-              color="error"
-              disabled={actionLoading || loading || !!error || !userDetails}
-            >
-              Reject
-            </Button>
-            <Button 
-              onClick={handleApprove}
-              variant="contained"
-              color="success"
-              disabled={actionLoading || loading || !!error || !userDetails}
-            >
-              {actionLoading ? 'Processing...' : 'Approve'}
-            </Button>
-          </Box>
-        </DialogActions>
-      )}
+   
     </Dialog>
   );
 }
