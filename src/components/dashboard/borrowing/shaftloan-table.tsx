@@ -29,6 +29,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { DriverDetailsDialog } from '@/components/dashboard/borrowing/shaftloan-details-dialog';
+import { ShaftBorrowingDialog } from '@/components/dashboard/borrowing/shaftloan-borrowing-dialog';
 
 
 function noop(): void {
@@ -60,8 +61,6 @@ export interface CustomersTableProps {
   rows?: Customer[];
   page?: number;
   rowsPerPage?: number;
-  onRefresh?: () => void; // Optional callback to refresh data from parent
-  statusFilter?: 'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED' | null; // Optional status filter
 }
 
 export function CustomersTable({
@@ -69,8 +68,6 @@ export function CustomersTable({
   rows = [],
   page = 0,
   rowsPerPage = 0,
-  onRefresh,
-  statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
@@ -82,7 +79,7 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Filter the users based on search and dropdown filters, then sort newest first
   const filteredRows = React.useMemo(() => {
     const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
@@ -93,14 +90,11 @@ export function CustomersTable({
       // Apply dropdown filter
       const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
       const matchesPosition = filters.position === 'all' || user.position === filters.position;
-      
-      // Apply tab filter if provided
-      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
 
-      return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
+      return matchesSearch && matchesDropdownStatus && matchesPosition;
     });
     return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+  }, [users, filters]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -119,15 +113,18 @@ export function CustomersTable({
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
+  const [selectedAssignmentId, setSelectedAssignmentId] = React.useState<string | null>(null);
 
   // Fetch drivers from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchDriverData = async () => {
+
+    const fetchAllShaftAssignments = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchDrivers();
-        setUsers(fetchedDrivers);
+        const allAssignments = await authClient.fetchShaftapproved();
+        setUsers(allAssignments);
       } catch (err) {
         console.error('Error fetching drivers:', err);
         setError('Failed to load drivers. Please try again.');
@@ -136,7 +133,7 @@ export function CustomersTable({
       }
     };
 
-    fetchDriverData();
+    fetchAllShaftAssignments();
   }, [refreshTrigger]);
 
  
@@ -152,12 +149,7 @@ export function CustomersTable({
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
     setRefreshTrigger(prev => prev + 1);
-    
-    // Call parent's refresh function if provided
-    if (onRefresh) {
-      onRefresh();
-    }
-  }, [onRefresh]);
+  }, []);
 
   return (
     <Card>      
@@ -307,6 +299,7 @@ export function CustomersTable({
               <TableCell>Shaft Numbers</TableCell>
               <TableCell>Section Name</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Operational Status</TableCell>
               <TableCell>Start Contract Date</TableCell>
               <TableCell>End Contract Date</TableCell>
               <TableCell>View Details</TableCell>
@@ -363,7 +356,8 @@ export function CustomersTable({
                       {row.status || 'PENDING'}
                     </Box>
                   </TableCell>
-                  <TableCell>{row.startContractDate ? dayjs(row.startContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
+                  <TableCell>{row.operationalStatus || 'N/A'}</TableCell>
+                    <TableCell>{row.startContractDate ? dayjs(row.startContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
                   <TableCell>{row.endContractDate ? dayjs(row.endContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
                   
             
@@ -372,8 +366,9 @@ export function CustomersTable({
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
                         onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
+                          const minerId = (row as any).minerId || row.id;
+                          console.log('View Details for miner ID:', minerId);
+                          setSelectedDriverId(minerId);
                           setIsDriverDetailsDialogOpen(true);
                         }}
                         variant="outlined"
@@ -388,6 +383,30 @@ export function CustomersTable({
                         }}
                       >
                         View Details
+                      </Button>
+                    </Box>
+                  </TableCell>
+
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Button 
+                        onClick={() => {
+                          const assignmentId = (row as any).assignmentId || row.id;
+                          setSelectedAssignmentId(assignmentId);
+                          setIsBorrowDialogOpen(true);
+                        }}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: '#06131fff',
+                          color: '#081b2fff',
+                          '&:hover': {
+                            borderColor: '#06131fff',
+                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                          }
+                        }}
+                      >
+                        Shaft Borrowing
                       </Button>
                     </Box>
                   </TableCell>
@@ -414,7 +433,17 @@ export function CustomersTable({
         <DriverDetailsDialog
           open={isDriverDetailsDialogOpen}
           onClose={() => setIsDriverDetailsDialogOpen(false)}
-          driverId={selectedDriverId}
+          minerId={selectedDriverId}
+        />
+      )}
+
+      {/* Shaft Borrowing Dialog */}
+      {isBorrowDialogOpen && (
+        <ShaftBorrowingDialog
+          open={isBorrowDialogOpen}
+          onClose={() => setIsBorrowDialogOpen(false)}
+          assignmentId={selectedAssignmentId}
+          onSuccess={refreshTableData}
         />
       )}
 

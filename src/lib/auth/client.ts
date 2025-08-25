@@ -1399,6 +1399,34 @@ async fetchOreRecieved(): Promise<any[]> {
   /**
    * Fetch all drivers from the backend
    */
+  async fetchapprovedshaft(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      window.location.href = '/auth/signin';
+      return [];
+    }
+    try {
+      const response = await fetch('http://localhost:1000/api/shaft-assignments/approved', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch drivers');
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : data.drivers || [];
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+      return [];
+    }
+  }
+
   async fetchDrivers(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
@@ -1618,35 +1646,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   }
 
     /**
-     * Fetch shaft assignments by miner ID
+     * Fetch a company by its ID
      */
-    async fetchShaftAssignmentsByMiner(minerId: string): Promise<any> {
-        const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            window.location.href = '/auth/signin';
-            return null;
-        }
-        try {
-            const response = await fetch(`http://localhost:1000/api/shaft-assignments/by-miner/${minerId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
-                },
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('Failed to fetch shaft assignments');
-            }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Error fetching shaft assignments:', error);
-            return null;
-        }
-    }
     /**
      * Fetch a company by its ID
      */
@@ -2387,6 +2388,35 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
     }
+    async fetchShaftapproved(): Promise<Customer[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin'; // Redirect to sign-in page
+          return [];
+      }
+      try {
+          const response = await fetch('http://localhost:1000/api/shaft-assignments/approved', {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                  Authorization: `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              throw new Error('Failed to fetch customers');
+          }
+          const data = await response.json();
+          
+          return Array.isArray(data) ? data : data.customers || [];
+      } catch (error) {
+          console.error('Error fetching customers:', error);
+          return [];
+      }
+  }
+
     async fetchShaftstatus(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -2413,6 +2443,90 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         } catch (error) {
             console.error('Error fetching customers:', error);
             return [];
+        }
+    }
+
+    /**
+     * Fetch shaft assignment(s) by miner ID
+     * GET /api/shaft-assignments/by-miner/{id}
+     */
+    async fetchShaftAssignmentsByMiner(minerId: string): Promise<any | null> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin'; // Redirect to sign-in page
+            return null;
+        }
+        try {
+            const response = await fetch(`http://localhost:1000/api/shaft-assignments/by-miner/${minerId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => '');
+                throw new Error(errorText || 'Failed to fetch shaft assignments by miner');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Error fetching shaft assignments by miner ${minerId}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Update loan details for a shaft assignment by assignment ID.
+     * PUT /api/shaft-assignments/{assignmentId}/update-loan-details?loanName=...&paymentMethod=...&amountOrGrams=...&purpose=...&status=...&reason=...
+     */
+    async updateShaftLoanDetails(
+        assignmentId: string,
+        payload: {
+            loanName: string;
+            paymentMethod: string;
+            amountOrGrams: number;
+            purpose: string;
+            status: string;
+            reason: string;
+        }
+    ): Promise<{ success: boolean; message?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            window.location.href = '/auth/signin';
+            return { success: false, message: 'Not authenticated' };
+        }
+
+        try {
+            const qs = new URLSearchParams({
+                loanName: payload.loanName,
+                paymentMethod: payload.paymentMethod,
+                amountOrGrams: String(payload.amountOrGrams),
+                purpose: payload.purpose,
+                status: payload.status,
+                reason: payload.reason,
+            });
+            const url = `http://localhost:1000/api/shaft-assignments/${encodeURIComponent(assignmentId)}/update-loan-details?${qs.toString()}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    Accept: '*/*',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                const text = await response.text().catch(() => '');
+                return { success: false, message: text || 'Failed to update shaft loan details' };
+            }
+            return { success: true };
+        } catch (error) {
+            console.error('Error updating shaft loan details:', error);
+            return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
         }
     }
 
