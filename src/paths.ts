@@ -14,6 +14,7 @@ export const paths = {
     Production_loan:'/dashboard/Production_Loan',
     oreTax: '/dashboard/oretax',
     mill: '/dashboard/mill',
+    borrowing:'dashboard/borrowing',
     Refined_Ore_to_Gold:'/dashboard/Refined_Ore_to_Gold',
     Production_LoanStatus:'/dashboard/Production_LoanStatus',
     millasignment:'/dashboard/millasignment',

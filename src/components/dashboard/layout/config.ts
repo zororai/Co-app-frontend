@@ -26,6 +26,7 @@ export const navItems = [
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
       { key: 'site-add', title: 'Section Creation', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
+      { key: 'Borrowing', title: 'Borrowing For Resources ', href:  paths.dashboard.borrowing, icon: 'id-card'},
     ],
   },
   {
