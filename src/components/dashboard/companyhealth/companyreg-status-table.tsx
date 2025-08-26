@@ -28,6 +28,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from './companyreg-details';
+import { sortNewestFirst } from '@/utils/sort';
 
 
 function noop(): void {
@@ -75,9 +76,10 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the rows based on search and filters
+  // Sort then filter the rows based on search and filters
+  const sortedRows = React.useMemo(() => sortNewestFirst(rows), [rows]);
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    return sortedRows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -88,7 +90,7 @@ export function CustomersTable({
 
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [rows, filters]);
+  }, [sortedRows, filters]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);

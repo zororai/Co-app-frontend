@@ -33,6 +33,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import CircularProgress from '@mui/material/CircularProgress';
+import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
   // do nothing
@@ -114,9 +115,10 @@ export function CustomersTable({
     }
   };
 
-  // Filter the rows based on search and filters
+  // Sort then filter the rows based on search and filters
+  const sortedRows = React.useMemo(() => sortNewestFirst(rows), [rows]);
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    return sortedRows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -125,7 +127,7 @@ export function CustomersTable({
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [rows, filters]);
+  }, [sortedRows, filters]);
 
   // Paginate filtered rows
   const paginatedRows = React.useMemo(() => {

@@ -35,6 +35,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
 import { ShaftAttachmentDialog } from '@/components/dashboard/shaftreg/shaft-attachment-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
   // do nothing
@@ -128,9 +129,10 @@ export function CompanyTable({
 
   
 
-  // Filter the rows based on search and filters
+  // Sort then filter the rows based on search and filters
+  const sortedRows = React.useMemo(() => sortNewestFirst(rows), [rows]);
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    return sortedRows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -141,7 +143,7 @@ export function CompanyTable({
 
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [rows, filters]);
+  }, [sortedRows, filters]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);

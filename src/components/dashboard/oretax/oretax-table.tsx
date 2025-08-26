@@ -34,6 +34,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
 import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 
 function noop(): void {
@@ -87,16 +88,17 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the users based on search, filters, and tab status
+  // Sort then filter the users based on search, filters, and tab status
+  const sortedUsers = React.useMemo(() => sortNewestFirst(users), [users]);
   const filteredRows = React.useMemo(() => {
-    console.log('Current users array:', users); // Debug: Log the users array
+    console.log('Current users array:', sortedUsers); // Debug: Log the users array
     
-    if (!users || users.length === 0) {
+    if (!sortedUsers || sortedUsers.length === 0) {
       console.log('No users to filter');
       return [];
     }
     
-    const filtered = users.filter(user => {
+    const filtered = sortedUsers.filter(user => {
       // Skip null or undefined users
       if (!user) return false;
       
@@ -117,7 +119,7 @@ export function CustomersTable({
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
     return filtered;
-  }, [users, filters, statusFilter]);
+  }, [sortedUsers, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);

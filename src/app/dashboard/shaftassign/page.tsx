@@ -12,8 +12,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/shaftassing/customers-table';
-import type { Customer } from '@/components/dashboard/shaftassing/customers-table';
+import { CustomersTable } from '@/components/dashboard/shaftassing/Shaftassigncustomers-table';
+import type { Customer } from '@/components/dashboard/shaftassing/Shaftassigncustomers-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';

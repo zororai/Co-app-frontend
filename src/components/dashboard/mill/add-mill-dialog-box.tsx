@@ -352,11 +352,11 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
                 <TextField
                   required
                   fullWidth
-                  label="Owner Name *"
+                  label="Owner Name / Company Name"
                   name="owner"
                   value={formData.owner}
                   onChange={handleChange}
-                  placeholder="Enter owner name"
+                  placeholder="Owner Name / Company Name"
                   error={formSubmitted && !!errors.owner}
                   helperText={formSubmitted && errors.owner}
                 />
@@ -365,11 +365,11 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
                 <TextField
                   required
                   fullWidth
-                  label="ID Number *"
+                  label="ID Number/Company Reg Number "
                   name="idNumber"
                   value={formData.idNumber}
                   onChange={handleChange}
-                  placeholder="Enter ID number"
+                  placeholder="ID Number/Company Reg Number"
                   error={formSubmitted && !!errors.idNumber}
                   helperText={formSubmitted && errors.idNumber}
                 />

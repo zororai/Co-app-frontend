@@ -31,6 +31,7 @@ import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboa
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
 import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboarding/vehicle-details-dialog';
 import { VehicleMaintenanceDialog } from '@/components/dashboard/approvedvehicles/vehicle-maintenance-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 
 function noop(): void {
@@ -86,8 +87,9 @@ export function CustomersTable({
   });
 
   // Filter the users based on search, filters, and tab status
+  const sortedUsers = React.useMemo(() => sortNewestFirst(users), [users]);
   const filteredRows = React.useMemo(() => {
-    return users.filter(user => {
+    return sortedUsers.filter(user => {
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -102,7 +104,7 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-  }, [users, filters, operationalStatusFilter]);
+  }, [sortedUsers, filters, operationalStatusFilter]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
