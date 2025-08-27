@@ -7,8 +7,9 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import CloseIcon from '@mui/icons-material/Close';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -26,23 +27,29 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        Customer Details
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Customer Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('customer-details-printable', 'Customer Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }} id="customer-details-printable">
           <Box sx={{ 
             display: 'grid', 
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 2 
           }}>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Personal Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -54,8 +61,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
                 <Typography><strong>Position:</strong> {customer.position}</Typography>
               </Box>
             </Box>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Cooperative Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -71,8 +78,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
                       py: 0.5,
                       borderRadius: 1,
                       ml: 1,
-                      bgcolor: customer.status === 'Approved' ? 'success.light' : 'error.light',
-                      color: customer.status === 'Approved' ? 'success.main' : 'error.main',
+                      bgcolor: customer.status === 'Approved' ? '#C8E6C9' : '#FFCDD2',
+                      color: customer.status === 'Approved' ? '#1B5E20' : '#B71C1C',
                     }}
                   >
                     {customer.status}
@@ -80,9 +87,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{ gridColumn: '1 / -1' }}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 ID Picture
               </Typography>
               <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
@@ -104,9 +110,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
             </Box>
 
             {customer.teamMembers && customer.teamMembers.length > 0 && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Team Members
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -132,9 +137,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
             )}
 
             {customer.reason && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Additional Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>

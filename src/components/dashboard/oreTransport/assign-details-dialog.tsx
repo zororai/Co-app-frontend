@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
@@ -276,7 +275,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Assign Ore To Vehicle</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Assign Ore To Vehicle</Typography>
         <Box sx={{ display: 'flex' }}>
           <IconButton onClick={() => printElementById('assign-ore-details-printable', 'Assign Ore To Vehicle')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
             <PrintIcon />
@@ -390,7 +389,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
             {oreDetails.tax && oreDetails.tax.length > 0 && (
               <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Tax Information</Typography>
-                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Box>
                   {oreDetails.tax.map((taxItem: any, index: number) => (
                     <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>

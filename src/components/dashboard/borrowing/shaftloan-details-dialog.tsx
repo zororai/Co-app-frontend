@@ -8,12 +8,13 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface ShaftLoanDetailsDialogProps {
   open: boolean;
@@ -123,19 +124,24 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        Shaft Assignment Details
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          bgcolor: '#15073d'
+        }}
+      >
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Shaft Assignment Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('shaftloan-details-printable', 'Shaft Assignment Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton aria-label="close" onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       
       <DialogContent>
@@ -146,96 +152,97 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
         ) : assignment ? (
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }} id="shaftloan-details-printable">
             {/* Basic Info */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6">{assignment.sectionName || 'Section'}</Typography>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Status: {assignment.status || 'N/A'}</Typography>
+            <Box sx={{ mb: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 1 }}>Basic Information</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6">{assignment.sectionName || 'Section'}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Status: {assignment.status || 'N/A'}</Typography>
+              </Box>
             </Box>
-            
-            <Divider sx={{ mb: 3 }} />
-            
+
             {/* Assignment Fields */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Assignment Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Section Name</Typography>
-                <Typography variant="body1">{assignment.sectionName || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Shaft Numbers</Typography>
-                <Typography variant="body1">{assignment.shaftNumbers || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Medical Fee</Typography>
-                <Typography variant="body1">{assignment.medicalFee ?? 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Registration Fee</Typography>
-                <Typography variant="body1">{assignment.regFee ?? 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Operation Status</Typography>
-                <Typography variant="body1">{assignment.operationStatus ? 'Operational' : 'Not Operational'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
-                <Typography variant="body1">{assignment.status || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Start Contract Date</Typography>
-                <Typography variant="body1">{formatDate(assignment.startContractDate)}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">End Contract Date</Typography>
-                <Typography variant="body1">{formatDate(assignment.endContractDate)}</Typography>
+            <Box sx={{ mb: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Assignment Information</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Section Name</Typography>
+                  <Typography variant="body1">{assignment.sectionName || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Shaft Numbers</Typography>
+                  <Typography variant="body1">{assignment.shaftNumbers || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Medical Fee</Typography>
+                  <Typography variant="body1">{assignment.medicalFee ?? 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Registration Fee</Typography>
+                  <Typography variant="body1">{assignment.regFee ?? 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Operation Status</Typography>
+                  <Typography variant="body1">{assignment.operationStatus ? 'Operational' : 'Not Operational'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Status</Typography>
+                  <Typography variant="body1">{assignment.status || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Start Contract Date</Typography>
+                  <Typography variant="body1">{formatDate(assignment.startContractDate)}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">End Contract Date</Typography>
+                  <Typography variant="body1">{formatDate(assignment.endContractDate)}</Typography>
+                </Box>
               </Box>
             </Box>
 
             {/* Loans */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Loans
-            </Typography>
-            {Array.isArray(assignment.loans) && assignment.loans.length > 0 ? (
-              <Box sx={{ border: '1px solid #eee', borderRadius: 1 }}>
-                {assignment.loans.map((loan: any) => (
-                  <Box key={loan.id} sx={{ p: 2, borderBottom: '1px solid #eee' }}>
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>{loan.loanName || 'Loan'}</Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Payment Method</Typography>
-                        <Typography variant="body1">{loan.paymentMethod || 'N/A'}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Amount/Grams</Typography>
-                        <Typography variant="body1">{loan.amountOrGrams ?? 'N/A'}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Purpose</Typography>
-                        <Typography variant="body1">{loan.purpose || 'N/A'}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Payment Status</Typography>
-                        <Typography variant="body1">{loan.paymentStatus || 'N/A'}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Status</Typography>
-                        <Typography variant="body1">{loan.status || 'N/A'}</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">Reason</Typography>
-                        <Typography variant="body1">{loan.reason || 'N/A'}</Typography>
+            <Box sx={{ mb: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Loans</Typography>
+              {Array.isArray(assignment.loans) && assignment.loans.length > 0 ? (
+                <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                  {assignment.loans.map((loan: any) => (
+                    <Box key={loan.id} sx={{ p: 2, borderBottom: '1px solid #eee' }}>
+                      <Typography variant="subtitle2" sx={{ mb: 1 }}>{loan.loanName || 'Loan'}</Typography>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Payment Method</Typography>
+                          <Typography variant="body1">{loan.paymentMethod || 'N/A'}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Amount/Grams</Typography>
+                          <Typography variant="body1">{loan.amountOrGrams ?? 'N/A'}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Purpose</Typography>
+                          <Typography variant="body1">{loan.purpose || 'N/A'}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Payment Status</Typography>
+                          <Typography variant="body1">{loan.paymentStatus || 'N/A'}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Status</Typography>
+                          <Typography variant="body1">{loan.status || 'N/A'}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">Reason</Typography>
+                          <Typography variant="body1">{loan.reason || 'N/A'}</Typography>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                ))}
-              </Box>
-            ) : (
-              <Typography variant="body2" color="text.secondary">No loans available</Typography>
-            )}
-            
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">No loans available</Typography>
+              )}
+            </Box>
+
             {/* Additional space at the bottom */}
             <Box sx={{ height: 20 }} />
           </Box>
@@ -246,62 +253,7 @@ export function DriverDetailsDialog({ open, onClose, minerId }: ShaftLoanDetails
         )}
       </DialogContent>
       
-      <DialogActions sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'flex-end' }}>
-        {/* Action Buttons */}
-        <Box sx={{ flexGrow: 1, display: 'flex', gap: 1 }}>
-          <Button
-            variant={status === 'APPROVED' ? 'contained' : 'outlined'}
-            color="success"
-            size="small"
-            onClick={() => handleStatusChange('APPROVED')}
-            disabled={isSubmitting || loading || !assignment}
-          >
-            Approve
-          </Button>
-          <Button
-            variant={status === 'PUSHED_BACK' ? 'contained' : 'outlined'}
-            color="warning"
-            size="small"
-            onClick={() => handleStatusChange('PUSHED_BACK')}
-            disabled={isSubmitting || loading || !assignment}
-          >
-            Push Back
-          </Button>
-          <Button
-            variant={status === 'REJECTED' ? 'contained' : 'outlined'}
-            color="error"
-            size="small"
-            onClick={() => handleStatusChange('REJECTED')}
-            disabled={isSubmitting || loading || !assignment}
-          >
-            Reject
-          </Button>
-        </Box>
-
-        {showReasonField && (
-          <TextField
-            size="small"
-            label="Reason"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            sx={{ minWidth: 260, mr: 1 }}
-            disabled={isSubmitting}
-          />
-        )}
-
-        {status && (
-          <Button
-            onClick={handleSubmit}
-            color="primary"
-            variant="contained"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit'}
-          </Button>
-        )}
-
-        <Button onClick={onClose} color="primary">Close</Button>
-      </DialogActions>
+     
 
       
     </Dialog>

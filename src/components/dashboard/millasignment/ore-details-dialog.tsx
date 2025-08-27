@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { authClient } from '@/lib/auth/client';
@@ -126,7 +125,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Assign Ore To Vehicle</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Assign Ore To Vehicle</Typography>
         <Box sx={{ display: 'flex' }}>
           <IconButton onClick={() => printElementById('ore-details-printable', 'Assign Ore To Vehicle')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
             <PrintIcon />
@@ -156,52 +155,50 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                 Ore Information
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
-              <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
-              <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
-              <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
-              <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
-              <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
-              <DetailItem label="Selected Transport" value={oreDetails.selectedTransport || 'N/A'} />
-              <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
-              <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
-              <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
-              <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
+                <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
+                <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
+                <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
+                <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
+                <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
+                <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
+                <DetailItem label="Selected Transport" value={oreDetails.selectedTransport || 'N/A'} />
+                <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
+                <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
+                <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
+                <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
               </Box>
             </Box>
-            </Box>
-            
+
             {oreDetails.transportReason && (
-              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Transport Reason</Typography>
-                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, whiteSpace: 'pre-wrap' }}>
+                <Box sx={{ whiteSpace: 'pre-wrap' }}>
                   <Typography variant="body2">{oreDetails.transportReason}</Typography>
                 </Box>
               </Box>
             )}
-            
+
             {oreDetails.tax && oreDetails.tax.length > 0 && (
-              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Tax Information</Typography>
-                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Box>
                   {oreDetails.tax.map((taxItem: any, index: number) => (
                     <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Tax Rate:</strong> {taxItem.taxRate?.toString() || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
-                      
+                      <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>
                     </Box>
                   ))}
                 </Box>
               </Box>
             )}
-            
+
             {/* Mill Information Section */}
             {oreDetails.mills && oreDetails.mills.length > 0 && (
-              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Mill Information</Typography>
-                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Box>
                   {oreDetails.mills.map((mill: any, index: number) => (
                     <Box key={index} sx={{ mb: index < oreDetails.mills.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Mill Name:</strong> {mill.millName || 'N/A'}</Typography>
