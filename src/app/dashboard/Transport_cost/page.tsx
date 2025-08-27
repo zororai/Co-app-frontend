@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/taxonboarding/tax-table';
-import type { Customer } from '@/components/dashboard/taxonboarding/tax-table';
+import { CustomersTable } from '@/components/dashboard/Transport_cost/transportcost-table';
+import type { Customer } from '@/components/dashboard/Transport_cost/transportcost-table';
 
 
 import Dialog from '@mui/material/Dialog';
@@ -185,7 +185,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Onboarding Operational Tax </Typography>
+          <Typography variant="h4">Transport Cost Onboarding</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
