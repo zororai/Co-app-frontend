@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/driveronboardingstatus/driver-onboading-table';
-import type { Customer } from '@/components/dashboard/driveronboardingstatus/driver-onboading-table';
+import { CustomersTable } from '@/components/dashboard/driveronboardingstatus/driver-onboadingstatu-table';
+import type { Customer } from '@/components/dashboard/driveronboardingstatus/driver-onboadingstatu-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {

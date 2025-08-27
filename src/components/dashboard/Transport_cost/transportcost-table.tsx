@@ -127,7 +127,7 @@ export function CustomersTable({
       setLoading(true);
       setError('');
       try {
-        const fetchedUsers = await authClient.fetchtax();
+        const fetchedUsers = await authClient.fetchTransportCost();
         setUsers(fetchedUsers);
       } catch (err) {
         console.error('Error fetching users:', err);
@@ -315,11 +315,10 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Tax Type</TableCell>
-              <TableCell>Tax Rate</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Description</TableCell>
+              <TableCell>Payment Method</TableCell>
+              <TableCell>Amount/Grams</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Reason</TableCell>
               <TableCell>Actions</TableCell>
               
      
@@ -352,13 +351,8 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.taxType || ''}</TableCell>
-                  <TableCell>{row.taxRate || 0}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
-                  <TableCell>{row.description || ''}</TableCell>
-                
-                  
-                  
+                  <TableCell>{row.paymentMethod || ''}</TableCell>
+                  <TableCell>{row.amountOrGrams ?? ''}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -381,6 +375,7 @@ export function CustomersTable({
                       {row.status}
                     </Box>
                   </TableCell>
+                  <TableCell>{row.reason || ''}</TableCell>
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -32,8 +32,9 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
-import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+import { ProductionLoanDetailsDialog } from '@/components/dashboard/Production_LoanStatus/Production_LoanStatus-details-dialog';
+import { sortNewestFirst } from '@/utils/sort';
+
 
 
 function noop(): void {
@@ -89,7 +90,7 @@ export function CustomersTable({
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
- 
+    console.log('Current users array:', users); // Debug: Log the users array
     
     if (!users || users.length === 0) {
       console.log('No users to filter');
@@ -116,7 +117,7 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
@@ -147,32 +148,48 @@ export function CustomersTable({
 
   // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchOreRecievedData = async () => {
+    const fetchProductionData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedOres = await authClient.fetchOreRecieved();
+        const fetchedOres = await authClient.fetchProductionData();
         console.log('API Response:', fetchedOres); // Debug: Log the API response
         
-    
+        // If the API returns an empty array or undefined, use mock data
+        if (!fetchedOres || fetchedOres.length === 0) {
+          console.log('No data returned from API, using mock data');
+         
+        } else {
           setUsers(fetchedOres);
-        
+        }
       } catch (err) {
         console.error('Error fetching ore data:', err);
         setError('Failed to load ore data. Please try again.');
         
         // Use mock data on error
-      
+        const mockLoanData = [
+          {
+            id: '1',
+            loanName: 'Emergency Fund',
+            paymentMethod: 'Bank Transfer',
+            amountOrGrams: 3000,
+            purpose: 'Shaft Repair',
+            status: 'APPROVED',
+            reason: 'Critical maintenance',
+            date: '2025-08-10'
+          }
+        ];
+        setUsers(mockLoanData);
       } finally {
         setLoading(false);
       }
     };
-    fetchOreRecievedData();
+    fetchProductionData();
   }, [refreshTrigger]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
-      const customerDetails = await authClient.fetchOreDetails(customerId);
+      const customerDetails = await authClient.fetchProductionDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
         setIsViewDialogOpen(true);
@@ -210,33 +227,6 @@ export function CustomersTable({
       console.error('Error applying tax deduction:', error);
       setFeedbackSuccess(false);
       setFeedbackMessage('An error occurred while applying tax deduction');
-      setFeedbackDialogOpen(true);
-    }
-  };
-
-  // Function to handle security dispatch approval
-  const handleSecurityDispatchApprove = async (oreId: string) => {
-    try {
-      // Show loading state or disable button if needed
-      const result = await authClient.securityRecievedApprove(oreId);
-      
-      if (result.success) {
-        // Show success message in dialog
-        setFeedbackSuccess(true);
-        setFeedbackMessage('Security Received approved successfully');
-        setFeedbackDialogOpen(true);
-        // Refresh the table data to show updated values
-        refreshTableData();
-      } else {
-        // Show error message in dialog
-        setFeedbackSuccess(false);
-        setFeedbackMessage(`Failed to approve Received: ${result.error || 'Unknown error'}`);
-        setFeedbackDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error approving security dispatch:', error);
-      setFeedbackSuccess(false);
-      setFeedbackMessage('An error occurred while approving security dispatch');
       setFeedbackDialogOpen(true);
     }
   };
@@ -396,16 +386,14 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Ore ID</TableCell>
-              <TableCell>Shaft Numbers</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Weight (After Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Tax Deduction)</TableCell>
-              <TableCell>Transport Status</TableCell>
-              <TableCell>Driver</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Security Status</TableCell>  
-              <TableCell>View Details</TableCell>
-              <TableCell>Assign</TableCell>
+              <TableCell>Loan Name</TableCell>
+              <TableCell>Payment Method</TableCell>
+              <TableCell>Amount/Grams</TableCell>
+              <TableCell>Purpose</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Reason</TableCell>
+              <TableCell>View Details / Make Decision </TableCell>
+             
      
               
             </TableRow>
@@ -432,14 +420,13 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.oreUniqueId }</TableCell>
-                  <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell sx={{ backgroundColor: '#ccffcc' }}>{row.newWeight || 0} kg</TableCell>
-                  <TableCell sx={{ backgroundColor: '#ccffcc' }}>{row.newnumberOfBags || 0}</TableCell>
-                  <TableCell>{row.transportStatus || ''}</TableCell>
-                  <TableCell>{row.selectedTransportdriver || ''}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
-                  <TableCell>{row.securityDispatcherStatus || ''}</TableCell>
+                  <TableCell>{row.loanName || ''}</TableCell>
+                  <TableCell>{row.paymentMethod || ''}</TableCell>
+                  <TableCell>{row.amountOrGrams || 0}</TableCell>
+                  <TableCell>{row.purpose || ''}</TableCell>
+                  <TableCell>{row.status || ''}</TableCell>
+                  <TableCell>{row.reason || ''}</TableCell>
+                  
                   
                   
                  
@@ -456,32 +443,10 @@ export function CustomersTable({
                           padding: '2px 12px',
                           cursor: 'pointer',
                           fontWeight: 500,
-                      }}>View Ore Details</button>
+                      }}>View Production Loan Details</button>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    {
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {/* Conditionally render the button based on security status */}
-                        {row.securityDispatcherStatus !== 'APPROVED' && (
-                          <button 
-                            onClick={() => handleSecurityDispatchApprove(row.id)}
-                            style={{
-                              background: 'none',
-                              border: '1px solid #06131fff',
-                              color: '#081b2fff',
-                              borderRadius: '6px',
-                              padding: '2px 12px',
-                              cursor: 'pointer',
-                              fontWeight: 500,
-                          }}>Approve for Recieved</button>
-                        )}
-                        {row.securityDispatcherStatus === 'APPROVED' && (
-                          <span style={{ color: 'green', fontWeight: 500 }}>Approved</span>
-                        )}
-                      </Box>
-                    }
-                  </TableCell>
+       
                
                 </TableRow>
               );
@@ -503,13 +468,9 @@ export function CustomersTable({
       {/* Customer Details Dialog */}
       
       {/* Assign Ore Details dialog */}
-      <AssignOreDetailsDialog
-        open={isAssignDetailsDialogOpen}
-        onClose={() => setIsAssignDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
-      {/* Ore Details dialog */}
-      <OreDetailsDialog
+
+      {/* Production Loan Details dialog */}
+      <ProductionLoanDetailsDialog
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
@@ -518,13 +479,7 @@ export function CustomersTable({
       {/* Feedback Dialog */}
       <Dialog
         open={feedbackDialogOpen}
-        onClose={() => {
-          setFeedbackDialogOpen(false);
-          // Refresh data when dialog is closed if it was a successful operation
-          if (feedbackSuccess) {
-            refreshTableData();
-          }
-        }}
+        onClose={() => setFeedbackDialogOpen(false)}
         aria-labelledby="feedback-dialog-title"
         aria-describedby="feedback-dialog-description"
       >
@@ -537,17 +492,7 @@ export function CustomersTable({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button 
-            onClick={() => {
-              setFeedbackDialogOpen(false);
-              // Refresh data when dialog is closed if it was a successful operation
-              if (feedbackSuccess) {
-                refreshTableData();
-              }
-            }} 
-            color="primary" 
-            variant="contained"
-          >
+          <Button onClick={() => setFeedbackDialogOpen(false)} color="primary" variant="contained">
             Close
           </Button>
         </DialogActions>

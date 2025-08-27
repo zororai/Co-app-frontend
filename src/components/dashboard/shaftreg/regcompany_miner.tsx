@@ -50,13 +50,15 @@ interface ErrorState {
 export interface RegMinerDialogProps {
   open: boolean;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
 interface RegMinerFormProps {
   onClose?: () => void;
+  onRefresh?: () => void;
 }
 
-function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
+function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Element {
   // Team members state removed as requested
   const [selectedFileNames, setSelectedFileNames] = React.useState({
     companyLogo: '',
@@ -372,14 +374,14 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
         // Show success alert
         setShowSuccessAlert(true);
         
-        // Set a timeout to close dialog and refresh page after alert is shown
+        // Set a timeout to close dialog and trigger parent refresh after alert is shown
         setTimeout(() => {
-          // Close the dialog if onClose prop is provided
+          if (onRefresh) {
+            onRefresh();
+          }
           if (onClose) {
             onClose();
           }
-          // Refresh the page
-          window.location.reload();
         }, 2000); // 2 seconds delay
       }
     } catch (error) {
@@ -721,7 +723,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
   );
 }
 
-export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JSX.Element {
+export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -731,7 +733,7 @@ export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JS
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <RegMinerForm onClose={onClose} />
+        <RegMinerForm onClose={onClose} onRefresh={onRefresh} />
       </DialogContent>
     </Dialog>
   );

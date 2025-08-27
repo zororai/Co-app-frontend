@@ -27,7 +27,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddTaxDialog } from '@/components/dashboard/taxonboarding/add-tax-dialog';
+import { AddTaxDialog } from '@/components/dashboard/Transport_cost/add-tax-dialog';
 
 
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -275,7 +275,7 @@ function TopRightActions(): React.JSX.Element {
           '&:hover': { bgcolor: '#4aa856' }
         }}
       >
-        Add Operational Tax
+        Add Transport Cost
       </Button>
       
       {/* Add Tax Dialog */}

@@ -8,9 +8,14 @@ import { authClient } from '@/lib/auth/client';
 export interface RegMinerDialogProps {
   open: boolean;
   onClose: () => void;
+  onRefresh?: () => void;
 }
 
-function RegMinerForm(): React.JSX.Element {
+interface RegMinerFormProps {
+  onRefresh?: () => void;
+}
+
+function RegMinerForm({ onRefresh }: RegMinerFormProps): React.JSX.Element {
   const [teamMembers, setTeamMembers] = React.useState([
     { name: '', surname: '', address: '', idNumber: '' }
   ]);
@@ -200,9 +205,14 @@ function RegMinerForm(): React.JSX.Element {
 
       if (success) {
         console.log('Miner registered successfully');
-        // Show success message and refresh the page
+        // Show success message
         alert('Registration successful!');
-        window.location.reload();
+        // Call onRefresh if provided, otherwise refresh the page
+        if (onRefresh) {
+          onRefresh();
+        } else {
+          window.location.reload();
+        }
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -445,7 +455,7 @@ function RegMinerForm(): React.JSX.Element {
   );
 }
 
-export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JSX.Element {
+export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -455,7 +465,7 @@ export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JS
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <RegMinerForm />
+        <RegMinerForm onRefresh={onRefresh} />
       </DialogContent>
     </Dialog>
   );

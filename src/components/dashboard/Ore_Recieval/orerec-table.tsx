@@ -22,13 +22,19 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { DriverDetailsDialog } from '@/components/dashboard/driveronboardingstatus/driver-details-dialog';
-
+import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
+import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
   // do nothing
@@ -83,21 +89,34 @@ export function CustomersTable({
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
-    return users.filter(user => {
+ 
+    
+    if (!users || users.length === 0) {
+      console.log('No users to filter');
+      return [];
+    }
+    
+    const filtered = users.filter(user => {
+      // Skip null or undefined users
+      if (!user) return false;
+      
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
-          String(value).toLowerCase().includes(filters.search.toLowerCase())
+          value && String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
       
-      // Apply dropdown filter
-      const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
-      const matchesPosition = filters.position === 'all' || user.position === filters.position;
+      // Apply dropdown filter - make it more lenient if status is missing
+      const matchesDropdownStatus = filters.status === 'all' || !user.status || user.status === filters.status;
+      const matchesPosition = filters.position === 'all' || !user.position || user.position === filters.position;
       
-      // Apply tab filter if provided
-      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
+      // Apply tab filter if provided - make it more lenient if status is missing
+      const matchesTabStatus = statusFilter === null || !user.status || user.status === statusFilter;
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
+    
+    console.log('Filtered rows:', filtered); // Debug: Log the filtered results
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
@@ -114,38 +133,113 @@ export function CustomersTable({
     window.location.href = path;
   };
 
-  const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
-  const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
+  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
+  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
+  const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  
+  // States for feedback dialog
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
+  const [feedbackMessage, setFeedbackMessage] = React.useState('');
+  const [feedbackSuccess, setFeedbackSuccess] = React.useState(true);
 
-  // Fetch drivers from API when component mounts or refreshTrigger changes
+  // Fetch ore data from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchDriverData = async () => {
+    const fetchOreRecievedData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchDrivers();
-        setUsers(fetchedDrivers);
+        const fetchedOres = await authClient.fetchOreRecieved();
+        console.log('API Response:', fetchedOres); // Debug: Log the API response
+        
+    
+          setUsers(fetchedOres);
+        
       } catch (err) {
-        console.error('Error fetching drivers:', err);
-        setError('Failed to load drivers. Please try again.');
+        console.error('Error fetching ore data:', err);
+        setError('Failed to load ore data. Please try again.');
+        
+        // Use mock data on error
+      
       } finally {
         setLoading(false);
       }
     };
-
-    fetchDriverData();
+    fetchOreRecievedData();
   }, [refreshTrigger]);
 
- 
-  const handleViewUserDetails = (driverId: string) => {
-    console.log('View driver details clicked for ID:', driverId);
-    setSelectedDriverId(driverId);
-    setTimeout(() => {
-      setIsDriverDetailsDialogOpen(true);
-    }, 0);
+  const handleViewCustomer = async (customerId: string) => {
+    try {
+      const customerDetails = await authClient.fetchOreDetails(customerId);
+      if (customerDetails) {
+        setSelectedCustomer(customerDetails);
+        setIsViewDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching customer details:', error);
+      alert('Failed to load customer details');
+    }
+  };
+  
+  // Function to handle viewing user details
+  const handleViewUserDetails = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsUserDetailsDialogOpen(true);
+  };
+  const handleCostDeduction = async (oreId: string) => {
+    try {
+      // Show loading state or disable button if needed
+      const result = await authClient.applyTax(oreId);
+      
+      if (result.success) {
+        // Show success message in dialog
+        setFeedbackSuccess(true);
+        setFeedbackMessage('Tax deduction applied successfully');
+        setFeedbackDialogOpen(true);
+        // Refresh the table data to show updated values
+        refreshTableData();
+      } else {
+        // Show error message in dialog
+        setFeedbackSuccess(false);
+        setFeedbackMessage(`Failed to apply tax deduction: ${result.error || 'Unknown error'}`);
+        setFeedbackDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error applying tax deduction:', error);
+      setFeedbackSuccess(false);
+      setFeedbackMessage('An error occurred while applying tax deduction');
+      setFeedbackDialogOpen(true);
+    }
   };
 
+  // Function to handle security dispatch approval
+  const handleSecurityDispatchApprove = async (oreId: string) => {
+    try {
+      // Show loading state or disable button if needed
+      const result = await authClient.securityRecievedApprove(oreId);
+      
+      if (result.success) {
+        // Show success message in dialog
+        setFeedbackSuccess(true);
+        setFeedbackMessage('Security Received approved successfully');
+        setFeedbackDialogOpen(true);
+        // Refresh the table data to show updated values
+        refreshTableData();
+      } else {
+        // Show error message in dialog
+        setFeedbackSuccess(false);
+        setFeedbackMessage(`Failed to approve Received: ${result.error || 'Unknown error'}`);
+        setFeedbackDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error approving security dispatch:', error);
+      setFeedbackSuccess(false);
+      setFeedbackMessage('An error occurred while approving security dispatch');
+      setFeedbackDialogOpen(true);
+    }
+  };
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
@@ -302,24 +396,24 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Driver Name</TableCell>
-              <TableCell>License Number</TableCell>
-              <TableCell>License Class</TableCell>
-              <TableCell>License Expiry</TableCell>
-              <TableCell>Contact</TableCell>
-              <TableCell>Experience (Years)</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Make Discussion</TableCell>
+              <TableCell>Ore ID</TableCell>
+              <TableCell>Shaft Numbers</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Weight (After Tax Deduction)</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Tax Deduction)</TableCell>
+              <TableCell>Transport Status</TableCell>
+              <TableCell>Driver</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Security Status</TableCell>  
+              <TableCell>View Details</TableCell>
+              <TableCell>Assign</TableCell>
+     
+              
             </TableRow>
           </TableHead>
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No users found
-                  </Typography>
-                </TableCell>
+              
               </TableRow>
             )}
             {filteredRows.map((row) => {
@@ -338,59 +432,55 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
-                  <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseClass || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseExpiryDate || 'N/A'}</TableCell>
-                  <TableCell>{row.phoneNumber || row.emailAddress || 'N/A'}</TableCell>
-                  <TableCell>{row.yearsOfExperience || '0'}</TableCell>
-                  <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status || 'PENDING'}
-                    </Box>
-                  </TableCell>
+                  <TableCell>{row.oreUniqueId }</TableCell>
+                  <TableCell>{row.shaftNumbers}</TableCell>
+                  <TableCell sx={{ backgroundColor: '#ccffcc' }}>{row.newWeight || 0} kg</TableCell>
+                  <TableCell sx={{ backgroundColor: '#ccffcc' }}>{row.newnumberOfBags || 0}</TableCell>
+                  <TableCell>{row.transportStatus || ''}</TableCell>
+                  <TableCell>{row.selectedTransportdriver || ''}</TableCell>
+                  <TableCell>{row.location || ''}</TableCell>
+                  <TableCell>{row.securityDispatcherStatus || ''}</TableCell>
                   
-            
+                  
+                 
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
-                          setIsDriverDetailsDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
+                      <button 
+                        onClick={() => handleViewUserDetails(row.id)}
+                        style={{
+                          background: 'none',
+                          border: '1px solid #06131fff',
                           color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        Make Discussion
-                      </Button>
+                          borderRadius: '6px',
+                          padding: '2px 12px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                      }}>View Ore Details</button>
                     </Box>
+                  </TableCell>
+                  <TableCell>
+                    {
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {/* Conditionally render the button based on security status */}
+                        {row.securityDispatcherStatus !== 'APPROVED' && (
+                          <button 
+                            onClick={() => handleSecurityDispatchApprove(row.id)}
+                            style={{
+                              background: 'none',
+                              border: '1px solid #06131fff',
+                              color: '#081b2fff',
+                              borderRadius: '6px',
+                              padding: '2px 12px',
+                              cursor: 'pointer',
+                              fontWeight: 500,
+                          }}>Approve for Recieved</button>
+                        )}
+                        {row.securityDispatcherStatus === 'APPROVED' && (
+                          <span style={{ color: 'green', fontWeight: 500 }}>Approved</span>
+                        )}
+                      </Box>
+                    }
                   </TableCell>
                
                 </TableRow>
@@ -410,15 +500,58 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Driver Details Dialog */}
-      {isDriverDetailsDialogOpen && (
-        <DriverDetailsDialog
-          open={isDriverDetailsDialogOpen}
-          onClose={() => setIsDriverDetailsDialogOpen(false)}
-          driverId={selectedDriverId}
-        />
-      )}
-
+      {/* Customer Details Dialog */}
+      
+      {/* Assign Ore Details dialog */}
+      <AssignOreDetailsDialog
+        open={isAssignDetailsDialogOpen}
+        onClose={() => setIsAssignDetailsDialogOpen(false)}
+        userId={selectedUserId}
+      />
+      {/* Ore Details dialog */}
+      <OreDetailsDialog
+        open={isUserDetailsDialogOpen}
+        onClose={() => setIsUserDetailsDialogOpen(false)}
+        userId={selectedUserId}
+      />
+      
+      {/* Feedback Dialog */}
+      <Dialog
+        open={feedbackDialogOpen}
+        onClose={() => {
+          setFeedbackDialogOpen(false);
+          // Refresh data when dialog is closed if it was a successful operation
+          if (feedbackSuccess) {
+            refreshTableData();
+          }
+        }}
+        aria-labelledby="feedback-dialog-title"
+        aria-describedby="feedback-dialog-description"
+      >
+        <DialogTitle id="feedback-dialog-title">
+          {feedbackSuccess ? 'Success' : 'Error'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="feedback-dialog-description">
+            {feedbackMessage}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => {
+              setFeedbackDialogOpen(false);
+              // Refresh data when dialog is closed if it was a successful operation
+              if (feedbackSuccess) {
+                refreshTableData();
+              }
+            }} 
+            color="primary" 
+            variant="contained"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

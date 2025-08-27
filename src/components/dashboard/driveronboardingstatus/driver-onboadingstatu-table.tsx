@@ -22,19 +22,13 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { ProductionLoanDetailsDialog } from '@/components/dashboard/Production_LoanStatus/Production_LoanStatus-details-dialog';
-
-
+import { DriverDetailsDialog } from '@/components/dashboard/driveronboardingstatus/driver-details-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
   // do nothing
@@ -89,34 +83,22 @@ export function CustomersTable({
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
-    console.log('Current users array:', users); // Debug: Log the users array
-    
-    if (!users || users.length === 0) {
-      console.log('No users to filter');
-      return [];
-    }
-    
     const filtered = users.filter(user => {
-      // Skip null or undefined users
-      if (!user) return false;
-      
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
-          value && String(value).toLowerCase().includes(filters.search.toLowerCase())
+          String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
       
-      // Apply dropdown filter - make it more lenient if status is missing
-      const matchesDropdownStatus = filters.status === 'all' || !user.status || user.status === filters.status;
-      const matchesPosition = filters.position === 'all' || !user.position || user.position === filters.position;
+      // Apply dropdown filter
+      const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
+      const matchesPosition = filters.position === 'all' || user.position === filters.position;
       
-      // Apply tab filter if provided - make it more lenient if status is missing
-      const matchesTabStatus = statusFilter === null || !user.status || user.status === statusFilter;
+      // Apply tab filter if provided
+      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    
-    console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
@@ -133,102 +115,38 @@ export function CustomersTable({
     window.location.href = path;
   };
 
-  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-  const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
-  const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
-  const [isAssignDetailsDialogOpen, setIsAssignDetailsDialogOpen] = React.useState(false);
+  const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
+  const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
-  
-  // States for feedback dialog
-  const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
-  const [feedbackMessage, setFeedbackMessage] = React.useState('');
-  const [feedbackSuccess, setFeedbackSuccess] = React.useState(true);
 
-  // Fetch ore data from API when component mounts or refreshTrigger changes
+  // Fetch drivers from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchProductionData = async () => {
+    const fetchDriverData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedOres = await authClient.fetchProductionData();
-        console.log('API Response:', fetchedOres); // Debug: Log the API response
-        
-        // If the API returns an empty array or undefined, use mock data
-        if (!fetchedOres || fetchedOres.length === 0) {
-          console.log('No data returned from API, using mock data');
-         
-        } else {
-          setUsers(fetchedOres);
-        }
+        const fetchedDrivers = await authClient.fetchDrivers();
+        setUsers(fetchedDrivers);
       } catch (err) {
-        console.error('Error fetching ore data:', err);
-        setError('Failed to load ore data. Please try again.');
-        
-        // Use mock data on error
-        const mockLoanData = [
-          {
-            id: '1',
-            loanName: 'Emergency Fund',
-            paymentMethod: 'Bank Transfer',
-            amountOrGrams: 3000,
-            purpose: 'Shaft Repair',
-            status: 'APPROVED',
-            reason: 'Critical maintenance',
-            date: '2025-08-10'
-          }
-        ];
-        setUsers(mockLoanData);
+        console.error('Error fetching drivers:', err);
+        setError('Failed to load drivers. Please try again.');
       } finally {
         setLoading(false);
       }
     };
-    fetchProductionData();
+
+    fetchDriverData();
   }, [refreshTrigger]);
 
-  const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchProductionDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
-    }
+ 
+  const handleViewUserDetails = (driverId: string) => {
+    console.log('View driver details clicked for ID:', driverId);
+    setSelectedDriverId(driverId);
+    setTimeout(() => {
+      setIsDriverDetailsDialogOpen(true);
+    }, 0);
   };
-  
-  // Function to handle viewing user details
-  const handleViewUserDetails = (userId: string) => {
-    setSelectedUserId(userId);
-    setIsUserDetailsDialogOpen(true);
-  };
-  const handleCostDeduction = async (oreId: string) => {
-    try {
-      // Show loading state or disable button if needed
-      const result = await authClient.applyTax(oreId);
-      
-      if (result.success) {
-        // Show success message in dialog
-        setFeedbackSuccess(true);
-        setFeedbackMessage('Tax deduction applied successfully');
-        setFeedbackDialogOpen(true);
-        // Refresh the table data to show updated values
-        refreshTableData();
-      } else {
-        // Show error message in dialog
-        setFeedbackSuccess(false);
-        setFeedbackMessage(`Failed to apply tax deduction: ${result.error || 'Unknown error'}`);
-        setFeedbackDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error applying tax deduction:', error);
-      setFeedbackSuccess(false);
-      setFeedbackMessage('An error occurred while applying tax deduction');
-      setFeedbackDialogOpen(true);
-    }
-  };
+
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
     // Increment refresh trigger to force a re-render/refresh
@@ -385,22 +303,24 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Loan Name</TableCell>
-              <TableCell>Payment Method</TableCell>
-              <TableCell>Amount/Grams</TableCell>
-              <TableCell>Purpose</TableCell>
+              <TableCell>Driver Name</TableCell>
+              <TableCell>License Number</TableCell>
+              <TableCell>License Class</TableCell>
+              <TableCell>License Expiry</TableCell>
+              <TableCell>Contact</TableCell>
+              <TableCell>Experience (Years)</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Reason</TableCell>
-              <TableCell>View Details / Make Decision </TableCell>
-             
-     
-              
+              <TableCell>Make Discussion</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-              
+                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No users found
+                  </Typography>
+                </TableCell>
               </TableRow>
             )}
             {filteredRows.map((row) => {
@@ -419,33 +339,60 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.loanName || ''}</TableCell>
-                  <TableCell>{row.paymentMethod || ''}</TableCell>
-                  <TableCell>{row.amountOrGrams || 0}</TableCell>
-                  <TableCell>{row.purpose || ''}</TableCell>
-                  <TableCell>{row.status || ''}</TableCell>
-                  <TableCell>{row.reason || ''}</TableCell>
+                  <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
+                  <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
+                  <TableCell>{row.licenseClass || 'N/A'}</TableCell>
+                  <TableCell>{row.licenseExpiryDate || 'N/A'}</TableCell>
+                  <TableCell>{row.phoneNumber || row.emailAddress || 'N/A'}</TableCell>
+                  <TableCell>{row.yearsOfExperience || '0'}</TableCell>
+                  <TableCell>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: 
+                        row.status === 'PENDING' ? '#FFF9C4' : 
+                        row.status === 'REJECTED' ? '#FFCDD2' : 
+                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
+                        '#C8E6C9',
+                      color: 
+                        row.status === 'PENDING' ? '#F57F17' : 
+                        row.status === 'REJECTED' ? '#B71C1C' : 
+                        row.status === 'PUSHED_BACK' ? '#E65100' : 
+                        '#1B5E20',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.status || 'PENDING'}
+                    </Box>
+                  </TableCell>
                   
-                  
-                  
-                 
+            
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
+                      <Button 
+                        onClick={() => {
+                          console.log('Button clicked for driver ID:', row.id);
+                          setSelectedDriverId(row.id);
+                          setIsDriverDetailsDialogOpen(true);
+                        }}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: '#06131fff',
                           color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Production Loan Details</button>
+                          '&:hover': {
+                            borderColor: '#06131fff',
+                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                          }
+                        }}
+                      >
+                        Make Discussion
+                      </Button>
                     </Box>
                   </TableCell>
-       
                
                 </TableRow>
               );
@@ -464,38 +411,15 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Customer Details Dialog */}
-      
-      {/* Assign Ore Details dialog */}
+      {/* Driver Details Dialog */}
+      {isDriverDetailsDialogOpen && (
+        <DriverDetailsDialog
+          open={isDriverDetailsDialogOpen}
+          onClose={() => setIsDriverDetailsDialogOpen(false)}
+          driverId={selectedDriverId}
+        />
+      )}
 
-      {/* Production Loan Details dialog */}
-      <ProductionLoanDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
-      
-      {/* Feedback Dialog */}
-      <Dialog
-        open={feedbackDialogOpen}
-        onClose={() => setFeedbackDialogOpen(false)}
-        aria-labelledby="feedback-dialog-title"
-        aria-describedby="feedback-dialog-description"
-      >
-        <DialogTitle id="feedback-dialog-title">
-          {feedbackSuccess ? 'Success' : 'Error'}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="feedback-dialog-description">
-            {feedbackMessage}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setFeedbackDialogOpen(false)} color="primary" variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Card>
   );
 }

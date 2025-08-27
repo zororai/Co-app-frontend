@@ -261,11 +261,6 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   const handleStepNext = () => {
     if (validateCurrentStep()) {
       handleNext();
-      
-      // Call onRefresh if provided to refresh the table
-      if (onRefresh) {
-        onRefresh();
-      }
     }
   };
 
@@ -334,11 +329,6 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setSuccess(false);
     setError(null);
     setErrors({});
-    
-    // Call onRefresh if provided to refresh the table
-    if (onRefresh) {
-      onRefresh();
-    }
     
     onClose();
   };
@@ -589,7 +579,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   }}
                   color={formData.idPicture ? 'success' : 'primary'}
                 >
-                  {formData.idPicture ? 'ID Uploaded ✓' : 'Upload ID'}
+                  {formData.idPicture ? 'ID Uploaded ✓' : 'Upload Owner ID'}
                   <input
                     type="file"
                     hidden
@@ -645,7 +635,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   }}
                   color={formData.registrationBook ? 'success' : 'primary'}
                 >
-                  {formData.registrationBook ? 'Registration Uploaded ✓' : 'Upload Registration'}
+                  {formData.registrationBook ? 'Car Registration Book Uploaded ✓' : 'UploadCar Registration Book '}
                   <input
                     type="file"
                     hidden

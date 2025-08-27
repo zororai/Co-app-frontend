@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/oremanagement/ore-table';
-import type { Customer } from '@/components/dashboard/oremanagement/ore-table';
+import { CustomersTable } from '@/components/dashboard/oremanagement/oremanage-table';
+import type { Customer } from '@/components/dashboard/oremanagement/oremanage-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {

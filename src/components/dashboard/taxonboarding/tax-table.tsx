@@ -28,7 +28,8 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/taxonboarding/transportcost-details-dialog';
+import { UserDetailsDialog } from '@/components/dashboard/taxonboarding/tax-details-dialog';
+import { sortNewestFirst } from '@/utils/sort';
 
 
 function noop(): void {
@@ -84,7 +85,7 @@ export function CustomersTable({
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
-    return users.filter(user => {
+    const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -99,6 +100,7 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {

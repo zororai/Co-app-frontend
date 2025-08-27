@@ -34,7 +34,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { OreDetailsDialog } from '@/components/dashboard/oreTransport/ore-details-dialog';
 import { AssignOreDetailsDialog } from '@/components/dashboard/oreTransport/assign-details-dialog';
-
+import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
   // do nothing
@@ -116,7 +116,7 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {

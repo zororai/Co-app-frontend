@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/Production_LoanStatus/productionloan-table';
-import type { Customer } from '@/components/dashboard/Production_LoanStatus/productionloan-table';
+import { CustomersTable } from '@/components/dashboard/Production_LoanStatus/productionloanstatus-table';
+import type { Customer } from '@/components/dashboard/Production_LoanStatus/productionloanstatus-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {

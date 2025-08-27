@@ -78,7 +78,7 @@ export default function Page(): React.JSX.Element {
    
       }
     })();
-  }, []);
+  }, [refreshKey]);
 
   // Filter customers by selected tab/status
   const idleCustomers = customers.filter(c => c.status === 'idle');
