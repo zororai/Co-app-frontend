@@ -14,6 +14,8 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Chip from '@mui/material/Chip';
 import { authClient } from '@/lib/auth/client';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface ProductionLoanDetailsDialogProps {
   open: boolean;
@@ -154,21 +156,17 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
   if (loading) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            p: 2,
-            fontSize: '1.25rem', 
-            fontWeight: 600,
-            borderBottom: '1px solid #e0e0e0'
-          }}
-        >
-          <Typography variant="subtitle1" component="span">Production Loan Details</Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
+        <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+              Production Loan Details
+            </Typography>
+            <Box>
+              <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Box>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
@@ -183,21 +181,17 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
   if (error) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            p: 2,
-            fontSize: '1.25rem', 
-            fontWeight: 600,
-            borderBottom: '1px solid #e0e0e0'
-          }}
-        >
-          <Typography variant="subtitle1" component="span">Production Loan Details</Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
+        <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+              Production Loan Details
+            </Typography>
+            <Box>
+              <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </Box>
         </DialogTitle>
         <DialogContent>
           <Box sx={{ textAlign: 'center', color: 'error.main', py: 4 }}>
@@ -216,23 +210,23 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          p: 2,
-          fontSize: '1.25rem', 
-          fontWeight: 600,
-          borderBottom: '1px solid #e0e0e0'
-        }}
-      >
-        <Typography variant="subtitle1" component="span">Production Loan Details / Make Decision</Typography>
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
+      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+            Production Loan Details / Make Decision
+          </Typography>
+          <Box>
+            <IconButton onClick={() => printElementById('production-loanstatus-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+              <PrintIcon />
+            </IconButton>
+            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
+        <Box id="production-loanstatus-printable">
         {loanDetails && (
           <Box sx={{ p: 2 }}>
             <Box sx={{ 
@@ -241,7 +235,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               gap: 3 
             }}>
               {/* Section 1: Basic Information */}
-              <Box>
+              <Box sx={{ p: 2, border: '1px solid #000080', borderRadius: 1 }}>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
                   Loan Information
                 </Typography>
@@ -254,7 +248,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               </Box>
               
               {/* Section 2: Status Information */}
-              <Box>
+              <Box sx={{ p: 2, border: '1px solid #000080', borderRadius: 1 }}>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
                   Status Information
                 </Typography>
@@ -276,7 +270,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               
               {/* Purpose Details - Full width section */}
               {loanDetails.purpose && (
-                <Box sx={{ gridColumn: '1 / -1' }}>
+                <Box sx={{ gridColumn: '1 / -1', p: 2, border: '1px solid #000080', borderRadius: 1 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
                     Purpose Details
@@ -294,7 +288,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
               
               {/* Tax Information - Full width section */}
               {loanDetails.tax && loanDetails.tax.length > 0 && (
-                <Box sx={{ gridColumn: '1 / -1' }}>
+                <Box sx={{ gridColumn: '1 / -1', p: 2, border: '1px solid #000080', borderRadius: 1 }}>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 600, mb: 2 }}>
                     Tax Information
@@ -324,6 +318,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             </Box>
           </Box>
         )}
+        </Box>
       </DialogContent>
       {/* Action feedback messages */}
       {(actionError || actionSuccess) && (

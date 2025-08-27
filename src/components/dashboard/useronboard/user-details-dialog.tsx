@@ -15,7 +15,9 @@ import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
 import Alert from '@mui/material/Alert';
+import PrintIcon from '@mui/icons-material/Print';
 import { authClient } from '@/lib/auth/client';
+import { printElementById } from '@/lib/print';
 
 interface UserDetailsDialogProps {
   open: boolean;
@@ -198,11 +200,12 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span">User Details</Typography>
-        <IconButton onClick={onClose} size="small">
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>User Details</Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -228,11 +231,12 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d' // Warm background color for the header
         }}
       >
-        <Typography variant="subtitle1" component="span">User Details</Typography>
-        <IconButton onClick={onClose} size="small">
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>User Details</Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -256,29 +260,35 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span">User Details</Typography>
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>User Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('user-details-printable', 'User Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }} id="user-details-printable">
           <Box sx={{ 
             display: 'grid', 
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 2 
           }}>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Personal Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Name:</strong> {userDetails?.name || 'N/A'}</Typography>
-                <Typography><strong>Surname:</strong> {userDetails?.surname || 'N/A'}</Typography>
-                <Typography><strong>ID Number:</strong> {userDetails?.idNumber || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Name:</strong> {userDetails?.name || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Surname:</strong> {userDetails?.surname || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>ID Number:</strong> {userDetails?.idNumber || 'N/A'}</Typography>
                 <Typography><strong>Status:</strong> 
                   <Box 
                     component="span" 
@@ -303,31 +313,30 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
                 </Typography>
               </Box>
             </Box>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Contact Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Email:</strong> {userDetails?.email || 'N/A'}</Typography>
-                <Typography><strong>Phone:</strong> {userDetails?.cellNumber || 'N/A'}</Typography>
-                <Typography><strong>Address:</strong> {userDetails?.address || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Email:</strong> {userDetails?.email || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Phone:</strong> {userDetails?.cellNumber || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Address:</strong> {userDetails?.address || 'N/A'}</Typography>
               </Box>
             </Box>
             
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Professional Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Position:</strong> {userDetails?.position || 'N/A'}</Typography>
-                <Typography><strong>Role:</strong> {userDetails?.role || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Position:</strong> {userDetails?.position || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Role:</strong> {userDetails?.role || 'N/A'}</Typography>
               </Box>
             </Box>
             
             {userDetails?.reason && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Additional Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -337,9 +346,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
             )}
             
             {userDetails?.notes && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Notes
                 </Typography>
                 <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
@@ -412,9 +420,9 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
 // Helper component for displaying detail items
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (
-    <Box>
-      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#666' }}>{label}</Typography>
-      <Typography variant="body1">{value}</Typography>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#FFFFF' }}>{label}</Typography>
+      <Typography variant="body1" sx={{ mt: 0.5 }}>{value}</Typography>
     </Box>
   );
 }

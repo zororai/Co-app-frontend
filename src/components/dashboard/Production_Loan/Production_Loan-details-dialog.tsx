@@ -11,6 +11,10 @@ import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { authClient } from '@/lib/auth/client';
+import IconButton from '@mui/material/IconButton';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface ProductionLoanDetailsDialogProps {
   open: boolean;
@@ -113,13 +117,24 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ 
-        fontSize: '1.25rem', 
-        fontWeight: 600,
-        borderBottom: '1px solid #e0e0e0',
-        pb: 2
-      }}>
-        Production Loan Details 
+      <DialogTitle 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          p: 2,
+          bgcolor: '#15073d'
+        }}
+      >
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Production Loan Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('production-loan-details-printable', 'Production Loan Details')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -135,39 +150,33 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
         )}
 
         {!loading && !error && loanDetails && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              <DetailItem label="Loan Name" value={loanDetails.loanName || 'N/A'} />
-              <DetailItem label="Payment Method" value={loanDetails.paymentMethod || 'N/A'} />
-              <DetailItem label="Amount/Grams" value={loanDetails.amountOrGrams?.toString() || 'N/A'} />
-              <DetailItem label="Purpose" value={loanDetails.purpose || 'N/A'} />
-              <DetailItem label="Status" value={loanDetails.status || 'N/A'} />
-              <DetailItem label="Reason" value={loanDetails.reason || 'N/A'} />
-              <DetailItem label="Date" value={loanDetails.date ? new Date(loanDetails.date).toLocaleDateString() : 'N/A'} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} id="production-loan-details-printable">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Loan Information</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                <DetailItem label="Loan Name" value={loanDetails.loanName || 'N/A'} />
+                <DetailItem label="Payment Method" value={loanDetails.paymentMethod || 'N/A'} />
+                <DetailItem label="Amount/Grams" value={loanDetails.amountOrGrams?.toString() || 'N/A'} />
+                <DetailItem label="Purpose" value={loanDetails.purpose || 'N/A'} />
+                <DetailItem label="Status" value={loanDetails.status || 'N/A'} />
+                <DetailItem label="Reason" value={loanDetails.reason || 'N/A'} />
+                <DetailItem label="Date" value={loanDetails.date ? new Date(loanDetails.date).toLocaleDateString() : 'N/A'} />
+              </Box>
             </Box>
             
             {loanDetails.purpose && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Purpose Details</Typography>
-                <Box sx={{ 
-                  p: 2, 
-                  bgcolor: '#f5f5f5', 
-                  borderRadius: 1,
-                  whiteSpace: 'pre-wrap'
-                }}>
+              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Purpose Details</Typography>
+                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, whiteSpace: 'pre-wrap' }}>
                   <Typography variant="body2">{loanDetails.purpose}</Typography>
                 </Box>
               </Box>
             )}
             
             {loanDetails.tax && loanDetails.tax.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Tax Information</Typography>
-                <Box sx={{ 
-                  p: 2, 
-                  bgcolor: '#f5f5f5', 
-                  borderRadius: 1
-                }}>
+              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Tax Information</Typography>
+                <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                   {loanDetails.tax.map((taxItem: any, index: number) => (
                     <Box key={index} sx={{ mb: index < loanDetails.tax.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
@@ -175,7 +184,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
                       <Typography variant="body2"><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
                                           
-                    </Box>
+                  </Box>
                   ))}
                 </Box>
               </Box>

@@ -11,6 +11,10 @@ import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { authClient } from '@/lib/auth/client';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface UserDetailsDialogProps {
   open: boolean;
@@ -186,15 +190,23 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ 
-        fontSize: '1.25rem', 
-        fontWeight: 600,
-        borderBottom: '1px solid #e0e0e0',
-        pb: 2
-      }}>
-        Tax Details
+      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+            Tax Details
+          </Typography>
+          <Box>
+            <IconButton onClick={() => printElementById('taxonboarding-details-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+              <PrintIcon />
+            </IconButton>
+            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
+        <Box id="taxonboarding-details-printable">
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={40} />
@@ -209,19 +221,20 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
 
         {!loading && !error && userDetails && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
-              
-              <DetailItem label="Tax Type" value={userDetails.taxType || 'N/A'} />
-              <DetailItem label="Tax Rate" value={userDetails.taxRate ? `${userDetails.taxRate}%` : 'N/A'} />
-              <DetailItem label="Location" value={userDetails.location || 'N/A'} />
-              <DetailItem label="Description" value={userDetails.description || 'N/A'} />
-              <DetailItem label="Reason" value={userDetails.reason || 'N/A'} />
-              <DetailItem label="Status" value={userDetails.status || 'N/A'} />
+            <Box sx={{ p: 2, border: '1px solid #000080', borderRadius: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Tax Information</Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                <DetailItem label="Tax Type" value={userDetails.taxType || 'N/A'} />
+                <DetailItem label="Tax Rate" value={userDetails.taxRate ? `${userDetails.taxRate}%` : 'N/A'} />
+                <DetailItem label="Location" value={userDetails.location || 'N/A'} />
+                <DetailItem label="Description" value={userDetails.description || 'N/A'} />
+                <DetailItem label="Reason" value={userDetails.reason || 'N/A'} />
+                <DetailItem label="Status" value={userDetails.status || 'N/A'} />
+              </Box>
             </Box>
-            
             {userDetails.notes && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Notes</Typography>
+              <Box sx={{ mt: 2, p: 2, border: '1px solid #000080', borderRadius: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Notes</Typography>
                 <Box sx={{ 
                   p: 2, 
                   bgcolor: '#f5f5f5', 
@@ -234,6 +247,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
             )}
           </Box>
         )}
+        </Box>
       </DialogContent>
       {/* Action feedback messages */}
       {(actionError || actionSuccess) && (
@@ -288,7 +302,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
-    
+      
     </Dialog>
   );
 }

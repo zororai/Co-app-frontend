@@ -17,6 +17,8 @@ import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
 import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
 import { useState } from 'react';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface DriverDetailsDialogProps {
   open: boolean;
@@ -180,19 +182,19 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        Driver Details
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#15073d', p: 2 }}>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Driver Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('driver-details-printable', 'Driver Details')} size="small" sx={{ mr: 1 }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       
       <DialogContent>
@@ -203,9 +205,9 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
         ) : driver ? (
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }} id="driver-details-printable">
             {/* Driver Status */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
               <Typography variant="h6">
                 {driver.firstName} {driver.lastName}
               </Typography>
@@ -224,79 +226,86 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             <Divider sx={{ mb: 3 }} />
             
             {/* Personal Information */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Personal Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Personal Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Full Name</Typography>
-                <Typography variant="body1">{driver.firstName} {driver.lastName}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.firstName} {driver.lastName}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">ID Number</Typography>
-                <Typography variant="body1">{driver.idNumber || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.idNumber || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Date of Birth</Typography>
-                <Typography variant="body1">{formatDate(driver.dateOfBirth)}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{formatDate(driver.dateOfBirth)}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Phone Number</Typography>
-                <Typography variant="body1">{driver.phoneNumber || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.phoneNumber || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Email Address</Typography>
-                <Typography variant="body1">{driver.emailAddress || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.emailAddress || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Address</Typography>
-                <Typography variant="body1">{driver.address || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.address || 'N/A'}</Typography>
+              </Box>
               </Box>
             </Box>
             
             {/* License Information */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              License Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                License Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">License Number</Typography>
-                <Typography variant="body1">{driver.licenseNumber || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.licenseNumber || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">License Class</Typography>
-                <Typography variant="body1">{driver.licenseClass || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.licenseClass || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">License Expiry Date</Typography>
-                <Typography variant="body1">{formatDate(driver.licenseExpiryDate)}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{formatDate(driver.licenseExpiryDate)}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Years of Experience</Typography>
-                <Typography variant="body1">{driver.yearsOfExperience || '0'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.yearsOfExperience || '0'}</Typography>
+              </Box>
               </Box>
             </Box>
             
             {/* Emergency Contact */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Emergency Contact
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Emergency Contact
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">Contact Name</Typography>
-                <Typography variant="body1">{driver.emergencyContactName || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.emergencyContactName || 'N/A'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">Contact Phone</Typography>
-                <Typography variant="body1">{driver.emergencyContactPhone || 'N/A'}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{driver.emergencyContactPhone || 'N/A'}</Typography>
+              </Box>
               </Box>
             </Box>
             
             {/* Documents */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Documents
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Documents
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">License Document</Typography>
                 <Typography variant="body1">
@@ -308,6 +317,7 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
                 <Typography variant="body1">
                   {driver.idDocument ? 'Uploaded' : 'Not uploaded'}
                 </Typography>
+              </Box>
               </Box>
             </Box>
             

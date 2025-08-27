@@ -15,6 +15,8 @@ import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
 import { authClient } from '@/lib/auth/client';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -94,11 +96,12 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span">Security Company Details</Typography>
-        <IconButton onClick={onClose} size="small">
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Security Company Details</Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -123,23 +126,29 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span">Security Company Details</Typography>
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Security Company Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('security-status-details-printable', 'Security Company Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }} id="security-status-details-printable">
           <Box sx={{ 
             display: 'grid', 
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 2 
           }}>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Company Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -171,8 +180,8 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                 </Typography>
               </Box>
             </Box>
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Contact Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -184,8 +193,8 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
               </Box>
             </Box>
             
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Address Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -194,8 +203,8 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
               </Box>
             </Box>
             
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Contract Information
               </Typography>
               <Box sx={{ mt: 2 }}>
@@ -204,9 +213,8 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
               </Box>
             </Box>
             
-            <Box sx={{ gridColumn: '1 / -1' }}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Locations
               </Typography>
               <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -225,96 +233,23 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
               </Box>
             </Box>
             
-            <Box sx={{ gridColumn: '1 / -1' }}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle2" color="text.secondary">
+            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Documents
               </Typography>
               <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Box>
-                  <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.validTaxClearance && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.validTaxClearance} 
-                        alt="Tax Clearance" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
-                
-                <Box>
-                  <Typography><strong>Company Logo:</strong> {customer.companyLogo ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.companyLogo && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.companyLogo} 
-                        alt="Company Logo" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
-                
-                <Box>
-                  <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.getCertificateOfCooperation && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.getCertificateOfCooperation} 
-                        alt="Certificate of Cooperation" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
-                
-                <Box>
-                  <Typography><strong>Operating License:</strong> {customer.operatingLicense ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.operatingLicense && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.operatingLicense} 
-                        alt="Operating License" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
-                
-                <Box>
-                  <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.proofOfInsurance && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.proofOfInsurance} 
-                        alt="Proof of Insurance" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
-                
-                <Box>
-                  <Typography><strong>Risk Assessment Report:</strong> {customer.siteRiskAssessmentReport ? 'Uploaded' : 'Not uploaded'}</Typography>
-                  {customer.siteRiskAssessmentReport && (
-                    <Box sx={{ mt: 1, maxWidth: '200px' }}>
-                      <img 
-                        src={customer.siteRiskAssessmentReport} 
-                        alt="Risk Assessment Report" 
-                        style={{ width: '100%', height: 'auto', borderRadius: '4px' }} 
-                      />
-                    </Box>
-                  )}
-                </Box>
+                <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance || 'Not uploaded'}</Typography>
+                <Typography><strong>Company Logo:</strong> {customer.companyLogo || 'Not uploaded'}</Typography>
+                <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation || 'Not uploaded'}</Typography>
+                <Typography><strong>Operating License:</strong> {customer.operatingLicense || 'Not uploaded'}</Typography>
+                <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance || 'Not uploaded'}</Typography>
+                <Typography><strong>Risk Assessment Report:</strong> {customer.siteRiskAssessmentReport || 'Not uploaded'}</Typography>
               </Box>
             </Box>
 
             {customer.reason && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Additional Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
