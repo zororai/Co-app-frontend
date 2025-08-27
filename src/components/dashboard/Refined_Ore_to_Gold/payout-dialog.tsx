@@ -111,68 +111,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
       <DialogTitle>Payout</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-          {/* Assignment Information */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Assignment Information
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-                  Details of the current assignment
-                </Typography>
-                <Box sx={{ display: "grid", rowGap: 1.25 }}>
-                  
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Shaft Number</Typography>
-                    <Typography variant="body2">{assignment?.shaftNumber ?? "-"}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Shaft Owner</Typography>
-                    <Typography variant="body2">{assignment?.shaftOwner ?? "-"}</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Ore Weight</Typography>
-                    <Typography variant="body2">{assignment?.oreWeightKg ?? 0} kg</Typography>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Mill</Typography>
-                    <Typography variant="body2">{assignment?.mill ?? "-"}</Typography>
-                  </Box>
-                </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Payout Summary
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mb: 2 }}>
-                  Calculated payout breakdown
-                </Typography>
-
-                <Box sx={{ display: "grid", rowGap: 1 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gold Weight:</Typography>
-                    <Typography variant="body2">{goldWeightGrams || 0} g</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Price per gram:</Typography>
-                    <Typography variant="body2">${pricePerGram || 0}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gross Amount:</Typography>
-                    <Typography variant="body2">${grossAmount.toFixed(2)}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
-                    <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
-                  </Box>
-                  
-                </Box>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4}>
             <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Loan Details
@@ -214,6 +153,88 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                 </Box>
             </Box>
           </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                Transport Cost
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
+                  Details of the Current Loan
+                </Typography>
+                
+                <Box sx={{ display: "grid", rowGap: 1 }}>
+                <br/>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Payment Method:</Typography>
+                    <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Amount/Grams:</Typography>
+                    <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
+                  </Box>
+        
+                  
+                </Box>
+            </Box>
+          </Grid>
+          {/* Assignment Information */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Assignment Information
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+                  Details of the current assignment
+                </Typography>
+                <Box sx={{ display: "grid", rowGap: 1}}>
+                  
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Shaft Number</Typography>
+                    <Typography variant="body2">{assignment?.shaftNumber ?? "-"}</Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Ore Weight</Typography>
+                    <Typography variant="body2">{assignment?.oreWeightKg ?? 0} kg</Typography>
+                  </Box>
+                 
+                </Box>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Payout Summary
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mb: 2 }}>
+                  Calculated payout breakdown
+                </Typography>
+
+                <Box sx={{ display: "grid", rowGap: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Gold Weight:</Typography>
+                    <Typography variant="body2">{goldWeightGrams || 0} g</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Price per gram:</Typography>
+                    <Typography variant="body2">${pricePerGram || 0}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Gross Amount:</Typography>
+                    <Typography variant="body2">${grossAmount.toFixed(2)}</Typography>
+                  </Box>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
+                    <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
+                  </Box>
+                  
+                </Box>
+            </Box>
+          </Grid>
+
+        
 
           {/* Payout Details */}
           

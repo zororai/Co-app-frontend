@@ -50,26 +50,34 @@ export function SideNav(): React.JSX.Element {
       }}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }}>
+        <Box
+          component={RouterLink}
+          href={paths.home}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}
+        >
           <Box
             component="img"
-            src="/assets/logo-emblem.png"
+            src="/assets/Logo.png"
             alt="Logo"
             sx={{
-              height: 32,
-              width: 122
+              height: 50,
+              width: 50
             }}
+            
           />
+          <Typography variant="h6" gutterBottom={false}>
+              Commstack
+            </Typography>
         </Box>
         <Box
           sx={{
             alignItems: 'center',
             backgroundColor: 'var(--mui-palette-neutral-950)',
-            border: '1px solid var(--mui-palette-neutral-700)',
+            
             borderRadius: '12px',
             cursor: 'pointer',
             display: 'flex',
-            p: '4px 12px',
+            p: '10px 12px',
           }}
         >
           <Box sx={{ flex: '1 1 auto' }}>

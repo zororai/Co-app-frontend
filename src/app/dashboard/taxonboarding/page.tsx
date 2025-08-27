@@ -16,8 +16,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/taxonboarding/tax-table';
-import type { Customer } from '@/components/dashboard/taxonboarding/tax-table';
+import { CustomersTable } from '@/components/dashboard/taxonboarding/taxonboarding-table';
+import type { Customer } from '@/components/dashboard/taxonboarding/taxonboarding-table';
 
 
 import Dialog from '@mui/material/Dialog';
