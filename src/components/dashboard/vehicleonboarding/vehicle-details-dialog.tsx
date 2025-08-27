@@ -16,6 +16,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface VehicleDetailsDialogProps {
   open: boolean;
@@ -139,13 +141,19 @@ export function VehicleDetailsDialog({
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span">Vehicle Details</Typography>
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Vehicle Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('vehicle-details-printable', 'Vehicle Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent>
         {loading ? (
@@ -164,14 +172,14 @@ export function VehicleDetailsDialog({
             </Button>
           </Box>
         ) : vehicle ? (
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 2 }} id="vehicle-details-printable">
             <Box sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
               gap: 2
             }}>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Vehicle Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -208,8 +216,8 @@ export function VehicleDetailsDialog({
                   </Typography>
                 </Box>
               </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Owner Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -219,9 +227,8 @@ export function VehicleDetailsDialog({
                   <Typography><strong>Address:</strong> {vehicle.ownerAddress || 'N/A'}</Typography>
                 </Box>
               </Box>
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Assigned Driver
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -229,9 +236,8 @@ export function VehicleDetailsDialog({
                   {/* Additional driver information can be added here if available */}
                 </Box>
               </Box>
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle2" color="text.secondary">
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                   Documents
                 </Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -289,9 +295,8 @@ export function VehicleDetailsDialog({
                 </Box>
               </Box>
               {vehicle.reason && (
-                <Box sx={{ gridColumn: '1 / -1' }}>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle2" color="text.secondary">
+                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                     Additional Information
                   </Typography>
                   <Box sx={{ mt: 2 }}>
@@ -307,7 +312,7 @@ export function VehicleDetailsDialog({
           </Box>
         )}
       </DialogContent>
-     
+      
     </Dialog>
   );
 }

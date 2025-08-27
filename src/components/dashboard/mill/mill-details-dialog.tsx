@@ -17,6 +17,8 @@ import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
 import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
 import { useState } from 'react';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
 interface MillDetailsDialogProps {
   open: boolean;
@@ -91,19 +93,16 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        Mill Details
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#15073d', p: 2 }}>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Mill Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('mill-details-printable', 'Mill Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       
       <DialogContent>
@@ -114,7 +113,7 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
         ) : mill ? (
-          <Box sx={{ mt: 2 }}>
+          <Box sx={{ mt: 2 }} id="mill-details-printable">
             {/* Mill Status */}
             <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6">
@@ -135,85 +134,93 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
             <Divider sx={{ mb: 3 }} />
             
             {/* Mill Information */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Mill Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill ID</Typography>
-                <Typography variant="body1">{mill.millId || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill Name</Typography>
-                <Typography variant="body1">{mill.millName || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill Type</Typography>
-                <Typography variant="body1">{mill.millType || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill Location</Typography>
-                <Typography variant="body1">{mill.millLocation || 'N/A'}</Typography>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Mill Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Mill ID</Typography>
+                  <Typography variant="body1">{mill.millId || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Mill Name</Typography>
+                  <Typography variant="body1">{mill.millName || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Mill Type</Typography>
+                  <Typography variant="body1">{mill.millType || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Mill Location</Typography>
+                  <Typography variant="body1">{mill.millLocation || 'N/A'}</Typography>
+                </Box>
               </Box>
             </Box>
             
             {/* Owner Information */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Owner Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Owner Name</Typography>
-                <Typography variant="body1">{mill.owner || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">ID Number</Typography>
-                <Typography variant="body1">{mill.idNumber || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Address</Typography>
-                <Typography variant="body1">{mill.address || 'N/A'}</Typography>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Owner Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Owner Name</Typography>
+                  <Typography variant="body1">{mill.owner || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">ID Number</Typography>
+                  <Typography variant="body1">{mill.idNumber || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Address</Typography>
+                  <Typography variant="body1">{mill.address || 'N/A'}</Typography>
+                </Box>
               </Box>
             </Box>
             
             {/* Status Information */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Status Information
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Status</Typography>
-                <Typography variant="body1">{mill.status || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Status Health</Typography>
-                <Typography variant="body1">{mill.statusHealth || 'N/A'}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Reason</Typography>
-                <Typography variant="body1">{mill.reason || 'N/A'}</Typography>
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Status Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Status</Typography>
+                  <Typography variant="body1">{mill.status || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Status Health</Typography>
+                  <Typography variant="body1">{mill.statusHealth || 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Reason</Typography>
+                  <Typography variant="body1">{mill.reason || 'N/A'}</Typography>
+                </Box>
               </Box>
             </Box>
             
             {/* Documents */}
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Documents
-            </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2, mb: 3 }}>
-              <Box>
-                <Typography variant="body2" color="text.secondary">Mill Picture</Typography>
-                <Typography variant="body1">
-                  {mill.picture ? 'Uploaded' : 'Not uploaded'}
-                </Typography>
-                {mill.picture && (
-                  <Box sx={{ mt: 1, maxWidth: '300px' }}>
-                    <img 
-                      src={mill.picture} 
-                      alt="Mill" 
-                      style={{ maxWidth: '100%', borderRadius: '4px' }} 
-                    />
-                  </Box>
-                )}
+            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Documents
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary">Mill Picture</Typography>
+                  <Typography variant="body1">
+                    {mill.picture ? 'Uploaded' : 'Not uploaded'}
+                  </Typography>
+                  {mill.picture && (
+                    <Box sx={{ mt: 1, maxWidth: '300px' }}>
+                      <img 
+                        src={mill.picture} 
+                        alt="Mill" 
+                        style={{ maxWidth: '100%', borderRadius: '4px' }} 
+                      />
+                    </Box>
+                  )}
+                </Box>
               </Box>
             </Box>
             

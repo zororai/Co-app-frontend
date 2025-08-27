@@ -183,15 +183,12 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
       maxWidth="md"
     >
       <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#15073d', p: 2 }}>
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Driver Details</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Driver Details</Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('driver-details-printable', 'Driver Details')} size="small" sx={{ mr: 1 }}>
+        <IconButton onClick={() => printElementById('user-details-printable', 'User Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
             <PrintIcon />
           </IconButton>
-          <IconButton
-            aria-label="close"
-            onClick={onClose}
-          >
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
             <CloseIcon />
           </IconButton>
         </Box>

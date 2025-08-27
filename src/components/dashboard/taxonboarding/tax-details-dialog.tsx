@@ -192,7 +192,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     >
       <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+          <Typography variant="h6" component="span" sx={{ color: '#ffffff', fontWeight: 700 }}>
             Tax Details
           </Typography>
           <Box>
@@ -220,8 +220,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         )}
 
         {!loading && !error && userDetails && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ p: 2, border: '1px solid #000080', borderRadius: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, paddingTop: 2 }}>
+            <Box sx={{ p: 2,  border: '1px solid #000080', borderRadius: 1 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Tax Information</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                 <DetailItem label="Tax Type" value={userDetails.taxType || 'N/A'} />
@@ -233,7 +233,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               </Box>
             </Box>
             {userDetails.notes && (
-              <Box sx={{ mt: 2, p: 2, border: '1px solid #000080', borderRadius: 1 }}>
+              <Box sx={{ mt: 2, p: 2, paddingTop: 2, border: '1px solid #000080', borderRadius: 1 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Notes</Typography>
                 <Box sx={{ 
                   p: 2, 

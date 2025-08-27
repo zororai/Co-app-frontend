@@ -126,7 +126,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FF8F00', fontWeight: 'bold' }}>Production Loan Details</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Production Loan Details</Typography>
         <Box sx={{ display: 'flex' }}>
           <IconButton onClick={() => printElementById('production-loan-details-printable', 'Production Loan Details')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
             <PrintIcon />
@@ -150,7 +150,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
         )}
 
         {!loading && !error && loanDetails && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} id="production-loan-details-printable">
+          <Box sx={{ display: 'flex', paddingTop:2, flexDirection: 'column', gap: 2 }} id="production-loan-details-printable">
             <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
               <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Loan Information</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
