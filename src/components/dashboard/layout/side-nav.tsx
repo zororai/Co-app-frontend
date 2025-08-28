@@ -83,10 +83,10 @@ export function SideNav(): React.JSX.Element {
           <Box sx={{ flex: '1 1 auto' }}>
             
             <Typography color="inherit" variant="subtitle1">
-              Co_App
+              Co-App
             </Typography>
           </Box>
-          <CaretUpDownIcon />
+        
         </Box>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />

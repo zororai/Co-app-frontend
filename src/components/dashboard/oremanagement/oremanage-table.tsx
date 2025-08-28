@@ -385,11 +385,10 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Ore ID</TableCell>
-              <TableCell>Shaft Numbers</TableCell>
+              <TableCell>Shaft Number</TableCell>
               <TableCell>Weight</TableCell>
               <TableCell>Number of Bags</TableCell>
-              <TableCell>Transport Status</TableCell>
-              <TableCell>Driver</TableCell>
+             
               <TableCell>Transport</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Process Status</TableCell>
@@ -426,8 +425,7 @@ export function CustomersTable({
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.weight || 0} kg</TableCell>
                   <TableCell>{row.numberOfBags || 0}</TableCell>
-                  <TableCell>{row.transportStatus || ''}</TableCell>
-                  <TableCell>{row.selectedTransportdriver || ''}</TableCell>
+                  
                   <TableCell>{row.selectedTransport || ''}</TableCell>
                   <TableCell>{row.location || ''}</TableCell>
                   <TableCell>{row.processStatus || ''}</TableCell>

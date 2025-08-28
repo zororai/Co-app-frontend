@@ -35,14 +35,14 @@ export interface IntegrationCardProps {
 
 export function IntegrationCard({ integration }: IntegrationCardProps): React.JSX.Element {
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: 2 }}>
+    <Card sx={{ display: 'flex',border: '1px solid #000080', flexDirection: 'column', height: '100%', p: 2 }}>
       <Stack spacing={2} alignItems="center">
         <Avatar src={integration.logo} alt={integration.title} sx={{ width: 56, height: 56, mb: 1 }} />
         <Typography variant="h6" align="center">{integration.title || integration.sectionName || 'No Title'}</Typography>
         <Typography variant="body2" color="text.secondary" align="center">
           {integration.description || 'No description provided.'}
         </Typography>
-        <Divider sx={{ width: '100%' }} />
+        <Divider sx={{ width: '100%' ,border: '0.5px solid #5566aa'}} />
         <Box sx={{ width: '100%' }}>
           {integration.sectionName && (
             <Typography variant="subtitle2">Section: {integration.sectionName}</Typography>

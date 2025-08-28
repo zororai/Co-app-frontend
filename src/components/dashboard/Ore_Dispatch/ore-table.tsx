@@ -456,7 +456,7 @@ export function CustomersTable({
               <TableCell>Location</TableCell>
               <TableCell>Security Status</TableCell>  
               <TableCell>View Details</TableCell>
-              <TableCell>Assign</TableCell>
+              <TableCell>Dispatch</TableCell>
      
               
             </TableRow>

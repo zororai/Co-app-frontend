@@ -657,11 +657,9 @@ export function CustomersTable({
               </TableCell>
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Number of Bags </TableCell>
+              
               <TableCell>Sample Type</TableCell>
               <TableCell>Sample Weight</TableCell>
-              <TableCell>Sample Size</TableCell>
               <TableCell>Sample Status</TableCell>
               <TableCell>Sample Reason</TableCell>
               <TableCell>Sample Results</TableCell>
@@ -694,11 +692,8 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>{row.oreUniqueId}</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell>{row.newWeight || 0} kg</TableCell>
-                  <TableCell>{row.newnumberOfBags || 0}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleSize : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].status : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].reason  : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
@@ -727,7 +722,7 @@ export function CustomersTable({
                     {/* Show the 'Collect Sample' button when status is not 'Approved' */}
                     {/* Don't hide the button based on sampleType anymore */}
                     {!(row.oreSample && row.oreSample[0] && 
-                       row.oreSample[0].status === 'Approved' || row.oreSample[0].sampleType === 'Unknown') && (
+                       row.oreSample[0].status === 'Approved' ) && (
                       <Button 
                         onClick={() => handleOpenSampleUpdateDialog(row.id)}
                         variant="outlined"

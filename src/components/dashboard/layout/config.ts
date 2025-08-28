@@ -87,10 +87,11 @@ export const navItems = [
       { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'user' },
       { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
       { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
-      { key: 'taxonboard-status', title: 'Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
+      { key: 'taxonboard-status', title: 'Operational Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
       {key:'mill-status', title: 'Mill Status', href: paths.dashboard.millstatus, icon: 'truck' },
       {key:'Production_LoanStatus', title: 'Production Loan Status', href: paths.dashboard.Production_LoanStatus, icon: 'truck' },
       {key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'truck' },
+
    
     ],
   },

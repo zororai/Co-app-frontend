@@ -31,7 +31,7 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Customer Details</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Registered Syndicate</Typography>
         <Box sx={{ display: 'flex' }}>
           <IconButton onClick={() => printElementById('customer-details-printable', 'Customer Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
             <PrintIcon />
@@ -48,8 +48,8 @@ export function CustomerDetailsDialog({ open, onClose, customer }: CustomerDetai
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 2 
           }}>
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: '1px solid #9e9e9e', borderRadius: '8px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: '#000080', fontWeight: 'bold', mb: 2 }}>
                 Personal Information
               </Typography>
               <Box sx={{ mt: 2 }}>

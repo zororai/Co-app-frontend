@@ -346,27 +346,13 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
+          
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
               <TableCell>Weight</TableCell>
               <TableCell>Number of Bags</TableCell>
               <TableCell>Transport Status</TableCell>
               <TableCell>Driver</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Process Status</TableCell>   
               <TableCell>View Details</TableCell>
               <TableCell>Assign Truck To Ore</TableCell>
      
@@ -383,26 +369,14 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
+             
                   <TableCell>{row.oreUniqueId }</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.weight || 0} kg</TableCell>
                   <TableCell>{row.numberOfBags || 0}</TableCell>
                   <TableCell>{row.transportStatus || ''}</TableCell>
                   <TableCell>{row.selectedTransportdriver || ''}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
-                  <TableCell>{row.processStatus || ''}</TableCell>
+
                   
                   
                   
