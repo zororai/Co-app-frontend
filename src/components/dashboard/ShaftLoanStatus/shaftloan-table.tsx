@@ -115,6 +115,7 @@ export function CustomersTable({
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedAssignmentId, setSelectedAssignmentId] = React.useState<string | null>(null);
+  const [selectedAssignmentRow, setSelectedAssignmentRow] = React.useState<any | null>(null);
 
   // Fetch drivers from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
@@ -300,12 +301,10 @@ export function CustomersTable({
               <TableCell>Section Name</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Operational Status</TableCell>
-              <TableCell>Start Contract Date</TableCell>
-              <TableCell>End Contract Date</TableCell>
               <TableCell>Loan Name</TableCell>
+              <TableCell>Payment Method</TableCell>
               <TableCell>Loan Status</TableCell>
               <TableCell>View Details</TableCell>
-           
             </TableRow>
           </TableHead>
           <TableBody>
@@ -359,18 +358,18 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>{row.operationalStatus || 'N/A'}</TableCell>
-                    <TableCell>{row.startContractDate ? dayjs(row.startContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
-                  <TableCell>{row.endContractDate ? dayjs(row.endContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
+                  <TableCell>{row.loans?.[0]?.loanName || 'N/A'}</TableCell>
+                  <TableCell>{row.loans?.[0]?.paymentMethod || 'N/A'}</TableCell>
+                  <TableCell>{row.loans?.[0]?.status || 'N/A'}</TableCell>
                   
             
-              <TableCell>{Array.isArray(row.loans) ? (row.loans[0]?.loanName ?? 'N/A') : (row.loans?.loanName ?? 'N/A')}</TableCell>
-              <TableCell>{Array.isArray(row.loans) ? (row.loans[0]?.status ?? row.loans[0]?.loanStatus ?? 'N/A') : (row.loans?.status ?? row.loans?.loanStatus ?? 'N/A')}</TableCell>
+              
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
                         onClick={() => {
                           const minerId = (row as any).minerId || row.id;
-                        
+                          setSelectedAssignmentRow(row);
                           setSelectedDriverId(minerId);
                           setIsDriverDetailsDialogOpen(true);
                         }}
@@ -415,6 +414,7 @@ export function CustomersTable({
           open={isDriverDetailsDialogOpen}
           onClose={() => setIsDriverDetailsDialogOpen(false)}
           minerId={selectedDriverId}
+          assignment={selectedAssignmentRow}
         />
       )}
 

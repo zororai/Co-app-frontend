@@ -115,6 +115,7 @@ export function CustomersTable({
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
   const [isBorrowDialogOpen, setIsBorrowDialogOpen] = React.useState(false);
   const [selectedAssignmentId, setSelectedAssignmentId] = React.useState<string | null>(null);
+  const [selectedAssignmentRow, setSelectedAssignmentRow] = React.useState<any | null>(null);
 
   // Fetch drivers from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
@@ -300,8 +301,6 @@ export function CustomersTable({
               <TableCell>Section Name</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Operational Status</TableCell>
-              <TableCell>Start Contract Date</TableCell>
-              <TableCell>End Contract Date</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
@@ -357,8 +356,6 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>{row.operationalStatus || 'N/A'}</TableCell>
-                    <TableCell>{row.startContractDate ? dayjs(row.startContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
-                  <TableCell>{row.endContractDate ? dayjs(row.endContractDate).format('YYYY-MM-DD') : 'N/A'}</TableCell>
                   
             
               
@@ -367,7 +364,7 @@ export function CustomersTable({
                       <Button 
                         onClick={() => {
                           const minerId = (row as any).minerId || row.id;
-                        
+                          setSelectedAssignmentRow(row);
                           setSelectedDriverId(minerId);
                           setIsDriverDetailsDialogOpen(true);
                         }}
@@ -388,8 +385,7 @@ export function CustomersTable({
                   </TableCell>
 
                   <TableCell>
-                {(Array.isArray(row.loans) && row.loans.some((l: any) => String(l?.loanName ?? '').trim().toLowerCase() === 'not yet specified')) && (
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Button 
                           onClick={() => {
                             const assignmentId = (row as any).assignmentId || row.id;
@@ -407,10 +403,10 @@ export function CustomersTable({
                             }
                           }}
                         >
-                          Shaft Borrowing
+                          Borrowe
                         </Button>
                       </Box>
-                    )}
+                    
                   </TableCell>
                
                 </TableRow>
@@ -436,6 +432,7 @@ export function CustomersTable({
           open={isDriverDetailsDialogOpen}
           onClose={() => setIsDriverDetailsDialogOpen(false)}
           minerId={selectedDriverId}
+          assignment={selectedAssignmentRow}
         />
       )}
 

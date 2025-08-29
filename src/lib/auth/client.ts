@@ -534,6 +534,40 @@ class AuthClient {
   }
 
   /**
+   * Fetch shaft assignments by miner ID
+   * GET /api/shaft-assignments/by-miner/{minerId}
+   */
+  async fetchShaftAssignmentsByMiner(minerId: string | number): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          window.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const safeId = encodeURIComponent(String(minerId).trim());
+          const url = `http://localhost:1000/api/shaft-assignments/by-miner/${safeId}`;
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const text = await response.text().catch(() => '');
+              throw new Error(text || 'Failed to fetch shaft assignments by miner');
+          }
+          const data = await response.json();
+          return Array.isArray(data) ? data : (data?.items ?? []);
+      } catch (error) {
+          console.error(`Error fetching shaft assignments for miner ${minerId}:`, error);
+          return [];
+      }
+  }
+
+  /**
    * Approve a shaft loan by shaft assignment ID
    * PUT /api/shaft-assignments/{assignmentId}/loan/approve
    */
@@ -828,6 +862,34 @@ async fetchOreRecieved(): Promise<any[]> {
   }
 }
   async fetchtax(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        window.location.href = '/auth/signin';
+        return [];
+    }
+    try {
+        const response = await fetch('http://localhost:1000/api/taxdidections', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch tax data');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : data.taxes || [];
+    } catch (error) {
+        console.error('Error fetching tax data:', error);
+        return [];
+    }
+  }
+
+  async fetchTransportCost(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
         console.error('No token found in localStorage');
@@ -2612,34 +2674,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
      * Fetch shaft assignment(s) by miner ID
      * GET /api/shaft-assignments/by-miner/{id}
      */
-    async fetchShaftAssignmentsByMiner(minerId: string): Promise<any | null> {
-        const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            window.location.href = '/auth/signin'; // Redirect to sign-in page
-            return null;
-        }
-        try {
-            const response = await fetch(`http://localhost:1000/api/shaft-assignments/by-miner/${minerId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': '*/*',
-                    Authorization: `Bearer ${token}`,
-                },
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => '');
-                throw new Error(errorText || 'Failed to fetch shaft assignments by miner');
-            }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error(`Error fetching shaft assignments by miner ${minerId}:`, error);
-            return null;
-        }
-    }
+
 
     /**
      * Update loan details for a shaft assignment by assignment ID.

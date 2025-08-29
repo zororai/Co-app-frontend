@@ -198,7 +198,7 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
           <TextField
             required
             label="Status"
-            value="PENDING"
+            value="Pending"
 
             fullWidth
           />
