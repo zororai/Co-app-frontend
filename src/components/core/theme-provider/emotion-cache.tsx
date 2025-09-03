@@ -75,7 +75,7 @@ export function EmotionCacheProvider(props: EmotionCacheProviderProps) {
 			}
 		}
 
-		// eslint-disable-next-line unicorn/consistent-function-scoping
+		 
 		const get__Html = (style: string) => (prepend ? `@layer emotion {${style}}` : style);
 
 		return (

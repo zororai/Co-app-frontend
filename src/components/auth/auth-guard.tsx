@@ -40,7 +40,7 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     checkPermissions().catch(() => {
       // noop
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
+     
   }, [user, error, isLoading]);
 
   if (isChecking) {
