@@ -41,8 +41,8 @@ npm run docker:stop
 # Build the image
 docker build -t co-app-frontend .
 
-# Run the container
-docker run -p 3000:3000 co-app-frontend
+# Run the container (host 3001 -> container 3000)
+docker run -p 3001:3000 co-app-frontend
 ```
 
 ### Development
@@ -62,12 +62,12 @@ docker-compose --profile dev up -d
 You can pass environment variables to the container:
 
 ```bash
-docker run -p 3000:3000 -e NODE_ENV=production co-app-frontend
+docker run -p 3001:3000 -e NODE_ENV=production co-app-frontend
 ```
 
 ### Port Configuration
 
-The application runs on port 3000 by default. To use a different port:
+The application listens on port 3000 in the container. By default we map host 3001 -> container 3000. To use a different host port:
 
 ```bash
 docker run -p 8080:3000 co-app-frontend
@@ -77,7 +77,7 @@ docker run -p 8080:3000 co-app-frontend
 
 ### Container won't start
 - Ensure Docker is running
-- Check if port 3000 is already in use
+- Check if port 3001 is already in use
 - Verify all dependencies are properly installed
 
 ### Build issues

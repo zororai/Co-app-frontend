@@ -40,6 +40,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
+
 interface AddUserDialogProps {
   open: boolean;
   onClose: () => void;
@@ -164,8 +165,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTax = [...formData.tax];
-    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value;
-    
+    if (field === 'taxRate') {
+      newTax[index].taxRate = Number(event.target.value);
+    } else {
+      newTax[index].taxType = event.target.value;
+    }
     setFormData({
       ...formData,
       tax: newTax

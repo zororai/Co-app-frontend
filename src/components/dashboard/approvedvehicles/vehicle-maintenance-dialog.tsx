@@ -51,28 +51,7 @@ export function VehicleMaintenanceDialog({
     }
   };
 
-  const handleSetToFunctional = async () => {
-    if (!vehicleId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const result = await authClient.setVehicleToIdle(vehicleId);
-      
-      if (result.success) {
-        onStatusChange();
-        onClose();
-      } else {
-        setError(result.error || 'Failed to set vehicle as functional');
-      }
-    } catch (error_) {
-      setError('An unexpected error occurred');
-      console.error('Error setting vehicle as functional:', error_);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   return (
     <Dialog
@@ -105,7 +84,7 @@ export function VehicleMaintenanceDialog({
         </Button>
         {vehicleStatus === 'Maintainance' ? (
           <Button 
-            onClick={handleSetToFunctional}
+          
             color="primary"
             variant="contained"
             disabled={loading}

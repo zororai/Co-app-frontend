@@ -1,4 +1,5 @@
- 
+/* eslint-disable unicorn/consistent-function-scoping */
+
 import * as React from 'react';
 import type { Viewport } from 'next';
 

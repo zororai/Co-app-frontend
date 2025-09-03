@@ -24,7 +24,7 @@ EXPOSE 3000
 
 # Start development server
 CMD \
-  if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm dev; \
-  elif [ -f package-lock.json ]; then npm run dev; \
+  if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm exec next dev -H 0.0.0.0 -p 3000; \
+  elif [ -f package-lock.json ]; then npx next dev -H 0.0.0.0 -p 3000; \
   else echo "Lockfile not found." && exit 1; \
   fi

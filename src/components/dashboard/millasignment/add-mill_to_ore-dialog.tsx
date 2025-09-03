@@ -38,6 +38,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
 
+
 interface AddUserDialogProps {
   open: boolean;
   onClose: () => void;
@@ -80,6 +81,25 @@ const locationOptions = [
   { value: 'head_office', label: 'Head Office' }
 ];
 
+type TaxItem = { taxType: string; taxRate: number };
+
+interface FormData {
+  shaftNumbers: string;
+  weight: string | number;
+  numberOfBags: string | number;
+  transportStatus: string;
+  selectedTransportdriver: string;
+  selectedTransport: string;
+  originLocation: string;
+  destination: string;
+  location: string;
+  transportReason: string;
+  processStatus: string;
+  date: dayjs.Dayjs;
+  time: dayjs.Dayjs;
+  tax: TaxItem[];
+}
+
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
@@ -89,10 +109,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
-  
-  // State for form data
-  const [formData, setFormData] = React.useState({
 
+  // State for form data
+  const [formData, setFormData] = React.useState<FormData>({
     shaftNumbers: '',
     weight: '',
     numberOfBags: '',
@@ -110,16 +129,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     tax: [
       {
         taxType: '',
-        taxRate: 0
-      }
-    ]
+        taxRate: 0,
+      },
+    ],
   });
 
   // State for shaft assignments
   const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
   const [loadingShafts, setLoadingShafts] = React.useState<boolean>(false);
   const [shaftError, setShaftError] = React.useState<string>('');
-  
+
   // Email validation function
   const validateEmail = (email: string): boolean => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -136,7 +155,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: event.target.value,
     });
   };
 
@@ -144,7 +163,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const handleSelectChange = (field: string) => (event: any) => {
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: event.target.value,
     });
   };
 
@@ -152,21 +171,24 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   const handleDateChange = (field: string) => (date: dayjs.Dayjs | null) => {
     setFormData({
       ...formData,
-      [field]: date
+      [field]: date,
     });
   };
 
   // Handle switch change
 
-
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newTax = [...formData.tax];
-    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value;
-    
+    const newTax: TaxItem[] = [...formData.tax];
+    if (field === 'taxRate') {
+      newTax[index].taxRate = Number(event.target.value);
+    } else {
+      newTax[index].taxType = event.target.value;
+    }
+
     setFormData({
       ...formData,
-      tax: newTax
+      tax: newTax,
     });
   };
 

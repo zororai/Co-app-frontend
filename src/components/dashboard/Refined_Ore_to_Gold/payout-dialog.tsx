@@ -1,5 +1,3 @@
- 
-
 "use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
@@ -15,6 +13,7 @@ import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import dayjs from "dayjs";
+import { error } from "console";
 
 export type PayoutAssignment = {
   assignmentId?: string | number;
@@ -113,7 +112,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
       <DialogTitle>Payout</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 0 }}>
-        <Grid item xs={12} md={4}>
+       
             <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Loan Details
@@ -154,9 +153,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                   </Box>
                 </Box>
             </Box>
-          </Grid>
+         
 
-          <Grid item xs={12} md={4}>
+         
             <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                 Transport Cost
@@ -180,9 +179,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                   
                 </Box>
             </Box>
-          </Grid>
+         
           {/* Assignment Information */}
-          <Grid item xs={12} md={4}>
+     
             <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Assignment Information
@@ -204,8 +203,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                  
                 </Box>
             </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
+         
+         
             <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Payout Summary
@@ -234,7 +233,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                   
                 </Box>
             </Box>
-          </Grid>
+    
 
         
 

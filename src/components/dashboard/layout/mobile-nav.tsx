@@ -143,7 +143,7 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
 
 function NavItem({ disabled, external, href, icon, matcher, pathname, title }: NavItemProps): React.JSX.Element {
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
-  const Icon = icon ? navIcons[icon] : null;
+
 
   return (
     <li>
@@ -176,15 +176,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
           ...(active && { bgcolor: 'var(--NavItem-active-background)', color: 'var(--NavItem-active-color)' }),
         }}
       >
-        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
-          {Icon ? (
-            <Icon
-              fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'}
-              fontSize="var(--icon-fontSize-md)"
-              weight={active ? 'fill' : undefined}
-            />
-          ) : null}
-        </Box>
+   
         <Box sx={{ flex: '1 1 auto' }}>
           <Typography
             component="span"

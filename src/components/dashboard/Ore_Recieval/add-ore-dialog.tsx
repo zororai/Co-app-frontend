@@ -164,7 +164,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTax = [...formData.tax];
-    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value;
+    // Assign explicitly to satisfy TypeScript's narrowed types
+    if (field === 'taxRate') {
+      newTax[index].taxRate = Number(event.target.value);
+    } else {
+      newTax[index].taxType = event.target.value;
+    }
     
     setFormData({
       ...formData,

@@ -252,7 +252,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
       if (result.success) {
         // Set success state and move to confirmation step
         setSuccess(true);
-        setReferenceNumber(result.referenceNumber || 'MILL-' + Math.floor(Math.random() * 10_000));
+        setReferenceNumber(result.data?.referenceNumber || 'MILL-' + Math.floor(Math.random() * 10_000));
         setActiveStep(steps.length - 1); // Move to confirmation step
         
         // If onSubmit is provided, call it with the form data

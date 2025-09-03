@@ -174,7 +174,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate' | 'location' | 'description') => (event: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const newTax = [...formData.tax];
-    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value as string;
+    const value = (event as any).target?.value;
+    if (field === 'taxRate') {
+      newTax[index].taxRate = Number(value);
+    } else if (field === 'taxType') {
+      newTax[index].taxType = value as string;
+    } else if (field === 'location') {
+      newTax[index].location = value as string;
+    } else {
+      newTax[index].description = value as string;
+    }
     
     setFormData({
       ...formData,
