@@ -1,3 +1,5 @@
+ 
+
 "use client";
 import * as React from 'react';
 import Button from '@mui/material/Button';
@@ -52,7 +54,7 @@ export default function Page(): React.JSX.Element {
   };
 
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(Number.parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -89,19 +91,19 @@ export default function Page(): React.JSX.Element {
     // Format CSV content with proper escaping
     const csvContent = [headers, ...rows]
       .map(r => r.map(String)
-      .map(x => `"${x.replace(/"/g, '""')}"`).join(','))
+      .map(x => `"${x.replaceAll('"', '""')}"`).join(','))
       .join('\n');
 
     // Create blob and download
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const url = globalThis.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.setAttribute('hidden', '');
     a.setAttribute('href', url);
     a.setAttribute('download', 'companies.csv');
-    document.body.appendChild(a);
+    document.body.append(a);
     a.click();
-    document.body.removeChild(a);
+    a.remove();
   };
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +115,7 @@ export default function Page(): React.JSX.Element {
       complete: async (results: { data: any[]; }) => {
         // Map CSV rows to company structure
         const importedData: Company[] = results.data.map((row: any) => ({
-          id: row.id || `imported-${Math.random().toString(36).substr(2, 9)}`,
+          id: row.id || `imported-${Math.random().toString(36).slice(2, 11)}`,
           companyName: row['Company Name'] || '',
           address: row['Address'] || '',
           cellNumber: row['Contact Number'] || '',
@@ -145,10 +147,10 @@ export default function Page(): React.JSX.Element {
             body: JSON.stringify(importedData),
           });
           
-          if (!response.ok) {
-            console.error('Failed to import data:', await response.text());
-          } else {
+          if (response.ok) {
             console.log('Successfully imported data to backend');
+          } else {
+            console.error('Failed to import data:', await response.text());
           }
         } catch (error) {
           console.error('Error sending imported data:', error);

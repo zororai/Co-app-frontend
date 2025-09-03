@@ -37,18 +37,17 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
 
   const handleSubmit = async (): Promise<void> => {
     if (!status) return;
- if(status === 'REJECTED' || status === 'APPROVED' ) {
-    
-    }
+ if(status === 'REJECTED' || status === 'APPROVED' ) {}
     setIsSubmitting(true);
     try {
     switch (status) {
-         case 'APPROVED':
+         case 'APPROVED': {
            // Implement approve vehicle API call when available
            await authClient.approveVehicle(customer.id);
            
            break;
-         case 'REJECTED':
+         }
+         case 'REJECTED': {
           
            if (!reason) {
            
@@ -59,7 +58,8 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
          await authClient.rejectVehicle(customer.id, reason);
            
            break;
-         case 'PUSHED_BACK':
+         }
+         case 'PUSHED_BACK': {
            if (!reason) {
           
              setIsSubmitting(false);
@@ -69,8 +69,10 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
            await authClient.pushBackVehicle(customer.id, reason);
            
            break;
-         default:
+         }
+         default: {
            throw new Error(`Unsupported status: ${status}`);
+         }
        }
 
       // Close the dialog after successful update
@@ -82,7 +84,7 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
       }
 
       // Force a full page reload
-      window.location.reload();
+      globalThis.location.reload();
     } catch (error) {
       console.error(`Error updating status to ${status}:`, error);
       alert(`Failed to update status to ${status}. Please try again.`);

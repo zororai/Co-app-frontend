@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping */
+
 'use client';
 
 import * as React from 'react';
@@ -134,7 +136,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -152,8 +154,8 @@ export function CustomersTable({
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
   // Payout dialog state
   const [payoutOpen, setPayoutOpen] = React.useState(false);
-  const [payoutAssignment, setPayoutAssignment] = React.useState<PayoutAssignment | undefined>(undefined);
-  const [payoutLoanDetails, setPayoutLoanDetails] = React.useState<LoanDetails | undefined>(undefined);
+  const [payoutAssignment, setPayoutAssignment] = React.useState<PayoutAssignment | undefined>();
+  const [payoutLoanDetails, setPayoutLoanDetails] = React.useState<LoanDetails | undefined>();
   
   // States for feedback dialog
   const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
@@ -172,8 +174,8 @@ export function CustomersTable({
     
           setUsers(fetchedOres);
         
-      } catch (err) {
-        console.error('Error fetching ore data:', err);
+      } catch (error_) {
+        console.error('Error fetching ore data:', error_);
         setError('Failed to load ore data. Please try again.');
         
         // Use mock data on error
@@ -194,8 +196,8 @@ export function CustomersTable({
         const fetchedMills = await authClient.fetchActivatedMills();
         console.log('Activated Mills:', fetchedMills); // Debug: Log the mills response
         setMills(fetchedMills);
-      } catch (err) {
-        console.error('Error fetching activated mills:', err);
+      } catch (error_) {
+        console.error('Error fetching activated mills:', error_);
         setMillsError('Failed to load mills. Please try again.');
       } finally {
         setMillsLoading(false);
@@ -246,7 +248,7 @@ export function CustomersTable({
 
     try {
       const shaftNum = String(assignment.shaftNumber ?? '').trim();
-      let loan: LoanDetails | undefined = undefined;
+      let loan: LoanDetails | undefined;
       if (shaftNum) {
         const data = await authClient.fetchLoansByShaftNumber(shaftNum);
         // Map backend response to LoanDetails. If array, take first item.
@@ -264,8 +266,8 @@ export function CustomersTable({
         }
       }
       setPayoutLoanDetails(loan);
-    } catch (e) {
-      console.error('Failed to fetch loans for shaft number', e);
+    } catch (error_) {
+      console.error('Failed to fetch loans for shaft number', error_);
       setPayoutLoanDetails(undefined);
     }
 

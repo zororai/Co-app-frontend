@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping */
+
 'use client';
 
 import * as React from 'react';
@@ -130,7 +132,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -192,8 +194,8 @@ export function CustomersTable({
         } else {
           setUsers(fetchedOres);
         }
-      } catch (err) {
-        console.error('Error fetching ore data:', err);
+      } catch (error_) {
+        console.error('Error fetching ore data:', error_);
         setError('Failed to load ore data. Please try again.');
         
         // Use mock data on error

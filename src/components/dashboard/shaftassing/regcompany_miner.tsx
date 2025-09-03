@@ -269,13 +269,13 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
           }));
           // Convert file to base64 and save as string
           const reader = new FileReader();
-          reader.onload = () => {
+          reader.addEventListener('load', () => {
             const base64String = reader.result as string;
             setForm(prev => ({
               ...prev,
               [name]: base64String
             }));
-          };
+          });
           reader.readAsDataURL(files[0]);
           return;
         }
@@ -307,13 +307,13 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
           [name]: ''
         }));
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.addEventListener('load', () => {
           const base64String = reader.result as string;
           setForm(prev => ({
             ...prev,
             [name]: base64String
           }));
-        };
+        });
         reader.readAsDataURL(file);
       } else {
         setForm(prev => ({
@@ -379,12 +379,12 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
             onClose();
           }
           // Refresh the page
-          window.location.reload();
+          globalThis.location.reload();
         }, 2000); // 2 seconds delay
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      window.alert('An error occurred during registration. Please try again.');
+      globalThis.alert('An error occurred during registration. Please try again.');
     }
   };
 

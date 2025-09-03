@@ -131,7 +131,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -181,8 +181,8 @@ export function CustomersTable({
     
           setUsers(fetchedOres);
         
-      } catch (err) {
-        console.error('Error fetching ore data:', err);
+      } catch (error_) {
+        console.error('Error fetching ore data:', error_);
         setError('Failed to load ore data. Please try again.');
         
         // Use mock data on error
@@ -203,8 +203,8 @@ export function CustomersTable({
         const fetchedMills = await authClient.fetchActivatedMills();
         console.log('Activated Mills:', fetchedMills); // Debug: Log the mills response
         setMills(fetchedMills);
-      } catch (err) {
-        console.error('Error fetching activated mills:', err);
+      } catch (error_) {
+        console.error('Error fetching activated mills:', error_);
         setMillsError('Failed to load mills. Please try again.');
       } finally {
         setMillsLoading(false);
@@ -348,7 +348,7 @@ export function CustomersTable({
     
     try {
       // Convert sampleResult to a number if it's a numeric string
-      const numericResult = parseFloat(sampleResult) || 0;
+      const numericResult = Number.parseFloat(sampleResult) || 0;
       console.log('Submitting sample results:', {
         oreId: selectedUserId,
         reason: sampleReason,

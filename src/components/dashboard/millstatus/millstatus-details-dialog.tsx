@@ -77,8 +77,8 @@ export function MillDetailsDialog({ open, onClose, driverId, onActionComplete }:
             setError('Failed to load mill details');
           }
         })
-        .catch((err) => {
-          console.error('Error fetching mill details:', err);
+        .catch((error_) => {
+          console.error('Error fetching mill details:', error_);
           setError('An error occurred while loading mill details');
         })
         .finally(() => {
@@ -400,7 +400,7 @@ export function MillDetailsDialog({ open, onClose, driverId, onActionComplete }:
             sx={{ mb: 2 }}
             required
             error={!actionReason.trim()}
-            helperText={!actionReason.trim() ? `Please provide a reason for ${isRejectDialogOpen ? 'rejection' : 'pushing back'}` : ''}
+            helperText={actionReason.trim() ? '' : `Please provide a reason for ${isRejectDialogOpen ? 'rejection' : 'pushing back'}`}
             disabled={actionLoading}
             autoFocus
           />

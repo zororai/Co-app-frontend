@@ -54,8 +54,8 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
             setError('Failed to load mill details');
           }
         })
-        .catch((err) => {
-          console.error('Error fetching mill details:', err);
+        .catch((error_) => {
+          console.error('Error fetching mill details:', error_);
           setError('An error occurred while loading mill details');
         })
         .finally(() => {

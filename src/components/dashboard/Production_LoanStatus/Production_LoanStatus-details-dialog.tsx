@@ -1,3 +1,5 @@
+ 
+
 import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -57,8 +59,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       try {
         const details = await authClient.fetchProductionloanDetails(userId);
         setLoanDetails(details);
-      } catch (err) {
-        console.error('Error fetching production loan details:', err);
+      } catch (error_) {
+        console.error('Error fetching production loan details:', error_);
         setError('Failed to load production loan details. Please try again.');
       } finally {
         setLoading(false);
@@ -97,24 +99,46 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       let result;
       
       // Call the appropriate API method based on actionType
-      if (actionType === 'approve') {
+      switch (actionType) {
+      case 'approve': {
         result = await authClient.approveProductionLoan(userId);
-      } else if (actionType === 'reject') {
+      
+      break;
+      }
+      case 'reject': {
         result = await authClient.rejectProductionLoan(userId, reason);
-      } else if (actionType === 'pushback') {
+      
+      break;
+      }
+      case 'pushback': {
         result = await authClient.pushbackProductionLoan(userId, reason);
+      
+      break;
+      }
+      // No default
       }
       
       // Check if the API call was successful
       if (result && result.success) {
         // Different success messages based on action type
         let successMessage = '';
-        if (actionType === 'approve') {
+        switch (actionType) {
+        case 'approve': {
           successMessage = 'Production Loan has been approved successfully. The loan is now ready for processing.';
-        } else if (actionType === 'reject') {
+        
+        break;
+        }
+        case 'reject': {
           successMessage = 'Production Loan has been rejected. The applicant will be notified of this decision.';
-        } else if (actionType === 'pushback') {
+        
+        break;
+        }
+        case 'pushback': {
           successMessage = 'Production Loan has been pushed back for further review. The applicant will be asked to provide additional information.';
+        
+        break;
+        }
+        // No default
         }
         
         setActionSuccess(successMessage);
@@ -139,9 +163,9 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       } else {
         throw new Error(result?.error || 'Operation failed');
       }
-    } catch (err) {
-      console.error(`Error updating production loan status:`, err);
-      setActionError(`Failed to update production loan status: ${err instanceof Error ? err.message : 'Please try again.'}`);
+    } catch (error_) {
+      console.error(`Error updating production loan status:`, error_);
+      setActionError(`Failed to update production loan status: ${error_ instanceof Error ? error_.message : 'Please try again.'}`);
     } finally {
       setActionLoading(false);
     }

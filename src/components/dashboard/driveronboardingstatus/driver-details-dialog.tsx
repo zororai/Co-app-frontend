@@ -52,8 +52,8 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             setError('Failed to load driver details');
           }
         })
-        .catch((err) => {
-          console.error('Error fetching driver details:', err);
+        .catch((error_) => {
+          console.error('Error fetching driver details:', error_);
           setError('An error occurred while loading driver details');
         })
         .finally(() => {

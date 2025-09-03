@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping */
+
 'use client';
 
 import * as React from 'react';
@@ -149,11 +151,7 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTax = [...formData.tax];
-    if (field === 'taxRate') {
-      newTax[index][field] = Number(event.target.value);
-    } else {
-      newTax[index][field] = event.target.value;
-    }
+    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value;
     
     setFormData({
       ...formData,
@@ -245,9 +243,9 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error('Error creating production loan record:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create production loan record');
+    } catch (error_) {
+      console.error('Error creating production loan record:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to create production loan record');
       // Show error in UI
       setActiveStep(activeStep); // Stay on current step
     } finally {

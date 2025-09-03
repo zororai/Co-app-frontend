@@ -264,7 +264,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
       
       if (response.success) {
         // Generate a reference number
-        const refNumber = `SEC-${Math.floor(Math.random() * 900000) + 100000}`;
+        const refNumber = `SEC-${Math.floor(Math.random() * 900_000) + 100_000}`;
         setReferenceNumber(refNumber);
         
         setSuccess(true);
@@ -277,8 +277,8 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
       } else {
         throw new Error(response.error || 'Failed to submit security company information');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit security company information. Please try again.');
+    } catch (error_) {
+      setError(error_ instanceof Error ? error_.message : 'Failed to submit security company information. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -322,7 +322,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
   // Render step content based on active step
   const getStepContent = (step: number) => {
     switch (step) {
-      case 0:
+      case 0: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Company Information</Typography>
@@ -544,7 +544,8 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
             </Box>
           </Box>
         );
-      case 1:
+      }
+      case 1: {
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>Required Documents</Typography>
@@ -602,7 +603,8 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
             </Alert>
           </Box>
         );
-      case 2:
+      }
+      case 2: {
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -651,7 +653,8 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
             </Alert>
           </Box>
         );
-      case 3:
+      }
+      case 3: {
         return (
           <Box>
             <Typography variant="h6" sx={{ mb: 2 }}>Review Company Details</Typography>
@@ -746,7 +749,8 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
             </Box>
           </Box>
         );
-      case 4:
+      }
+      case 4: {
         return (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             {error ? (
@@ -798,8 +802,10 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
       
           </Box>
         );
-      default:
+      }
+      default: {
         return <Box>Unknown step</Box>;
+      }
     }
   };
 

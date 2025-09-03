@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping */
+
 "use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
@@ -93,10 +95,26 @@ export default function Page(): React.JSX.Element {
 
     // Determine which customers to export based on the current tab
     let filteredCustomers: Customer[] = [];
-    if (tab === 'PENDING') filteredCustomers = pendingCustomers;
-    else if (tab === 'PUSHED_BACK') filteredCustomers = pushedBackCustomers;
-    else if (tab === 'REJECTED') filteredCustomers = rejectedCustomers;
-    else if (tab === 'APPROVED') filteredCustomers = approvedCustomers;
+    switch (tab) {
+    case 'PENDING': {
+    filteredCustomers = pendingCustomers;
+    break;
+    }
+    case 'PUSHED_BACK': {
+    filteredCustomers = pushedBackCustomers;
+    break;
+    }
+    case 'REJECTED': {
+    filteredCustomers = rejectedCustomers;
+    break;
+    }
+    case 'APPROVED': { {
+    filteredCustomers = approvedCustomers;
+    // No default
+    }
+    break;
+    }
+    }
 
     const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
 
@@ -114,16 +132,16 @@ export default function Page(): React.JSX.Element {
       c.reason,
       c.attachedShaft ? 'Yes' : 'No'
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'customers.csv';
-    document.body.appendChild(a);
+    document.body.append(a);
 
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   };
 
@@ -168,10 +186,10 @@ export default function Page(): React.JSX.Element {
               'Content-Type': 'application/json',
             },
           });
-          if (!response.ok) {
-            console.error('Failed to import data:', await response.text());
-          } else {
+          if (response.ok) {
             console.log('Successfully imported data to backend');
+          } else {
+            console.error('Failed to import data:', await response.text());
           }
         } catch (error) {
           console.error('Error sending imported data:', error);
@@ -251,7 +269,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
   };
   const handleClose = () => setAnchorEl(null);
   const go = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const handleOpenDialog = () => {

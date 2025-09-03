@@ -1,3 +1,5 @@
+ 
+
 import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -51,8 +53,8 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       try {
         const details = await authClient.fetchOreDetails(userId);
         setOreDetails(details);
-      } catch (err) {
-        console.error('Error fetching ore details:', err);
+      } catch (error_) {
+        console.error('Error fetching ore details:', error_);
         setError('Failed to load ore details. Please try again.');
       } finally {
         setLoading(false);
@@ -98,8 +100,8 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} ore:`, err);
+    } catch (error_) {
+      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} ore:`, error_);
       setActionError(`Failed to ${actionType === 'reject' ? 'reject' : 'push back'} ore. Please try again.`);
     } finally {
       setActionLoading(false);

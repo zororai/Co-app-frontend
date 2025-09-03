@@ -1,3 +1,5 @@
+ 
+
 import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -55,8 +57,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       try {
         const details = await authClient.fetchProductionloanDetails(userId);
         setLoanDetails(details);
-      } catch (err) {
-        console.error('Error fetching production loan details:', err);
+      } catch (error_) {
+        console.error('Error fetching production loan details:', error_);
         setError('Failed to load production loan details. Please try again.');
       } finally {
         setLoading(false);
@@ -102,8 +104,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} production loan:`, err);
+    } catch (error_) {
+      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} production loan:`, error_);
       setActionError(`Failed to ${actionType === 'reject' ? 'reject' : 'push back'} production loan. Please try again.`);
     } finally {
       setActionLoading(false);

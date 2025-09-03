@@ -11,7 +11,7 @@ export function printElementById(id: string, title = 'Print'): void {
     iframe.style.height = '0';
     iframe.style.border = 'none';
 
-    document.body.appendChild(iframe);
+    document.body.append(iframe);
     const frameDoc = iframe.contentWindow?.document;
     if (!frameDoc) return;
 
@@ -44,17 +44,17 @@ export function printElementById(id: string, title = 'Print'): void {
     `);
     frameDoc.close();
 
-    iframe.onload = () => {
+    iframe.addEventListener('load', () => {
       try {
         iframe.contentWindow?.focus();
         iframe.contentWindow?.print();
         setTimeout(() => {
-          document.body.removeChild(iframe);
+          iframe.remove();
         }, 500);
       } catch {
-        document.body.removeChild(iframe);
+        iframe.remove();
       }
-    };
+    });
   } catch {
     // no-op
   }

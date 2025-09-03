@@ -35,6 +35,11 @@ export default [
 				},
 			],
 			"@typescript-eslint/no-empty-object-type": "off",
+			"@typescript-eslint/no-unused-vars": "off",
+			"@typescript-eslint/no-explicit-any": "off",
+			"unicorn/consistent-function-scoping": "off",
+			"@typescript-eslint/no-explicit-any": "off",
+			
 		},
 	},
 	configPrettier,

@@ -54,8 +54,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       try {
         const details = await authClient.fetchTaxDetails(userId);
         setUserDetails(details);
-      } catch (err) {
-        console.error('Error fetching user details:', err);
+      } catch (error_) {
+        console.error('Error fetching user details:', error_);
         setError('Failed to load user details. Please try again.');
       } finally {
         setLoading(false);
@@ -91,8 +91,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       } else {
         setActionError(result.error || 'Failed to approve user');
       }
-    } catch (err) {
-      console.error('Error approving user:', err);
+    } catch (error_) {
+      console.error('Error approving user:', error_);
       setActionError('An unexpected error occurred');
     } finally {
       setActionLoading(false);
@@ -125,8 +125,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       } else {
         setActionError(result.error || 'Failed to reject user');
       }
-    } catch (err) {
-      console.error('Error rejecting user:', err);
+    } catch (error_) {
+      console.error('Error rejecting user:', error_);
       setActionError('An unexpected error occurred');
     } finally {
       setActionLoading(false);
@@ -159,8 +159,8 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       } else {
         setActionError(result.error || 'Failed to push back user');
       }
-    } catch (err) {
-      console.error('Error pushing back user:', err);
+    } catch (error_) {
+      console.error('Error pushing back user:', error_);
       setActionError('An unexpected error occurred');
     } finally {
       setActionLoading(false);

@@ -78,7 +78,7 @@ const validateRequired = (value: string): boolean => {
 };
 
 const validateTaxRate = (value: string): boolean => {
-  const rate = parseFloat(value);
+  const rate = Number.parseFloat(value);
   return !isNaN(rate) && rate >= 0 && rate <= 100;
 };
 
@@ -233,13 +233,13 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
       // Call API to create tax
       const response = await authClient.createTax({
         taxType: formData.taxType,
-        taxRate: parseFloat(formData.taxRate),
+        taxRate: Number.parseFloat(formData.taxRate),
         location: formData.location,
         description: formData.description || ''
       });
       
       // Generate reference number (in a real app, this would come from the API)
-      const generatedReference = `TAX-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+      const generatedReference = `TAX-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`;
       setTaxReference(generatedReference);
       setSuccess(true);
       
@@ -250,9 +250,9 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error('Error creating tax:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create tax');
+    } catch (error_) {
+      console.error('Error creating tax:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to create tax');
     } finally {
       setIsSubmitting(false);
     }

@@ -159,7 +159,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
       const file = e.target.files[0];
       const reader = new FileReader();
       
-      reader.onload = (event) => {
+      reader.addEventListener('load', (event) => {
         if (event.target && event.target.result) {
           // Store the base64 string in the form data
           setFormData({
@@ -167,7 +167,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             [field]: event.target.result as string,
           });
         }
-      };
+      });
       
       // Read the file as a data URL (base64)
       reader.readAsDataURL(file);
@@ -184,23 +184,26 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
     setFormSubmitted(true);
     
     switch (activeStep) {
-      case 0: // Mill Information
+      case 0: { // Mill Information
         if (!formData.millName.trim()) newErrors.millName = 'Mill name is required';
         if (!formData.millType.trim()) newErrors.millType = 'Mill type is required';
         if (!formData.owner.trim()) newErrors.owner = 'Owner name is required';
         if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
         break;
+      }
       
-      case 1: // Location Details
+      case 1: { // Location Details
         if (!formData.millLocation.trim()) newErrors.millLocation = 'Mill location is required';
         if (!formData.address.trim()) newErrors.address = 'Address is required';
         if (!formData.picture) newErrors.picture = 'Mill picture is required';
         break;
+      }
       
-      case 2: // Status Information
+      case 2: { // Status Information
         // Status is pre-filled with PENDING
         // Optional fields, no validation required
         break;
+      }
     }
     
     setErrors(newErrors);
@@ -298,7 +301,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
   // Render step content based on active step
   const renderStepContent = () => {
     switch (activeStep) {
-      case 0:
+      case 0: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Mill Information</Typography>
@@ -377,8 +380,9 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             </Box>
           </Box>
         );
+      }
       
-      case 1:
+      case 1: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Location Details</Typography>
@@ -457,8 +461,9 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             </Box>
           </Box>
         );
+      }
       
-      case 2:
+      case 2: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Status Information</Typography>
@@ -513,8 +518,9 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             
           </Box>
         );
+      }
       
-      case 3:
+      case 3: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Review Mill Details</Typography>
@@ -633,8 +639,9 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             </Box>
           </Box>
         );
+      }
         
-      case 4:
+      case 4: {
         return (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <CheckCircleOutlineIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
@@ -649,9 +656,11 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             </Typography>
           </Box>
         );
+      }
       
-      default:
+      default: {
         return null;
+      }
     }
   };
   
@@ -710,7 +719,15 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
         </DialogContent>
         
         <DialogActions sx={{ p: 2 }}>
-          {activeStep !== steps.length - 1 ? (
+          {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ ml: 'auto' }}
+            >
+              Close
+            </Button>
+          ) : (
             <Fragment>
               <Button
                 color="inherit"
@@ -734,14 +751,6 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
                 {activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}
               </Button>
             </Fragment>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleClose}
-              sx={{ ml: 'auto' }}
-            >
-              Close
-            </Button>
           )}
         </DialogActions>
       </Dialog>

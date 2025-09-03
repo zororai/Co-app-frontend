@@ -53,9 +53,9 @@ export function SignUpForm(): React.JSX.Element {
       try {
         schema.parse(data);
         return { values: data, errors: {} };
-      } catch (err) {
-        if (err instanceof zod.ZodError) {
-          const fieldErrors = err.flatten().fieldErrors;
+      } catch (error) {
+        if (error instanceof zod.ZodError) {
+          const fieldErrors = error.flatten().fieldErrors;
           return { values: {}, errors: fieldErrors };
         }
         return { values: {}, errors: {} };

@@ -76,8 +76,8 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
         const vehiclesData = await authClient.fetchVehiclesByApprovedStatus();
         console.log('Fetched approved vehicles:', vehiclesData);
         setVehicles(vehiclesData || []);
-      } catch (err) {
-        console.error('Error fetching approved vehicles:', err);
+      } catch (error_) {
+        console.error('Error fetching approved vehicles:', error_);
       }
     };
 
@@ -96,8 +96,8 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
       try {
         const details = await authClient.fetchOreDetails(userId);
         setOreDetails(details);
-      } catch (err) {
-        console.error('Error fetching ore details:', err);
+      } catch (error_) {
+        console.error('Error fetching ore details:', error_);
         setError('Failed to load ore details. Please try again.');
       } finally {
         setLoading(false);
@@ -143,8 +143,8 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} ore:`, err);
+    } catch (error_) {
+      console.error(`Error ${actionType === 'reject' ? 'rejecting' : 'pushing back'} ore:`, error_);
       setActionError(`Failed to ${actionType === 'reject' ? 'reject' : 'push back'} ore. Please try again.`);
     } finally {
       setActionLoading(false);
@@ -251,9 +251,9 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
       setTimeout(() => {
         onClose();
       }, 1500);
-    } catch (err) {
-      console.error('Error updating ore transport details:', err);
-      setActionError(err instanceof Error ? err.message : 'Failed to update transport details. Please try again.');
+    } catch (error_) {
+      console.error('Error updating ore transport details:', error_);
+      setActionError(error_ instanceof Error ? error_.message : 'Failed to update transport details. Please try again.');
     } finally {
       setActionLoading(false);
     }

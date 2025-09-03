@@ -43,9 +43,9 @@ export function VehicleMaintenanceDialog({
       } else {
         setError(result.error || 'Failed to send vehicle to maintenance');
       }
-    } catch (err) {
+    } catch (error_) {
       setError('An unexpected error occurred');
-      console.error('Error sending vehicle to maintenance:', err);
+      console.error('Error sending vehicle to maintenance:', error_);
     } finally {
       setLoading(false);
     }
@@ -66,9 +66,9 @@ export function VehicleMaintenanceDialog({
       } else {
         setError(result.error || 'Failed to set vehicle as functional');
       }
-    } catch (err) {
+    } catch (error_) {
       setError('An unexpected error occurred');
-      console.error('Error setting vehicle as functional:', err);
+      console.error('Error setting vehicle as functional:', error_);
     } finally {
       setLoading(false);
     }

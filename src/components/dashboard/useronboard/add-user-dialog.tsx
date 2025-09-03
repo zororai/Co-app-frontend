@@ -222,7 +222,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       // Generate temporary password and reference number
       const tempPass = Math.random().toString(36).slice(-8);
       setTempPassword(tempPass);
-      setReferenceNumber(`USR-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`);
+      setReferenceNumber(`USR-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`);
       setSuccess(true);
       
       // Move to success step
@@ -235,9 +235,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
 
       // Revalidate and refresh the current route so lists reflect the new user
       router.refresh();
-    } catch (err) {
-      console.error('Error creating user:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+    } catch (error_) {
+      console.error('Error creating user:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to create user');
     } finally {
       setIsSubmitting(false);
     }
@@ -464,9 +464,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     value={formData.role}
                     onChange={handleSelectChange('role')}
                     renderValue={
-                      formData.role !== "" 
-                        ? undefined 
-                        : () => <Typography color="text.secondary">Select user role</Typography>
+                      formData.role === "" 
+                        ? () => <Typography color="text.secondary">Select user role</Typography> 
+                        : undefined
                     }
                   >
                     {roleOptions.map((option) => (
@@ -494,9 +494,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     value={formData.position}
                     onChange={handleSelectChange('position')}
                     renderValue={
-                      formData.position !== "" 
-                        ? undefined 
-                        : () => <Typography color="text.secondary">Select user position</Typography>
+                      formData.position === "" 
+                        ? () => <Typography color="text.secondary">Select user position</Typography> 
+                        : undefined
                     }
                   >
                     {positionOptions.map((option) => (
@@ -523,9 +523,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     value={formData.location}
                     onChange={handleSelectChange('location')}
                     renderValue={
-                      formData.location !== "" 
-                        ? undefined 
-                        : () => <Typography color="text.secondary">Select user location</Typography>
+                      formData.location === "" 
+                        ? () => <Typography color="text.secondary">Select user location</Typography> 
+                        : undefined
                     }
                   >
                     {locationOptions.map((option) => (

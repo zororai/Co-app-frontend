@@ -1,3 +1,5 @@
+/* eslint-disable unicorn/consistent-function-scoping */
+
 "use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
@@ -94,10 +96,26 @@ export default function Page(): React.JSX.Element {
 
     // Determine which customers to export based on the current tab
     let filteredCustomers: Customer[] = [];
-    if (tab === 'Idle') filteredCustomers = idleCustomers;
-    else if (tab === 'Loading') filteredCustomers = loadingCustomers;
-    else if (tab === 'Loaded') filteredCustomers = loadedCustomers;
-    else if (tab === 'Maintainance') filteredCustomers = maintainanceCustomers;
+    switch (tab) {
+    case 'Idle': {
+    filteredCustomers = idleCustomers;
+    break;
+    }
+    case 'Loading': {
+    filteredCustomers = loadingCustomers;
+    break;
+    }
+    case 'Loaded': {
+    filteredCustomers = loadedCustomers;
+    break;
+    }
+    case 'Maintainance': { {
+    filteredCustomers = maintainanceCustomers;
+    // No default
+    }
+    break;
+    }
+    }
 
     const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
 
@@ -115,16 +133,16 @@ export default function Page(): React.JSX.Element {
       c.reason,
       c.attachedShaft ? 'Yes' : 'No'
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'customers.csv';
-    document.body.appendChild(a);
+    document.body.append(a);
 
     a.click();
-    document.body.removeChild(a);
+    a.remove();
     URL.revokeObjectURL(url);
   };
 
@@ -205,7 +223,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
   };
   const handleClose = () => setAnchorEl(null);
   const go = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const handleOpenDialog = () => {

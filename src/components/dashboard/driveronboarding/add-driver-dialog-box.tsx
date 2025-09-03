@@ -149,7 +149,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       const file = e.target.files[0];
       const reader = new FileReader();
       
-      reader.onload = (event) => {
+      reader.addEventListener('load', (event) => {
         if (event.target && event.target.result) {
           // Store the base64 string in the form data
           setFormData({
@@ -157,7 +157,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             [field]: event.target.result as string,
           });
         }
-      };
+      });
       
       // Read the file as a data URL (base64)
       reader.readAsDataURL(file);
@@ -182,29 +182,32 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     setFormSubmitted(true);
     
     switch (activeStep) {
-      case 0: // Personal Information
+      case 0: { // Personal Information
         if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
         if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
         if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
         else if (!validateIdNumber(formData.idNumber)) newErrors.idNumber = 'ID number must be at least 11 characters';
         if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
         break;
+      }
       
-      case 1: // License Details
+      case 1: { // License Details
         if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
         if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
         if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
         if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
         if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
         break;
+      }
       
-      case 2: // Contact Information
+      case 2: { // Contact Information
         if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
         else if (!validatePhone(formData.phoneNumber)) newErrors.phoneNumber = 'Please enter a valid phone number';
         if (formData.emailAddress && !validateEmail(formData.emailAddress)) {
           newErrors.emailAddress = 'Please enter a valid email address';
         }
         break;
+      }
     }
     
     setErrors(newErrors);
@@ -268,7 +271,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       if (result.success) {
         // Set success state and move to confirmation step
         setSuccess(true);
-        setReferenceNumber(result.referenceNumber || 'DRV-' + Math.floor(Math.random() * 10000));
+        setReferenceNumber(result.referenceNumber || 'DRV-' + Math.floor(Math.random() * 10_000));
         setActiveStep(steps.length - 1); // Move to confirmation step
         
         // If onSubmit is provided, call it with the form data
@@ -323,7 +326,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   // Render step content based on active step
   const renderStepContent = () => {
     switch (activeStep) {
-      case 0:
+      case 0: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Personal Information</Typography>
@@ -391,8 +394,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             </Box>
           </Box>
         );
+      }
       
-      case 1:
+      case 1: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>License Details</Typography>
@@ -532,8 +536,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             </Box>
           </Box>
         );
+      }
       
-      case 2:
+      case 2: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Contact Information</Typography>
@@ -622,8 +627,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             </Box>
           </Box>
         );
+      }
       
-      case 3:
+      case 3: {
         return (
           <Box>
             <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Review Driver Details</Typography>
@@ -730,8 +736,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             </Box>
           </Box>
         );
+      }
       
-      case 4:
+      case 4: {
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
@@ -749,9 +756,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             </Typography>
           </Box>
         );
+      }
       
-      default:
+      default: {
         return null;
+      }
     }
   };
 
@@ -810,7 +819,15 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         </DialogContent>
         
         <DialogActions sx={{ p: 2 }}>
-          {activeStep !== steps.length - 1 ? (
+          {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ ml: 'auto' }}
+            >
+              Close
+            </Button>
+          ) : (
             <Fragment>
               <Button
                 color="inherit"
@@ -834,14 +851,6 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 {activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}
               </Button>
             </Fragment>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleClose}
-              sx={{ ml: 'auto' }}
-            >
-              Close
-            </Button>
           )}
         </DialogActions>
       </Dialog>

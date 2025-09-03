@@ -108,8 +108,8 @@ export function CustomersTable({
     try {
       const data = await authClient.fetchShaftAssignmentsByMiner(customerId);
       setShaftAssignments(Array.isArray(data) ? data : [data]);
-    } catch (e: any) {
-      setShaftError(e.message || 'Failed to fetch shaft assignments');
+    } catch (error: any) {
+      setShaftError(error.message || 'Failed to fetch shaft assignments');
     } finally {
       setShaftLoading(false);
     }
@@ -145,7 +145,7 @@ export function CustomersTable({
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -348,7 +348,7 @@ export function CustomersTable({
         rowsPerPage={currentRowsPerPage}
         onPageChange={onPageChange || ((_e, newPage) => setInternalPage(newPage))}
         onRowsPerPageChange={onRowsPerPageChange || ((e) => {
-          setInternalRowsPerPage(parseInt(e.target.value, 10));
+          setInternalRowsPerPage(Number.parseInt(e.target.value, 10));
           setInternalPage(0);
         })}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}

@@ -56,8 +56,8 @@ export function TemplateDialog({ open, onClose, itemId, onRefresh }: TemplateDia
         // Replace with your actual fetch method
         const fetchedDetails = await authClient.fetchDetails(itemId);
         setDetails(fetchedDetails);
-      } catch (err) {
-        console.error('Error fetching details:', err);
+      } catch (error_) {
+        console.error('Error fetching details:', error_);
         setError('Failed to load details. Please try again.');
       } finally {
         setLoading(false);
@@ -93,24 +93,46 @@ export function TemplateDialog({ open, onClose, itemId, onRefresh }: TemplateDia
       let result;
       
       // Call the appropriate API method based on actionType
-      if (actionType === 'approve') {
+      switch (actionType) {
+      case 'approve': {
         result = await authClient.approveItem(itemId);
-      } else if (actionType === 'reject') {
+      
+      break;
+      }
+      case 'reject': {
         result = await authClient.rejectItem(itemId, reason);
-      } else if (actionType === 'pushback') {
+      
+      break;
+      }
+      case 'pushback': {
         result = await authClient.pushbackItem(itemId, reason);
+      
+      break;
+      }
+      // No default
       }
       
       // Check if the API call was successful
       if (result && result.success) {
         // Different success messages based on action type
         let actionMessage = '';
-        if (actionType === 'approve') {
+        switch (actionType) {
+        case 'approve': {
           actionMessage = 'approved';
-        } else if (actionType === 'reject') {
+        
+        break;
+        }
+        case 'reject': {
           actionMessage = 'rejected';
-        } else if (actionType === 'pushback') {
+        
+        break;
+        }
+        case 'pushback': {
           actionMessage = 'pushed back';
+        
+        break;
+        }
+        // No default
         }
         
         setActionSuccess(`Item has been ${actionMessage} successfully.`);
@@ -123,9 +145,9 @@ export function TemplateDialog({ open, onClose, itemId, onRefresh }: TemplateDia
       } else {
         throw new Error(result?.error || 'Operation failed');
       }
-    } catch (err) {
-      console.error(`Error updating status:`, err);
-      setActionError(`Failed to update status: ${err instanceof Error ? err.message : 'Please try again.'}`);
+    } catch (error_) {
+      console.error(`Error updating status:`, error_);
+      setActionError(`Failed to update status: ${error_ instanceof Error ? error_.message : 'Please try again.'}`);
     } finally {
       setActionLoading(false);
     }

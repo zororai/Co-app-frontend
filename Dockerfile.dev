@@ -1,0 +1,30 @@
+# Development Dockerfile for hot reload
+FROM node:18-alpine
+
+# Install dependencies for development
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* package-lock.json* ./
+
+# Install dependencies (allow lockfile updates in dev)
+RUN \
+  if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --no-frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm install; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Start development server
+CMD \
+  if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm dev; \
+  elif [ -f package-lock.json ]; then npm run dev; \
+  else echo "Lockfile not found." && exit 1; \
+  fi

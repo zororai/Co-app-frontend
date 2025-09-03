@@ -39,8 +39,8 @@ export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogPr
       try {
         const details = await authClient.fetchUserById(userId);
         setUserDetails(details);
-      } catch (err) {
-        console.error('Error fetching user details:', err);
+      } catch (error_) {
+        console.error('Error fetching user details:', error_);
         setError('Failed to load user details. Please try again.');
       } finally {
         setLoading(false);
@@ -95,8 +95,9 @@ export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogPr
           if (!res?.success) throw new Error(res?.error || 'Failed to push back user');
           break;
         }
-        default:
+        default: {
           throw new Error(`Unsupported status: ${status}`);
+        }
       }
 
       // Optimistically update local state
@@ -105,8 +106,8 @@ export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogPr
       setStatus('');
       setReason('');
       setShowReasonField(false);
-    } catch (err) {
-      console.error(`Error updating status to ${status}:`, err);
+    } catch (error_) {
+      console.error(`Error updating status to ${status}:`, error_);
       alert(`Failed to update status to ${status}. Please try again.`);
     } finally {
       setIsSubmitting(false);

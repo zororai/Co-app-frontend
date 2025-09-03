@@ -56,7 +56,7 @@ export function DriverDetailsDialog({ open, onClose, minerId, assignment: provid
         if (!data || (Array.isArray(data) && data.length === 0)) {
           setError('No shaft assignment information available for this miner.');
         }
-      } catch (e) {
+      } catch {
         if (!active) return;
         setError('Failed to load shaft assignment details.');
         setAssignments([]);

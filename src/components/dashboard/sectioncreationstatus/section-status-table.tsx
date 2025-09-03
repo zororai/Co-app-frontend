@@ -109,7 +109,7 @@ export function CustomersTable({
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -160,17 +160,21 @@ export function CustomersTable({
     try {
       // Call the appropriate API method based on the status
       switch (actionStatus) {
-        case 'APPROVED':
+        case 'APPROVED': {
           await authClient.setSectionForApproval(discussionCustomer.id);
           break;
-        case 'REJECTED':
+        }
+        case 'REJECTED': {
           await authClient.setSectionForRejection(discussionCustomer.id, discussionReason);
           break;
-        case 'PUSHED_BACK':
+        }
+        case 'PUSHED_BACK': {
           await authClient.setSectionForPushBack(discussionCustomer.id, discussionReason);
           break;
-        default:
+        }
+        default: {
           throw new Error(`Unsupported status: ${actionStatus}`);
+        }
       }
 
       // Close the dialog after successful update

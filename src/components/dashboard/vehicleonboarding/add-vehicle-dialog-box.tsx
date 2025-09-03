@@ -170,7 +170,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setFormSubmitted(true);
     
     switch (activeStep) {
-      case 0: // Vehicle Information
+      case 0: { // Vehicle Information
         if (!formData.regNumber) newErrors.regNumber = 'Registration number is required';
         if (!formData.vehicleType) newErrors.vehicleType = 'Vehicle type is required';
         if (!formData.make) newErrors.make = 'Make is required';
@@ -179,8 +179,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
         if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
         break;
+      }
       
-      case 1: // Owner Details
+      case 1: { // Owner Details
         if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
         if (!formData.ownerIdNumber) newErrors.ownerIdNumber = 'Owner ID number is required';
         if (!formData.ownerCellNumber) newErrors.ownerCellNumber = 'Owner cell number is required';
@@ -196,12 +197,14 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
         }
         break;
+      }
       
-      case 2: // Documents
+      case 2: { // Documents
         if (!formData.idPicture) newErrors.idPicture = 'ID picture is required';
         if (!formData.truckPicture) newErrors.truckPicture = 'Vehicle picture is required';
         if (!formData.registrationBook) newErrors.registrationBook = 'Registration book is required';
         break;
+      }
     }
     
     setErrors(newErrors);
@@ -282,7 +285,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       if (result.success) {
         // Set success state and move to confirmation step
         setSuccess(true);
-        setReferenceNumber(result.referenceNumber || 'VEH-' + Math.floor(Math.random() * 10000));
+        setReferenceNumber(result.referenceNumber || 'VEH-' + Math.floor(Math.random() * 10_000));
         setActiveStep(steps.length - 1); // Move to confirmation step
         
         // If onSubmit is provided, call it with the form data
@@ -336,7 +339,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   // Render step content based on active step
   const renderStepContent = (): React.ReactNode => {
     switch (activeStep) {
-      case 0: // Vehicle Information
+      case 0: { // Vehicle Information
         return (
           <Box sx={{ p: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -477,8 +480,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             </Box>
           </Box>
         );
+      }
       
-      case 1: // Owner Details
+      case 1: { // Owner Details
         return (
           <Box sx={{ p: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -551,8 +555,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             </Box>
           </Box>
         );
+      }
       
-      case 2: // Documents
+      case 2: { // Documents
         return (
           <Box sx={{ p: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -649,8 +654,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             </Box>
           </Box>
         );
+      }
       
-      case 3: // Review Details
+      case 3: { // Review Details
         return (
           <Box sx={{ p: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -797,8 +803,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             </Box>
           </Box>
         );
+      }
       
-      case 4: // Confirmation
+      case 4: { // Confirmation
         return (
           <Box sx={{ spacing: 3, alignItems: "center" }}>
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60 }} />
@@ -816,9 +823,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             </Typography>
           </Box>
         );
+      }
       
-      default:
+      default: {
         return null;
+      }
     }
   };
 
@@ -881,7 +890,15 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         </DialogContent>
 
         <DialogActions sx={{ p: 2 }}>
-          {activeStep !== steps.length - 1 ? (
+          {activeStep === steps.length - 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ ml: 'auto' }}
+            >
+              Close
+            </Button>
+          ) : (
             <Fragment>
               <Button
                 color="inherit"
@@ -905,14 +922,6 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                 {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
               </Button>
             </Fragment>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleClose}
-              sx={{ ml: 'auto' }}
-            >
-              Close
-            </Button>
           )}
         </DialogActions>
       </Dialog>

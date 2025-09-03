@@ -97,7 +97,7 @@ export function CompanyTable({
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {

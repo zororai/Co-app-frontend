@@ -92,13 +92,13 @@ export function CompanyTable({
     setCompanyDialogLoading(true);
     try {
       const data = await authClient.fetchCompanyDetails(id);
-      if (!data) {
-        setCompanyDialogError('No company details found or not authorized.');
-      } else {
+      if (data) {
         setCompanyDialogData(data);
+      } else {
+        setCompanyDialogError('No company details found or not authorized.');
       }
-    } catch (err) {
-      setCompanyDialogError(err instanceof Error ? err.message : 'Failed to fetch company details');
+    } catch (error) {
+      setCompanyDialogError(error instanceof Error ? error.message : 'Failed to fetch company details');
     } finally {
       setCompanyDialogLoading(false);
     }
@@ -156,7 +156,7 @@ export function CompanyTable({
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {

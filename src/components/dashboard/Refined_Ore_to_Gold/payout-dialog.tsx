@@ -1,3 +1,5 @@
+ 
+
 "use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
@@ -99,8 +101,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
         console.log("Payout submitted:", payload);
       }
       onClose();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +167,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                 </Typography>
                 
                 <Box sx={{ display: "grid", rowGap: 1 }}>
-                <br/>
+          
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Payment Method:</Typography>
                     <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>

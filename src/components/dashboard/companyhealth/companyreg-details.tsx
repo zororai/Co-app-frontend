@@ -52,17 +52,21 @@ export function MinerDetailsDialog({ open, onClose, customer, onRefresh }: Custo
     setIsSubmitting(true);
     try {
       switch (actionStatus) {
-        case 'APPROVED':
+        case 'APPROVED': {
           await authClient.setCompanyMinerForApproval(customer.id);
           break;
-        case 'REJECTED':
+        }
+        case 'REJECTED': {
           await authClient.setCompanyMinerForRejection(customer.id, reason);
           break;
-        case 'PUSHED_BACK':
+        }
+        case 'PUSHED_BACK': {
           await authClient.setCompanyMinerForPushBack(customer.id, reason);
           break;
-        default:
+        }
+        default: {
           throw new Error(`Unsupported status: ${actionStatus}`);
+        }
       }
       onClose();
       

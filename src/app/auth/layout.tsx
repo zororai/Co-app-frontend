@@ -1,3 +1,4 @@
+ /* eslint-disable unicorn/consistent-function-scoping */
 import * as React from 'react';
 import { GuestGuard } from '@/components/auth/guest-guard';
 

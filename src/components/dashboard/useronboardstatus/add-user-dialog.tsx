@@ -46,24 +46,30 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
   const validateField = (name: string, value: string): string => {
     switch (name) {
       case 'firstName':
-      case 'lastName':
+      case 'lastName': {
         return value.trim() === '' ? 'This field is required' : '';
-      case 'email':
+      }
+      case 'email': {
         if (value.trim() === '') return 'Email is required';
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return !emailRegex.test(value) ? 'Invalid email format' : '';
-      case 'phone':
+        return emailRegex.test(value) ? '' : 'Invalid email format';
+      }
+      case 'phone': {
         if (value.trim() === '') return '';
         const phoneRegex = /^\+?[0-9\s-]{10,15}$/;
-        return !phoneRegex.test(value) ? 'Invalid phone format' : '';
-      case 'idNumber':
+        return phoneRegex.test(value) ? '' : 'Invalid phone format';
+      }
+      case 'idNumber': {
         return value.trim() === '' ? 'ID Number is required' : '';
+      }
       case 'role':
       case 'position':
-      case 'location':
+      case 'location': {
         return value === '' ? 'This field is required' : '';
-      default:
+      }
+      default: {
         return '';
+      }
     }
   };
 
@@ -97,11 +103,11 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
     if (currentStep === 1) {
       // Validate basic information fields
       const fieldsToValidate = ['firstName', 'lastName', 'email', 'idNumber'];
-      fieldsToValidate.forEach(field => {
+      for (const field of fieldsToValidate) {
         const error = validateField(field, userData[field as keyof typeof userData] as string);
         newValidationErrors[field as keyof typeof validationErrors] = error;
         if (error) isValid = false;
-      });
+      }
       
       // Validate phone if provided
       if (userData.phone) {
@@ -112,11 +118,11 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
     } else if (currentStep === 2) {
       // Validate role and location fields
       const fieldsToValidate = ['role', 'position', 'location'];
-      fieldsToValidate.forEach(field => {
+      for (const field of fieldsToValidate) {
         const error = validateField(field, userData[field as keyof typeof userData] as string);
         newValidationErrors[field as keyof typeof validationErrors] = error;
         if (error) isValid = false;
-      });
+      }
     }
     
     setValidationErrors(newValidationErrors);
@@ -168,9 +174,9 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
         // Show error message
         setError(result.error || 'Failed to create user');
       }
-    } catch (err) {
+    } catch (error_) {
       setError('An unexpected error occurred');
-      console.error('Error creating user:', err);
+      console.error('Error creating user:', error_);
     } finally {
       setIsSubmitting(false);
     }
@@ -370,9 +376,9 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
                 value={userData.role}
                 onChange={handleSelectChange as any}
                 renderValue={
-                  userData.role !== "" 
-                    ? undefined 
-                    : () => <Typography color="text.secondary">Select user role</Typography>
+                  userData.role === "" 
+                    ? () => <Typography color="text.secondary">Select user role</Typography> 
+                    : undefined
                 }
               >
                 <MenuItem value="admin">Admin</MenuItem>
@@ -393,9 +399,9 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
                 value={userData.position}
                 onChange={handleSelectChange as any}
                 renderValue={
-                  userData.position !== "" 
-                    ? undefined 
-                    : () => <Typography color="text.secondary">Select position</Typography>
+                  userData.position === "" 
+                    ? () => <Typography color="text.secondary">Select position</Typography> 
+                    : undefined
                 }
               >
                 <MenuItem value="general_manager">General Manager</MenuItem>
@@ -417,9 +423,9 @@ export function AddUserDialog({ open, onClose }: AddUserDialogProps): React.JSX.
                 value={userData.location}
                 onChange={handleSelectChange as any}
                 renderValue={
-                  userData.location !== "" 
-                    ? undefined 
-                    : () => <Typography color="text.secondary">Select location</Typography>
+                  userData.location === "" 
+                    ? () => <Typography color="text.secondary">Select location</Typography> 
+                    : undefined
                 }
               >
                 <MenuItem value="main_shaft">Main Shaft</MenuItem>

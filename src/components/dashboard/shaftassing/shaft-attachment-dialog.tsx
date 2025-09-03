@@ -66,7 +66,7 @@ export function ShaftAttachmentDialog({
     try {
       const sectionsData = await authClient.fetchSectionsApproved();
       setSections(sectionsData);
-    } catch (error) {
+    } catch {
       setSections([]);
     } finally {
       setSectionsLoading(false);
@@ -130,19 +130,19 @@ export function ShaftAttachmentDialog({
         setSuccess(true);
         setTimeout(() => {
           handleClose();
-          window.location.reload();
+          globalThis.location.reload();
         }, 2000);
-      } catch (err: any) {
+      } catch (error_: any) {
         // If the error is from the API and has status info, show it
-        if (err && err.message && err.message !== '{}' && err.message.trim() !== '') {
-          setError(err.message);
+        if (error_ && error_.message && error_.message !== '{}' && error_.message.trim() !== '') {
+          setError(error_.message);
         } else {
           setError('API Error: Unable to create shaft assignment. Please check your input or try again later.');
         }
         return;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (error_) {
+      setError(error_ instanceof Error ? error_.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -205,7 +205,7 @@ export function ShaftAttachmentDialog({
                     if (Array.isArray(selectedSection.shaftNumbers)) {
                       lastNumber = Math.max(...selectedSection.shaftNumbers.map(Number));
                     } else if (selectedSection.shaftNumbers) {
-                      lastNumber = parseInt(selectedSection.shaftNumbers, 10) || 0;
+                      lastNumber = Number.parseInt(selectedSection.shaftNumbers, 10) || 0;
                     }
                   }
                   // Generate sequence: first letter + last letter + next number

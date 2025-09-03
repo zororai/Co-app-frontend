@@ -137,13 +137,13 @@ function RegMinerForm({ onRefresh }: RegMinerFormProps): React.JSX.Element {
 
         // Convert image to base64
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.addEventListener('load', () => {
           const base64String = reader.result as string;
           setForm(prev => ({
             ...prev,
             idPicture: base64String
           }));
-        };
+        });
         reader.readAsDataURL(file);
       } else {
         setForm((prev) => ({
@@ -211,7 +211,7 @@ function RegMinerForm({ onRefresh }: RegMinerFormProps): React.JSX.Element {
         if (onRefresh) {
           onRefresh();
         } else {
-          window.location.reload();
+          globalThis.location.reload();
         }
       }
     } catch (error) {

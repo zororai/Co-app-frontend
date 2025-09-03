@@ -132,13 +132,13 @@ function RegMinerForm(): React.JSX.Element {
 
         // Convert image to base64
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.addEventListener('load', () => {
           const base64String = reader.result as string;
           setForm(prev => ({
             ...prev,
             idPicture: base64String
           }));
-        };
+        });
         reader.readAsDataURL(file);
       } else {
         setForm((prev) => ({
@@ -202,7 +202,7 @@ function RegMinerForm(): React.JSX.Element {
         console.log('Miner registered successfully');
         // Show success message and refresh the page
         alert('Registration successful!');
-        window.location.reload();
+        globalThis.location.reload();
       }
     } catch (error) {
       console.error('Error submitting form:', error);

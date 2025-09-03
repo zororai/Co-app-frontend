@@ -138,13 +138,13 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
 
         // Convert image to base64
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.addEventListener('load', () => {
           const base64String = reader.result as string;
           setForm(prev => ({
             ...prev,
             idPicture: base64String
           }));
-        };
+        });
         reader.readAsDataURL(file);
       } else {
         setForm((prev) => ({

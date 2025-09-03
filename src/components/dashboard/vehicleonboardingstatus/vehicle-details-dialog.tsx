@@ -58,8 +58,8 @@ export function VehicleDetailsDialog({
       } else {
         setError('Failed to load vehicle details');
       }
-    } catch (err) {
-      console.error('Error fetching vehicle details:', err);
+    } catch (error_) {
+      console.error('Error fetching vehicle details:', error_);
       setError('An error occurred while loading vehicle details');
     } finally {
       setLoading(false);
@@ -77,12 +77,13 @@ export function VehicleDetailsDialog({
     setIsSubmitting(true);
     try {
       switch (status) {
-        case 'APPROVED':
+        case 'APPROVED': {
           // Implement approve vehicle API call when available
           await authClient.approveVehicle(vehicle.id);
           
           break;
-        case 'REJECTED':
+        }
+        case 'REJECTED': {
           if (!reason) {
           
             setIsSubmitting(false);
@@ -92,7 +93,8 @@ export function VehicleDetailsDialog({
         await authClient.rejectVehicle(vehicle.id, reason);
           
           break;
-        case 'PUSHED_BACK':
+        }
+        case 'PUSHED_BACK': {
           if (!reason) {
          
             setIsSubmitting(false);
@@ -102,8 +104,10 @@ export function VehicleDetailsDialog({
           await authClient.pushBackVehicle(vehicle.id, reason);
           
           break;
-        default:
+        }
+        default: {
           throw new Error(`Unsupported status: ${status}`);
+        }
       }
 
       // Close the dialog after successful update
@@ -127,7 +131,7 @@ export function VehicleDetailsDialog({
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString();
-    } catch (e) {
+    } catch {
       return dateString;
     }
   };

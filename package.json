@@ -13,7 +13,12 @@
     "lint:fix": "next lint --fix",
     "typecheck": "tsc --noEmit",
     "format:write": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
-    "format:check": "prettier --check \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache"
+    "format:check": "prettier --check \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
+    "docker:build": "docker build -t co-app-frontend .",
+    "docker:run": "docker run -p 3000:3000 co-app-frontend",
+    "docker:dev": "docker-compose --profile dev up",
+    "docker:prod": "docker-compose up",
+    "docker:stop": "docker-compose down"
   },
   "dependencies": {
     "@emotion/cache": "11.14.0",

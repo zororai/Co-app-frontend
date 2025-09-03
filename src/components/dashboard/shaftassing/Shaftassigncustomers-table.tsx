@@ -113,7 +113,7 @@ export function CustomersTable({
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -316,7 +316,7 @@ export function CustomersTable({
         rowsPerPage={currentRowsPerPage}
         onPageChange={onPageChange || ((_e, newPage) => setInternalPage(newPage))}
         onRowsPerPageChange={onRowsPerPageChange || ((e) => {
-          setInternalRowsPerPage(parseInt(e.target.value, 10));
+          setInternalRowsPerPage(Number.parseInt(e.target.value, 10));
           setInternalPage(0);
         })}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}

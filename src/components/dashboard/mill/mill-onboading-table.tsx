@@ -113,7 +113,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
@@ -128,7 +128,7 @@ export function CustomersTable({
       try {
         const fetchedDrivers = await authClient.fetchMill() || [];
         setUsers(fetchedDrivers);
-      } catch (err) {
+      } catch {
         setError('Failed to load drivers. Please try again.');
       } finally {
         setLoading(false);

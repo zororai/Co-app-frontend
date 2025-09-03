@@ -162,11 +162,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle tax field changes
   const handleTaxChange = (index: number, field: 'taxType' | 'taxRate') => (event: React.ChangeEvent<HTMLInputElement>) => {
     const newTax = [...formData.tax];
-    if (field === 'taxRate') {
-      newTax[index][field] = Number(event.target.value);
-    } else {
-      newTax[index][field] = event.target.value;
-    }
+    newTax[index][field] = field === 'taxRate' ? Number(event.target.value) : event.target.value;
     
     setFormData({
       ...formData,
@@ -291,9 +287,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       if (onRefresh) {
         onRefresh();
       }
-    } catch (err) {
-      console.error('Error creating ore record:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create ore record');
+    } catch (error_) {
+      console.error('Error creating ore record:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to create ore record');
       // Show error in UI
       setActiveStep(activeStep); // Stay on current step
     } finally {

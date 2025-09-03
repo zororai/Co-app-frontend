@@ -107,7 +107,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
@@ -126,8 +126,8 @@ export function CustomersTable({
       try {
         const allAssignments = await authClient.fetchShaftapproved();
         setUsers(allAssignments);
-      } catch (err) {
-        console.error('Error fetching drivers:', err);
+      } catch (error_) {
+        console.error('Error fetching drivers:', error_);
         setError('Failed to load drivers. Please try again.');
       } finally {
         setLoading(false);

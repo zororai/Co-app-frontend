@@ -126,8 +126,8 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
           onSuccess();
         }
       }, 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create section');
+    } catch (error_) {
+      setError(error_ instanceof Error ? error_.message : 'Failed to create section');
     } finally {
       setLoading(false);
     }

@@ -112,7 +112,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const handleRedirect = (path: string) => {
-    window.location.href = path;
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -129,8 +129,8 @@ export function CustomersTable({
       try {
         const fetchedUsers = await authClient.fetchTransportCost();
         setUsers(fetchedUsers);
-      } catch (err) {
-        console.error('Error fetching users:', err);
+      } catch (error_) {
+        console.error('Error fetching users:', error_);
         setError('Failed to load users. Please try again.');
       } finally {
         setLoading(false);

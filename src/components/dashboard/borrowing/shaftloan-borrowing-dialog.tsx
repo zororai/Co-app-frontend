@@ -54,8 +54,8 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
       try {
         const items = await authClient.fetchApprovedProductionLoans();
         setLoanOptions(items || []);
-      } catch (e) {
-        console.error('Failed to load loans', e);
+      } catch (error_) {
+        console.error('Failed to load loans', error_);
       } finally {
         setLoadingLoans(false);
       }
@@ -141,7 +141,7 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
       } else {
         setError(res.message || 'Failed to update loan details');
       }
-    } catch (e) {
+    } catch {
       setError('Unexpected error while updating loan details');
     } finally {
       setSubmitting(false);

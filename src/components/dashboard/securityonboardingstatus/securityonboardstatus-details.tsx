@@ -44,10 +44,11 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
     setIsSubmitting(true);
     try {
       switch (status) {
-        case 'APPROVED':
+        case 'APPROVED': {
           await authClient.approveSecurityCompany(customer.id);
           break;
-        case 'REJECTED':
+        }
+        case 'REJECTED': {
           if (!reason) {
             alert('Please provide a reason for rejection');
             setIsSubmitting(false);
@@ -55,7 +56,8 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           }
           await authClient.rejectSecurityCompany(customer.id, reason);
           break;
-        case 'PUSHED_BACK':
+        }
+        case 'PUSHED_BACK': {
           if (!reason) {
             alert('Please provide a reason for pushing back');
             setIsSubmitting(false);
@@ -63,8 +65,10 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           }
           await authClient.pushBackSecurityCompany(customer.id, reason);
           break;
-        default:
+        }
+        default: {
           throw new Error(`Unsupported status: ${status}`);
+        }
       }
 
       // Close the dialog after successful update
