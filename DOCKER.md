@@ -12,7 +12,7 @@ This document provides instructions for running the Co-app frontend application 
 ### Production Build
 
 ```bash
-# Build the production image and run it directly (host 3001 -> container 3000)
+# Build the production image and run it directly (host 3000 -> container 3000)
 npm run docker:build
 npm run docker:run
 
@@ -35,8 +35,8 @@ npm run docker:dev
 pnpm run docker:dev
 ```
 
-- Production available at: http://localhost:3001
-- Development available at: http://localhost:3002
+- Production available at: http://localhost:3000
+- Development available at: http://localhost:3000
 
 ### Stop Containers
 
@@ -55,8 +55,8 @@ pnpm run docker:stop
 # Build the image
 docker build -t co-app-frontend .
 
-# Run the container (host 3001 -> container 3000)
-docker run -p 3001:3000 co-app-frontend
+# Run the container (host 3000 -> container 3000)
+docker run -p 3000:3000 co-app-frontend
 ```
 
 ### Using Docker Compose (v2)
@@ -85,8 +85,8 @@ docker-compose --profile dev up -d
 ```
 
 Ports and profiles:
-- Prod profile maps host 3001 -> container 3000 (`services.app`)
-- Dev profile maps host 3002 -> container 3000 (`services.dev`)
+- Prod profile maps host 3000 -> container 3000 (`services.app`)
+- Dev profile maps host 3000 -> container 3000 (`services.dev`)
 
 ## Configuration
 
@@ -95,7 +95,7 @@ Ports and profiles:
 You can pass environment variables to the container:
 
 ```bash
-docker run -p 3001:3000 -e NODE_ENV=production co-app-frontend
+docker run -p 3000:3000 -e NODE_ENV=production co-app-frontend
 ```
 
 With Compose, add environment variables under the corresponding service in `docker-compose.yml` (use `NEXT_PUBLIC_*` for variables needed in the browser):
@@ -114,19 +114,19 @@ services:
 
 ### Port Configuration
 
-The application listens on port 3000 in the container. By default we map host 3001 -> container 3000. To use a different host port:
+The application listens on port 3000 in the container. By default we map host 3000 -> container 3000. To use a different host port:
 
 ```bash
-docker run -p 8080:3000 co-app-frontend
+docker run -p 3000:3000 co-app-frontend
 ```
 
-In Compose, change the `ports` mapping per service (e.g., `"3002:3000"` for dev).
+In Compose, change the `ports` mapping per service (e.g., "3000:3000" for dev).
 
 ## Troubleshooting
 
 ### Container won't start
 - Ensure Docker is running
-- Check if port 3001 is already in use
+- Check if port 3000 is already in use
 - Verify all dependencies are properly installed
 
 ### Build issues
