@@ -5,20 +5,21 @@
   "licence": "MIT",
   "homepage": "https://devias.io",
   "private": false,
- "scripts": {
-  "dev": "NEXT_PUBLIC_PORT=3002 next dev -H 0.0.0.0 -p $PORT && echo \"App running at http://localhost:${NEXT_PUBLIC_PORT}\"",
-  "build": "next build",
-  "start": "NEXT_PUBLIC_PORT=3001 next start -H 0.0.0.0 -p $PORT && echo \"App running at http://localhost:${NEXT_PUBLIC_PORT}\"",
-  "lint": "next lint",
-  "lint:fix": "next lint --fix",
-  "typecheck": "tsc --noEmit",
-  "format:write": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
-  "format:check": "prettier --check \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
-  "docker:build": "docker build -t co-app-frontend .",
-  "docker:dev": "docker-compose --profile dev up --build",
-  "docker:prod": "docker-compose --profile prod up -d --build",
-  "docker:stop": "docker-compose down"
-},
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3002",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3001",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "typecheck": "tsc --noEmit",
+    "format:write": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
+    "format:check": "prettier --check \"**/*.{js,jsx,mjs,ts,tsx,mdx}\" --cache",
+    "docker:build": "docker build -t co-app-frontend .",
+    "docker:dev": "docker-compose --profile dev up --build",
+    "docker:prod": "docker-compose --profile prod up -d --build",
+    "docker:stop": "docker-compose down"
+  },
+  
   "dependencies": {
     "@emotion/cache": "11.14.0",
     "@emotion/react": "11.14.0",

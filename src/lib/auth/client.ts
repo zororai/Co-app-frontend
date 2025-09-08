@@ -82,7 +82,7 @@ class AuthClient {
                 reason: '' // This field is empty as it wasn't specified in the frontend
             };
 
-            const response = await fetch('https://coappapi.commapp.online/api/users/create', {
+            const response = await fetch('/api/users/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

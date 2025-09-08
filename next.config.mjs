@@ -7,8 +7,18 @@ const config = {
   },
   
     outputFileTracingRoot: process.cwd(),
-
-
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://coappapi.commapp.online/api/:path*',
+      },
+      {
+        source: '/auth/:path*',
+        destination: 'https://coappapi.commapp.online/auth/:path*',
+      },
+    ];
+  },
 };
 
 export default config;
