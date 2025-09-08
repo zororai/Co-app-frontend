@@ -13,7 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
-import { authClient } from '../../../lib/auth/client';
+import { authClient } from '../../../lib/auth/client.ts';
 
 interface CustomerDetailsDialogProps {
   open: boolean;

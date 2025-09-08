@@ -335,7 +335,7 @@ class AuthClient {
             return null;
         }
         try {
-            const response = await fetch(`/api/drivers/${driverId}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/drivers/${driverId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -362,7 +362,7 @@ class AuthClient {
           return null;
       }
       try {
-          const response = await fetch(`/api/mill-onboarding/${driverId}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/mill-onboarding/${driverId}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -396,7 +396,7 @@ class AuthClient {
       }
       try {
 
-          const response = await fetch(`/api/mill-onboarding/${millId}/approve`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/mill-onboarding/${millId}/approve`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -435,7 +435,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -474,7 +474,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/mill-onboarding/${millId}/pushback?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/mill-onboarding/${millId}/pushback?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -512,7 +512,7 @@ class AuthClient {
       }
       try {
           const safeShaft = encodeURIComponent(String(shaftNumber).trim());
-          const url = `/api/shaft-assignments/by-shaft-number/${safeShaft}/loans`;
+          const url = `https://coappapi.commapp.online/api/shaft-assignments/by-shaft-number/${safeShaft}/loans`;
           const response = await fetch(url, {
               method: 'GET',
               headers: {
@@ -546,7 +546,7 @@ class AuthClient {
       }
       try {
           const safeId = encodeURIComponent(String(minerId).trim());
-          const url = `/api/shaft-assignments/by-miner/${safeId}`;
+          const url = `https://coappapi.commapp.online/api/shaft-assignments/by-miner/${safeId}`;
           const response = await fetch(url, {
               method: 'GET',
               headers: {
@@ -579,7 +579,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/shaft-assignments/${assignmentId}/loan/approve`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/shaft-assignments/${assignmentId}/loan/approve`, {
               method: 'PUT',
               headers: {
                   'Accept': '*/*',
@@ -610,7 +610,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const url = new URL(`/api/shaft-assignments/${assignmentId}/loan/reject`, globalThis.location.origin);
+          const url = new URL(`https://coappapi.commapp.online/api/shaft-assignments/${assignmentId}/loan/reject`);
           if (reason) url.searchParams.set('reason', reason);
           const response = await fetch(url.toString(), {
               method: 'PUT',
@@ -643,7 +643,7 @@ class AuthClient {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const url = new URL(`/api/shaft-assignments/${assignmentId}/loan/pushback`, globalThis.location.origin);
+          const url = new URL(`https://coappapi.commapp.online/api/shaft-assignments/${assignmentId}/loan/pushback`);
           if (reason) url.searchParams.set('reason', reason);
           const response = await fetch(url.toString(), {
               method: 'PUT',
@@ -671,7 +671,7 @@ class AuthClient {
             return [];
         }
         try {
-            const response = await fetch('/api/security-companies/register', {
+            const response = await fetch('https://coappapi.commapp.online/api/security-companies/register', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -699,7 +699,7 @@ class AuthClient {
             return [];
         }
         try {
-            const response = await fetch('/api/security-companies', {
+            const response = await fetch('https://coappapi.commapp.online/api/security-companies', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -731,7 +731,7 @@ class AuthClient {
           return [];
       }
       try {
-          const response = await fetch('/api/ore-transports/allOre', {
+          const response = await fetch('https://coappapi.commapp.online/api/ore-transports/allOre', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -760,7 +760,7 @@ class AuthClient {
         return [];
     }
     try {
-        const response = await fetch('/api/ore-transports/with-selected-transportdriver-changed', {
+        const response = await fetch('https://coappapi.commapp.online/api/ore-transports/with-selected-transportdriver-changed', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -787,7 +787,7 @@ async fetchOreDispatcher(): Promise<any[]> {
       return [];
   }
   try {
-      const response = await fetch('/api/ore-transports/security-dispatcher/not-specified', {
+      const response = await fetch('https://coappapi.commapp.online/api/ore-transports/security-dispatcher/not-specified', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
@@ -814,7 +814,7 @@ async fetchOreRecieve(): Promise<any[]> {
       return [];
   }
   try {
-      const response = await fetch('/api/ore-transports/security-dispatcher/received', {
+      const response = await fetch('https://coappapi.commapp.online/api/ore-transports/security-dispatcher/received', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
@@ -842,7 +842,7 @@ async fetchOreRecieved(): Promise<any[]> {
       return [];
   }
   try {
-      const response = await fetch('/api/ore-transports/security-dispatcher/dispatched', {
+      const response = await fetch('https://coappapi.commapp.online/api/ore-transports/security-dispatcher/dispatched', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
@@ -869,7 +869,7 @@ async fetchOreRecieved(): Promise<any[]> {
         return [];
     }
     try {
-        const response = await fetch('/api/taxdidections', {
+        const response = await fetch('https://coappapi.commapp.online/api/taxdidections', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -897,7 +897,7 @@ async fetchOreRecieved(): Promise<any[]> {
         return [];
     }
     try {
-        const response = await fetch('  /api/taxdidections', {
+        const response = await fetch('https://coappapi.commapp.online/api/taxdidections', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -929,7 +929,7 @@ async fetchOreRecieved(): Promise<any[]> {
         return [];
     }
     try {
-        const response = await fetch('/api/taxdidections/approved', {
+        const response = await fetch('https://coappapi.commapp.online/api/taxdidections/approved', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -963,7 +963,7 @@ async fetchOreRecieved(): Promise<any[]> {
     }
 
     try {
-        const response = await fetch('/api/taxdidections', {
+        const response = await fetch('https://coappapi.commapp.online/api/taxdidections', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -998,7 +998,7 @@ async fetchOreRecieved(): Promise<any[]> {
         return [];
     }
     try {
-        const response = await fetch('/api/users', {
+        const response = await fetch('https://coappapi.commapp.online/api/users', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -1029,7 +1029,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return null;
       }
       try {
-          const response = await fetch(`/api/production-loan/${customerId}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/production-loan/${customerId}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -1060,7 +1060,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return [];
       }
       try {
-          const response = await fetch('/api/production-loan/all', {
+          const response = await fetch('https://coappapi.commapp.online/api/production-loan/all', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -1091,7 +1091,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch('/api/production-loan/create', {
+          const response = await fetch('https://coappapi.commapp.online/api/production-loan/create', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
@@ -1128,7 +1128,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/production-loan/${loanId}/approve`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/production-loan/${loanId}/approve`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1167,7 +1167,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/production-loan/${loanId}/reject?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/production-loan/${loanId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1206,7 +1206,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/production-loan/${loanId}/push-back?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/production-loan/${loanId}/push-back?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1240,7 +1240,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return null;
         }
         try {
-            const response = await fetch(`/api/users/${userId}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/users/${userId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1271,7 +1271,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return { success: false, error: 'Authentication required' };
         }
         try {
-            const response = await fetch(`/api/users/${userId}/approve`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/users/${userId}/approve`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1303,7 +1303,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/taxdidections/${userId}/approve`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/taxdidections/${userId}/approve`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1340,7 +1340,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return [];
       }
       try {
-          const response = await fetch('/api/mill-onboarding/activated', {
+          const response = await fetch('https://coappapi.commapp.online/api/mill-onboarding/activated', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -1370,7 +1370,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return { success: false, error: 'Authentication required' };
         }
         try {
-            const response = await fetch(`/api/users/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/users/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1403,7 +1403,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/taxdidections/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/taxdidections/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1437,7 +1437,7 @@ async fetchOreRecieved(): Promise<any[]> {
           return { success: false, error: 'Authentication required' };
       }
       try {
-          const response = await fetch(`/api/taxdidections/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/taxdidections/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
@@ -1473,7 +1473,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return { success: false, error: 'Authentication required' };
         }
         try {
-            const response = await fetch(`/api/users/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/users/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1521,7 +1521,7 @@ async fetchOreRecieved(): Promise<any[]> {
         }
 
         try {
-            const response = await fetch('/api/mill-onboarding/create', {
+            const response = await fetch('https://coappapi.commapp.online/api/mill-onboarding/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1573,7 +1573,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return [];
         }
         try {
-            const response = await fetch('/api/sections', {
+            const response = await fetch('https://coappapi.commapp.online/api/sections', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1600,7 +1600,7 @@ async fetchOreRecieved(): Promise<any[]> {
             return [];
         }
         try {
-            const response = await fetch('/api/sections/miners', {
+            const response = await fetch('https://coappapi.commapp.online/api/sections/miners', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1631,7 +1631,7 @@ async fetchOreRecieved(): Promise<any[]> {
       return [];
     }
     try {
-      const response = await fetch('/api/shaft-assignments/approved', {
+      const response = await fetch('https://coappapi.commapp.online/api/shaft-assignments/approved', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1659,7 +1659,7 @@ async fetchOreRecieved(): Promise<any[]> {
       return [];
     }
     try {
-      const response = await fetch('/api/drivers', {
+      const response = await fetch('https://coappapi.commapp.online/api/drivers', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1686,7 +1686,7 @@ async fetchOreRecieved(): Promise<any[]> {
       return [];
     }
     try {
-      const response = await fetch('/api/mill-onboarding/all', {
+      const response = await fetch('https://coappapi.commapp.online/api/mill-onboarding/all', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -1718,7 +1718,7 @@ async fetchOreRecieved(): Promise<any[]> {
     return { success: false, error: 'Authentication required' };
   }
   try {
-    const response = await fetch(`/api/drivers/${driverId}/approve`, {
+    const response = await fetch(`https://coappapi.commapp.online/api/drivers/${driverId}/approve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1757,7 +1757,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   }
 
   try {
-    const response = await fetch(`/api/ore-transports/${oreId}/apply-tax`, {
+    const response = await fetch(`https://coappapi.commapp.online/api/ore-transports/${oreId}/apply-tax`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1801,7 +1801,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { success: false, error: 'Authentication required' };
     }
     try {
-      const response = await fetch(`/api/drivers/${driverId}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/drivers/${driverId}/reject?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1844,7 +1844,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { success: false, error: 'Authentication required' };
     }
     try {
-      const response = await fetch(`/api/drivers/${driverId}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/drivers/${driverId}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -1883,7 +1883,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/companies/${id}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/companies/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1915,7 +1915,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/miners/${id}/set_for_approval`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/miners/${id}/set_for_approval`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1942,7 +1942,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/companies/${id}/approve`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/companies/${id}/approve`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1981,7 +1981,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
         try {
             // Using the new API endpoint format with reason as a query parameter
-            const response = await fetch(`/api/miners/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/miners/${id}/reject?reason=${encodeURIComponent(reason)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2008,7 +2008,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
         try {
             // Using the new API endpoint format with reason as a query parameter
-            const response = await fetch(`/api/companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2042,7 +2042,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
         try {
             // Using the new API endpoint format with reason as a query parameter
-            const response = await fetch(`/api/miners/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/miners/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2070,7 +2070,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
         try {
             // Using the new API endpoint format with reason as a query parameter
-            const response = await fetch(`/api/companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2089,7 +2089,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
     }
     /**
-     * Fetch companies from the endpoint /api/companies
+     * Fetch companies from the endpoint https://coappapi.commapp.online/api/companies
      * Returns an array of companies or an empty array on error.
      */
     async fetchCompaniesFromEndpoint(): Promise<any[]> {
@@ -2100,7 +2100,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/companies', {
+            const response = await fetch('https://coappapi.commapp.online/api/companies', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2138,7 +2138,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/companies/status/approved', {
+            const response = await fetch('https://coappapi.commapp.online/api/companies/status/approved', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2197,7 +2197,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
 
             console.log('Sending company registration data:', requestData);
 
-            const response = await fetch('/api/companies/register', {
+            const response = await fetch('https://coappapi.commapp.online/api/companies/register', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2302,7 +2302,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/companies/getall', {
+            const response = await fetch('https://coappapi.commapp.online/api/companies/getall', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2342,7 +2342,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/companies/${id}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/companies/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2368,7 +2368,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
           return null;
       }
       try {
-          const response = await fetch(`/api/production-loan/${id}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/production-loan/${id}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -2394,7 +2394,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
           return null;
       }
       try {
-          const response = await fetch(`/api/ore-transports/${id}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/ore-transports/${id}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -2425,7 +2425,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
           return null;
       }
       try {
-          const response = await fetch('/api/shaft-assignments/approved', {
+          const response = await fetch('https://coappapi.commapp.online/api/shaft-assignments/approved', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -2452,7 +2452,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         return null;
     }
     try {
-        const response = await fetch(`/api/security-companies/${id}`, {
+        const response = await fetch(`https://coappapi.commapp.online/api/security-companies/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -2479,7 +2479,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
           return null;
       }
       try {
-          const response = await fetch(`/api/taxdidections/${id}`, {
+          const response = await fetch(`https://coappapi.commapp.online/api/taxdidections/${id}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -2506,7 +2506,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/miners/${id}`, {
+            const response = await fetch(`https://coappapi.commapp.online/api/miners/${id}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2533,7 +2533,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/miners/getall', {
+            const response = await fetch('https://coappapi.commapp.online/api/miners/getall', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2561,7 +2561,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/sections', {
+            const response = await fetch('https://coappapi.commapp.online/api/sections', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2592,7 +2592,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/sections', {
+            const response = await fetch('https://coappapi.commapp.online/api/sections', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2620,7 +2620,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
           return [];
       }
       try {
-          const response = await fetch('/api/shaft-assignments/approved', {
+          const response = await fetch('https://coappapi.commapp.online/api/shaft-assignments/approved', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
@@ -2649,7 +2649,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/shaft-assignments', {
+            const response = await fetch('https://coappapi.commapp.online/api/shaft-assignments', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2707,7 +2707,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 status: payload.status,
                 reason: payload.reason,
             });
-            const url = `/api/shaft-assignments/${encodeURIComponent(assignmentId)}/update-loan-details?${qs.toString()}`;
+            const url = `https://coappapi.commapp.online/api/shaft-assignments/${encodeURIComponent(assignmentId)}/update-loan-details?${qs.toString()}`;
             const response = await fetch(url, {
                 method: 'PUT',
                 headers: {
@@ -2735,7 +2735,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/miners/getapproved', {
+            const response = await fetch('https://coappapi.commapp.online/api/miners/getapproved', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2764,7 +2764,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/miners/getall', {
+            const response = await fetch('https://coappapi.commapp.online/api/miners/getall', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2800,7 +2800,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('/api/companies', {
+            const response = await fetch('https://coappapi.commapp.online/api/companies', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2878,7 +2878,7 @@ cooperativename: string;
       }
 
       // Send JSON data with base64 image
-      const response = await fetch('/api/miners/createminers', {
+      const response = await fetch('https://coappapi.commapp.online/api/miners/createminers', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -2932,7 +2932,7 @@ cooperativename: string;
       globalThis.location.href = '/auth/signin';
       return null;
     }
-    const response = await fetch('/api/shaft-assignments', {
+    const response = await fetch('https://coappapi.commapp.online/api/shaft-assignments', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2975,7 +2975,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch('/api/sections/create', {
+      const response = await fetch('https://coappapi.commapp.online/api/sections/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3014,7 +3014,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/shaft-assignments/${id}/approve`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/shaft-assignments/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3045,7 +3045,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/sections/${id}/approve`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/sections/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3077,7 +3077,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/vehicles/${id}/approve`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/vehicles/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3109,7 +3109,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/sections/${id}/approve`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/sections/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3148,7 +3148,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/sections/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/sections/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3179,7 +3179,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/sections/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/sections/${id}/reject?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3210,7 +3210,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/shaft-assignments/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/shaft-assignments/${id}/reject?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3248,7 +3248,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/shaft-assignments/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/shaft-assignments/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3280,7 +3280,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/vehicles/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/vehicles/${id}/reject?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3312,7 +3312,7 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch(`/api/vehicles/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/vehicles/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3434,7 +3434,7 @@ cooperativename: string;
         additionalNotes: driverData.additionalNotes
       };
 
-      const response = await fetch('/api/drivers/register', {
+      const response = await fetch('https://coappapi.commapp.online/api/drivers/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3531,7 +3531,7 @@ cooperativename: string;
         registrationBook: registrationBookBase64,
       };
 
-      const response = await fetch('/api/vehicles/register', {
+      const response = await fetch('https://coappapi.commapp.online/api/vehicles/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3615,7 +3615,7 @@ cooperativename: string;
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/vehicles', {
+      const response = await fetch('https://coappapi.commapp.online/api/vehicles', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -3642,7 +3642,7 @@ cooperativename: string;
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/vehicles/status/approved', {
+      const response = await fetch('https://coappapi.commapp.online/api/vehicles/status/approved', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -3672,7 +3672,7 @@ cooperativename: string;
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/drivers/status/approved', {
+      const response = await fetch('https://coappapi.commapp.online/api/drivers/status/approved', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -3703,7 +3703,7 @@ cooperativename: string;
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/ore-transports/allOre', {
+      const response = await fetch('https://coappapi.commapp.online/api/ore-transports/allOre', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -3744,7 +3744,7 @@ cooperativename: string;
 
       console.log('Using token for vehicle fetch:', token.slice(0, 10) + '...');
 
-      const response = await fetch(`/api/vehicles/${vehicleId}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/vehicles/${vehicleId}`, {
         method: 'GET',
         headers: {
           'Accept': '*/*',
@@ -3784,7 +3784,7 @@ cooperativename: string;
     }
 
     try {
-      const response = await fetch(`/api/security-companies/${id}/approve`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/security-companies/${id}/approve`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3824,7 +3824,7 @@ cooperativename: string;
     }
 
     try {
-      const response = await fetch(`/api/security-companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/security-companies/${id}/reject?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3864,7 +3864,7 @@ cooperativename: string;
     }
 
     try {
-      return fetch(`/api/security-companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+      return fetch(`https://coappapi.commapp.online/api/security-companies/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3905,7 +3905,7 @@ cooperativename: string;
     }
 
     try {
-      const response = await fetch(`/api/vehicles/${vehicleId}/maintainance`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/vehicles/${vehicleId}/maintainance`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -3943,7 +3943,7 @@ cooperativename: string;
     }
 
     try {
-      const response = await fetch('/api/vehicles/status/approved', {
+      const response = await fetch('https://coappapi.commapp.online/api/vehicles/status/approved', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -3991,7 +3991,7 @@ cooperativename: string;
         queryParams.append(key, value);
       }
 
-      const response = await fetch(`/api/ore-transports/${oreId}/fields?${queryParams.toString()}`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/ore-transports/${oreId}/fields?${queryParams.toString()}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -4030,7 +4030,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch(`/api/ore-transports/${oreId}/security-dispatcher/dispatched`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/ore-transports/${oreId}/security-dispatcher/dispatched`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -4064,7 +4064,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch(`/api/ore-transports/${oreId}/security-dispatcher/received`, {
+      const response = await fetch(`https://coappapi.commapp.online/api/ore-transports/${oreId}/security-dispatcher/received`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -4114,7 +4114,7 @@ cooperativename: string;
     
     try {
       const response = await fetch(
-        `/api/ore-transports/${oreId}/mills/unknown?millid=${millId}&millName=${encodeURIComponent(millName)}&millType=${encodeURIComponent(millType)}&location=${encodeURIComponent(millLocation)}`,
+        `https://coappapi.commapp.online/api/ore-transports/${oreId}/mills/unknown?millid=${millId}&millName=${encodeURIComponent(millName)}&millType=${encodeURIComponent(millType)}&location=${encodeURIComponent(millLocation)}`,
         {
           method: 'PUT',
           headers: {
@@ -4172,7 +4172,7 @@ cooperativename: string;
       queryParams.append('status', status);
       
       const response = await fetch(
-        `/api/ore-transports/${oreId}/collect-sample?${queryParams.toString()}`,
+        `https://coappapi.commapp.online/api/ore-transports/${oreId}/collect-sample?${queryParams.toString()}`,
         {
           method: 'PUT',
           headers: {
@@ -4228,7 +4228,7 @@ cooperativename: string;
       queryParams.append('newResult', result);
       queryParams.append('newStatus', status);
       
-      const url = `/api/ore-transports/${oreId}/update-sample-if-default?${queryParams.toString()}`;
+      const url = `https://coappapi.commapp.online/api/ore-transports/${oreId}/update-sample-if-default?${queryParams.toString()}`;
       console.log('updateSampleResults - Request URL:', url);
       
       const response = await fetch(url, {

@@ -30,7 +30,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import Alert from '@mui/material/Alert';
 import UploadIcon from '@mui/icons-material/Upload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { authClient } from '../../../lib/auth/client';
+import { authClient } from '../../../lib/auth/client.ts';
 import { Snackbar } from '@mui/material';
 
 interface AddMillDialogProps {

@@ -29,6 +29,8 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       - NEXT_PUBLIC_PORT=3002
+      # Point Next.js rewrites to the host's backend while running inside Docker
+      - BACKEND_ORIGIN=http://host.docker.internal:1000
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - POLLING_INTERVAL=1000
