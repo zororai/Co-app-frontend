@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Fragment } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,63 +12,37 @@ import { authClient } from '@/lib/auth/client';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
+import MenuItem from '@mui/material/MenuItem';
 import { CheckCircle, ContentCopy as ContentCopyIcon } from '@mui/icons-material';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import InputAdornment from '@mui/material/InputAdornment';
 import Alert from '@mui/material/Alert';
-import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
 
-interface AddTaxDialogProps {
+interface AddTransportCostDialogProps {
   open: boolean;
   onClose: () => void;
   onRefresh?: () => void;
 }
 
-interface TaxFormData {
-  taxType: string;
-  taxRate: string;
-  location: string;
-  description: string;
+interface TransportCostFormData {
+  paymentMethod: string;
+  amountOrGrams: string;
+  reason: string;
 }
 
-interface TaxFormErrors {
-  taxType: boolean;
-  taxRate: boolean;
-  location: boolean;
+interface TransportCostFormErrors {
+  paymentMethod: boolean;
+  amountOrGrams: boolean;
+  reason: boolean;
 }
 
 // Define steps for the stepper
 const steps = [
-  'Tax Information',
+  'Transport Cost Information',
   'Review',
   'Confirmation'
-];
-
-// Define tax type options
-const taxTypeOptions = [
-  { value: 'income_tax', label: 'Income Tax' },
-  { value: 'vat', label: 'Value Added Tax (VAT)' },
-  { value: 'corporate_tax', label: 'Corporate Tax' },
-  { value: 'mining_royalty', label: 'Mining Royalty' },
-  { value: 'property_tax', label: 'Property Tax' },
-  { value: 'customs_duty', label: 'Customs Duty' },
-  { value: 'other', label: 'Other' }
-];
-
-// Define location options
-const locationOptions = [
-  { value: 'south_africa', label: 'South Africa' },
-  { value: 'namibia', label: 'Namibia' },
-  { value: 'botswana', label: 'Botswana' },
-  { value: 'zimbabwe', label: 'Zimbabwe' },
-  { value: 'mozambique', label: 'Mozambique' },
-  { value: 'other', label: 'Other' }
 ];
 
 // Validation functions
@@ -77,9 +50,9 @@ const validateRequired = (value: string): boolean => {
   return value.trim() !== '';
 };
 
-const validateTaxRate = (value: string): boolean => {
-  const rate = Number.parseFloat(value);
-  return !isNaN(rate) && rate >= 0 && rate <= 100;
+const validateAmount = (value: string): boolean => {
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0;
 };
 
 // Helper component for the grid layout in review step
@@ -128,25 +101,24 @@ const Grid = ({
   );
 };
 
-export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): React.JSX.Element {
+export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
-  const [formData, setFormData] = React.useState<TaxFormData>({
-    taxType: '',
-    taxRate: '',
-    location: '',
-    description: ''
+  const [formData, setFormData] = React.useState<TransportCostFormData>({
+    paymentMethod: '',
+    amountOrGrams: '',
+    reason: ''
   });
   
-  const [errors, setErrors] = React.useState<TaxFormErrors>({
-    taxType: false,
-    taxRate: false,
-    location: false
+  const [errors, setErrors] = React.useState<TransportCostFormErrors>({
+    paymentMethod: false,
+    amountOrGrams: false,
+    reason: false
   });
   
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
-  const [taxReference, setTaxReference] = React.useState('');
+  const [transportCostReference, setTransportCostReference] = React.useState('');
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   
@@ -155,18 +127,17 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
     if (!open) {
       setActiveStep(0);
       setFormData({
-        taxType: '',
-        taxRate: '',
-        location: '',
-        description: ''
+        paymentMethod: '',
+        amountOrGrams: '',
+        reason: ''
       });
       setErrors({
-        taxType: false,
-        taxRate: false,
-        location: false
+        paymentMethod: false,
+        amountOrGrams: false,
+        reason: false
       });
       setSuccess(false);
-      setTaxReference('');
+      setTransportCostReference('');
       setError(null);
       setFormSubmitted(false);
     }
@@ -180,20 +151,12 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
     });
   };
 
-  // Handle select changes
-  const handleSelectChange = (field: string) => (event: any) => {
-    setFormData({
-      ...formData,
-      [field]: event.target.value
-    });
-  };
-
   // Validate form fields
   const validateForm = (): boolean => {
     const newErrors = {
-      taxType: !validateRequired(formData.taxType),
-      taxRate: !validateRequired(formData.taxRate) || !validateTaxRate(formData.taxRate),
-      location: !validateRequired(formData.location)
+      paymentMethod: !validateRequired(formData.paymentMethod),
+      amountOrGrams: !validateRequired(formData.amountOrGrams) || !validateAmount(formData.amountOrGrams),
+      reason: !validateRequired(formData.reason)
     };
     
     setErrors(newErrors);
@@ -230,17 +193,16 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
     setError(null);
     
     try {
-      // Call API to create tax
-      const response = await authClient.createTax({
-        taxType: formData.taxType,
-        taxRate: Number.parseFloat(formData.taxRate),
-        location: formData.location,
-        description: formData.description || ''
+      // Call API to create transport cost
+      const response = await authClient.createTransportCost({
+        paymentMethod: formData.paymentMethod,
+        amountOrGrams: Number(formData.amountOrGrams),
+        reason: formData.reason
       });
       
       // Generate reference number (in a real app, this would come from the API)
-      const generatedReference = `TAX-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`;
-      setTaxReference(generatedReference);
+      const generatedReference = `COST-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`;
+      setTransportCostReference(generatedReference);
       setSuccess(true);
       
       // Move to success step
@@ -251,8 +213,8 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
         onRefresh();
       }
     } catch (error_) {
-      console.error('Error creating tax:', error_);
-      setError(error_ instanceof Error ? error_.message : 'Failed to create tax');
+      console.error('Error creating transport cost:', error_);
+      setError(error_ instanceof Error ? error_.message : 'Failed to create transport cost');
     } finally {
       setIsSubmitting(false);
     }
@@ -263,20 +225,19 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
     // Reset form state
     setActiveStep(0);
     setFormData({
-      taxType: '',
-      taxRate: '',
-      location: '',
-      description: ''
+      paymentMethod: '',
+      amountOrGrams: '',
+      reason: ''
     });
     setErrors({
-      taxType: false,
-      taxRate: false,
-      location: false
+      paymentMethod: false,
+      amountOrGrams: false,
+      reason: false
     });
     setError(null);
     setIsSubmitting(false);
     setSuccess(false);
-    setTaxReference('');
+    setTransportCostReference('');
     setFormSubmitted(false);
     
     // Refresh the table data if callback is provided
@@ -290,7 +251,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
 
   // Copy reference to clipboard
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(taxReference);
+    navigator.clipboard.writeText(transportCostReference);
     // You could add a toast notification here
   };
 
@@ -311,7 +272,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
         pb: 1
       }}>
         <Typography variant="h6" component="div">
-          Add Operational Tax
+          Add Transport Cost
         </Typography>
         <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
           <CloseIcon />
@@ -320,7 +281,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
       
       <DialogContent sx={{ pt: 2 }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Create a new tax entry for operational purposes.
+          Create a new transport cost entry.
         </Typography>
         
         {/* Stepper */}
@@ -334,31 +295,36 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
           </Stepper>
         </Box>
 
-        {/* Step 1: Tax Information */}
+        {/* Step 1: Transport Cost Information */}
         {activeStep === 0 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Tax Information
+              Transport Cost Information
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <FormControl 
                   fullWidth 
                   required 
-                  error={formSubmitted && errors.taxType}
+                  error={formSubmitted && errors.paymentMethod}
                   margin="normal"
                 >
                   <Typography variant="body2" component="label" sx={{ mb: 1, fontWeight: 500 }}>
-                    Tax Type *
+                    Payment Method *
                   </Typography>
                   <TextField
                     fullWidth
-                    placeholder="Enter tax type"
-                    value={formData.taxType}
-                    onChange={handleChange('taxType')}
-                  />
-                  {formSubmitted && errors.taxType && (
-                    <FormHelperText>Tax type is required</FormHelperText>
+                    select
+                    label="Payment Method"
+                    value={formData.paymentMethod}
+                    onChange={handleChange('paymentMethod')}
+                    placeholder="Select payment method"
+                  >
+                    <MenuItem value="Gold">Gold</MenuItem>
+                    <MenuItem value="Cash">Cash</MenuItem>
+                  </TextField>
+                  {formSubmitted && errors.paymentMethod && (
+                    <FormHelperText>Payment method is required</FormHelperText>
                   )}
                 </FormControl>
               </Grid>
@@ -367,51 +333,33 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
                 <TextField
                   required
                   fullWidth
-                  label="Tax Rate (%)"
-                  value={formData.taxRate}
-                  onChange={handleChange('taxRate')}
-                  placeholder="Enter tax rate (0-100)"
-                  error={formSubmitted && errors.taxRate}
-                  helperText={formSubmitted && errors.taxRate ? 'Enter a valid tax rate between 0 and 100' : ''}
+                  label="Amount or Grams"
+                  value={formData.amountOrGrams}
+                  onChange={handleChange('amountOrGrams')}
+                  placeholder="Enter amount or grams"
+                  error={formSubmitted && errors.amountOrGrams}
+                  helperText={formSubmitted && errors.amountOrGrams ? 'Enter a valid non-negative number' : ''}
                   margin="normal"
+                  type="number"
                   InputProps={{
-                    endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                    inputProps: { min: 0 },
                   }}
                 />
               </Grid>
               
               <Grid item xs={12}>
-                <FormControl 
-                  fullWidth 
-                  required 
-                  error={formSubmitted && errors.location}
-                  margin="normal"
-                >
-                  <Typography variant="body2" component="label" sx={{ mb: 1, fontWeight: 500 }}>
-                    Location *
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    placeholder="Enter location"
-                    value={formData.location}
-                    onChange={handleChange('location')}
-                  />
-                  {formSubmitted && errors.location && (
-                    <FormHelperText>Location is required</FormHelperText>
-                  )}
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Description "
-                  value={formData.description}
-                  onChange={handleChange('description')}
-                  placeholder="Enter additional details about this tax"
+                  required
+                  label="Reason"
+                  value={formData.reason}
+                  onChange={handleChange('reason')}
+                  placeholder="Enter reason for this cost"
                   multiline
                   rows={3}
                   margin="normal"
+                  error={formSubmitted && errors.reason}
+                  helperText={formSubmitted && errors.reason ? 'Reason is required' : ''}
                 />
               </Grid>
             </Grid>
@@ -436,10 +384,10 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
         {activeStep === 1 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Review Tax Details
+              Review Transport Cost Details
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Please review the information before creating the tax entry.
+              Please review the information before creating the transport cost entry.
             </Typography>
             
             <Box sx={{ 
@@ -450,31 +398,23 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
             }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Tax Type</Typography>
+                  <Typography variant="body2" color="text.secondary">Payment Method</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {taxTypeOptions.find(option => option.value === formData.taxType)?.label || formData.taxType}
+                    {formData.paymentMethod}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Tax Rate</Typography>
+                  <Typography variant="body2" color="text.secondary">Amount or Grams</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {formData.taxRate}%
+                    {formData.amountOrGrams}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">Location</Typography>
+                  <Typography variant="body2" color="text.secondary">Reason</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
-                    {locationOptions.find(option => option.value === formData.location)?.label || formData.location}
+                    {formData.reason}
                   </Typography>
                 </Grid>
-                {formData.description && (
-                  <Grid item xs={12}>
-                    <Typography variant="body2" color="text.secondary">Description</Typography>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                      {formData.description}
-                    </Typography>
-                  </Grid>
-                )}
               </Grid>
             </Box>
             
@@ -502,7 +442,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
                   '&:hover': { bgcolor: '#333' } 
                 }}
               >
-                {isSubmitting ? 'Creating...' : 'Create Tax'}
+                {isSubmitting ? 'Creating...' : 'Create Transport Cost'}
               </Button>
             </Box>
           </Box>
@@ -514,10 +454,10 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
               <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
-                Tax Created Successfully!
+                Transport Cost Created Successfully!
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                The tax entry has been created. Here is the reference number:
+                The transport cost entry has been created. Here is the reference number:
               </Typography>
             </Box>
             
@@ -529,7 +469,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
               mb: 3 
             }}>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Tax Reference Number
+                Transport Cost Reference Number
               </Typography>
               <Box sx={{ 
                 display: 'flex', 
@@ -537,7 +477,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
                 justifyContent: 'space-between'
               }}>
                 <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                  {taxReference}
+                  {transportCostReference}
                 </Typography>
                 <IconButton size="small" onClick={copyToClipboard}>
                   <ContentCopyIcon fontSize="small" />

@@ -931,7 +931,7 @@ async fetchOreRecieved(): Promise<any[]> {
         return [];
     }
     try {
-        const response = await fetch('  /api/taxdidections', {
+        const response = await fetch('/api/transport-cost-onboarding', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -941,13 +941,56 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch tax data');
+            throw new Error('Failed to fetch transport costs');
         }
         const data = await response.json();
-        return Array.isArray(data) ? data : data.taxes || [];
+        return Array.isArray(data) ? data : (data.transportCosts || data.items || []);
     } catch (error) {
-        console.error('Error fetching tax data:', error);
+        console.error('Error fetching transport costs:', error);
         return [];
+    }
+  }
+  
+  /**
+   * Create a new transport cost entry
+   */
+  async createTransportCost(costData: {
+    paymentMethod: string;
+    amountOrGrams: number;
+    reason: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+        const response = await fetch('/api/transport-cost-onboarding', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': '*/*',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(costData),
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Failed to create transport cost');
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error creating transport cost:', error);
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        };
     }
   }
   
@@ -4115,7 +4158,7 @@ cooperativename: string;
       
       return { success: true };
     } catch (error) {
-      console.error('Error approving ore dispatch:', error);
+      console.error('Error approving ore received:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : String(error) 
