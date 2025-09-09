@@ -119,7 +119,7 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
@@ -305,7 +305,6 @@ export function CustomersTable({
         selectedUserId,
         sampleType,
         sampleWeight,
-        sampleSize,
         sampleStatus
       );
       
@@ -724,7 +723,7 @@ export function CustomersTable({
                     {/* Show the 'Collect Sample' button when status is not 'Approved' */}
                     {/* Don't hide the button based on sampleType anymore */}
                     {!(row.oreSample && row.oreSample[0] && 
-                       row.oreSample[0].status === 'Approved' ) && (
+                       row.oreSample[0].status === 'pending for results' ) && (
                       <Button 
                         onClick={() => handleOpenSampleUpdateDialog(row.id)}
                         variant="outlined"

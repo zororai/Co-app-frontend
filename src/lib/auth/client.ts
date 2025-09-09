@@ -4180,7 +4180,6 @@ cooperativename: string;
    * @param oreId The ID of the ore transport
    * @param sampleType The type of sample
    * @param sampleWeight The weight of the sample
-   * @param sampleSize The size of the sample
    * @param status The status of the sample (e.g., "pending for results")
    * @returns A promise that resolves to success status and optional error
    */
@@ -4202,6 +4201,11 @@ cooperativename: string;
       queryParams.append('sampleType', sampleType);
       queryParams.append('sampleWeight', sampleWeight);
       queryParams.append('status', status);
+      // Some backends may still expect sampleSize; send an empty value to maintain compatibility
+      if (!queryParams.has('sampleSize')) {
+        queryParams.append('sampleSize', '');
+      }
+     
       
       const response = await fetch(
         `/api/ore-transports/${oreId}/collect-sample?${queryParams.toString()}`,
@@ -4217,8 +4221,9 @@ cooperativename: string;
       );
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to collect sample: ${errorText}`);
+        const errorText = await response.text().catch(() => '');
+        const details = `status=${response.status} ${response.statusText}`;
+        throw new Error(`Failed to collect sample: ${errorText || details}`);
       }
       
       return { success: true };
