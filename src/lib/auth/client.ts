@@ -568,6 +568,40 @@ class AuthClient {
   }
 
   /**
+   * Fetch shaft numbers by section name
+   * GET /api/shaft-assignments/shaft-numbers/by-section/{sectionName}
+   */
+  async fetchShaftNumbersBySection(sectionName: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          globalThis.location.href = '/auth/signin';
+          return [];
+      }
+      try {
+          const safeSection = encodeURIComponent(String(sectionName).trim());
+          const url = `/api/shaft-assignments/shaft-numbers/by-section/${safeSection}`;
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  'Accept': '*/*',
+                  'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const text = await response.text().catch(() => '');
+              throw new Error(text || 'Failed to fetch shaft numbers by section');
+          }
+          const data = await response.json();
+          return data;
+      } catch (error) {
+          console.error(`Error fetching shaft numbers for section ${sectionName}:`, error);
+          return [];
+      }
+  }
+
+  /**
    * Approve a shaft loan by shaft assignment ID
    * PUT /api/shaft-assignments/{assignmentId}/loan/approve
    */

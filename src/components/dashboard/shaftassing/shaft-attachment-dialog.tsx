@@ -195,11 +195,10 @@ export function ShaftAttachmentDialog({
                 fullWidth
                 label="Section Name"
                 value={formData.sectionName || ''}
-                onChange={(e) => {
+                onChange={async (e) => {
                   const selectedName = e.target.value;
-                  // Find the selected section
+                  // Default: preserve current fallback generation
                   const selectedSection = sections.find(s => s.sectionName === selectedName);
-                  // Get the last shaft number (assume section.shaftNumbers is an array or a string)
                   let lastNumber = 0;
                   if (selectedSection) {
                     if (Array.isArray(selectedSection.shaftNumbers)) {
@@ -208,15 +207,46 @@ export function ShaftAttachmentDialog({
                       lastNumber = Number.parseInt(selectedSection.shaftNumbers, 10) || 0;
                     }
                   }
-                  // Generate sequence: first letter + last letter + next number
                   const firstLetter = selectedName.charAt(0) || '';
                   const lastLetter = selectedName.charAt(selectedName.length - 1) || '';
                   const nextNumber = lastNumber + 1;
+
+                  // Optimistically set sectionName immediately
                   setFormData(prev => ({
                     ...prev,
                     sectionName: selectedName,
-                    shaftNumbers: `${firstLetter}${lastLetter}${nextNumber}`
+                    shaftNumbers: `${firstLetter}${lastLetter}${nextNumber}`,
                   }));
+
+                  // Try to fetch shaft numbers by section from the API
+                  try {
+                    const apiData = await authClient.fetchShaftNumbersBySection(selectedName);
+                    let newShaftValue: string | undefined;
+                    if (Array.isArray(apiData)) {
+                      // If array, pick the last one (assuming it's the latest)
+                      if (apiData.length > 0) {
+                        newShaftValue = String(apiData[apiData.length - 1]);
+                      }
+                    } else if (apiData) {
+                      // If single value or object with value
+                      if (typeof apiData === 'string' || typeof apiData === 'number') {
+                        newShaftValue = String(apiData);
+                      } else if (apiData?.shaftNumbers) {
+                        newShaftValue = String(apiData.shaftNumbers);
+                      }
+                    }
+
+                    if (newShaftValue) {
+                      setFormData(prev => ({
+                        ...prev,
+                        sectionName: selectedName,
+                        shaftNumbers: newShaftValue,
+                      }));
+                    }
+                  } catch (err) {
+                    // On error, keep the fallback-generated value
+                    console.error('Failed to fetch shaft numbers by section:', err);
+                  }
                 }}
                 required
                 disabled={loading || sectionsLoading}
