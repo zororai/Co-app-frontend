@@ -4188,7 +4188,6 @@ cooperativename: string;
     oreId: string,
     sampleType: string,
     sampleWeight: string,
-    sampleSize: string,
     status: string
   ): Promise<{ success: boolean; error?: string }> {
     const token = localStorage.getItem('custom-auth-token');
@@ -4202,7 +4201,6 @@ cooperativename: string;
       const queryParams = new URLSearchParams();
       queryParams.append('sampleType', sampleType);
       queryParams.append('sampleWeight', sampleWeight);
-      queryParams.append('sampleSize', sampleSize);
       queryParams.append('status', status);
       
       const response = await fetch(

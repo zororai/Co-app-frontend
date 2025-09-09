@@ -220,8 +220,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                     <Box key={index} sx={{ mb: index < oreDetails.oreSample.length - 1 ? 2 : 0 }}>
                       <Typography variant="body2"><strong>Sample Type:</strong> {sample.sampleType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Sample Weight:</strong> {sample.sampleWeight || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Sample Size:</strong> {sample.sampleSize || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Result:</strong> {sample.result || 'N/A'}</Typography>
+                     <Typography variant="body2"><strong>Result:</strong> {sample.result || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Status:</strong> {sample.status || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Reason:</strong> {sample.reason?.toString() || 'N/A'}</Typography>
                     </Box>

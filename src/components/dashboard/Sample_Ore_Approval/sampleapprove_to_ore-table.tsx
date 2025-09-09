@@ -292,7 +292,7 @@ export function CustomersTable({
     }
     
     // Validate form fields
-    if (!sampleType || !sampleWeight || !sampleSize || !sampleStatus) {
+    if (!sampleType || !sampleWeight || !sampleStatus) {
       setFeedbackSuccess(false);
       setFeedbackMessage('Please fill in all sample fields');
       setFeedbackDialogOpen(true);
@@ -891,13 +891,6 @@ export function CustomersTable({
               name="sampleWeight"
               value={sampleWeight}
               onChange={(e) => setSampleWeight(e.target.value)}
-            />
-            <TextField
-              fullWidth
-              label="Sample Size"
-              name="sampleSize"
-              value={sampleSize}
-              onChange={(e) => setSampleSize(e.target.value)}
             />
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
