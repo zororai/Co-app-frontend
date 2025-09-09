@@ -24,6 +24,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
 
+import { sortNewestFirst } from '@/utils/sort';
+
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
@@ -111,7 +113,8 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    const sorted = sortNewestFirst(filtered);
+    return sorted;
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {

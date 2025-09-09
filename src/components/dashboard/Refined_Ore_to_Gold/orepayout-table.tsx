@@ -31,6 +31,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import dayjs from 'dayjs';
+import { sortNewestFirst } from '@/utils/sort';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
