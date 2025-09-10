@@ -31,12 +31,14 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
 
-  React.useEffect(() => {
-    (async () => {
-      const data = await authClient.fetchCustomers();
-      setCustomers(data);
-    })();
+  const refreshCustomers = React.useCallback(async () => {
+    const data = await authClient.fetchCustomers();
+    setCustomers(data);
   }, []);
+
+  React.useEffect(() => {
+    refreshCustomers();
+  }, [refreshCustomers]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
@@ -161,7 +163,7 @@ export default function Page(): React.JSX.Element {
         rowsPerPage={rowsPerPage}
       />
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <RegMinerDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshCustomers} />
     </Stack>
   );
 }
