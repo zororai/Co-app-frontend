@@ -197,23 +197,7 @@ export function CustomersTable({
   }, [refreshTrigger]);
   
   // Fetch activated mills when component mounts
-  React.useEffect(() => {
-    const fetchActivatedMills = async () => {
-      setMillsLoading(true);
-      setMillsError('');
-      try {
-        const fetchedMills = await authClient.fetchActivatedMills();
-        console.log('Activated Mills:', fetchedMills); // Debug: Log the mills response
-        setMills(fetchedMills);
-      } catch (error_) {
-        console.error('Error fetching activated mills:', error_);
-        setMillsError('Failed to load mills. Please try again.');
-      } finally {
-        setMillsLoading(false);
-      }
-    };
-    fetchActivatedMills();
-  }, [refreshTrigger]);
+ 
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -643,19 +627,7 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
+          
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
               
@@ -679,18 +651,7 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
+                
                   <TableCell>{row.oreUniqueId}</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
