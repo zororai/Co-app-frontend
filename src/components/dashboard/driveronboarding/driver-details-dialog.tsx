@@ -19,6 +19,7 @@ import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, Dialog
 import { useState } from 'react';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface DriverDetailsDialogProps {
   open: boolean;
@@ -306,13 +307,23 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
               <Box>
                 <Typography variant="body2" color="text.secondary">License Document</Typography>
                 <Typography variant="body1">
-                  {driver.licenseDocument ? 'Uploaded' : 'Not uploaded'}
+                  {driver.licenseDocument ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">ID Document</Typography>
                 <Typography variant="body1">
-                  {driver.idDocument ? 'Uploaded' : 'Not uploaded'}
+                  {driver.idDocument ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
                 </Typography>
               </Box>
               </Box>
@@ -330,45 +341,7 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
       </DialogContent>
       
       <DialogActions sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'space-between' }}>
-        <Box>
-          {driver && driver.status === 'PENDING' && (
-            <>
-              <Button 
-                onClick={handleApproveClick} 
-                variant="contained" 
-                color="success" 
-                sx={{ mr: 1 }}
-              >
-                Approve
-              </Button>
-              <Button 
-                onClick={handleRejectClick} 
-                variant="contained" 
-                color="error" 
-                sx={{ mr: 1 }}
-              >
-                Reject
-              </Button>
-              <Button 
-                onClick={handlePushbackClick} 
-                variant="contained" 
-                color="warning"
-              >
-                Push Back
-              </Button>
-            </>
-          )}
-          {actionSuccess && (
-            <Alert severity="success" sx={{ mt: 1 }}>
-              {actionSuccess}
-            </Alert>
-          )}
-          {actionError && (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {actionError}
-            </Alert>
-          )}
-        </Box>
+        
         <Button onClick={onClose} color="primary">
           Close
         </Button>

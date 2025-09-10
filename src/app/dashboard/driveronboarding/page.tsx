@@ -52,33 +52,9 @@ export default function Page(): React.JSX.Element {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
 
-  // Function to refresh the miner data
+  // Trigger a re-fetch when called (e.g., after successful Send for Approval)
   const refreshData = React.useCallback(() => {
-    setRefreshKey(prevKey => prevKey + 1);
-  }, []);
-
-  React.useEffect(() => {
-    (async () => {
-      try {
-        const data = await authClient.fetchPendingCustomers();
-        console.log('Fetched data from API:', data);
-        // Normalize status values to match expected enum
-        const normalizedData = data.map((customer: any) => ({
-          ...customer,
-          status: customer.status === "Approved" ? "APPROVED"
-                : customer.status === "Rejected" ? "REJECTED"
-                : customer.status === "Pending" ? "PENDING"
-                : customer.status === "Pushed Back" ? "PUSHED_BACK"
-                : customer.status // fallback to original if already correct
-        }));
-        console.log('Normalized data for table:', normalizedData);
-        setCustomers(normalizedData);
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
-        // Use mock data when API fails
-   
-      }
-    })();
+    setRefreshKey(prev => prev + 1);
   }, []);
 
   // Filter customers by selected tab/status

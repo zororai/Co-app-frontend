@@ -373,9 +373,7 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             </Alert>
           )}
         </Box>
-        <Button onClick={onClose} color="primary">
-          Close
-        </Button>
+        
       </DialogActions>
       
       {/* Approve Confirmation Dialog */}
