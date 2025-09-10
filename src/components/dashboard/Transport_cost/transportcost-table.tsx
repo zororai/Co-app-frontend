@@ -299,133 +299,102 @@ export function CustomersTable({
           </FormControl>
         </Box>
       </Box>
-      <Box sx={{ overflowX: 'auto' }}>
-        <Table sx={{ minWidth: '800px' }}>
-          <TableHead>
+    <Box sx={{ overflowX: 'auto' }}>
+      <Table sx={{ minWidth: '800px' }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Payment Method</TableCell>
+            <TableCell>Amount/Grams</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Reason</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {!loading && filteredRows.length === 0 && (
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
+              <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                <Typography variant="body1" color="text.secondary">
+                  No users found
+                </Typography>
               </TableCell>
-              <TableCell>Payment Method</TableCell>
-              <TableCell>Amount/Grams</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Reason</TableCell>
-              <TableCell>Actions</TableCell>
-              
-     
-              
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {!loading && filteredRows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No users found
-                  </Typography>
+          )}
+          {filteredRows.map((row) => {
+            return (
+              <TableRow hover key={row.id}>
+                <TableCell>{row.paymentMethod || ''}</TableCell>
+                <TableCell>{row.amountOrGrams ?? ''}</TableCell>
+                <TableCell>
+                  <Box sx={{
+                    display: 'inline-block',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    bgcolor: 
+                      row.status === 'PENDING' ? '#FFF9C4' : 
+                      row.status === 'REJECTED' ? '#FFCDD2' : 
+                      row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
+                      '#C8E6C9',
+                    color: 
+                      row.status === 'PENDING' ? '#F57F17' : 
+                      row.status === 'REJECTED' ? '#B71C1C' : 
+                      row.status === 'PUSHED_BACK' ? '#E65100' : 
+                      '#1B5E20',
+                    fontWeight: 'medium',
+                    fontSize: '0.875rem'
+                  }}>
+                    {row.status}
+                  </Box>
+                </TableCell>
+                <TableCell>{row.reason || ''}</TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <button 
+                      onClick={() => handleViewUserDetails(row.id)}
+                      style={{
+                        background: 'none',
+                        border: '1px solid #06131fff',
+                        color: '#081b2fff',
+                        borderRadius: '6px',
+                        padding: '2px 12px',
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                    }}>View Tax Details</button>
+                  </Box>
                 </TableCell>
               </TableRow>
-            )}
-            {filteredRows.map((row) => {
-              const isSelected = selected?.has(row.id);
-              return (
-                <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>{row.paymentMethod || ''}</TableCell>
-                  <TableCell>{row.amountOrGrams ?? ''}</TableCell>
-                  <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status}
-                    </Box>
-                  </TableCell>
-                  <TableCell>{row.reason || ''}</TableCell>
-              
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Tax Details</button>
-                    </Box>
-                  </TableCell>
-               
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Box>
-      <Divider />
-      <TablePagination
-        component="div"
-        count={filteredRows.length}
-        onPageChange={noop}
-        onRowsPerPageChange={noop}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+            );
+          })}
+        </TableBody>
+      </Table>
+    </Box>
+    <Divider />
+    <TablePagination
+      component="div"
+      count={filteredRows.length}
+      onPageChange={noop}
+      onRowsPerPageChange={noop}
+      page={page}
+      rowsPerPage={rowsPerPage}
+      rowsPerPageOptions={[5, 10, 25]}
+    />
+    
+    {/* Customer Details Dialog */}
+    {selectedCustomer && (
+      <MinerDetailsDialog
+        open={isViewDialogOpen}
+        onClose={() => setIsViewDialogOpen(false)}
+        customer={selectedCustomer}
       />
-      
-      {/* Customer Details Dialog */}
-      {selectedCustomer && (
-        <MinerDetailsDialog
-          open={isViewDialogOpen}
-          onClose={() => setIsViewDialogOpen(false)}
-          customer={selectedCustomer}
-        />
-      )}
-      
-      {/* User details dialog */}
-      <UserDetailsDialog
-        open={isUserDetailsDialogOpen}
-        onClose={() => setIsUserDetailsDialogOpen(false)}
-        userId={selectedUserId}
-      />
-    </Card>
+    )}
+    
+    {/* User details dialog */}
+    <UserDetailsDialog
+      open={isUserDetailsDialogOpen}
+      onClose={() => setIsUserDetailsDialogOpen(false)}
+      userId={selectedUserId}
+    />
+  </Card>
   );
 }
