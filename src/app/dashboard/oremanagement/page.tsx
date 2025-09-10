@@ -22,18 +22,19 @@ import { CustomersTable } from '@/components/dashboard/oremanagement/oremanage-t
 import type { Customer } from '@/components/dashboard/oremanagement/oremanage-table';
 
 // Tab content components
-function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+function PendingTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
+  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
 }
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+function PushedBackTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
+  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
 }
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+function RejectedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
+  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
 }
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
+  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
 }
+
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -56,8 +57,6 @@ export default function Page(): React.JSX.Element {
   const refreshData = React.useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
   }, []);
-
-
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -211,20 +210,20 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-        <TopRightActions />
+        <TopRightActions onRefresh={refreshData} />
       </Stack>
 
       {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
@@ -237,7 +236,8 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions(): React.JSX.Element {
+function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const open = Boolean(anchorEl);
@@ -277,6 +277,7 @@ function TopRightActions(): React.JSX.Element {
       <AddOreDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 
+        onRefresh={onRefresh}
       />
     </React.Fragment>
   );

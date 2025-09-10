@@ -442,6 +442,7 @@ export function CustomersTable({
         open={isAssignDetailsDialogOpen}
         onClose={() => setIsAssignDetailsDialogOpen(false)}
         userId={selectedUserId}
+        onRefresh={refreshTableData}
       />
       {/* Ore Details dialog */}
       <OreDetailsDialog
