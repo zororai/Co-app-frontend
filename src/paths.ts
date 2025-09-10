@@ -17,6 +17,7 @@ export const paths = {
     oreTax: '/dashboard/oretax',
     mill: '/dashboard/mill',
     borrowing:'/dashboard/borrowing',
+    Transport_costStatus:'/dashboard/Transport_costStatus',
     Refined_Ore_to_Gold:'/dashboard/Refined_Ore_to_Gold',
     Production_LoanStatus:'/dashboard/Production_LoanStatus',
     millasignment:'/dashboard/millasignment',

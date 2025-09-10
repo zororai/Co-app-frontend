@@ -91,6 +91,7 @@ export const navItems = [
       {key:'mill-status', title: 'Mill Status', href: paths.dashboard.millstatus, icon: 'truck' },
       {key:'Production_LoanStatus', title: 'Production Loan Status', href: paths.dashboard.Production_LoanStatus, icon: 'truck' },
       {key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'truck' },
+      {key:'Transport_costStatus', title: 'Transport Cost Status', href: paths.dashboard.Transport_costStatus, icon: 'truck' },
 
    
     ],

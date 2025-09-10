@@ -952,6 +952,37 @@ async fetchOreRecieved(): Promise<any[]> {
   }
   
   /**
+   * Fetch transport cost details by ID
+   */
+  async fetchTransportCostDetails(id: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return null;
+    }
+    try {
+        const response = await fetch(`/api/transport-cost-onboarding/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch transport cost details');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(`Error fetching transport cost with ID ${id}:`, error);
+        return null;
+    }
+  }
+  
+  /**
    * Create a new transport cost entry
    */
   async createTransportCost(costData: {
