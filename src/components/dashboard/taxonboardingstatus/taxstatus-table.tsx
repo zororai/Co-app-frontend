@@ -423,6 +423,7 @@ export function CustomersTable({
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
+        onRefresh={refreshTableData}
       />
       
     </Card>

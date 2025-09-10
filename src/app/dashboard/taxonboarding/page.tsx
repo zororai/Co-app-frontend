@@ -80,7 +80,7 @@ export default function Page(): React.JSX.Element {
    
       }
     })();
-  }, []);
+  }, [refreshKey]);
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -234,7 +234,7 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-        <TopRightActions />
+        <TopRightActions onRefresh={refreshData} />
       </Stack>
 
       {tab === 'PENDING' && (
@@ -260,7 +260,8 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions(): React.JSX.Element {
+function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const open = Boolean(anchorEl);
@@ -300,6 +301,7 @@ function TopRightActions(): React.JSX.Element {
       <AddTaxDialog 
         open={dialogOpen} 
         onClose={handleCloseDialog} 
+        onRefresh={onRefresh}
       />
     </React.Fragment>
   );

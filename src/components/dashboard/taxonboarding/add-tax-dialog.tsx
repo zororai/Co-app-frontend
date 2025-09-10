@@ -64,12 +64,8 @@ const taxTypeOptions = [
 
 // Define location options
 const locationOptions = [
-  { value: 'south_africa', label: 'South Africa' },
-  { value: 'namibia', label: 'Namibia' },
-  { value: 'botswana', label: 'Botswana' },
-  { value: 'zimbabwe', label: 'Zimbabwe' },
-  { value: 'mozambique', label: 'Mozambique' },
-  { value: 'other', label: 'Other' }
+  { value: 'on_site', label: 'On site' },
+  { value: 'off_site', label: 'Off Site' },
 ];
 
 // Validation functions
@@ -385,12 +381,17 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
                   <Typography variant="body2" component="label" sx={{ mb: 1, fontWeight: 500 }}>
                     Location *
                   </Typography>
-                  <TextField
+                  <Select
                     fullWidth
-                    placeholder="Enter location"
+                    displayEmpty
                     value={formData.location}
-                    onChange={handleChange('location')}
-                  />
+                    onChange={handleSelectChange('location')}
+                  >
+                    <MenuItem value=""><em>Select location</em></MenuItem>
+                    {locationOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                    ))}
+                  </Select>
                   {formSubmitted && errors.location && (
                     <FormHelperText>Location is required</FormHelperText>
                   )}

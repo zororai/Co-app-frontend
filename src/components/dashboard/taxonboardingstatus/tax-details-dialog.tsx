@@ -343,20 +343,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               </Button>
             </Box>
           )}
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button 
-              onClick={onClose}
-              variant="contained"
-              color="primary"
-              sx={{ 
-                minWidth: '200px',
-                bgcolor: '#5f4bfa',
-                '&:hover': { bgcolor: '#4d3fd6' }
-              }}
-            >
-              Close
-            </Button>
-          </Box>
+     
         </DialogActions>
       )}
     </Dialog>
