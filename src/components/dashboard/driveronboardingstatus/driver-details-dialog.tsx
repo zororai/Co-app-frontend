@@ -17,6 +17,7 @@ import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
 import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
 import { useState } from 'react';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface DriverDetailsDialogProps {
   open: boolean;
@@ -300,13 +301,23 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
               <Box>
                 <Typography variant="body2" color="text.secondary">License Document</Typography>
                 <Typography variant="body1">
-                  {driver.licenseDocument ? 'Uploaded' : 'Not uploaded'}
+                  {driver.licenseDocument ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary">ID Document</Typography>
                 <Typography variant="body1">
-                  {driver.idDocument ? 'Uploaded' : 'Not uploaded'}
+                  {driver.idDocument ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
                 </Typography>
               </Box>
             </Box>
