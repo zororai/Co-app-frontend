@@ -375,19 +375,7 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
+      
               <TableCell>Loan Name</TableCell>
               <TableCell>Payment Method</TableCell>
               <TableCell>Amount/Grams</TableCell>
@@ -410,23 +398,24 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
+              
                   <TableCell>{row.loanName || ''}</TableCell>
                   <TableCell>{row.paymentMethod || ''}</TableCell>
                   <TableCell>{row.amountOrGrams || 0}</TableCell>
                   <TableCell>{row.purpose || ''}</TableCell>
-                  <TableCell>{row.status || ''}</TableCell>
+                  <TableCell>
+                    <Box     sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 2,
+                          bgcolor: 
+                            row.status === 'APPROVED' ?  '#d0f5e8' : '#ffebee',
+                          color: 
+                            row.status === 'APPROVED' ? '#1b5e20' : '#c62828',
+                          fontWeight: 500,
+                          fontSize: 13,
+                        }}>
+                    {row.status || ''}</Box></TableCell>
                   <TableCell>{row.reason || ''}</TableCell>
                   
                   
