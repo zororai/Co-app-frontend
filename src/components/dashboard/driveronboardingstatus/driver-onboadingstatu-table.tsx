@@ -417,6 +417,7 @@ export function CustomersTable({
           open={isDriverDetailsDialogOpen}
           onClose={() => setIsDriverDetailsDialogOpen(false)}
           driverId={selectedDriverId}
+          onRefresh={refreshTableData}
         />
       )}
 

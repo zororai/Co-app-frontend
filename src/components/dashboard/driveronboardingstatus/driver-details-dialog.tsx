@@ -23,9 +23,10 @@ interface DriverDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   driverId: string | null;
+  onRefresh?: () => void; // optional callback to refresh table after actions
 }
 
-export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDialogProps): React.JSX.Element {
+export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: DriverDetailsDialogProps): React.JSX.Element {
   const [driver, setDriver] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -83,6 +84,10 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
         if (driver) {
           setDriver({ ...driver, status: 'APPROVED' });
         }
+        // Trigger parent refresh if provided
+        if (onRefresh) {
+          onRefresh();
+        }
       } else {
         setActionError(result.error || 'Failed to approve driver');
       }
@@ -120,6 +125,9 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
         if (driver) {
           setDriver({ ...driver, status: 'REJECTED', reason: actionReason });
         }
+        if (onRefresh) {
+          onRefresh();
+        }
       } else {
         setActionError(result.error || 'Failed to reject driver');
       }
@@ -156,6 +164,9 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
         // Update driver status in the UI
         if (driver) {
           setDriver({ ...driver, status: 'PUSHED_BACK', reason: actionReason });
+        }
+        if (onRefresh) {
+          onRefresh();
         }
       } else {
         setActionError(result.error || 'Failed to push back driver');
