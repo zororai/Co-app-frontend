@@ -13,8 +13,12 @@ import {
   Dialog, 
   DialogTitle, 
   DialogContent, 
-  Snackbar 
+  Snackbar,
+  Stepper,
+  Step,
+  StepLabel 
 } from '@mui/material';
+
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { authClient } from '@/lib/auth/client';
@@ -45,7 +49,6 @@ interface ErrorState {
   ownerAddress: string;
   ownerCellNumber: string;
   ownerIdNumber: string;
-  // teamMembers field removed
 }
 
 export interface RegMinerDialogProps {
@@ -72,6 +75,9 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
   
   // State for success alert
   const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
+  // Stepper state
+  const [activeStep, setActiveStep] = React.useState(0);
+  const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
 
   const [form, setForm] = React.useState({
     companyName: '',
@@ -99,7 +105,6 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
     registrationNumber: '',
     address: '',
     contactNumber: '',
-    cellNumber: '',
     email: '',
     industry: '',
     companyLogo: '',
@@ -108,6 +113,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
     certificateOfCooperation: '',
     miningCertificate: '',
     passportPhotos: '',
+    cellNumber: '',
     ownerName: '',
     ownerSurname: '',
     ownerAddress: '',
@@ -374,28 +380,57 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
       }
 
       if (success) {
-        // Show success alert
+        // Show success alert and move to confirmation step
         setShowSuccessAlert(true);
-        
-        // Set a timeout to close dialog and refresh data after alert is shown
+        setActiveStep(4);
+        // Optionally trigger onRefresh
         setTimeout(() => {
-          // Close the dialog if onClose prop is provided
-          if (onClose) {
-            onClose();
-          }
-          // Call onRefresh if provided, otherwise refresh the page
           if (onRefresh) {
             onRefresh();
-          } else {
-            globalThis.location.reload();
           }
-        }, 2000); // 2 seconds delay
+        }, 1200);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
       globalThis.alert('An error occurred during registration. Please try again.');
     }
   };
+
+  // Step validations similar to add-security-company-dialog
+  const validateCompanyInfo = () => {
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    if (!valid) {
+      validateForm();
+    }
+    return valid;
+  };
+  const validateDocuments = () => {
+    const valid = !!form.companyLogo && !!form.cr14Document && !!form.taxClearance && !!form.certificateOfCooperation && !!form.miningCertificate && !!form.passportPhotos;
+    if (!valid) {
+      validateForm();
+    }
+    return valid;
+  };
+  const validateOwner = () => {
+    const valid = !!form.ownerName && !!form.ownerSurname && !!form.ownerAddress && !!form.ownerCellNumber && !!form.ownerIdNumber;
+    if (!valid) {
+      validateForm();
+    }
+    return valid;
+  };
+
+  const handleNext = async () => {
+    if (activeStep === 0 && !validateCompanyInfo()) return;
+    if (activeStep === 1 && !validateDocuments()) return;
+    if (activeStep === 2 && !validateOwner()) return;
+    if (activeStep === 3) {
+      // Submit the form before moving to confirmation
+      await handleSubmit(new Event('submit') as any);
+      return;
+    }
+    setActiveStep(s => s + 1);
+  };
+  const handleBack = () => setActiveStep(s => Math.max(0, s - 1));
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ p: 2, maxWidth: 900 }}>
@@ -409,10 +444,24 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           Registration successful!
         </Alert>
       </Snackbar>
-      
-      {/* Company Information */}
-      <Box display="flex" flexWrap="wrap" gap={2}>
-        <Box flex="1 1 48%">
+
+      {/* Stepper */}
+      <Box sx={{ mb: 2 }}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      {/* Step 0: Company Information */}
+      {activeStep === 0 && (
+      <>
+      <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Company Information</Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Company Name</InputLabel>
           <TextField
             name="companyName"
@@ -425,7 +474,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
             required
           />
         </Box>
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Address</InputLabel>
           <TextField
             name="address"
@@ -438,7 +487,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
             required
           />
         </Box>
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Cell number</InputLabel>
           <TextField
             name="contactNumber"
@@ -451,7 +500,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
             required
           />
         </Box>
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Email</InputLabel>
           <TextField
             name="email"
@@ -465,10 +514,16 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
             required
           />
         </Box>
+      </Box>
+      </>
+      )}
 
+      {/* Step 1: Documents */}
+      {activeStep === 1 && (
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
         {/* Document Upload Section */}
-        <Box flex="1 1 48%">
-          <InputLabel>Company log</InputLabel>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+          <InputLabel>Company Logo</InputLabel>
           <Button
             variant="outlined"
             component="label"
@@ -496,7 +551,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
 
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Upload Copy Of CR14</InputLabel>
           <Button
             variant="outlined"
@@ -525,7 +580,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
 
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Upload Tax Clearance</InputLabel>
           <Button
             variant="outlined"
@@ -554,7 +609,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
 
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Upload certificate Of Cooperation</InputLabel>
           <Button
             variant="outlined"
@@ -583,7 +638,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
 
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Upload Mining Certificate</InputLabel>
           <Button
             variant="outlined"
@@ -612,7 +667,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
 
-        <Box flex="1 1 48%">
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Upload Passport Photo Picture</InputLabel>
           <Button
             variant="outlined"
@@ -641,13 +696,15 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           )}
         </Box>
       </Box>
+      )}
 
-      {/* Owner Detail Section */}
+      {/* Step 2: Owner Detail Section */}
+      {activeStep === 2 && (
       <Box sx={{ mt: 4 }}>
-        <Typography variant="subtitle1" sx={{ mb: 2 }}>Owner Detail</Typography>
-        <Box sx={{ border: '1px solid #ccc', borderRadius: 2, p: 2 }}>
-          <Box display="flex" flexWrap="wrap" gap={2}>
-            <Box flex="1 1 48%">
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Owner Detail</Typography>
+        <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, p: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+            <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
               <TextField
                 name="ownerName"
                 label="Owner Name"
@@ -659,7 +716,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
                 required
               />
             </Box>
-            <Box flex="1 1 48%">
+            <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
               <TextField
                 name="ownerSurname"
                 label="Owner Surname"
@@ -671,7 +728,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
                 required
               />
             </Box>
-            <Box flex="1 1 48%">
+            <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
               <TextField
                 name="ownerAddress"
                 label="Owner Address"
@@ -683,7 +740,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
                 required
               />
             </Box>
-            <Box flex="1 1 48%">
+            <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
               <TextField
                 name="ownerCellNumber"
                 label="Owner Cell Number"
@@ -695,7 +752,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
                 required
               />
             </Box>
-            <Box flex="1 1 100%">
+            <Box sx={{ width: '100%', px: 1.5 }}>
               <TextField
                 name="ownerIdNumber"
                 label="Owner ID Number"
@@ -710,22 +767,54 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
           </Box>
         </Box>
       </Box>
+      )}
 
-      {/* Submit Button */}
-      <Button
-        type="submit"
-        variant="contained"
-        sx={{
-          mt: 4,
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          fontWeight: 600,
-          fontSize: 18,
-          width: 200,
-        }}
-      >
-        Submit
-      </Button>
+      {/* Step 3: Review */}
+      {activeStep === 3 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Review Company Details</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={500}>Company Information</Typography>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="body2"><strong>Name:</strong> {form.companyName}</Typography>
+                <Typography variant="body2"><strong>Registration:</strong> {form.registrationNumber}</Typography>
+                <Typography variant="body2"><strong>Email:</strong> {form.email}</Typography>
+                <Typography variant="body2"><strong>Cell:</strong> {form.cellNumber}</Typography>
+                <Typography variant="body2"><strong>Address:</strong> {form.address}</Typography>
+              </Box>
+            </Box>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={500}>Owner Details</Typography>
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="body2"><strong>Name:</strong> {form.ownerName} {form.ownerSurname}</Typography>
+                <Typography variant="body2"><strong>Cell:</strong> {form.ownerCellNumber}</Typography>
+                <Typography variant="body2"><strong>ID:</strong> {form.ownerIdNumber}</Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Step 4: Confirmation */}
+      {activeStep === 4 && (
+        <Box sx={{ textAlign: 'center', py: 2 }}>
+          <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
+            Company Submitted Successfully!
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 3 }}>
+            Your registration has been received and is pending approval.
+          </Typography>
+        </Box>
+      )}
+
+      {/* Navigation Buttons */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+        <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">Back</Button>
+        {activeStep < steps.length - 1 && (
+          <Button onClick={handleNext} variant="contained">{activeStep === steps.length - 2 ? 'Submit' : 'Next'}</Button>
+        )}
+      </Box>
     </Box>
   );
 }
