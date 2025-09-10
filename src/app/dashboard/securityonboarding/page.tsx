@@ -57,6 +57,104 @@ export default function Page(): React.JSX.Element {
     setRefreshKey(prevKey => prevKey + 1);
   }, []);
 
+  // Export table data as CSV (based on current tab filter)
+  const handleExport = React.useCallback(() => {
+    const headers = [
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+    ];
+
+    let filteredCustomers: Customer[] = [];
+    switch (tab) {
+      case 'PENDING':
+        filteredCustomers = customers.filter(c => c.status === 'PENDING');
+        break;
+      case 'PUSHED_BACK':
+        filteredCustomers = customers.filter(c => c.status === 'PUSHED_BACK');
+        break;
+      case 'REJECTED':
+        filteredCustomers = customers.filter(c => c.status === 'REJECTED');
+        break;
+      case 'APPROVED':
+        filteredCustomers = customers.filter(c => c.status === 'APPROVED');
+        break;
+    }
+
+    const paginated = applyPagination(filteredCustomers, page, rowsPerPage);
+    const rows = paginated.map(c => [
+      (c as any).id,
+      (c as any).name,
+      (c as any).surname,
+      (c as any).nationIdNumber,
+      (c as any).address,
+      (c as any).cellNumber,
+      (c as any).position,
+      (c as any).cooperativeName,
+      (c as any).numShafts,
+      (c as any).status,
+      (c as any).reason,
+      (c as any).attachedShaft ? 'Yes' : 'No'
+    ]);
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'customers.csv';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, [customers, tab]);
+
+  // Import CSV to preview into table state (and POST to backend)
+  function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      complete: async (results: { data: any[]; }) => {
+        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
+          id: row.id ?? `imported-${idx}`,
+          name: row.name ?? '',
+          surname: row.surname ?? '',
+          nationIdNumber: row.nationIdNumber ?? '',
+          nationId: row.nationId ?? '',
+          address: row.address ?? '',
+          cellNumber: row.cellNumber ?? '',
+          phone: row.phone ?? row.cellNumber ?? '',
+          email: row.email ?? '',
+          status: row.status ?? '',
+          reason: row.reason ?? '',
+          registrationNumber: row.registrationNumber ?? '',
+          registrationDate: row.registrationDate ?? '',
+          position: row.position ?? '',
+          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
+          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
+          cooperativeName: row.cooperativeName ?? '',
+          cooperative: row.cooperative ?? '',
+          numShafts: row.numShafts ?? 0,
+          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
+        }) as unknown as Customer);
+
+        setCustomers(importedData);
+        try {
+          const response = await fetch('/api/miners/import', {
+            method: 'POST',
+            body: JSON.stringify(importedData),
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (!response.ok) {
+            // best-effort; log only
+            console.error('Failed to import data:', await response.text());
+          }
+        } catch (err) {
+          console.error('Error sending imported data:', err);
+        }
+      }
+    });
+  }
+
   React.useEffect(() => {
     (async () => {
       try {
@@ -76,7 +174,6 @@ export default function Page(): React.JSX.Element {
       } catch (error) {
         console.error('API call failed, using mock data:', error);
         // Use mock data when API fails
-   
       }
     })();
   }, []);
@@ -86,117 +183,6 @@ export default function Page(): React.JSX.Element {
   const pushedBackCustomers = customers.filter(c => c.status === 'PUSHED_BACK');
   const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
   const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
-
-  // Export table data as CSV
-  const handleExport = () => {
-    const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
-    ];
-
-    // Determine which customers to export based on the current tab
-    let filteredCustomers: Customer[] = [];
-    switch (tab) {
-    case 'PENDING': {
-    filteredCustomers = pendingCustomers;
-    break;
-    }
-    case 'PUSHED_BACK': {
-    filteredCustomers = pushedBackCustomers;
-    break;
-    }
-    case 'REJECTED': {
-    filteredCustomers = rejectedCustomers;
-    break;
-    }
-    case 'APPROVED': { {
-    filteredCustomers = approvedCustomers;
-    // No default
-    }
-    break;
-    }
-    }
-
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
-    ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'customers.csv';
-    document.body.append(a);
-
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
-  }
 
   return (
     <Stack spacing={3}>
@@ -237,23 +223,30 @@ export default function Page(): React.JSX.Element {
       </Stack>
 
       {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <div key={`pending-${refreshKey}`}>
+          <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        </div>
       )}
       {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <div key={`pushed-${refreshKey}`}>
+          <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        </div>
       )}
       {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <div key={`rejected-${refreshKey}`}>
+          <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        </div>
       )}
       {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <div key={`approved-${refreshKey}`}>
+          <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        </div>
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>
   );
 }
-
 function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
   return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
