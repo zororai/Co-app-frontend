@@ -386,14 +386,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             disabled={actionLoading}
           />
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button 
-              onClick={cancelAction} 
-              sx={{ mr: 2 }}
-              variant="outlined"
-              disabled={actionLoading}
-            >
-              Cancel
-            </Button>
+            
             <Button 
               onClick={handleAction} 
               variant="contained" 
@@ -468,18 +461,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       {!showReasonField && loanDetails?.status !== 'PENDING' && (
         <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button
-              onClick={onClose}
-              variant="contained"
-              color="primary"
-              sx={{ 
-                minWidth: '200px',
-                bgcolor: '#5f4bfa',
-                '&:hover': { bgcolor: '#4d3fd6' }
-              }}
-            >
-              Close
-            </Button>
+         
           </Box>
         </DialogActions>
       )}
