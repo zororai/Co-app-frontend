@@ -752,7 +752,99 @@ class AuthClient {
             return [];
         }
     }
-    
+    // Transport cost actions (moved here from inside fetchSecurityCompany)
+    /**
+     * Approve a transport cost entry by ID
+     */
+    async approveTransportCost(id: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
+      try {
+        const response = await fetch(`/api/transport-cost-onboarding/${id}/approve`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to approve transport cost');
+        }
+        return { success: true };
+      } catch (error) {
+        console.error(`Error approving transport cost with ID ${id}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+    }
+
+    /**
+     * Reject a transport cost entry by ID with reason
+     */
+    async rejectTransportCost(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
+      try {
+        const response = await fetch(`/api/transport-cost-onboarding/${id}/reject?reason=${encodeURIComponent(reason)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to reject transport cost');
+        }
+        return { success: true };
+      } catch (error) {
+        console.error(`Error rejecting transport cost with ID ${id}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+    }
+
+    /**
+     * Push back a transport cost entry by ID with reason
+     */
+    async pushbackTransportCost(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
+      try {
+        const response = await fetch(`/api/transport-cost-onboarding/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to push back transport cost');
+        }
+        return { success: true };
+      } catch (error) {
+        console.error(`Error pushing back transport cost with ID ${id}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+    }
     /**
      * Fetch all ore transport data from the backend
      * @returns A promise that resolves to an array of ore transport records

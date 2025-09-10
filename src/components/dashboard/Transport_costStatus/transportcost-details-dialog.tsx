@@ -72,7 +72,29 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
   }, [open, userId]);
   
   // Handle approve action
-
+  const handleApprove = async () => {
+    if (!userId) return;
+    setActionLoading(true);
+    setActionError('');
+    setActionSuccess('');
+    try {
+      const result = await authClient.approveTransportCost(userId);
+      if (result.success) {
+        setActionSuccess('Transport cost approved successfully');
+        // Refresh details
+        const updatedDetails = await authClient.fetchTransportCostDetails(userId);
+        setUserDetails(updatedDetails);
+        if (onRefresh) onRefresh();
+      } else {
+        setActionError(result.error || 'Failed to approve transport cost');
+      }
+    } catch (error_) {
+      console.error('Error approving transport cost:', error_);
+      setActionError('An unexpected error occurred');
+    } finally {
+      setActionLoading(false);
+    }
+  };
   
   // Handle reject action
   const handleReject = async () => {
@@ -86,22 +108,22 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setActionSuccess('');
     
     try {
-      const result = await authClient.rejectUser(userId, reason);
+      const result = await authClient.rejectTransportCost(userId, reason);
       if (result.success) {
-        setActionSuccess('User rejected successfully');
+        setActionSuccess('Transport cost rejected successfully');
         setShowReasonField(false);
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
+        const updatedDetails = await authClient.fetchTransportCostDetails(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
       } else {
-        setActionError(result.error || 'Failed to reject user');
+        setActionError(result.error || 'Failed to reject transport cost');
       }
     } catch (error_) {
-      console.error('Error rejecting user:', error_);
+      console.error('Error rejecting transport cost:', error_);
       setActionError('An unexpected error occurred');
     } finally {
       setActionLoading(false);
@@ -120,22 +142,22 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
     setActionSuccess('');
     
     try {
-      const result = await authClient.pushbackUser(userId, reason);
+      const result = await authClient.pushbackTransportCost(userId, reason);
       if (result.success) {
-        setActionSuccess('User pushed back successfully');
+        setActionSuccess('Transport cost pushed back successfully');
         setShowReasonField(false);
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
+        const updatedDetails = await authClient.fetchTransportCostDetails(userId);
         setUserDetails(updatedDetails);
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
       } else {
-        setActionError(result.error || 'Failed to push back user');
+        setActionError(result.error || 'Failed to push back transport cost');
       }
     } catch (error_) {
-      console.error('Error pushing back user:', error_);
+      console.error('Error pushing back transport cost:', error_);
       setActionError('An unexpected error occurred');
     } finally {
       setActionLoading(false);
@@ -279,6 +301,34 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button 
+          variant="contained" 
+          color="success" 
+          onClick={handleApprove}
+          disabled={actionLoading}
+          sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+        >
+          {actionLoading ? 'Processing...' : 'Approve'}
+        </Button>
+        <Button 
+          variant="contained" 
+          color="error" 
+          onClick={() => showReasonFieldFor('reject')}
+          disabled={actionLoading}
+          sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
+        >
+          Reject
+        </Button>
+        <Button 
+          variant="contained" 
+          onClick={() => showReasonFieldFor('pushback')}
+          disabled={actionLoading}
+          sx={{ bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
+        >
+          Push Back
+        </Button>
+      </DialogActions>
       
     </Dialog>
   );

@@ -29,7 +29,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboard-details';
-import { UserDetailsDialog } from '@/components/dashboard/Transport_cost/transportcost-details-dialog';
+import { UserDetailsDialog } from '@/components/dashboard/Transport_costStatus/transportcost-details-dialog';
 
 
 function noop(): void {
@@ -425,6 +425,7 @@ export function CustomersTable({
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
+        onRefresh={refreshTableData}
       />
     </Card>
   );

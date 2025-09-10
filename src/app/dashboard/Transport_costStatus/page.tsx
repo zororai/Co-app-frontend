@@ -18,8 +18,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/Transport_cost/transportcost-table';
-import type { Customer } from '@/components/dashboard/Transport_cost/transportcost-table';
+import { CustomersTable } from '@/components/dashboard/Transport_costStatus/transportcost-table';
+import type { Customer } from '@/components/dashboard/Transport_costStatus/transportcost-table';
 
 
 import Dialog from '@mui/material/Dialog';
@@ -29,7 +29,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddTaxDialog } from '@/components/dashboard/Transport_cost/add-tax-dialog';
+import { AddTaxDialog } from '@/components/dashboard/Transport_costStatus/add-tax-dialog';
 
 
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
@@ -203,7 +203,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Transport Cost Onboarding</Typography>
+          <Typography variant="h4">Transport Cost Onboarding Status</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
@@ -283,18 +283,7 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Add Transport Cost
-      </Button>
+
       
       {/* Add Tax Dialog */}
       <AddTaxDialog 
