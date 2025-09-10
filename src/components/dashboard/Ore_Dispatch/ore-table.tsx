@@ -159,38 +159,7 @@ export function CustomersTable({
         // If the API returns an empty array or undefined, use mock data
         if (!fetchedOres || fetchedOres.length === 0) {
           console.log('No data returned from API, using mock data');
-          const mockOreData = [
-            {
-              id: '1',
-              oreUniqueId: 'ORE-001',
-              shaftNumbers: ['S-123', 'S-124'],
-              weight: 500,
-              numberOfBags: 10,
-              transportStatus: 'In Transit',
-              selectedTransportdriver: 'John Doe',
-              selectedTransport: 'Truck A',
-              location: 'Mine Site A',
-              processStatus: 'Processing',
-
-              date: '2025-08-10',
-              status: 'APPROVED'
-            },
-            {
-              id: '2',
-              oreUniqueId: 'ORE-002',
-              shaftNumbers: ['S-125'],
-              weight: 350,
-              numberOfBags: 7,
-              transportStatus: 'Delivered',
-              selectedTransportdriver: 'Jane Smith',
-              selectedTransport: 'Truck B',
-              location: 'Processing Center',
-              processStatus: 'Completed',
-              date: '2025-08-09',
-              status: 'PENDING'
-            }
-          ];
-          setUsers(mockOreData);
+         
         } else {
           setUsers(fetchedOres);
         }

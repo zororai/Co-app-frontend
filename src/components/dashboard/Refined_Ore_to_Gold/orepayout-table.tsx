@@ -123,7 +123,7 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
+    return sortNewestFirst(filtered);
   }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
