@@ -17,6 +17,7 @@ import Chip from '@mui/material/Chip';
 import { authClient } from '@/lib/auth/client';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -242,12 +243,36 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                 Documents
               </Typography>
               <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance || 'Not uploaded'}</Typography>
-                <Typography><strong>Company Logo:</strong> {customer.companyLogo || 'Not uploaded'}</Typography>
-                <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation || 'Not uploaded'}</Typography>
-                <Typography><strong>Operating License:</strong> {customer.operatingLicense || 'Not uploaded'}</Typography>
-                <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance || 'Not uploaded'}</Typography>
-                <Typography><strong>Risk Assessment Report:</strong> {customer.siteRiskAssessmentReport || 'Not uploaded'}</Typography>
+                <Typography><strong>Tax Clearance:</strong> {customer.validTaxClearance ? 'Uploaded' : 'Not uploaded'}</Typography>
+                <Typography>
+                  <strong>Company Logo:</strong>{' '}
+                  {customer.companyLogo ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
+                </Typography>
+                <Typography><strong>Certificate of Cooperation:</strong> {customer.getCertificateOfCooperation ? 'Uploaded' : 'Not uploaded'}</Typography>
+                <Typography>
+                  <strong>Operating License:</strong>{' '}
+                  {customer.operatingLicense ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
+                </Typography>
+                <Typography><strong>Proof of Insurance:</strong> {customer.proofOfInsurance ? 'Uploaded' : 'Not uploaded'}</Typography>
+                <Typography>
+                  <strong>Risk Assessment Report:</strong>{' '}
+                  {customer.siteRiskAssessmentReport ? (
+                    <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                      <CheckCircleOutlineIcon fontSize="small" />
+                      <span>Uploaded</span>
+                    </Box>
+                  ) : 'Not uploaded'}
+                </Typography>
               </Box>
             </Box>
 
