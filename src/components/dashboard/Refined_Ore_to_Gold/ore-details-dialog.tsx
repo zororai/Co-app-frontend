@@ -121,7 +121,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
         borderBottom: '1px solid #e0e0e0',
         pb: 2
       }}>
-        Assign Ore To Vehicle 
+        Ore Details
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
@@ -201,6 +201,27 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                       <Typography variant="body2"><strong>Mill Name:</strong> {mill.millName || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Mill Type:</strong> {mill.millType || 'N/A'}</Typography>
                       <Typography variant="body2"><strong>Location:</strong> {mill.location || 'N/A'}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Transport Costs Section */}
+            {oreDetails.transportCosts && oreDetails.transportCosts.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Transport Costs</Typography>
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: '#f5f5f5', 
+                  borderRadius: 1
+                }}>
+                  {oreDetails.transportCosts.map((cost: any, index: number) => (
+                    <Box key={index} sx={{ mb: index < oreDetails.transportCosts.length - 1 ? 2 : 0 }}>
+                      <Typography variant="body2"><strong>Payment Method:</strong> {cost.paymentMethod || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Amount/Grams:</strong> {cost.amountOrGrams || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Status:</strong> {cost.status || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Reason:</strong> {cost.reason || 'N/A'}</Typography>
                     </Box>
                   ))}
                 </Box>
