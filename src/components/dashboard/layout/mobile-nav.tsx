@@ -58,65 +58,68 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       open={open}
     >
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Box component={RouterLink} href={paths.home} sx={{ display: 'inline-flex' }}>
-          <Logo color="light" height={32} width={122} />
+        <Box
+          component={RouterLink}
+          href={paths.home}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}
+        >
+          <Box
+            component="img"
+            src="/assets/Logo.png"
+            alt="Logo"
+            sx={{
+              height: 50,
+              width: 50
+            }}
+          />
+          <Typography variant="h6" gutterBottom={false}>
+            Commstack
+          </Typography>
         </Box>
         <Box
           sx={{
             alignItems: 'center',
             backgroundColor: 'var(--mui-palette-neutral-950)',
-            border: '1px solid var(--mui-palette-neutral-700)',
             borderRadius: '12px',
             cursor: 'pointer',
             display: 'flex',
-            p: '4px 12px',
+            p: '10px 12px',
           }}
         >
           <Box sx={{ flex: '1 1 auto' }}>
-            <Typography color="var(--mui-palette-neutral-400)" variant="body2">
-              Workspace
-            </Typography>
             <Typography color="inherit" variant="subtitle1">
-              Devias
+              Co-App
             </Typography>
           </Box>
-          <CaretUpDownIcon />
         </Box>
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
-        {renderNavItems({ pathname, items: navItems })}
+      <Box 
+        component="nav" 
+        sx={{ 
+          flexGrow: 1, 
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '8px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'background.paper',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'divider',
+            borderRadius: '4px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: 'text.disabled',
+          },
+        }}
+      >
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          {renderNavItems({ pathname, items: navItems })}
+        </Stack>
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Stack spacing={2} sx={{ p: '12px' }}>
-        <div>
-          <Typography color="var(--mui-palette-neutral-100)" variant="subtitle2">
-            Need more features?
-          </Typography>
-          <Typography color="var(--mui-palette-neutral-400)" variant="body2">
-            Check out our Pro solution template.
-          </Typography>
-        </div>
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Box
-            component="img"
-            alt="Pro version"
-            src="/assets/devias-kit-pro.png"
-            sx={{ height: 'auto', width: '160px' }}
-          />
-        </Box>
-        <Button
-          component="a"
-          endIcon={<ArrowSquareUpRightIcon fontSize="var(--icon-fontSize-md)" />}
-          fullWidth
-          href="https://material-kit-pro-react.devias.io/"
-          sx={{ mt: 2 }}
-          target="_blank"
-          variant="contained"
-        >
-          Pro version
-        </Button>
-      </Stack>
+    
     </Drawer>
   );
 }
@@ -139,16 +142,31 @@ function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pat
 
 interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string;
+  items?: NavItemConfig[];
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, title }: NavItemProps): React.JSX.Element {
+function NavItem({ disabled, external, href, icon, matcher, pathname, title, items }: NavItemProps): React.JSX.Element {
+  const [open, setOpen] = React.useState(false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
-
+  const hasChildren = Array.isArray(items) && items.length > 0;
+  
+  // Handle click for items with children
+  const handleClick = React.useCallback(
+    (e: React.MouseEvent) => {
+      if (hasChildren) {
+        e.preventDefault();
+        setOpen((prevOpen) => !prevOpen);
+      }
+    },
+    [hasChildren]
+  );
+  
+  const Icon = typeof icon === 'string' && navIcons[icon] ? navIcons[icon] : null;
 
   return (
     <li>
       <Box
-        {...(href
+        {...(href && !hasChildren
           ? {
               component: external ? 'a' : RouterLink,
               href,
@@ -156,11 +174,12 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
               rel: external ? 'noreferrer' : undefined,
             }
           : { role: 'button' })}
+        onClick={hasChildren ? handleClick : undefined}
         sx={{
           alignItems: 'center',
           borderRadius: 1,
           color: 'var(--NavItem-color)',
-          cursor: 'pointer',
+          cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           flex: '0 0 auto',
           gap: 1,
@@ -176,7 +195,15 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
           ...(active && { bgcolor: 'var(--NavItem-active-background)', color: 'var(--NavItem-active-color)' }),
         }}
       >
-   
+        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
+          {Icon ? (
+            <Icon
+              fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'}
+              fontSize="var(--icon-fontSize-md)"
+              weight={active ? 'fill' : undefined}
+            />
+          ) : null}
+        </Box>
         <Box sx={{ flex: '1 1 auto' }}>
           <Typography
             component="span"
@@ -185,7 +212,22 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title }: N
             {title}
           </Typography>
         </Box>
+        {hasChildren ? (
+          <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+            <CaretUpDownIcon style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          </Box>
+        ) : null}
       </Box>
+      {hasChildren && open && (
+        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0, pl: 3 }}>
+          {items!.map((child, idx) => {
+            // Destructure key and pass it directly, spread the rest
+            const { key, ...childProps } = child;
+            const navKey = key ? String(key) : String(idx);
+            return <NavItem key={navKey} pathname={pathname} {...childProps} />;
+          })}
+        </Stack>
+      )}
     </li>
   );
 }
