@@ -175,6 +175,22 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                 </Box>
               </Box>
             )}
+
+            {oreDetails.transportCosts && oreDetails.transportCosts.length > 0 && (
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Transport Costs</Typography>
+                <Box>
+                  {oreDetails.transportCosts.map((costItem: any, index: number) => (
+                    <Box key={index} sx={{ mb: index < oreDetails.transportCosts.length - 1 ? 2 : 0, p: 1, bgcolor: '#f5f5f5', borderRadius: '4px' }}>
+                      <Typography variant="body2"><strong>Payment Method:</strong> {costItem.paymentMethod || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Amount/Grams:</strong> {costItem.amountOrGrams?.toString() || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Status:</strong> {costItem.status || 'N/A'}</Typography>
+                      <Typography variant="body2"><strong>Reason:</strong> {costItem.reason || 'N/A'}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
             
             {oreDetails.tax && oreDetails.tax.length > 0 && (
               <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>

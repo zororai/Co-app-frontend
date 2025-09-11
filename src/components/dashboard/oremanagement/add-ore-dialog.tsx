@@ -41,6 +41,7 @@ import { CheckCircle } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
+import { SelectChangeEvent } from '@mui/material/Select';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -191,18 +192,18 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     });
   };
   
-  // Handle tax type selection from dropdown
-  const handleTaxTypeSelect = (index: number) => (event: React.ChangeEvent<HTMLInputElement> | { target: { value: unknown; name?: string } }) => {
-    const selectedTaxId = event.target.value as string;
-    const selectedTax = taxDirections.find(tax => tax.id === selectedTaxId);
+  // Handle tax type selection from dropdown (store LABEL, not ID)
+  const handleTaxTypeSelect = (index: number) => (event: SelectChangeEvent<string>) => {
+    const selectedLabel = event.target.value as string;
+    const selectedTax = taxDirections.find(tax => tax.taxType === selectedLabel);
     
     if (selectedTax) {
       const newTax = [...formData.tax];
       newTax[index] = {
-        taxType: selectedTaxId, // Store the ID as the taxType for backend reference
-        taxRate: selectedTax.taxRate || 0,
-        location: selectedTax.location || '',
-        description: selectedTax.description || ''
+        taxType: selectedLabel, // Store the LABEL for backend/reference
+        taxRate: selectedTax.taxRate ?? 0,
+        location: selectedTax.location ?? '',
+        description: selectedTax.description ?? ''
       };
       
       console.log('Selected tax:', selectedTax);
@@ -402,7 +403,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
             { id: '2', shaftNumber: 'SA2' },
             { id: '3', shaftNumber: 'SA3' }
           ];
-          setShaftAssignments(mockData);
+          
           console.log('Using mock data:', mockData);
         } else {
           setShaftAssignments(response);
@@ -647,7 +648,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                             disabled={loadingTaxDirections}
                           >
                             {taxDirections.map((taxDirection) => (
-                              <MenuItem key={taxDirection.id} value={taxDirection.id}>
+                              <MenuItem key={taxDirection.id} value={taxDirection.taxType}>
                                 {taxDirection.taxType || taxDirection.name || taxDirection.id}
                               </MenuItem>
                             ))}

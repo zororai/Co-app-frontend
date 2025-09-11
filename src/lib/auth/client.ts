@@ -4426,14 +4426,16 @@ cooperativename: string;
     try {
       console.log('updateSampleResults - Input parameters:', { oreId, reason, result, status });
       
-      const queryParams = new URLSearchParams();
-      queryParams.append('newReason', reason);
-      queryParams.append('newResult', result);
-      queryParams.append('newStatus', status);
-      
-      const url = `/api/ore-transports/${oreId}/update-sample-if-default?${queryParams.toString()}`;
+      const base = (process.env.NEXT_PUBLIC_API_BASE_URL || globalThis.location.origin).toString().replace(/\/$/, '');
+      const safeId = encodeURIComponent(String(oreId).trim());
+      const urlObj = new URL(`/api/ore-transports/${safeId}/update-sample-if-default`, base);
+      urlObj.searchParams.set('newReason', String(reason ?? ''));
+      urlObj.searchParams.set('newResult', String(result ?? ''));
+      urlObj.searchParams.set('newStatus', String(status ?? ''));
+
+      const url = urlObj.toString();
       console.log('updateSampleResults - Request URL:', url);
-      
+
       const response = await fetch(url, {
           method: 'PUT',
           headers: {

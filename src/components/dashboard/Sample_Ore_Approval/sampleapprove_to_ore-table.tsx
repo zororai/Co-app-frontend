@@ -235,7 +235,7 @@ export function CustomersTable({
     // Reset form fields with appropriate default values
     setSampleReason('Sample analysis complete');
     setSampleResult('0.0'); // Default numeric value as string
-    setSampleResultStatus('Approved'); // Default status
+    setSampleResultStatus('APPROVED'); // Default status (normalized for backend)
     setIsSampleResultsDialogOpen(true);
   };
   
@@ -346,7 +346,7 @@ export function CustomersTable({
         selectedUserId,
         sampleReason,
         numericResult.toString(), // Convert back to string for API parameter
-        sampleResultStatus
+        (sampleResultStatus || '').toUpperCase()
       );
       
       // Hide loading state
@@ -634,7 +634,6 @@ export function CustomersTable({
               <TableCell>Sample Type</TableCell>
               <TableCell>Sample Weight</TableCell>
               <TableCell>Sample Status</TableCell>
-              <TableCell>Sample Reason</TableCell>
               <TableCell>Sample Results</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Collect Sample </TableCell>
@@ -657,8 +656,7 @@ export function CustomersTable({
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].status : ''}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].reason  : ''}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
+                 <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
@@ -683,8 +681,8 @@ export function CustomersTable({
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {/* Show the 'Collect Sample' button when status is not 'Approved' */}
                     {/* Don't hide the button based on sampleType anymore */}
-                    {!(row.oreSample && row.oreSample[0] && 
-                       row.oreSample[0].status === 'pending for results' ) && (
+                    {(row.oreSample && row.oreSample[0] && 
+                       row.oreSample[0].sampleType === 'Unknown' ) && (
                       <Button 
                         onClick={() => handleOpenSampleUpdateDialog(row.id)}
                         variant="outlined"
@@ -859,9 +857,8 @@ export function CustomersTable({
                 label="Status"
                 onChange={(e) => setSampleStatus(e.target.value)}
               >
-                <MenuItem value="pending for results">Pending for Results</MenuItem>
-                <MenuItem value="in progress">In Progress</MenuItem>
-                <MenuItem value="completed">Completed</MenuItem>
+                <MenuItem value="Unknown">Pending for Results</MenuItem>
+              
               </Select>
             </FormControl>
           </Stack>
@@ -922,10 +919,10 @@ export function CustomersTable({
               <Select
                 value={sampleResultStatus}
                 label="Status"
-                onChange={(e) => setSampleResultStatus(e.target.value)}
+                onChange={(e) => setSampleResultStatus((e.target.value || '').toString().toUpperCase())}
               >
-                <MenuItem value="Approved">Approved</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
+                <MenuItem value="APPROVED">Approved</MenuItem>
+                <MenuItem value="REJECTED">Rejected</MenuItem>
               </Select>
             </FormControl>
           </Stack>
