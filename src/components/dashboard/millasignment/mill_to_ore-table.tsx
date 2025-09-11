@@ -89,15 +89,14 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Sort then filter the users based on search, filters, and tab status
-  const sortedUsers = React.useMemo(() => sortNewestFirst(users), [users]);
+  // Filter then sort the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
-    if (!sortedUsers || sortedUsers.length === 0) {
+    if (!users || users.length === 0) {
       console.log('No users to filter');
       return [];
     }
     
-    const filtered = sortedUsers.filter(user => {
+    const filtered = users.filter(user => {
       // Skip null or undefined users
       if (!user) return false;
       
@@ -117,8 +116,16 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return filtered;
-  }, [sortedUsers, filters, statusFilter]);
+    
+    // Sort by ID in descending order (newest/highest ID first)
+    const sorted = filtered.sort((a, b) => {
+      const aId = Number(a.id) || 0;
+      const bId = Number(b.id) || 0;
+      return bId - aId; // Descending order (newest first)
+    });
+    
+    return sorted;
+  }, [users, filters, statusFilter]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -480,19 +487,7 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
+       
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
@@ -515,18 +510,7 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
+         
                   <TableCell>{row.oreUniqueId}</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.newWeight || 0} kg</TableCell>

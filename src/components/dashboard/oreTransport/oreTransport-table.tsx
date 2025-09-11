@@ -113,7 +113,13 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    const sorted = sortNewestFirst(filtered);
+    // Sort by ID in descending order (newest/highest ID first)
+    const sorted = filtered.sort((a, b) => {
+      const aId = Number(a.id) || 0;
+      const bId = Number(b.id) || 0;
+      return bId - aId; // Descending order (newest first)
+    });
+    console.log('Sorted rows:', sorted); // Debug: Log the sorted results
     return sorted;
   }, [users, filters, statusFilter]);
 

@@ -657,7 +657,7 @@ export function CustomersTable({
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
                   <TableCell>
                     {row.oreSample && row.oreSample[0] 
-                      ? (row.oreSample[0].status === 'Unknown' ? 'PENDING FOR RESULTS' : row.oreSample[0].status)
+                      ? (row.oreSample[0].status === 'Unknown' ? 'PENDING' : row.oreSample[0].status)
                       : ''
                     }
                   </TableCell>

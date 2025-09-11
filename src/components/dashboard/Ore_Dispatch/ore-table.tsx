@@ -427,8 +427,19 @@ export function CustomersTable({
             )}
             {filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
+              const isZeroWeightAndBags = (row.newWeight || 0) === 0 && (row.newnumberOfBags || 0) === 0;
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow 
+                  hover 
+                  key={row.id} 
+                  selected={isSelected}
+                  sx={{
+                    backgroundColor: isZeroWeightAndBags ? '#f44336' : 'inherit',
+                    '&:hover': {
+                      backgroundColor: isZeroWeightAndBags ? '#d32f2f' : 'rgba(0, 0, 0, 0.04)',
+                    }
+                  }}
+                >
                   <TableCell>{row.oreUniqueId }</TableCell>
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell sx={{ backgroundColor: '#ccffcc' }}>{row.newWeight || 0} kg</TableCell>
@@ -459,8 +470,8 @@ export function CustomersTable({
                   <TableCell>
                     {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {/* Conditionally render the button based on security status */}
-                        {row.securityDispatcherStatus !== 'APPROVED' && (
+                        {/* Conditionally render the button based on security status and weight/bags */}
+                        {row.securityDispatcherStatus !== 'APPROVED' && !isZeroWeightAndBags && (
                           <button 
                             onClick={() => handleSecurityDispatchApprove(row.id)}
                             style={{
@@ -475,6 +486,9 @@ export function CustomersTable({
                         )}
                         {row.securityDispatcherStatus === 'APPROVED' && (
                           <span style={{ color: 'green', fontWeight: 500 }}>Approved</span>
+                        )}
+                        {isZeroWeightAndBags && row.securityDispatcherStatus !== 'APPROVED' && (
+                          <span style={{ color: '#ffffff', fontWeight: 500 }}>Cannot Dispatch</span>
                         )}
                       </Box>
                     }
