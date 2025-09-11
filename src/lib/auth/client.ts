@@ -4428,7 +4428,7 @@ cooperativename: string;
       
       const base = (process.env.NEXT_PUBLIC_API_BASE_URL || globalThis.location.origin).toString().replace(/\/$/, '');
       const safeId = encodeURIComponent(String(oreId).trim());
-      const urlObj = new URL(`/api/ore-transports/${safeId}/update-sample-if-default`, base);
+      const urlObj = new URL(`/api/ore-transports/${safeId}/update-sample-status-reason`, base);
       urlObj.searchParams.set('newReason', String(reason ?? ''));
       urlObj.searchParams.set('newResult', String(result ?? ''));
       urlObj.searchParams.set('newStatus', String(status ?? ''));

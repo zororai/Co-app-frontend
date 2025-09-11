@@ -655,7 +655,12 @@ export function CustomersTable({
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
                   <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].status : ''}</TableCell>
+                  <TableCell>
+                    {row.oreSample && row.oreSample[0] 
+                      ? (row.oreSample[0].status === 'Unknown' ? 'PENDING FOR RESULTS' : row.oreSample[0].status)
+                      : ''
+                    }
+                  </TableCell>
                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -705,7 +710,7 @@ export function CustomersTable({
                  
                   {/* Only hide the 'Add Sample Results' button when status is 'Approved' */}
                   {!(row.oreSample && row.oreSample[0] && 
-                      row.oreSample[0].status === 'Approved' || row.oreSample[0].sampleType === 'Unknown') && (
+                      row.oreSample[0].status === 'APPROVED' || row.oreSample[0].sampleType === 'Unknown') && (
                     <Button 
                       onClick={() => handleOpenSampleResultsDialog(row.id)}
                       variant="outlined"
