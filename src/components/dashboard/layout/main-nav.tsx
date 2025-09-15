@@ -53,7 +53,7 @@ export function MainNav(): React.JSX.Element {
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             <Tooltip title="Contacts">
               <IconButton>
-                <UsersIcon />
+                <UsersIcon /> 
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">

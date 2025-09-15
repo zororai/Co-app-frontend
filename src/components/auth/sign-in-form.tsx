@@ -23,6 +23,7 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
+import { PageLoader } from '@/components/core/page-loader';
 
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
@@ -88,14 +89,16 @@ export function SignInForm(): React.JSX.Element {
   );
 
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100px',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem 0'
-    }}>
-      <Container maxWidth="sm">
+    <>
+      <PageLoader isVisible={isPending} message="Signing you in..." />
+      <div style={{
+        display: 'flex',
+        minHeight: '100px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem 0'
+      }}>
+        <Container maxWidth="sm">
         <Stack spacing={4} sx={{ maxWidth: 400, mx: 'auto' }}>
           <Stack spacing={1} sx={{ textAlign: 'center' }}>
           <Typography variant="h4">Sign in</Typography>
@@ -167,5 +170,6 @@ export function SignInForm(): React.JSX.Element {
         </Stack>
       </Container>
     </div>
+    </>
   );
 }

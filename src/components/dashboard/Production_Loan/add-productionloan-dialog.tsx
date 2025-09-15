@@ -529,7 +529,7 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
                   '&:hover': { bgcolor: '#333' } 
                 }}
               >
-                {isSubmitting ? 'Creating...' : 'Save Production Loan'}
+                {isSubmitting ? 'Creating...' : 'Send Production Loan For Approval'}
               </Button>
             </Box>
           </Box>

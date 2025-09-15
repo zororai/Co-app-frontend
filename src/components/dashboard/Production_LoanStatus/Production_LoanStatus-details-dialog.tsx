@@ -458,13 +458,7 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       )}
       
       {/* Show a message when status is not PENDING */}
-      {!showReasonField && loanDetails?.status !== 'PENDING' && (
-        <DialogActions sx={{ p: 3, flexDirection: 'column', alignItems: 'stretch' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-         
-          </Box>
-        </DialogActions>
-      )}
+  
     </Dialog>
   );
 }

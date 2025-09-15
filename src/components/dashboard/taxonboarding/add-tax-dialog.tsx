@@ -73,7 +73,7 @@ const validateRequired = (value: string): boolean => {
   return value.trim() !== '';
 };
 
-const validateTaxRate = (value: string): boolean => {
+const validateTaxRate = (value: string): boolean => { 
   const rate = Number.parseFloat(value);
   return !isNaN(rate) && rate >= 0 && rate <= 100;
 };
@@ -498,7 +498,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
                   '&:hover': { bgcolor: '#333' } 
                 }}
               >
-                {isSubmitting ? 'Creating...' : 'Create Tax'}
+                {isSubmitting ? 'Creating...' : 'Send Tax For Approval'}
               </Button>
             </Box>
           </Box>
