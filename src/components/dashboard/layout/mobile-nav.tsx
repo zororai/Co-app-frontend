@@ -16,6 +16,7 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
+import { PageLoader } from '@/components/core/page-loader';
 
 import { navItems } from './config';
 import { navIcons } from './nav-icons';
@@ -28,6 +29,22 @@ export interface MobileNavProps {
 
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const [loading, setLoading] = React.useState(false);
+  const prevPathRef = React.useRef<string | null>(null);
+
+  // Hide loader once the route actually changes
+  React.useEffect(() => {
+    if (prevPathRef.current === null) {
+      prevPathRef.current = pathname;
+      return;
+    }
+    if (loading && prevPathRef.current !== pathname) {
+      setLoading(false);
+      // Also close the drawer on navigation
+      onClose?.();
+    }
+    prevPathRef.current = pathname;
+  }, [pathname, loading, onClose]);
 
   return (
     <Drawer
@@ -57,6 +74,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       onClose={onClose}
       open={open}
     >
+      <PageLoader isVisible={loading} message="Loading..." />
       <Stack spacing={2} sx={{ p: 3 }}>
         <Box
           component={RouterLink}
@@ -115,7 +133,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         }}
       >
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {renderNavItems({ pathname, items: navItems })}
+          {renderNavItems({ pathname, items: navItems, onNavigateStart: () => setLoading(true) })}
         </Stack>
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
@@ -124,11 +142,11 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
   );
 }
 
-function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pathname: string }): React.JSX.Element {
+function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: NavItemConfig[]; pathname: string; onNavigateStart?: () => void }): React.JSX.Element {
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
 
-    acc.push(<NavItem key={key} pathname={pathname} {...item} />);
+    acc.push(<NavItem key={key} pathname={pathname} onNavigateStart={onNavigateStart} {...item} />);
 
     return acc;
   }, []);
@@ -143,9 +161,10 @@ function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pat
 interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string;
   items?: NavItemConfig[];
+  onNavigateStart?: () => void;
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, title, items }: NavItemProps): React.JSX.Element {
+function NavItem({ disabled, external, href, icon, matcher, pathname, title, items, onNavigateStart }: NavItemProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const hasChildren = Array.isArray(items) && items.length > 0;
@@ -174,7 +193,17 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
               rel: external ? 'noreferrer' : undefined,
             }
           : { role: 'button' })}
-        onClick={hasChildren ? handleClick : undefined}
+        onClick={(e: React.MouseEvent) => {
+          if (hasChildren) {
+            handleClick(e);
+            return;
+          }
+          if (disabled) {
+            e.preventDefault();
+            return;
+          }
+          onNavigateStart?.();
+        }}
         sx={{
           alignItems: 'center',
           borderRadius: 1,
@@ -224,7 +253,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
             // Destructure key and pass it directly, spread the rest
             const { key, ...childProps } = child;
             const navKey = key ? String(key) : String(idx);
-            return <NavItem key={navKey} pathname={pathname} {...childProps} />;
+            return <NavItem key={navKey} pathname={pathname} onNavigateStart={onNavigateStart} {...childProps} />;
           })}
         </Stack>
       )}
