@@ -34,11 +34,18 @@ export type LoanDetails = {
   balance?: number;
 };
 
+type TransportCostItem = {
+  paymentMethod?: string;
+  amountOrGrams?: number;
+  status?: string;
+};
+
 export interface PayoutDialogProps {
   open: boolean;
   onClose: () => void;
   assignment?: PayoutAssignment;
   loanDetails?: LoanDetails;
+  transportCosts?: TransportCostItem[];
   onSubmit?: (payload: {
     receiptNumber: string;
     shaftOwner: string;
@@ -51,7 +58,7 @@ export interface PayoutDialogProps {
   }) => Promise<void> | void;
 }
 
-export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit }: PayoutDialogProps) {
+export function PayoutDialog({ open, onClose, assignment, loanDetails, transportCosts, onSubmit }: PayoutDialogProps) {
   const generatedReceipt = React.useMemo(
     () => `RCP-${dayjs().format("YYYYMMDD-HHmmss")}`,
     []
@@ -162,21 +169,45 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, onSubmit 
                 </Typography>
 
                 <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
-                  Details of the Current Loan
+                  Transport cost details
                 </Typography>
                 
                 <Box sx={{ display: "grid", rowGap: 1 }}>
-          
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Payment Method:</Typography>
-                    <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Amount/Grams:</Typography>
-                    <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
-                  </Box>
-        
-                  
+                  {Array.isArray(transportCosts) && transportCosts.length > 0 ? (
+                    transportCosts.map((tc, idx) => (
+                      <Box key={idx} sx={{
+                        border: 1,
+                        borderColor: 'error.dark',
+                        borderRadius: 1,
+                        p: 1.5,
+                        mb: 1
+                      }}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography variant="body2">Payment Method:</Typography>
+                          <Typography variant="body2">{tc.paymentMethod ?? '-'}</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography variant="body2">Amount/Grams:</Typography>
+                          <Typography variant="body2">{tc.amountOrGrams ?? 0}</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography variant="body2">Status:</Typography>
+                          <Typography variant="body2">{tc.status ?? '-'}</Typography>
+                        </Box>
+                      </Box>
+                    ))
+                  ) : (
+                    <>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Payment Method:</Typography>
+                        <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Amount/Grams:</Typography>
+                        <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
+                      </Box>
+                    </>
+                  )}
                 </Box>
             </Box>
          

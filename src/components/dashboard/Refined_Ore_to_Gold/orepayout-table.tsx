@@ -165,6 +165,7 @@ export function CustomersTable({
   const [payoutOpen, setPayoutOpen] = React.useState(false);
   const [payoutAssignment, setPayoutAssignment] = React.useState<PayoutAssignment | undefined>();
   const [payoutLoanDetails, setPayoutLoanDetails] = React.useState<LoanDetails | undefined>();
+  const [payoutTransportCosts, setPayoutTransportCosts] = React.useState<Array<{ paymentMethod?: string; amountOrGrams?: number; status?: string }>>([]);
   
   // States for feedback dialog
   const [feedbackDialogOpen, setFeedbackDialogOpen] = React.useState(false);
@@ -279,6 +280,17 @@ export function CustomersTable({
       console.error('Failed to fetch loans for shaft number', error_);
       setPayoutLoanDetails(undefined);
     }
+
+    // Set transport costs: prefer row.transportCosts if provided by API, else fallback to example provided
+    const fallbackTransportCosts = [
+      {
+        paymentMethod: 'Gold',
+        amountOrGrams: 20.0,
+        status: 'Not Paid',
+      },
+    ];
+    const tc = Array.isArray(row?.transportCosts) && row.transportCosts.length > 0 ? row.transportCosts : fallbackTransportCosts;
+    setPayoutTransportCosts(tc);
 
     setPayoutOpen(true);
   };
@@ -726,6 +738,7 @@ export function CustomersTable({
         onClose={() => setPayoutOpen(false)}
         assignment={payoutAssignment}
         loanDetails={payoutLoanDetails}
+        transportCosts={payoutTransportCosts}
         onSubmit={handlePayoutSubmit}
       />
 
