@@ -301,6 +301,7 @@ export function CustomersTable({
               <TableCell>Section Name</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Operational Status</TableCell>
+              <TableCell>Loan Status</TableCell>
               <TableCell>View Details</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
@@ -355,6 +356,7 @@ export function CustomersTable({
                       {row.status || 'PENDING'}
                     </Box>
                   </TableCell>
+                  <TableCell>{row.operationalStatus || 'N/A'}</TableCell>
                   <TableCell>{row.operationalStatus || 'N/A'}</TableCell>
                   
             

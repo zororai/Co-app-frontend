@@ -14,6 +14,7 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import dayjs from "dayjs";
 import { error } from "console";
+import { authClient } from "@/lib/auth/client";
 
 export type PayoutAssignment = {
   assignmentId?: string | number;
@@ -72,6 +73,14 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
   const [loanType, setLoanType] = React.useState<string>("");
   const [transportCost, setTransportCost] = React.useState<number>(0);
   const [submitting, setSubmitting] = React.useState(false);
+  // Local copy of loan details so we can refresh after payment
+  const [loanDetailsState, setLoanDetailsState] = React.useState<LoanDetails | undefined>(loanDetails);
+  React.useEffect(() => {
+    setLoanDetailsState(loanDetails);
+  }, [loanDetails]);
+  // Pay loan amount
+  const [payAmount, setPayAmount] = React.useState<number>(0);
+  const [paying, setPaying] = React.useState<boolean>(false);
   // Track Apply/Pause per transport cost item
   const [appliedStatus, setAppliedStatus] = React.useState<Record<number, 'none' | 'applied' | 'paused'>>({});
 
@@ -94,6 +103,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       setPricePerGram(assignment?.defaultPricePerGram ?? 0);
       setLoanType("");
       setTransportCost(0);
+      setPayAmount(0);
     }
   }, [open, assignment]);
 
@@ -130,9 +140,45 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
 
   const anyApplied = React.useMemo(() => Object.values(appliedStatus).some((v) => v === 'applied'), [appliedStatus]);
 
+  // Determine if the loan is already fully paid to hide pay controls
+  const isLoanPaid = React.useMemo(() => {
+    const status = (loanDetailsState?.paymentStatus || '').toString().trim().toUpperCase();
+    return status === 'PAID';
+  }, [loanDetailsState?.paymentStatus]);
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
+      // If there is a payment amount and the loan isn't already PAID, process loan payment first
+      if (!isLoanPaid && payAmount > 0) {
+        const shaft = assignment?.shaftNumber;
+        if (!shaft) {
+          throw new Error('Missing shaft number for loan payment.');
+        }
+        const res = await authClient.payShaftLoan(shaft, Number(payAmount));
+        if (res.success) {
+          // Refresh loan details by shaft number
+          if (shaftNumber) {
+            const data = await authClient.fetchLoansByShaftNumber(String(shaftNumber));
+            const item = Array.isArray(data) ? data[0] : data;
+            const refreshed: LoanDetails | undefined = item
+              ? {
+                  loanName: item.loanName || item.name || item.type || '-',
+                  paymentMethod: item.paymentMethod || item.method || '-',
+                  amountOrGrams: Number(item.amountOrGrams ?? item.amount ?? item.grams ?? 0) || 0,
+                  purpose: item.purpose || '-',
+                  paymentStatus: item.paymentStatus || item.status || '-',
+                  amountPaid: Number(item.amountPaid ?? item.paid ?? 0) || 0,
+                  balance: Number(item.balance ?? item.remaining ?? 0) || 0,
+                }
+              : undefined;
+            setLoanDetailsState(refreshed);
+          }
+          setPayAmount(0);
+        } else {
+          console.error(res.error);
+        }
+      }
       const payload = {
         receiptNumber: generatedReceipt,
         shaftOwner,
@@ -176,31 +222,41 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                 <Box sx={{ display: "grid", rowGap: 1 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Loan Name:</Typography>
-                    <Typography variant="body2">{loanDetails?.loanName ?? '-'}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.loanName ?? '-'}</Typography>
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Payment Method:</Typography>
-                    <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.paymentMethod ?? '-'}</Typography>
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Amount/Grams:</Typography>
-                    <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.amountOrGrams ?? 0}</Typography>
                   </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Purpose:</Typography>
-                    <Typography variant="body2">{loanDetails?.purpose ?? '-'}</Typography>
-                  </Box>
+                  {/* Pay Loan controls */}
+                  {!isLoanPaid && (
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      <TextField
+                        label="Amount to pay"
+                        type="number"
+                        size="small"
+                        inputProps={{ min: 0, step: 0.01 }}
+                        value={payAmount}
+                        onChange={(e) => setPayAmount(Number(e.target.value))}
+                      />
+                
+                    </Box>
+                  )}
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Payment Status:</Typography>
-                    <Typography variant="body2">{loanDetails?.paymentStatus ?? '-'}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.paymentStatus ?? '-'}</Typography>
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Amount Paid:</Typography>
-                    <Typography variant="body2">{loanDetails?.amountPaid ?? 0}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.amountPaid ?? 0}</Typography>
                   </Box>
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Balance:</Typography>
-                    <Typography variant="body2">{loanDetails?.balance ?? 0}</Typography>
+                    <Typography variant="body2">{loanDetailsState?.balance ?? 0}</Typography>
                   </Box>
                 </Box>
             </Box>
@@ -428,7 +484,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
           </Typography>
         ) : null}
         {anyApplied && (
-          <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
+          <Button onClick={handleSubmit}  
+          
+          variant="contained" disabled={submitting}>
             {submitting ? "Saving..." : "Save Payout"}
           </Button>
         )}

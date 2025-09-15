@@ -697,6 +697,41 @@ class AuthClient {
           return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
       }
   }
+
+  /**
+   * Pay a shaft loan by assignment ID and amount paid
+   * PUT /api/shaft-assignments/{assignmentId}/loan/payment?amountPaid={amount}
+   */
+  async payShaftLoan(assignmentId: string | number, amountPaid: number): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+          console.error('No token found in localStorage');
+          globalThis.location.href = '/auth/signin';
+          return { success: false, error: 'Authentication required' };
+      }
+      try {
+          const safeId = encodeURIComponent(String(assignmentId).trim());
+          const url = new URL(`/api/shaft-assignments/${safeId}/loan/payment`, globalThis.location.origin);
+          url.searchParams.set('amountPaid', String(amountPaid));
+          const response = await fetch(url.toString(), {
+              method: 'PUT',
+              headers: {
+                  Accept: '*/*',
+                  Authorization: `Bearer ${token}`,
+              },
+              credentials: 'include',
+          });
+          if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(errorText || 'Failed to pay shaft loan');
+          }
+          return { success: true };
+      } catch (error) {
+          console.error(`Error paying shaft loan for assignment ${assignmentId}:`, error);
+          return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+  }
+
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {

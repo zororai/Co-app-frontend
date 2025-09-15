@@ -401,9 +401,8 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
                     label="Payment Method"
                   >
                     <MenuItem value="Cash">Cash</MenuItem>
-                    <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
-                    <MenuItem value="Gold Grams">Gold Grams</MenuItem>
-                    <MenuItem value="Other">Other</MenuItem>
+                    <MenuItem value="Gold ">Gold Grams</MenuItem>
+                
                   </Select>
                 </FormControl>
               </Grid>
