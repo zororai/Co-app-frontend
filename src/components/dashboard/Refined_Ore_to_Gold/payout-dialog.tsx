@@ -72,6 +72,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
   const [pricePerGram, setPricePerGram] = React.useState<number>(assignment?.defaultPricePerGram ?? 0);
   const [loanType, setLoanType] = React.useState<string>("");
   const [transportCost, setTransportCost] = React.useState<number>(0);
+  const [buyer, setBuyer] = React.useState<string>("");
   const [submitting, setSubmitting] = React.useState(false);
   // Local copy of loan details so we can refresh after payment
   const [loanDetailsState, setLoanDetailsState] = React.useState<LoanDetails | undefined>(loanDetails);
@@ -103,6 +104,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       setPricePerGram(assignment?.defaultPricePerGram ?? 0);
       setLoanType("");
       setTransportCost(0);
+      setBuyer("");
       setPayAmount(0);
     }
   }, [open, assignment]);
@@ -154,6 +156,14 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     const status = (loanDetailsState?.paymentStatus || '').toString().trim().toUpperCase();
     return status === 'PAID';
   }, [loanDetailsState?.paymentStatus]);
+
+  // Require key inputs before allowing transport cost Apply/Pause actions
+  const inputsReady = React.useMemo(() => {
+    const gw = Number(goldWeightGrams) || 0;
+    const ppg = Number(pricePerGram) || 0;
+    const buyerOk = (buyer || "").toString().trim().length > 0;
+    return gw > 0 && ppg > 0 && buyerOk;
+  }, [goldWeightGrams, pricePerGram, buyer]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -250,10 +260,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                         size="small"
                         inputProps={{ min: 0, step: 0.01 }}
                         value={payAmount}
-                        onChange={(e) => {
-                          const v = parseFloat(e.target.value);
-                          setPayAmount(Number.isNaN(v) ? 0 : v);
-                        }}
+                        onChange={(e) => setPayAmount(Number(e.target.value))}
                       />
                 
                     </Box>
@@ -269,44 +276,44 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                     <Typography variant="body2">Balance:</Typography>
                     <Typography variant="body2">{loanDetailsState?.balance ?? 0}</Typography>
-                  </Box>
                 </Box>
-            </Box>
+             
+               
+             
+              </Box>
+          </Box>
          
-
-         
-            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+          <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
+              <Typography variant="h6" gutterBottom>
                 Transport Cost
-                </Typography>
-
-                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
-                  Transport cost details
-                </Typography>
-                
-                <Box sx={{ display: "grid", rowGap: 1 }}>
-                  {Array.isArray(transportCosts) && transportCosts.length > 0 ? (
-                    transportCosts.map((tc, idx) => (
-                      <Box key={idx} sx={{
-                        border: 1,
-                        borderColor: appliedStatus[idx] === 'applied' ? 'success.light' : 'error.dark',
-                        borderRadius: 1,
-                        p: 1.5,
-                        mb: 1,
-                        bgcolor: appliedStatus[idx] === 'applied' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
-                      }}>
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2">Payment Method:</Typography>
-                          <Typography variant="body2">{tc.paymentMethod ?? '-'}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2">Amount/Grams:</Typography>
-                          <Typography variant="body2">{tc.amountOrGrams ?? 0}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2">Status:</Typography>
-                          <Typography variant="body2">{tc.status ?? '-'}</Typography>
-                        </Box>
+              </Typography>
+              <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
+                Transport cost details
+              </Typography>
+              <Box sx={{ display: "grid", rowGap: 1 }}>
+                {Array.isArray(transportCosts) && transportCosts.length > 0 ? (
+                  transportCosts.map((tc, idx) => (
+                    <Box key={idx} sx={{
+                      border: 1,
+                      borderColor: appliedStatus[idx] === 'applied' ? 'success.light' : 'error.dark',
+                      borderRadius: 1,
+                      p: 1.5,
+                      mb: 1,
+                      bgcolor: appliedStatus[idx] === 'applied' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
+                    }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Payment Method:</Typography>
+                        <Typography variant="body2">{tc.paymentMethod ?? '-'}</Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Amount/Grams:</Typography>
+                        <Typography variant="body2">{tc.amountOrGrams ?? 0}</Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Status:</Typography>
+                        <Typography variant="body2">{tc.status ?? '-'}</Typography>
+                      </Box>
+                      {inputsReady && (
                         <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                           <Button
                             size="small"
@@ -329,29 +336,30 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                             Pause
                           </Button>
                         </Box>
-                        {appliedStatus[idx] === 'applied' ? (
-                          <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-                            {String(tc.paymentMethod).toLowerCase() === 'gold'
-                              ? `This will deduct ${Number(tc.amountOrGrams) || 0} grams from Gold Weight`
-                              : `This will deduct $${Number(tc.amountOrGrams) || 0} from Gross Amount`}
-                          </Typography>
-                        ) : null}
-                      </Box>
-                    ))
-                  ) : (
-                    <>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2">Payment Method:</Typography>
-                        <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
-                      </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2">Amount/Grams:</Typography>
-                        <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
-                      </Box>
-                    </>
-                  )}
-                </Box>
-            </Box>
+                      )}
+                      {appliedStatus[idx] === 'applied' ? (
+                        <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                          {String(tc.paymentMethod).toLowerCase() === 'gold'
+                            ? `This will deduct ${Number(tc.amountOrGrams) || 0} grams from Gold Weight`
+                            : `This will deduct $${Number(tc.amountOrGrams) || 0} from Gross Amount`}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                  ))
+                ) : (
+                  <>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2">Payment Method:</Typography>
+                      <Typography variant="body2">{loanDetails?.paymentMethod ?? '-'}</Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2">Amount/Grams:</Typography>
+                      <Typography variant="body2">{loanDetails?.amountOrGrams ?? 0}</Typography>
+                    </Box>
+                  </>
+                )}
+              </Box>
+          </Box>
          
           {/* Assignment Information */}
      
@@ -498,9 +506,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   fullWidth
                   margin="dense"
                   label="Buyer"
-                  type="Text"
-                  value={transportCost}
-                  onChange={(e) => setTransportCost(Number(e.target.value))}
+                  type="text"
+                  value={buyer}
+                  onChange={(e) => setBuyer(e.target.value)}
                 />
               </CardContent>
             </Card>
