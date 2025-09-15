@@ -128,15 +128,24 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     }, 0);
   }, [transportCosts, appliedStatus]);
 
-  const computedGoldWeight = Math.max(0, (goldWeightGrams || 0) - appliedGoldDeductionGrams);
+  // Determine loan payment deduction based on loan payment method
+  const loanPaymentMethod = (loanDetailsState?.paymentMethod || '').toString().trim().toLowerCase();
+  const loanGoldDeductionGrams = payAmount > 0 && loanPaymentMethod === 'gold' ? Number(payAmount) : 0;
+  const loanCashDeductionAmount = payAmount > 0 && loanPaymentMethod === 'cash' ? Number(payAmount) : 0;
+
+  // Totals for deductions combining transport and loan payment
+  const totalGoldDeductionGrams = (appliedGoldDeductionGrams || 0) + (loanGoldDeductionGrams || 0);
+  const totalCashDeductionAmount = (appliedCashDeductionAmount || 0) + (loanCashDeductionAmount || 0);
+
+  const computedGoldWeight = Math.max(0, (goldWeightGrams || 0) - totalGoldDeductionGrams);
   const grossAmount = (computedGoldWeight || 0) * (pricePerGram || 0);
-  // Net payout deducts any applied cash amounts; we do not subtract the old transportCost field to avoid double counting
-  const netPayout = Math.max(0, grossAmount - appliedCashDeductionAmount);
+  // Net payout deducts any applied cash amounts and loan cash payment; we do not subtract the old transportCost field to avoid double counting
+  const netPayout = Math.max(0, grossAmount - totalCashDeductionAmount);
 
   // For display purpose: show originals where deductions are applied
   const originalGoldWeight = goldWeightGrams || 0;
   const originalGrossAmount = (originalGoldWeight || 0) * (pricePerGram || 0);
-  const grossAfterCashDeduction = Math.max(0, originalGrossAmount - appliedCashDeductionAmount);
+  const grossAfterCashDeduction = Math.max(0, originalGrossAmount - totalCashDeductionAmount);
 
   const anyApplied = React.useMemo(() => Object.values(appliedStatus).some((v) => v === 'applied'), [appliedStatus]);
 
@@ -151,7 +160,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     try {
       // If there is a payment amount and the loan isn't already PAID, process loan payment first
       if (!isLoanPaid && payAmount > 0) {
-        const shaft = assignment?.shaftNumber;
+        const shaft = assignment?.shaftNumber; 
         if (!shaft) {
           throw new Error('Missing shaft number for loan payment.');
         }
@@ -241,7 +250,10 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                         size="small"
                         inputProps={{ min: 0, step: 0.01 }}
                         value={payAmount}
-                        onChange={(e) => setPayAmount(Number(e.target.value))}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          setPayAmount(Number.isNaN(v) ? 0 : v);
+                        }}
                       />
                 
                     </Box>
@@ -389,15 +401,15 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                     <Typography variant="body2">Price per gram:</Typography>
                     <Typography variant="body2">${pricePerGram || 0}</Typography>
                   </Box>
-                  {appliedCashDeductionAmount > 0 && (
+                  {totalCashDeductionAmount > 0 && (
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                       <Typography variant="body2">Original Gross Amount:</Typography>
                       <Typography variant="body2">${originalGrossAmount.toFixed(2)}</Typography>
                     </Box>
                   )}
                   <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gross Amount{appliedCashDeductionAmount > 0 ? ' (after cash deduction)' : ''}:</Typography>
-                    <Typography variant="body2">${(appliedCashDeductionAmount > 0 ? grossAfterCashDeduction : grossAmount).toFixed(2)}</Typography>
+                    <Typography variant="body2">Gross Amount{appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? ' (after cash deduction)' : ''}:</Typography>
+                    <Typography variant="body2">${(appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? grossAfterCashDeduction : grossAmount).toFixed(2)}</Typography>
                   </Box>
                   {appliedGoldDeductionGrams > 0 && (
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -410,6 +422,28 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                       <Typography variant="body2">Transport Deduction (Cash):</Typography>
                       <Typography variant="body2">-${appliedCashDeductionAmount.toFixed(2)}</Typography>
                     </Box>
+                  )}
+                  {payAmount > 0 && (
+                    <>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Loan Payment Entered:</Typography>
+                        <Typography variant="body2">
+                          {loanPaymentMethod === 'gold' ? `${loanGoldDeductionGrams} g` : `$${loanCashDeductionAmount.toFixed(2)}`}
+                        </Typography>
+                      </Box>
+                      {loanGoldDeductionGrams > 0 && (
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography variant="body2">Loan Payment Deduction (Gold):</Typography>
+                          <Typography variant="body2">-{loanGoldDeductionGrams} g</Typography>
+                        </Box>
+                      )}
+                      {loanCashDeductionAmount > 0 && (
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography variant="body2">Loan Payment Deduction (Cash):</Typography>
+                          <Typography variant="body2">-${loanCashDeductionAmount.toFixed(2)}</Typography>
+                        </Box>
+                      )}
+                    </>
                   )}
                   <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
                     <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
