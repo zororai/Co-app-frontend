@@ -7,6 +7,7 @@ export const paths = {
     customers: '/dashboard/customers',
     integrations: '/dashboard/integrations',
     settings: '/dashboard/settings',
+    incidentmanagement: '/dashboard/incidentmanagement',
     useronboard: '/dashboard/useronboard',
     Syndicate: '/dashboard/syndicate',
     shaftreg: '/dashboard/shaftassign',

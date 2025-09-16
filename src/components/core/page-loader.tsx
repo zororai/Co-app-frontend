@@ -123,7 +123,7 @@ export function PageLoader({ isVisible, message = 'Signing you in...' }: PageLoa
       <LoaderContainer>
         <LogoContainer>
           <img
-            src="/assets/logo-emblem.png.png"
+            src="/assets/logo-emblem.png"
             alt="Logo"
             style={{
               width: '60px',

@@ -50,7 +50,7 @@ export const navItems = [
     title: 'Site Management',
     icon: 'tools',
     items: [
-      { key: 'shaft-list', title: 'Shaft List', href: '/shaft-management/list' },
+      { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'shaft-add', title: 'Add Shaft', href: '/shaft-management/add' },
     ],
   },

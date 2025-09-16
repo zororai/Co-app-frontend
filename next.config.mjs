@@ -8,14 +8,15 @@ const config = {
   
     outputFileTracingRoot: process.cwd(),
   async rewrites() {
+    const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN || 'https://coappapi.commapp.online';
     return [
       {
         source: '/api/:path*',
-        destination: 'https://coappapi.commapp.online/api/:path*',
+        destination: `${BACKEND_ORIGIN}/api/:path*`,
       },
       {
         source: '/auth/:path*',
-        destination: 'https://coappapi.commapp.online/auth/:path*',
+        destination: `${BACKEND_ORIGIN}/auth/:path*`,
       },
     ];
   },
