@@ -43,6 +43,7 @@ interface AddUserDialogProps {
 const steps = [
   'Basic Information',
   'Role & Position',
+  'Permissions',
   'Additional Details',
   'Review',
   'Confirmation'
@@ -85,6 +86,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
+  
+  // Permissions state
+  const [permissions, setPermissions] = React.useState<Record<string, boolean>>({});
   
   // Form state
   const [formData, setFormData] = React.useState({
@@ -148,6 +152,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     });
   };
 
+  // Handle permission toggle
+  const handlePermissionToggle = (permission: string) => {
+    setPermissions(prev => ({
+      ...prev,
+      [permission]: !prev[permission]
+    }));
+  };
+
   // Handle next step
   const handleNext = () => {
     // For the first step, validate required fields
@@ -177,6 +189,15 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       ) {
         return; // Don't proceed if validation fails
       }
+    }
+    
+    // For the permissions step (step 2), ensure at least one permission is selected
+    if (activeStep === 2) {
+      if (Object.values(permissions).every(p => !p)) {
+        setError('Please select at least one permission');
+        return;
+      }
+      setError(null);
     }
     
     if (activeStep === steps.length - 2) {
@@ -270,6 +291,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setTempPassword('••••••••••');
     setShowPassword(false);
     setFormSubmitted(false);
+    setPermissions({});
     
     // Call parent onClose
     onClose();
@@ -573,8 +595,64 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
           </Box>
         )}
 
-        {/* Step 3: Additional Details */}
+        {/* Step 3: Permissions */}
         {activeStep === 2 && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              User Permissions
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Select the permissions to grant to this user
+            </Typography>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                'Dashboard', 'Miner Registration', 'Shaft Management', 'Ore Management',
+                'Incident Management', 'User Management', 'Settings', 'Reports',
+                'Tax Onboarding', 'Mill Onboarding', 'Production Loan', 'Transport Cost'
+              ].map((item) => (
+                <Box key={item} sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Switch
+                    checked={!!permissions[item]}
+                    onChange={() => handlePermissionToggle(item)}
+                    inputProps={{ 'aria-label': `Toggle ${item} permission` }}
+                  />
+                  <Typography>{item}</Typography>
+                </Box>
+              ))}
+            </Box>
+            
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={handleBack}
+                sx={{ borderColor: '#121212', color: '#121212' }}
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                sx={{ 
+                  bgcolor: '#121212', 
+                  color: 'white',
+                  '&:hover': { bgcolor: '#333' } 
+                }}
+              >
+                Next
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* Step 4: Additional Details */}
+        {activeStep === 3 && (
           <Box>
             <Typography variant="h6" gutterBottom>
               Additional Details
@@ -639,8 +717,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
           </Box>
         )}
         
-        {/* Step 4: Review */}
-        {activeStep === 3 && (
+        {/* Step 5: Review */}
+        {activeStep === 4 && (
           <Box>
             <Typography variant="h6" gutterBottom>
               Review User Details
@@ -767,8 +845,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
           </Box>
         )}
 
-        {/* Step 5: Confirmation */}
-        {activeStep === 4 && (
+        {/* Step 6: Confirmation */}
+        {activeStep === 5 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
