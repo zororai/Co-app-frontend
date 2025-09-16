@@ -2,12 +2,18 @@
 
 "use client";
 import * as React from 'react';
+import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
+import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+import dayjs from 'dayjs';
 import Papa from 'papaparse';
 
 
@@ -15,19 +21,7 @@ import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/incidentmanagement/incidentmanagement';
 import type { Customer } from '@/components/dashboard/incidentmanagement/incidentmanagement';
 
-// Tab content components
-function PendingTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
-}
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
-}
-function RejectedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
-}
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
-}
+
 
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -36,7 +30,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/incidentmanagement/add-incident-dialog';
+import {AddOreDialog } from '@/components/dashboard/incidentmanagement/add-incident-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -46,34 +40,6 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
-  const [incidents, setIncidents] = React.useState<any[]>([]);
-
-  // Mock incidents for summary cards (aligned with table mock data)
-  React.useEffect(() => {
-    const mockIncidents = [
-      {
-        id: 'INC-001',
-        title: 'Slip hazard near processing plant',
-        type: 'HAZARD',
-        severity: 'MEDIUM',
-        location: 'Processing Plant - Area B',
-        reportedBy: 'John Worker',
-        date: '2024-06-25',
-        status: 'INVESTIGATING'
-      },
-      {
-        id: 'INC-002',
-        title: 'Minor cut injury',
-        type: 'INJURY',
-        severity: 'LOW',
-        location: 'Workshop',
-        reportedBy: 'Mike Mechanic',
-        date: '2024-06-24',
-        status: 'RESOLVED'
-      }
-    ];
-    setIncidents(mockIncidents);
-  }, []);
 
   // Function to refresh the miner data
   const refreshData = React.useCallback(() => {
@@ -201,64 +167,43 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Incident Management</Typography>
-
-          <Typography variant="body2" color="text.secondary">
-            Record and track safety incidents, hazards, and environmental risks
-          </Typography>
-          <Box sx={{ px: 2, pb: 2 }}>
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(4, 1fr)'
-                },
-                gap: 2
-              }}
+          <Typography variant="h4">Ore registration </Typography>
+          <Tabs
+            value={tab}
+            onChange={(_e, newValue) => setTab(newValue)}
+            sx={{ mb: 2 }}
+          >
+            <Tab label="Pending" value="PENDING" />
+            <Tab label="Pushed Back" value="PUSHED_BACK" />
+            <Tab label="Rejected" value="REJECTED" />
+            <Tab label="Approved" value="APPROVED" />
+          </Tabs>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Button
+              color="inherit"
+              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
+              component="label"
             >
-              <Card sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">Total Incidents</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>{incidents.length}</Typography>
-                <Typography variant="caption" color="text.secondary">This month</Typography>
-              </Card>
-              <Card sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">Open Cases</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>{incidents.filter(u => u.status !== 'RESOLVED').length}</Typography>
-                <Typography variant="caption" color="text.secondary">Require attention</Typography>
-              </Card>
-              <Card sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">High Severity</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>{incidents.filter(u => u.severity === 'HIGH').length}</Typography>
-                <Typography variant="caption" color="text.secondary">Critical incidents</Typography>
-              </Card>
-              <Card sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary">Resolved</Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>{incidents.filter(u => u.status === 'RESOLVED').length}</Typography>
-                <Typography variant="caption" color="text.secondary">Completed cases</Typography>
-              </Card>
-            </Box>
-          </Box>
+              Import
+              <input
+                type="file"
+                accept=".csv"
+                hidden
+                onChange={handleImport}
+              />
+            </Button>
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+              Export
+            </Button>
+          </Stack>
         </Stack>
         {/* Top-right action button with menu */}
         <TopRightActions onRefresh={refreshData} />
       </Stack>
 
-      {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
-      )}
-      {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
-      )}
-      {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
-      )}
-      {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
-      )}
+    
+  
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>
   );
 }
@@ -302,7 +247,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
           '&:hover': { bgcolor: '#4aa856' }
         }}
       >
-        Record Incident 
+        Record Incident
       </Button>
       
       {/* Add Ore Dialog */}
