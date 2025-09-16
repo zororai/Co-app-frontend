@@ -270,44 +270,86 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     setError(null);
     
     try {
+      // Validate required fields
+      const requiredFields = {
+        incidentTitle: 'Incident Title',
+        incidentType: 'Incident Type',
+        severityLevel: 'Severity Level',
+        location: 'Location',
+        reportedBy: 'Reported By'
+      };
+      
+      const errors: Record<string, string> = {};
+      
+      // Type-safe validation
+      type FormDataKey = keyof typeof formData;
+      
+      (Object.entries(requiredFields) as [FormDataKey, string][]).forEach(([key, label]) => {
+        const value = formData[key];
+        if (typeof value === 'string' && !value.trim()) {
+          errors[key] = `${label} is required`;
+        } else if (Array.isArray(value) && value.length === 0) {
+          errors[key] = `${label} is required`;
+        } else if (value === null || value === undefined) {
+          errors[key] = `${label} is required`;
+        }
+      });
+      
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        setActiveStep(0); // Go back to first step to show errors
+        return;
+      }
+      
+      // Process attachments to base64
+      const processAttachments = async (files: File[]): Promise<string[]> => {
+        return Promise.all(
+          files.map(file => 
+            new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const result = reader.result as string;
+                const base64String = result.split(',')[1];
+                resolve(`data:${file.type};base64,${base64String}`);
+              };
+              reader.onerror = () => resolve('');
+              reader.readAsDataURL(file);
+            })
+          )
+        ).then(attachments => attachments.filter(Boolean));
+      };
+      
       // Create incident data object with all fields
       const incidentData = {
-        // Incident details
-        title: formData.incidentTitle,
-        type: formData.incidentType,
-        severity: formData.severityLevel,
+        incidentTitle: formData.incidentTitle,
+        incidentType: formData.incidentType,
+        severityLevel: formData.severityLevel,
         location: formData.location,
         reportedBy: formData.reportedBy,
-        dateReported: formData.dateReported ? formData.dateReported.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+        dateReported: formData.dateReported ? formData.dateReported.toISOString() : new Date().toISOString(),
         description: formData.description,
-        
-        // Persons involved
-        personsInvolved: formData.persons.filter(p => 
-          p.name.trim() !== '' || 
-          p.surname.trim() !== '' || 
-          p.nationalId.trim() !== '' || 
-          p.address.trim() !== ''
-        ),
-        
-        // Attachments (convert to base64 or handle file upload)
-        attachments: formData.attachments
+        attachments: await processAttachments(formData.attachments),
+        participants: formData.persons
+          .filter(p => p.name.trim() || p.surname.trim() || p.nationalId.trim() || p.address.trim())
+          .map(person => ({
+            name: person.name,
+            surname: person.surname,
+            nationalId: person.nationalId,
+            address: person.address
+          }))
       };
       
       // Call API to create incident record
       console.log('Sending incident data to API:', incidentData);
-      // Replace with actual API call
-      // const response = await authClient.createIncident(incidentData);
+      const response = await authClient.createIncident(incidentData);
       
-      // Mock response for now
-      const response = { success: true, reference: 'INC-' + Math.random().toString(36).substr(2, 9).toUpperCase() };
-      
-      // Check if the response was successful
       if (!response.success) {
-        throw new Error('Failed to create incident record');
+        throw new Error(response.error || 'Failed to create incident record');
       }
       
-      // Set reference number for the incident
-      setReferenceNumber(response.reference);
+      // Generate a reference number (can be updated with actual reference from API if available)
+      const reference = 'INC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      setReferenceNumber(reference);
       setSuccess(true);
       
       // Move to success step
@@ -318,94 +360,34 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         onRefresh();
       }
     } catch (error_) {
-      console.error('Error creating ore record:', error_);
-      setError(error_ instanceof Error ? error_.message : 'Failed to create ore record');
-      // Show error in UI
-      setActiveStep(activeStep); // Stay on current step
+      console.error('Error creating incident record:', error_);
+      
+      let errorMessage = 'Failed to create incident record';
+      
+      // Handle different types of errors
+      if (error_ instanceof Error) {
+        errorMessage = error_.message;
+      } else if (typeof error_ === 'string') {
+        errorMessage = error_;
+      } else if (error_ && typeof error_ === 'object' && 'message' in error_) {
+        errorMessage = String(error_.message);
+      }
+      
+      // Set error state
+      setError(errorMessage);
+      
+      // If we're not on the review step, go to review step to show errors
+      if (activeStep !== steps.length - 2) {
+        setActiveStep(steps.length - 2);
+      }
+      
+      // Scroll to top to show error message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Fetch approved shaft assignments and tax directions when dialog opens
-  React.useEffect(() => {
-    if (open) {
-      fetchApprovedShaftAssignments();
-      fetchApprovedTaxDirections();
-    }
-  }, [open]);
-  
-  // Function to fetch approved tax directions
-  const fetchApprovedTaxDirections = async () => {
-    setLoadingTaxDirections(true);
-    setTaxDirectionsError('');
-    try {
-      const response = await authClient.fetchApprovedTaxDirections();
-      console.log('Tax directions response:', response);
-      
-      if (response && Array.isArray(response)) {
-        setTaxDirections(response);
-        console.log('Setting tax directions:', response);
-      } else {
-        setTaxDirectionsError('Invalid response format');
-        console.error('Invalid tax directions response format');
-      }
-    } catch (error) {
-      console.error('Error fetching tax directions:', error);
-      setTaxDirectionsError('Failed to load tax directions');
-    } finally {
-      setLoadingTaxDirections(false);
-    }
-  };
-
-  // Function to fetch approved shaft assignments
-  const fetchApprovedShaftAssignments = async () => {
-    setLoadingShafts(true);
-    setShaftError('');
-    try {
-      const response = await authClient.fetchApprovedShaftAssignments();
-      console.log('Shaft assignments response:', response);
-      
-      if (response && Array.isArray(response)) {
-        // Use mock data for testing if response is empty
-        if (response.length === 0) {
-          const mockData = [
-            { id: '1', shaftNumber: 'SA1' },
-            { id: '2', shaftNumber: 'SA2' },
-            { id: '3', shaftNumber: 'SA3' }
-          ];
-          
-          console.log('Using mock data:', mockData);
-        } else {
-          setShaftAssignments(response);
-          console.log('Setting shaft assignments:', response);
-        }
-      } else {
-        // Use mock data if response is not as expected
-        const mockData = [
-          { id: '1', shaftNumber: 'SA1' },
-          { id: '2', shaftNumber: 'SA2' },
-          { id: '3', shaftNumber: 'SA3' }
-        ];
-        setShaftAssignments(mockData);
-        console.log('Using mock data due to invalid response:', mockData);
-      }
-    } catch (error) {
-      console.error('Error fetching shaft assignments:', error);
-      setShaftError('Failed to load shaft assignments');
-      
-      // Use mock data on error
-      const mockData = [
-        { id: '1', shaftNumber: 'SA1' },
-        { id: '2', shaftNumber: 'SA2' },
-        { id: '3', shaftNumber: 'SA3' }
-      ];
-      setShaftAssignments(mockData);
-      console.log('Using mock data due to error:', mockData);
-    } finally {
-      setLoadingShafts(false);
-    }
-  };
 
   // Handle dialog close
   const handleClose = () => {

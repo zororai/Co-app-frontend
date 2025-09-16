@@ -3063,6 +3063,44 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
     }
 
+  /**
+   * Create a new incident
+   */
+  async createIncident(incidentData: CreateIncidentData): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      const response = await fetch('https://coappapi.commapp.online/api/incident-management/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(incidentData),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create incident');
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error creating incident:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to create incident' 
+      };
+    }
+  }
+
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
   }
@@ -3612,7 +3650,7 @@ cooperativename: string;
   /**
    * Register a new driver
    * @param driverData The driver data to register
-   * @returns A promise that resolves to the response data or null on error
+   * @returns A promise that resolves to the response data or error
    */
   async registerDriver(driverData: {
     firstName: string;
@@ -4504,6 +4542,29 @@ cooperativename: string;
   }
 }
 
+export interface ResetPasswordParams {
+  token: string;
+  password: string;
+}
+
+export interface IncidentParticipant {
+  name: string;
+  surname: string;
+  nationalId: string;
+  address: string;
+}
+
+export interface CreateIncidentData {
+  incidentTitle: string;
+  severityLevel: string;
+  reportedBy: string;
+  description: string;
+  attachments: string[];
+  location: string;
+  participants: IncidentParticipant[];
+  incidentType: string;
+  dateReported: string;
+}
 
 
 export const authClient = new AuthClient();
