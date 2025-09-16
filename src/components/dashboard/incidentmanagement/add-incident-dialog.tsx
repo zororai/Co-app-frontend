@@ -725,8 +725,8 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
         {/* Step 3: Additional Details - Removed as per requirements */}
         
-        {/* Step 4: Review */}
-        {activeStep === 3 && (
+        {/* Step 2: Review */}
+        {activeStep === 1 && (
           <Box>
             <Typography variant="h6" gutterBottom>
               Review Incident Details
@@ -870,21 +870,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               >
                 {isSubmitting ? 'Submitting...' : 'Save Incident'}
               </Button>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                disabled={isSubmitting}
-                sx={{ mr: 1 }}
-              >
-                Back
-              </Button>
+          
             </Box>
           </Box>
         )}
 
 
-        {/* Make sure we're accessing the correct activeStep variable */}
-        {activeStep === 4 && (
+        {/* Confirmation Step */}
+        {activeStep === 2 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
