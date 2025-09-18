@@ -46,29 +46,12 @@ export function ResetPasswordForm(): React.JSX.Element {
     },
   });
 
-  const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
-      setIsPending(true);
 
-      const { error } = await authClient.resetPassword(values);
-
-      if (error) {
-        setError('root', { type: 'server', message: error });
-        setIsPending(false);
-        return;
-      }
-
-      setIsPending(false);
-
-      // Redirect to confirm password reset
-    },
-    [setError]
-  );
 
   return (
     <Stack spacing={4}>
       <Typography variant="h5">Reset password</Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form >
         <Stack spacing={2}>
           <Controller
             control={control}
