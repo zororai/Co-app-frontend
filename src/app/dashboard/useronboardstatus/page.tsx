@@ -262,7 +262,15 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 function TopRightActions(): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [refreshKey, setRefreshKey] = React.useState(0);
   const open = Boolean(anchorEl);
+
+  // Function to refresh the data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+    // This will trigger a re-render of the parent component
+    window.location.reload();
+  }, []);
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -282,12 +290,24 @@ function TopRightActions(): React.JSX.Element {
 
   return (
     <React.Fragment>
-
+      <Button
+        variant="contained"
+        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+        onClick={handleOpenDialog}
+        sx={{
+          bgcolor: '#5f4bfa',
+          color: '#fff',
+          '&:hover': { bgcolor: '#4aa856' }
+        }}
+      >
+        Add User
+      </Button>
       
       {/* Add User Dialog */}
       <AddUserDialog 
         open={dialogOpen} 
-        onClose={handleCloseDialog} 
+        onClose={handleCloseDialog}
+        onRefresh={refreshData}
       />
     </React.Fragment>
   );

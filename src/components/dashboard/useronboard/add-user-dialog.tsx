@@ -242,7 +242,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setError(null);
     
     try {
-      // Call API to create user
+      // Call API to create user with permissions
       const response = await authClient.createUser({
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -257,7 +257,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         notes: formData.notes || '',
         startDate: formData.startDate ? formData.startDate.format('YYYY-MM-DD') : undefined,
         emergencyContactName: formData.emergencyContactName || '',
-        emergencyContactPhone: formData.emergencyContactPhone || ''
+        emergencyContactPhone: formData.emergencyContactPhone || '',
+        permissions: permissions // Send the permissions object as is
       });
       
       // Generate temporary password and reference number
