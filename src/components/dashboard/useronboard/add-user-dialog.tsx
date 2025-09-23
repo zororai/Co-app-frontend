@@ -24,6 +24,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import { paths } from '@/paths';
+import { navItems } from '../layout/config';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
@@ -152,12 +154,30 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     });
   };
 
-  // Handle permission toggle
-  const handlePermissionToggle = (permission: string) => {
+  // Handle permission toggle for individual items
+  const handlePermissionToggle = (permissionKey: string) => {
     setPermissions(prev => ({
       ...prev,
-      [permission]: !prev[permission]
+      [permissionKey]: !prev[permissionKey]
     }));
+  };
+
+  // Handle parent toggle - toggles all child items
+  const handleParentToggle = (parentItem: any) => {
+    const isParentEnabled = !permissions[parentItem.key];
+    const updatedPermissions = { ...permissions };
+    
+    // Toggle the parent
+    updatedPermissions[parentItem.key] = isParentEnabled;
+    
+    // If parent has items, toggle all of them
+    if (parentItem.items && parentItem.items.length > 0) {
+      parentItem.items.forEach((subItem: any) => {
+        updatedPermissions[subItem.key] = isParentEnabled;
+      });
+    }
+    
+    setPermissions(updatedPermissions);
   };
 
   // Handle next step
@@ -605,19 +625,32 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               Select the permissions to grant to this user
             </Typography>
             
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {[
-                'Dashboard', 'Miner Registration', 'Shaft Management', 'Ore Management',
-                'Incident Management', 'User Management', 'Settings', 'Reports',
-                'Tax Onboarding', 'Mill Onboarding', 'Production Loan', 'Transport Cost'
-              ].map((item) => (
-                <Box key={item} sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Switch
-                    checked={!!permissions[item]}
-                    onChange={() => handlePermissionToggle(item)}
-                    inputProps={{ 'aria-label': `Toggle ${item} permission` }}
-                  />
-                  <Typography>{item}</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, ml: 2 }}>
+              {navItems.map((item) => (
+                <Box key={item.key} sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Switch
+                      checked={!!permissions[item.key]}
+                      onChange={() => handleParentToggle(item)}
+                      inputProps={{ 'aria-label': `Toggle ${item.title} permission` }}
+                    />
+                    <Typography fontWeight="bold">{item.title}</Typography>
+                  </Box>
+                  {item.items && (
+                    <Box sx={{ ml: 4, mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {item.items.map((subItem) => (
+                        <Box key={subItem.key} sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Switch
+                            checked={!!permissions[subItem.key]}
+                            onChange={() => handlePermissionToggle(subItem.key)}
+                            inputProps={{ 'aria-label': `Toggle ${subItem.title} permission` }}
+                            size="small"
+                          />
+                          <Typography variant="body2">{subItem.title}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
                 </Box>
               ))}
             </Box>
@@ -726,6 +759,44 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Please review the information before creating the user account.
             </Typography>
+            
+            {/* Permissions Review Section */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                Permissions
+              </Typography>
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: 1,
+                p: 2,
+                bgcolor: 'action.hover',
+                borderRadius: 1
+              }}>
+                {Object.entries(permissions)
+                  .filter(([_, isSelected]) => isSelected)
+                  .map(([permission]) => (
+                    <Chip 
+                      key={permission} 
+                      label={permission} 
+                      color="primary"
+                      size="small"
+                      sx={{ 
+                        mb: 1,
+                        '& .MuiChip-label': {
+                          px: 1,
+                          fontSize: '0.75rem'
+                        }
+                      }}
+                    />
+                  ))}
+                {Object.values(permissions).every(p => !p) && (
+                  <Typography variant="body2" color="text.secondary">
+                    No permissions selected
+                  </Typography>
+                )}
+              </Box>
+            </Box>
             
             <Box sx={{ 
               border: '1px solid #e0e0e0', 
