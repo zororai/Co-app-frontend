@@ -58,6 +58,7 @@ class AuthClient {
         startDate?: string;
         emergencyContactName?: string;
         emergencyContactPhone?: string;
+        permissions?: Record<string, boolean>;
     }): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -79,7 +80,10 @@ class AuthClient {
                 role: userData.role,
                 status: userData.isActive ? 'active' : 'inactive',
                 notes: userData.notes,
-                reason: '' // This field is empty as it wasn't specified in the frontend
+                reason: '', // This field is empty as it wasn't specified in the frontend
+                permissions: Object.entries(userData.permissions || {})
+                    .filter(([_, hasPermission]) => hasPermission)
+                    .map(([permission]) => ({ permission }))
             };
 
             const response = await fetch('/api/users/create', {
