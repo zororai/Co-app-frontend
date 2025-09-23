@@ -52,34 +52,37 @@ export default function Page(): React.JSX.Element {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
 
-  // Function to refresh the miner data
-  const refreshData = React.useCallback(() => {
-    setRefreshKey(prevKey => prevKey + 1);
+  // Function to fetch and update customer data
+  const fetchCustomers = React.useCallback(async () => {
+    try {
+      const data = await authClient.fetchPendingCustomers();
+      console.log('Fetched data from API:', data);
+      // Normalize status values to match expected enum
+      const normalizedData = data.map((customer: any) => ({
+        ...customer,
+        status: customer.status === "Approved" ? "APPROVED"
+              : customer.status === "Rejected" ? "REJECTED"
+              : customer.status === "Pending" ? "PENDING"
+              : customer.status === "Pushed Back" ? "PUSHED_BACK"
+              : customer.status // fallback to original if already correct
+      }));
+      console.log('Normalized data for table:', normalizedData);
+      setCustomers(normalizedData);
+    } catch (error) {
+      console.error('API call failed:', error);
+    }
   }, []);
 
+  // Function to refresh the data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+    fetchCustomers();
+  }, [fetchCustomers]);
+
+  // Initial data fetch
   React.useEffect(() => {
-    (async () => {
-      try {
-        const data = await authClient.fetchPendingCustomers();
-        console.log('Fetched data from API:', data);
-        // Normalize status values to match expected enum
-        const normalizedData = data.map((customer: any) => ({
-          ...customer,
-          status: customer.status === "Approved" ? "APPROVED"
-                : customer.status === "Rejected" ? "REJECTED"
-                : customer.status === "Pending" ? "PENDING"
-                : customer.status === "Pushed Back" ? "PUSHED_BACK"
-                : customer.status // fallback to original if already correct
-        }));
-        console.log('Normalized data for table:', normalizedData);
-        setCustomers(normalizedData);
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
-        // Use mock data when API fails
-   
-      }
-    })();
-  }, []);
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -233,7 +236,7 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-        <TopRightActions />
+        <TopRightActions onRefresh={refreshData} />
       </Stack>
 
       {tab === 'PENDING' && (
@@ -259,7 +262,7 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions(): React.JSX.Element {
+function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [refreshKey, setRefreshKey] = React.useState(0);
@@ -268,9 +271,9 @@ function TopRightActions(): React.JSX.Element {
   // Function to refresh the data
   const refreshData = React.useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
-    // This will trigger a re-render of the parent component
-    window.location.reload();
-  }, []);
+    // Call the parent's refresh function
+    onRefresh();
+  }, [onRefresh]);
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);

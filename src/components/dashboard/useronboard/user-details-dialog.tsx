@@ -264,7 +264,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>User Details</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>User Detail</Typography>
         <Box sx={{ display: 'flex' }}>
           <IconButton onClick={() => printElementById('user-details-printable', 'User Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
             <PrintIcon />
@@ -324,13 +324,32 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               </Box>
             </Box>
             
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
               <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
                 Professional Information
               </Typography>
               <Box sx={{ mt: 2 }}>
                 <Typography sx={{ mb: 1 }}><strong>Position:</strong> {userDetails?.position || 'N/A'}</Typography>
                 <Typography sx={{ mb: 1 }}><strong>Role:</strong> {userDetails?.role || 'N/A'}</Typography>
+                {userDetails?.permissions?.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>Permissions:</Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      {userDetails.permissions.map((perm: { permission: string }, index: number) => (
+                        <Chip 
+                          key={index} 
+                          label={perm.permission} 
+                          size="small" 
+                          sx={{ 
+                            bgcolor: '#e3f2fd', 
+                            color: '#1976d2',
+                            fontWeight: 500
+                          }} 
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
               </Box>
             </Box>
             
