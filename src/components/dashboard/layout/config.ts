@@ -27,9 +27,7 @@ export const navItems = [
     icon: 'buildings',
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-      { key: 'site-add', title: 'Section Creation', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
-      { key: 'Map', title: 'Map', href:  paths.dashboard.map, icon: 'id-card'},
     ],
   },
   {
@@ -52,7 +50,9 @@ export const navItems = [
     icon: 'tools',
     items: [
       { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
-      { key: 'shaft-add', title: 'Add Shaft', href: '/shaft-management/add' },
+      { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
+      { key: 'Map', title: 'Map Mining Section ', href:  paths.dashboard.map, icon: 'id-card'},
+    
     ],
   },
   {
