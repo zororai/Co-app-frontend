@@ -13,11 +13,12 @@
 @import '~@fontsource/plus-jakarta-sans/600.css';
 @import '~@fontsource/plus-jakarta-sans/700.css';
 
+/* Leaflet CSS imports - moved to useLeaflet hook */
+
 /* Variables */
 :root {
   --icon-fontSize-sm: 1rem;
   --icon-fontSize-md: 1.25rem;
-  --icon-fontSize-lg: 1.5rem;
 }
 
 *:focus-visible {

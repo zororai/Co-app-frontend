@@ -19,7 +19,6 @@
     "docker:prod": "docker-compose --profile prod up -d --build",
     "docker:stop": "docker-compose down"
   },
-  
   "dependencies": {
     "@emotion/cache": "11.14.0",
     "@emotion/react": "11.14.0",
@@ -38,14 +37,19 @@
     "@phosphor-icons/react": "2.1.10",
     "apexcharts": "4.7.0",
     "dayjs": "1.11.13",
+    "in": "^0.19.0",
+    "leaflet": "^1.9.4",
+    "leaflet-draw": "^1.0.4",
     "next": "15.3.3",
     "papaparse": "^5.5.3",
     "phosphor-react": "^1.4.1",
-    "react": "19.1.0",
+    "react": "^19.1.0",
     "react-apexcharts": "1.7.0",
-    "react-dom": "19.1.0",
+    "react-dom": "^19.1.0",
     "react-hook-form": "7.57.0",
     "react-icons": "^5.5.0",
+    "terminal": "^0.1.4",
+    "your": "^0.2.3",
     "zod": "3.25.57"
   },
   "devDependencies": {
@@ -56,6 +60,8 @@
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.3.0",
     "@types/jest": "29.5.14",
+    "@types/leaflet": "^1.9.20",
+    "@types/leaflet-draw": "^1.0.13",
     "@types/node": "24.0.0",
     "@types/papaparse": "^5.3.16",
     "@types/react": "19.1.7",
