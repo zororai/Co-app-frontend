@@ -98,8 +98,8 @@ class AuthClient {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to create user');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
 
             const data = await response.json();
@@ -134,8 +134,8 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                const text = await response.text().catch(() => '');
-                throw new Error(text || 'Failed to fetch approved production loans');
+                globalThis.location.href = '/auth/signin';
+                return [];
             }
             const data = await response.json();
             return Array.isArray(data) ? data : (data?.items ?? []);
@@ -166,7 +166,8 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch approved sections');
+                globalThis.location.href = '/auth/signin';
+                return [];
             }
             const data = await response.json();
             return Array.isArray(data) ? data : data.sections || [];
@@ -247,8 +248,8 @@ class AuthClient {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to create ore transport record');
+                globalThis.location.href = '/auth/signin';
+                return { success: false, error: 'Authentication required' };
             }
 
             const data = await response.json();
@@ -309,8 +310,8 @@ class AuthClient {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to register security company');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
 
             const data = await response.json();
@@ -349,7 +350,8 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch driver details');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
             const data = await response.json();
             return data;
@@ -376,7 +378,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch driver details');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
           return data;
@@ -411,8 +414,8 @@ class AuthClient {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to approve mill');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -450,8 +453,8 @@ class AuthClient {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to reject mill');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -489,8 +492,8 @@ class AuthClient {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to push back mill');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -526,8 +529,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const text = await response.text().catch(() => '');
-              throw new Error(text || 'Failed to fetch loans by shaft number');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
           return data;
@@ -560,8 +563,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const text = await response.text().catch(() => '');
-              throw new Error(text || 'Failed to fetch shaft assignments by miner');
+              globalThis.location.href = '/auth/sign-in';
+              return [];
           }
           const data = await response.json();
           return Array.isArray(data) ? data : (data?.items ?? []);
@@ -594,8 +597,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const text = await response.text().catch(() => '');
-              throw new Error(text || 'Failed to fetch shaft numbers by section');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
           return data;
@@ -626,8 +629,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to approve shaft loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           return { success: true };
       } catch (error) {
@@ -659,8 +662,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to reject shaft loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           return { success: true };
       } catch (error) {
@@ -692,8 +695,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to push back shaft loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           return { success: true };
       } catch (error) {
@@ -726,8 +729,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to pay shaft loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           return { success: true };
       } catch (error) {
@@ -782,7 +785,8 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch users');
+                globalThis.location.href = '/auth/sign-in';
+                return [];
             }
             const data = await response.json();
             return Array.isArray(data) ? data : data.securityCompanies || [];
@@ -813,8 +817,8 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to approve transport cost');
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
         }
         return { success: true };
       } catch (error) {
@@ -844,8 +848,8 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to reject transport cost');
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
         }
         return { success: true };
       } catch (error) {
@@ -875,8 +879,8 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || 'Failed to push back transport cost');
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
         }
         return { success: true };
       } catch (error) {
@@ -906,7 +910,8 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch users');
+              globalThis.location.href = '/auth/sign-in';
+              return [];
           }
           const data = await response.json();
           return Array.isArray(data) ? data : data.users || [];
@@ -1044,7 +1049,8 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch tax data');
+            globalThis.location.href = '/auth/sign-in';
+            return [];
         }
         const data = await response.json();
         return Array.isArray(data) ? data : data.taxes || [];
@@ -1072,7 +1078,8 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch transport costs');
+            globalThis.location.href = '/auth/sign-in';
+            return [];
         }
         const data = await response.json();
         return Array.isArray(data) ? data : (data.transportCosts || data.items || []);
@@ -1103,7 +1110,8 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch transport cost details');
+            globalThis.location.href = '/auth/sign-in';
+            return null;
         }
         const data = await response.json();
         return data;
@@ -1141,8 +1149,8 @@ async fetchOreRecieved(): Promise<any[]> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Failed to create transport cost');
+            globalThis.location.href = '/auth/sign-in';
+            return { success: false, error: 'Authentication required' };
         }
 
         const data = await response.json();
@@ -1178,7 +1186,8 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch approved tax directions');
+            globalThis.location.href = '/auth/sign-in';
+            return [];
         }
         const data = await response.json();
         return Array.isArray(data) ? data : data.taxes || [];
@@ -1214,8 +1223,8 @@ async fetchOreRecieved(): Promise<any[]> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || 'Failed to create tax');
+            globalThis.location.href = '/auth/sign-in';
+            return { success: false, error: 'Authentication required' };
         }
 
         const data = await response.json();
@@ -1278,7 +1287,8 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch production loan details');
+              globalThis.location.href = '/auth/sign-in';
+              return null;
           }
           const data = await response.json();
           return data;
@@ -1309,7 +1319,8 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch production loans');
+              globalThis.location.href = '/auth/sign-in';
+              return [];
           }
           const data = await response.json();
           return Array.isArray(data) ? data : [];
@@ -1344,7 +1355,8 @@ async fetchOreRecieved(): Promise<any[]> {
           const data = await response.json();
           
           if (!response.ok) {
-              return { success: false, error: data.message || 'Failed to create production loan' };
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true, data };
@@ -1378,8 +1390,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to approve production loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -1417,8 +1429,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to reject production loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -1456,8 +1468,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to push back production loan');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -1489,7 +1501,8 @@ async fetchOreRecieved(): Promise<any[]> {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch user details');
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             const data = await response.json();
             return data;
@@ -1521,8 +1534,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to approve user');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
             
             return { success: true };
@@ -1553,8 +1566,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(errorText || 'Failed to approve user');
+              globalThis.location.href = '/auth/sign-in';
+              return { success: false, error: 'Authentication required' };
           }
           
           return { success: true };
@@ -1589,7 +1602,8 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch activated mills');
+              globalThis.location.href = '/auth/sign-in';
+              return [];
           }
           const data = await response.json();
           return Array.isArray(data) ? data : [];
@@ -1620,8 +1634,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to reject user');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
             
             return { success: true };
@@ -1723,8 +1737,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Failed to push back user');
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
             
             return { success: true };
@@ -1772,8 +1786,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to register mill');
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to register mill');
             }
 
             const data = await response.json();
@@ -1822,7 +1836,8 @@ async fetchOreRecieved(): Promise<any[]> {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch sections');
+                globalThis.location.href = '/auth/sign-in';
+                return [];
             }
             const data = await response.json();
             return Array.isArray(data) ? data : data.sections || [];
@@ -1849,7 +1864,8 @@ async fetchOreRecieved(): Promise<any[]> {
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch miners');
+                globalThis.location.href = '/auth/sign-in';
+                return [];
             }
             const data = await response.json();
             return Array.isArray(data) ? data : data.miners || [];
@@ -1880,7 +1896,8 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch drivers');
+        globalThis.location.href = '/auth/sign-in';
+        return [];
       }
       const data = await response.json();
       return Array.isArray(data) ? data : data.drivers || [];
@@ -1908,7 +1925,8 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch drivers');
+        globalThis.location.href = '/auth/sign-in';
+        return [];
       }
       const data = await response.json();
       return Array.isArray(data) ? data : data.drivers || [];
@@ -1935,7 +1953,8 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        throw new Error('Failed to fetch mills');
+        globalThis.location.href = '/auth/sign-in';
+        return [];
       }
       const data = await response.json();
       return Array.isArray(data) ? data : data.drivers || [];
@@ -1968,8 +1987,8 @@ async fetchOreRecieved(): Promise<any[]> {
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || 'Failed to approve driver');
+      globalThis.location.href = '/auth/sign-in';
+      return { success: false, error: 'Authentication required' };
     }
     
     return { success: true };
@@ -2007,8 +2026,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to apply tax to ore transport');
+      globalThis.location.href = '/auth/sign-in';
+      return { success: false, error: 'Authentication required' };
     }
 
     const data = await response.json();
@@ -2051,8 +2070,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to reject driver');
+        globalThis.location.href = '/auth/sign-in';
+        return { success: false, error: 'Authentication required' };
       }
       
       return { success: true };
@@ -2094,8 +2113,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       });
       
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to push back driver');
+        globalThis.location.href = '/auth/sign-in';
+        return { success: false, error: 'Authentication required' };
       }
       
       return { success: true };
@@ -2132,7 +2151,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch company details');
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.json();
         } catch (error) {
@@ -2164,7 +2184,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to approve miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.json();
         } catch (error) {
@@ -2191,7 +2212,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to approve miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             const text = await response.text();
             try {
@@ -2230,7 +2252,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to reject miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.text();
         } catch (error) {
@@ -2257,7 +2280,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to reject miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.text();
         } catch (error) {
@@ -2291,7 +2315,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to push back miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.text();
         } catch (error) {
@@ -2319,7 +2344,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error(`Failed to push back miner: ${response.statusText}`);
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.text();
         } catch (error) {
@@ -2459,11 +2485,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             }
 
             if (!response.ok) {
-                console.error('Company registration failed:', data);
-                return { 
-                    error: typeof data === 'object' && data !== null ? (data.message || data.error) : responseText || 'Company registration failed',
-                    success: false 
-                };
+                globalThis.location.href = '/auth/sign-in';
+                return { success: false, error: 'Authentication required' };
             }
 
             return { 
@@ -2674,7 +2697,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch approved shaft assignments');
+              globalThis.location.href = '/auth/sign-in';
+              return null;
           }
           return await response.json();
       } catch (error) {
@@ -2701,7 +2725,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             credentials: 'include',
         });
         if (!response.ok) {
-            throw new Error('Failed to fetch customer details');
+            globalThis.location.href = '/auth/sign-in';
+            return null;
         }
         return await response.json();
     } catch (error) {
@@ -2728,7 +2753,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               credentials: 'include',
           });
           if (!response.ok) {
-              throw new Error('Failed to fetch customer details');
+              globalThis.location.href = '/auth/sign-in';
+              return null;
           }
           return await response.json();
       } catch (error) {
@@ -2755,7 +2781,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                throw new Error('Failed to fetch customer details');
+                globalThis.location.href = '/auth/sign-in';
+                return null;
             }
             return await response.json();
         } catch (error) {

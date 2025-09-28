@@ -585,6 +585,35 @@ const LeafletMap: React.FC = () => {
             </Box>
           )}
 
+          {/* Navigation Buttons */}
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'space-between', mt: 2 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setActiveStep(Math.max(0, activeStep - 1))}
+              disabled={activeStep === 0}
+              size="small"
+            >
+              Back
+            </Button>
+            
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (activeStep < steps.length - 1) {
+                  setActiveStep(activeStep + 1);
+                }
+              }}
+              disabled={
+                activeStep === steps.length - 1 || 
+                (activeStep === 0 && !selectedCountry) ||
+                (activeStep === 1 && drawnShapes.length === 0)
+              }
+              size="small"
+            >
+              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+            </Button>
+          </Box>
+
           {/* Action Buttons */}
           <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', mt: 2 }}>
             {activeStep === 2 && (
