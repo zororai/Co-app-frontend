@@ -134,7 +134,7 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/signin';
+                globalThis.location.href = '/auth/sign-in';
                 return [];
             }
             const data = await response.json();
@@ -152,7 +152,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -166,7 +166,7 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/signin';
+                globalThis.location.href = '/auth/sign-in';
                 return [];
             }
             const data = await response.json();
@@ -2848,7 +2848,36 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
     }
     
-  
+    /**
+     * Fetch deactivated-pending sections from the backend
+     */
+    async fetchSectionDeactivatedPending(): Promise<Customer[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            return [];
+        }
+        try {
+            const response = await fetch('http://localhost:1000/api/sections/status/deactivated-pending', {
+                method: 'GET',
+                headers: {
+                    'Accept': '*/*',
+                    Authorization: `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch deactivated-pending sections');
+            }
+            const data = await response.json();
+            
+            return Array.isArray(data) ? data : data.sections || [];
+        } catch (error) {
+            console.error('Error fetching deactivated-pending sections:', error);
+            return [];
+        }
+    }
 
     async fetchSectionstatus(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');

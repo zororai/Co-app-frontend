@@ -155,7 +155,11 @@ const COUNTRIES: Country[] = [
   { name: 'Swaziland', code: 'SZ', lat: -26.5225, lng: 31.4659, zoom: 9 }
 ].sort((a, b) => a.name.localeCompare(b.name));
 
-const LeafletMap: React.FC = () => {
+interface LeafletMapProps {
+  sectionName?: string;
+}
+
+const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const drawnItemsRef = useRef<any>(null);
@@ -563,6 +567,7 @@ const LeafletMap: React.FC = () => {
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Step 2: Draw Boundaries in {selectedCountry.name}
+                {sectionName && ` for ${sectionName}`}
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Use the drawing tools on the right side of the map to create boundaries.
