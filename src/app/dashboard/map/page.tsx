@@ -29,13 +29,20 @@ const MapPage: React.FC = () => {
   const searchParams = useSearchParams();
   const sectionName = searchParams?.get('sectionName');
   
+  // Debug logging
+  React.useEffect(() => {
+    console.log('MapPage - searchParams:', searchParams);
+    console.log('MapPage - sectionName:', sectionName);
+    console.log('MapPage - all params:', Object.fromEntries(searchParams?.entries() || []));
+  }, [searchParams, sectionName]);
+  
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Page Header */}
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Boundary Map{sectionName && ` - ${sectionName}`}
+          Boundary Map{sectionName ? ` - ${sectionName}` : ' (No Section Name)'}
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Draw shapes on the map to define boundaries and save their coordinates

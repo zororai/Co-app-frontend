@@ -246,10 +246,14 @@ export function CustomersTable({
                     color="primary"
                     startIcon={<MapPin fontSize="var(--icon-fontSize-md)" />}
                     onClick={() => {
+                      console.log('Button clicked - row data:', row);
+                      console.log('Button clicked - sectionName:', row.sectionName);
                       const params = new URLSearchParams({
                         id: row.id,
                         sectionName: row.sectionName || ''
                       });
+                      console.log('Button clicked - URL params:', params.toString());
+                      console.log('Button clicked - final URL:', `/dashboard/map?${params.toString()}`);
                       globalThis.location.href = `/dashboard/map?${params.toString()}`;
                     }}
                   >

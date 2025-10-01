@@ -14,6 +14,8 @@ import {
   StepLabel
 } from '@mui/material';
 
+import { apiClient } from '../../../lib/client';
+
 interface Coordinate {
   lat: number;
   lng: number;
@@ -160,6 +162,11 @@ interface LeafletMapProps {
 }
 
 const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
+  // Debug logging
+  React.useEffect(() => {
+    console.log('LeafletMap - received sectionName:', sectionName);
+  }, [sectionName]);
+  
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const drawnItemsRef = useRef<any>(null);
@@ -407,6 +414,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
   };
 
   const saveShapesToEndpoint = async () => {
+    if (!sectionName || sectionName.trim() === '') {
+      setMessage({ type: 'error', text: 'Section name is required before saving.' });
+      return;
+    }
     if (drawnShapes.length === 0) {
       setMessage({ type: 'error', text: 'No shapes to save!' });
       return;
@@ -416,25 +427,18 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/boundaries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          shapes: drawnShapes,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+      const { success, error } = await apiClient.saveBoundaryGeometry(sectionName, drawnShapes.map(s => ({
+        type: s.type,
+        coordinates: s.coordinates,
+      })));
 
-      if (response.ok) {
-        setMessage({ type: 'success', text: `Successfully saved ${drawnShapes.length} shape(s) for ${selectedCountry?.name || 'selected area'}!` });
-        // Workflow completed - could reset or show completion state
+      if (success) {
+        setMessage({ type: 'success', text: `Saved ${drawnShapes.length} shape(s) for section "${sectionName}".` });
       } else {
-        throw new Error('Failed to save shapes');
+        setMessage({ type: 'error', text: error || 'Failed to save shapes.' });
       }
-    } catch (error) {
-      console.error('Error saving shapes:', error);
+    } catch (err) {
+      console.error('Error saving shapes:', err);
       setMessage({ type: 'error', text: 'Failed to save shapes. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -565,10 +569,21 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
           {/* Step 2: Drawing Instructions */}
           {activeStep === 1 && selectedCountry && (
             <Box sx={{ mb: 2 }}>
+                            {sectionName && (
+                <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 'bold', fontSize: '20px' }} gutterBottom>
+                  📍 Mapping Section: {sectionName}
+                </Typography>
+              )}
               <Typography variant="subtitle2" gutterBottom>
                 Step 2: Draw Boundaries in {selectedCountry.name}
                 {sectionName && ` for ${sectionName}`}
               </Typography>
+
+              {!sectionName && (
+                <Typography variant="body2" sx={{ color: 'warning.main' }} gutterBottom>
+                  ⚠️ No section name provided
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Use the drawing tools on the right side of the map to create boundaries.
               </Typography>

@@ -51,7 +51,6 @@ export const navItems = [
     items: [
       { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
-      { key: 'Map', title: 'Map Mining Section ', href:  paths.dashboard.map, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
     
     ],

@@ -66,6 +66,7 @@ class AuthClient {
             globalThis.location.href = '/auth/signin';
             return { success: false, error: 'Authentication required' };
         }
+
         try {
             // Map frontend fields to backend expected fields
             const requestData = {
@@ -4421,11 +4422,10 @@ cooperativename: string;
       };
     }
   }
-
   /**
-   * Assign a mill to an ore
-   * @param oreId The ID of the ore to assign
-   * @param millId The ID of the mill to assign
+   * Assign a mill to an ore transport
+   * @param oreId The ID of the ore transport
+   * @param millId The ID of the mill
    * @param millName The name of the mill
    * @param millType The type of the mill
    * @param millLocation The location of the mill
@@ -4594,7 +4594,7 @@ cooperativename: string;
       return { success: true };
     } catch (error) {
       console.error('Error updating sample results for ore transport:', error);
-      return { 
+      return {  
         success: false, 
         error: error instanceof Error ? error.message : String(error) 
       };
