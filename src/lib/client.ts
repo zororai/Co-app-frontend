@@ -1,54 +1,58 @@
-export interface BoundaryPoint {
+export interface SectionPoint {
   x: number;
   y: number;
 }
 
-export interface BoundaryShapeCoordinates {
+export interface SectionCoordinatesEntry {
   type: string;
-  coordinates: BoundaryPoint[];
+  points: SectionPoint[];
 }
 
-export interface BoundaryGeometryPayload {
-  id: string;
+export interface SectionMappingPayload {
   name: string;
-  geometry: {
-    points: BoundaryPoint[];
-    coordinates: BoundaryShapeCoordinates[];
-    type: string;
-  };
+  type: string; // e.g., 'collection'
+  area: string; // formatted string: "PolygonPoints: N | Area: X m²"
+  country: string;
+  countryCoordinates: string; // e.g., "lat,lng"
+  coordinates: SectionCoordinatesEntry[];
 }
 
 export const apiClient = {
   async saveBoundaryGeometry(
     sectionName: string,
-    shapes: Array<{ type: string; coordinates: Array<{ lat: number; lng: number }> }>
+    shapes: Array<{ type: string; coordinates: Array<{ lat: number; lng: number }> }>,
+    areaString: string,
+    countryName: string,
+    countryCoordinates: string
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       if (!sectionName) return { success: false, error: 'Section name is required' };
 
-      const points = shapes.flatMap((s) => s.coordinates.map((c) => ({ x: c.lng, y: c.lat })));
-      const coordinates = shapes.map((s) => ({
+      const coordinates: SectionCoordinatesEntry[] = shapes.map((s) => ({
         type: s.type,
-        coordinates: s.coordinates.map((c) => ({ x: c.lng, y: c.lat })),
+        points: s.coordinates.map((c) => ({ x: c.lng, y: c.lat })),
       }));
 
-      const payload: BoundaryGeometryPayload = {
-        id: String(Date.now()),
+      const payload: SectionMappingPayload = {
         name: sectionName,
-        geometry: {
-          points,
-          coordinates,
-          type: 'collection',
-        },
+        type: 'collection',
+        area: areaString,
+        country: countryName,
+        countryCoordinates,
+        coordinates,
       };
 
-      const response = await fetch('http://localhost:1000/api/boundaries/', {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('custom-auth-token') : null;
+
+      const response = await fetch('http://localhost:1000/api/sectionmapping', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           accept: '*/*',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
 
       if (!response.ok) {

@@ -11,10 +11,15 @@ import {
   TextField,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 
 import { apiClient } from '../../../lib/client';
+import { useRouter } from 'next/navigation';
 
 interface Coordinate {
   lat: number;
@@ -166,6 +171,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
   React.useEffect(() => {
     console.log('LeafletMap - received sectionName:', sectionName);
   }, [sectionName]);
+  const router = useRouter();
   
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -176,6 +182,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successDialogText, setSuccessDialogText] = useState('');
   const [activeStep, setActiveStep] = useState(0);
 
   const steps = [
@@ -418,6 +426,10 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
       setMessage({ type: 'error', text: 'Section name is required before saving.' });
       return;
     }
+    if (!selectedCountry) {
+      setMessage({ type: 'error', text: 'Please select a country before saving.' });
+      return;
+    }
     if (drawnShapes.length === 0) {
       setMessage({ type: 'error', text: 'No shapes to save!' });
       return;
@@ -427,13 +439,33 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
     setMessage(null);
 
     try {
-      const { success, error } = await apiClient.saveBoundaryGeometry(sectionName, drawnShapes.map(s => ({
-        type: s.type,
-        coordinates: s.coordinates,
-      })));
+      // Build area string like: "1. PolygonPoints: 3 | Area: 9225326.38 m²; 2. ..."
+      const areaString = drawnShapes
+        .map((s, idx) => {
+          const points = s.coordinates.length;
+          const areaVal = typeof s.area === 'number' ? s.area : 0;
+          return `${idx + 1}. PolygonPoints: ${points} | Area: ${areaVal.toFixed(2)} m²`;
+        })
+        .join('; ');
+
+      const countryName = selectedCountry.name;
+      const countryCoordinates = `${selectedCountry.lat},${selectedCountry.lng}`;
+
+      const { success, error } = await apiClient.saveBoundaryGeometry(
+        sectionName,
+        drawnShapes.map(s => ({
+          type: s.type,
+          coordinates: s.coordinates,
+        })),
+        areaString,
+        countryName,
+        countryCoordinates
+      );
 
       if (success) {
-        setMessage({ type: 'success', text: `Saved ${drawnShapes.length} shape(s) for section "${sectionName}".` });
+        // Show success dialog and redirect on confirm
+        setSuccessDialogText(`Saved ${drawnShapes.length} shape(s) for section "${sectionName}".`);
+        setSuccessDialogOpen(true);
       } else {
         setMessage({ type: 'error', text: error || 'Failed to save shapes.' });
       }
@@ -687,6 +719,25 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
               {message.text}
             </Alert>
           )}
+
+          {/* Success Dialog */}
+          <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)}>
+            <DialogTitle>Success</DialogTitle>
+            <DialogContent>
+              <Typography variant="body2">{successDialogText}</Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                variant="contained"
+                onClick={() => {
+                  setSuccessDialogOpen(false);
+                  router.push('/dashboard/sectionmapping');
+                }}
+              >
+                Continue
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           {/* Shape Details */}
           {drawnShapes.length > 0 && (
