@@ -18,8 +18,10 @@ import {
   DialogActions
 } from '@mui/material';
 
-import { apiClient } from '../../../lib/client';
-import { useRouter } from 'next/navigation';
+
+import { useRouter, useSearchParams } from 'next/navigation';
+import { authClient } from '@/lib/auth/client';
+
 
 interface Coordinate {
   lat: number;
@@ -164,14 +166,18 @@ const COUNTRIES: Country[] = [
 
 interface LeafletMapProps {
   sectionName?: string;
+  sectionId?: string; // optional: used to activate the section after saving
 }
 
-const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
+const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName, sectionId }) => {
   // Debug logging
   React.useEffect(() => {
     console.log('LeafletMap - received sectionName:', sectionName);
   }, [sectionName]);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const effectiveSectionId = searchParams?.get('id') || sectionId || '';
+  const effectiveSectionName = searchParams?.get('sectionName') || sectionName || '';
   
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -421,61 +427,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
     }
   };
 
-  const saveShapesToEndpoint = async () => {
-    if (!sectionName || sectionName.trim() === '') {
-      setMessage({ type: 'error', text: 'Section name is required before saving.' });
-      return;
-    }
-    if (!selectedCountry) {
-      setMessage({ type: 'error', text: 'Please select a country before saving.' });
-      return;
-    }
-    if (drawnShapes.length === 0) {
-      setMessage({ type: 'error', text: 'No shapes to save!' });
-      return;
-    }
 
-    setIsLoading(true);
-    setMessage(null);
-
-    try {
-      // Build area string like: "1. PolygonPoints: 3 | Area: 9225326.38 m²; 2. ..."
-      const areaString = drawnShapes
-        .map((s, idx) => {
-          const points = s.coordinates.length;
-          const areaVal = typeof s.area === 'number' ? s.area : 0;
-          return `${idx + 1}. PolygonPoints: ${points} | Area: ${areaVal.toFixed(2)} m²`;
-        })
-        .join('; ');
-
-      const countryName = selectedCountry.name;
-      const countryCoordinates = `${selectedCountry.lat},${selectedCountry.lng}`;
-
-      const { success, error } = await apiClient.saveBoundaryGeometry(
-        sectionName,
-        drawnShapes.map(s => ({
-          type: s.type,
-          coordinates: s.coordinates,
-        })),
-        areaString,
-        countryName,
-        countryCoordinates
-      );
-
-      if (success) {
-        // Show success dialog and redirect on confirm
-        setSuccessDialogText(`Saved ${drawnShapes.length} shape(s) for section "${sectionName}".`);
-        setSuccessDialogOpen(true);
-      } else {
-        setMessage({ type: 'error', text: error || 'Failed to save shapes.' });
-      }
-    } catch (err) {
-      console.error('Error saving shapes:', err);
-      setMessage({ type: 'error', text: 'Failed to save shapes. Please try again.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const clearAllShapes = () => {
     if (drawnItemsRef.current) {
@@ -497,6 +449,69 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
     // Reset map to world view
     if (mapInstanceRef.current) {
       mapInstanceRef.current.setView([0, 0], 2);
+    }
+  };
+
+  // Save coordinates handler
+  const handleSaveCoordinates = async () => {
+    if (!selectedCountry) {
+      setMessage({ type: 'error', text: 'Please select a country first.' });
+      return;
+    }
+    if (!effectiveSectionName) {
+      setMessage({ type: 'error', text: 'Section name is missing.' });
+      return;
+    }
+    if (drawnShapes.length === 0) {
+      setMessage({ type: 'error', text: 'Please draw at least one shape.' });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Build payload per API sample
+      const payload = {
+        name: effectiveSectionName,
+        type: drawnShapes[0]?.type || 'polygon',
+        area: 'Area: 1270395.31 m²',
+        country: selectedCountry.name,
+        countryCoordinates: `${selectedCountry.lat},${selectedCountry.lng}`,
+        coordinates: drawnShapes.map((shape) => ({
+          type: shape.type,
+          points: shape.coordinates.map((c) => ({ x: c.lng, y: c.lat }))
+        }))
+      };
+
+      const saveRes = await authClient.saveSectionMapping(payload as any);
+      if (!saveRes.success) {
+        setMessage({ type: 'error', text: saveRes.error || 'Failed to save section mapping.' });
+        setIsLoading(false);
+        return;
+      }
+
+      // Optionally activate section if id is provided (prefer URL id)
+      if (effectiveSectionId) {
+        const actRes = await authClient.activateSection(effectiveSectionId);
+        if (!actRes.success) {
+          setMessage({ type: 'error', text: actRes.error || 'Saved, but failed to activate section.' });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      setSuccessDialogText('Section mapping saved successfully.' + (effectiveSectionId ? ' Section activated.' : ''));
+      setSuccessDialogOpen(true);
+      setMessage({ type: 'success', text: 'Saved successfully.' });
+      setIsLoading(false);
+      // Auto-redirect shortly after showing success dialog
+      setTimeout(() => {
+        router.push('/dashboard/sectionmapping');
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Unexpected error occurred while saving.' });
+      setIsLoading(false);
     }
   };
 
@@ -672,7 +687,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
               <Button
                 variant="contained"
                 color="primary"
-                onClick={saveShapesToEndpoint}
+                onClick={handleSaveCoordinates}
                 disabled={isLoading || drawnShapes.length === 0}
                 startIcon={isLoading ? <CircularProgress size={20} /> : null}
               >
@@ -725,6 +740,9 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName }) => {
             <DialogTitle>Success</DialogTitle>
             <DialogContent>
               <Typography variant="body2">{successDialogText}</Typography>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                Redirecting to Section Mapping...
+              </Typography>
             </DialogContent>
             <DialogActions>
               <Button

@@ -88,8 +88,9 @@ export function CustomersTable({
       
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
+      const matchesActive = row.active !== true; // hide records that are active
 
-      return matchesSearch && matchesStatus && matchesPosition;
+      return matchesSearch && matchesStatus && matchesPosition && matchesActive;
     });
     return sortNewestFirst(filtered);
   }, [rows, filters]);

@@ -115,6 +115,82 @@ class AuthClient {
     }
 
     /**
+     * Save section mapping (coordinates and metadata)
+     * POST /api/sectionmapping
+     */
+    async saveSectionMapping(payload: {
+      name: string;
+      type: string;
+      area: string;
+      country: string;
+      countryCoordinates: string;
+      coordinates: Array<{
+        type: string;
+        points: Array<{ x: number; y: number }>
+      }>;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
+      try {
+        const response = await fetch('/api/sectionmapping', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error saving section mapping:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Activate a section by ID
+     * PUT /api/sections/{id}/activate
+     */
+    async activateSection(sectionId: string | number): Promise<{ success: boolean; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
+      try {
+        const safeId = encodeURIComponent(String(sectionId).trim());
+        const response = await fetch(`/api/sections/${safeId}/activate`, {
+          method: 'PUT',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
+        }
+        return { success: true };
+      } catch (error) {
+        console.error(`Error activating section with ID ${sectionId}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved production loans
      * GET /api/production-loan/approved
      */
@@ -3127,40 +3203,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   /**
    * Create a new incident
    */
-  async createIncident(incidentData: CreateIncidentData): Promise<{ success: boolean; error?: string }> {
-    const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return { success: false, error: 'Authentication required' };
-    }
 
-    try {
-      const response = await fetch('https://coappapi.commapp.online/api/incident-management/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(incidentData),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to create incident');
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error('Error creating incident:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create incident' 
-      };
-    }
-  }
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
@@ -4600,33 +4643,8 @@ cooperativename: string;
       };
     }
   }
+
 }
-
-export interface ResetPasswordParams {
-  token: string;
-  password: string;
-}
-
-export interface IncidentParticipant {
-  name: string;
-  surname: string;
-  nationalId: string;
-  address: string;
-}
-
-export interface CreateIncidentData {
-  incidentTitle: string;
-  severityLevel: string;
-  reportedBy: string;
-  description: string;
-  attachments: string[];
-  location: string;
-  participants: IncidentParticipant[];
-  incidentType: string;
-  dateReported: string;
-}
-
-
 export const authClient = new AuthClient();
 
 // Usage example after login:

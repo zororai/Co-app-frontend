@@ -79,7 +79,7 @@ export function CustomersTable({
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
-    position: 'all'
+    position: 'all',
   });
 
   // Filter the rows based on search and filters, then sort newest first
@@ -92,8 +92,9 @@ export function CustomersTable({
       
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
+      const matchesActive = row.active !== false; // hide records explicitly marked inactive
 
-      return matchesSearch && matchesStatus && matchesPosition;
+      return matchesSearch && matchesStatus && matchesPosition && matchesActive;
     });
     return sortNewestFirst(filtered);
   }, [rows, filters]);
@@ -101,7 +102,6 @@ export function CustomersTable({
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
   }, [filteredRows]);
-
   // Initialize selection handling
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
