@@ -92,9 +92,8 @@ export function CustomersTable({
       
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
-      const matchesActive = row.active !== false; // hide records explicitly marked inactive
 
-      return matchesSearch && matchesStatus && matchesPosition && matchesActive;
+      return matchesSearch && matchesStatus && matchesPosition;
     });
     return sortNewestFirst(filtered);
   }, [rows, filters]);
@@ -212,6 +211,15 @@ export function CustomersTable({
     // Call parent's refresh function if provided
     if (onRefresh) {
       onRefresh();
+    } else {
+      // Fallback: force a full reload to ensure latest data is shown
+      try {
+        if (typeof window !== 'undefined') {
+          globalThis.location.reload();
+        }
+      } catch (e) {
+        // swallow
+      }
     }
   }, [onRefresh]);
 

@@ -261,6 +261,12 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         permissions: permissions // Send the permissions object as is
       });
       
+      // If API indicates failure, show error and stop (do not advance/refresh)
+      if (!response || response.success === false) {
+        setError(response?.error || 'Failed to create user');
+        return;
+      }
+      
       // Generate temporary password and reference number
       const tempPass = Math.random().toString(36).slice(-8);
       setTempPassword(tempPass);

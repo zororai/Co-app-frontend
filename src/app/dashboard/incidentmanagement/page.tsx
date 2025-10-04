@@ -6,29 +6,26 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
-import dayjs from 'dayjs';
+import { WarningCircle, Bell } from '@phosphor-icons/react/dist/ssr';
 import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/incidentmanagement/incidentmanagement';
+import { CustomersTable } from '@/components/dashboard/incidentmanagement/incidentmanagement-table';
 import type { Customer } from '@/components/dashboard/incidentmanagement/incidentmanagement';
-
-
-
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
 import {AddOreDialog } from '@/components/dashboard/incidentmanagement/add-incident-dialog';
 
@@ -39,18 +36,43 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
-  const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  // Quick action dialog state
+  const [qaOpen, setQaOpen] = React.useState(false);
+  const [qaType, setQaType] = React.useState<'emergency' | 'safety' | 'notice'>('notice');
+  const [qaTitle, setQaTitle] = React.useState('');
+  const [qaMessage, setQaMessage] = React.useState('');
+
+  const openQuickAction = (type: 'emergency' | 'safety' | 'notice') => {
+    setQaType(type);
+    if (type === 'emergency') {
+      setQaTitle('Emergency Alert');
+      setQaMessage('');
+    } else if (type === 'safety') {
+      setQaTitle('Safety Reminder');
+      setQaMessage('');
+    } else {
+      setQaTitle('General Notice');
+      setQaMessage('');
+    }
+    setQaOpen(true);
+  };
+
+  const closeQuickAction = () => setQaOpen(false);
+  const sendQuickAction = () => {
+    // TODO: integrate backend send if needed
+    console.log('Quick Action Sent:', { type: qaType, title: qaTitle, message: qaMessage });
+    setQaOpen(false);
+  };
 
   // Function to refresh the miner data
   const refreshData = React.useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
   }, []);
 
-  // Filter customers by selected tab/status
+  // Filter customers (only Pending tab remains)
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
-  const pushedBackCustomers = customers.filter(c => c.status === 'PUSHED_BACK');
-  const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
-  const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
 
   // Export table data as CSV
   const handleExport = () => {
@@ -58,28 +80,8 @@ export default function Page(): React.JSX.Element {
       'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
 
-    // Determine which customers to export based on the current tab
-    let filteredCustomers: Customer[] = [];
-    switch (tab) {
-    case 'PENDING': {
-    filteredCustomers = pendingCustomers;
-    break;
-    }
-    case 'PUSHED_BACK': {
-    filteredCustomers = pushedBackCustomers;
-    break;
-    }
-    case 'REJECTED': {
-    filteredCustomers = rejectedCustomers;
-    break;
-    }
-    case 'APPROVED': { {
-    filteredCustomers = approvedCustomers;
-    // No default
-    }
-    break;
-    }
-    }
+    // Only Pending is supported
+    const filteredCustomers: Customer[] = pendingCustomers;
 
     const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
 
@@ -165,19 +167,135 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Ore registration </Typography>
-          <Tabs
-            value={tab}
-            onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
-          >
-            <Tab label="Pending" value="PENDING" />
-            <Tab label="Pushed Back" value="PUSHED_BACK" />
-            <Tab label="Rejected" value="REJECTED" />
-            <Tab label="Approved" value="APPROVED" />
-          </Tabs>
+          <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
+            <Typography variant="h4" sx={{ flexGrow: 1 }}>Incident Report Register</Typography>
+            <Button
+              variant="contained"
+              startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+              onClick={() => setDialogOpen(true)}
+              sx={{
+                bgcolor: '#5f4bfa',
+                color: '#fff',
+                '&:hover': { bgcolor: '#4aa856' }
+              }}
+            >
+              Record Incident
+            </Button>
+          </Stack>
+          {/* Incident dialog */}
+          <AddOreDialog 
+            open={dialogOpen}
+            onClose={() => setDialogOpen(false)}
+            onRefresh={refreshData}
+          />
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <WarningCircle size={22} color="#ef4444" />
+                  <Typography variant="h6" sx={{ color: '#ffffff' }}>Emergency Alert</Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
+                  Send immediate emergency notification
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
+                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
+                  bgcolor: '#d32f2f',
+                  '&:hover': { bgcolor: '#b71c1c' },
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontWeight: 600
+                }} onClick={() => openQuickAction('emergency')}>
+                  Emergency Alert
+                </Button>
+              </CardActions>
+            </Card>
+
+            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <WarningCircle size={22} color="#f59e0b" />
+                  <Typography variant="h6" sx={{ color: '#ffffff' }}>Safety Reminder</Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
+                  Send safety protocol reminder
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
+                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
+                  bgcolor: '#b77906',
+                  '&:hover': { bgcolor: '#975a04' },
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontWeight: 600
+                }} onClick={() => openQuickAction('safety')}>
+                  Safety Reminder
+                </Button>
+              </CardActions>
+            </Card>
+
+            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
+              <CardContent>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Bell size={22} color="#3b82f6" />
+                  <Typography variant="h6" sx={{ color: '#ffffff' }}>General Notice</Typography>
+                </Stack>
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
+                  Send general information notice
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
+                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
+                  bgcolor: '#2563eb',
+                  '&:hover': { bgcolor: '#1d4ed8' },
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontWeight: 600
+                }} onClick={() => openQuickAction('notice')}>
+                  General Notice
+                </Button>
+              </CardActions>
+            </Card>
+          </Stack>
+          {/* Quick Action Dialog */}
+          <Dialog open={qaOpen} onClose={closeQuickAction} maxWidth="sm" fullWidth>
+            <DialogTitle>{qaTitle}</DialogTitle>
+            <DialogContent>
+              <Stack spacing={2} sx={{ mt: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Title"
+                  value={qaTitle}
+                  onChange={(e) => setQaTitle(e.target.value)}
+                />
+                <TextField
+                  fullWidth
+                  label={qaType === 'safety' ? 'Reminder' : qaType === 'emergency' ? 'Alert' : 'Notice'}
+                  value={qaMessage}
+                  onChange={(e) => setQaMessage(e.target.value)}
+                  multiline
+                  rows={4}
+                  placeholder={qaType === 'safety' ? 'Enter safety reminder...' : qaType === 'emergency' ? 'Enter emergency details...' : 'Enter general notice...'}
+                />
+              </Stack>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeQuickAction} color="inherit">Cancel</Button>
+              <Button
+                variant="contained"
+                onClick={sendQuickAction}
+                sx={{
+                  bgcolor: qaType === 'emergency' ? '#d32f2f' : qaType === 'safety' ? '#b77906' : '#2563eb',
+                  '&:hover': { bgcolor: qaType === 'emergency' ? '#b71c1c' : qaType === 'safety' ? '#975a04' : '#1d4ed8' }
+                }}
+              >
+                Send {qaType === 'safety' ? 'Reminder' : qaType === 'emergency' ? 'Alert' : 'Notice'}
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button
               color="inherit"
@@ -197,12 +315,12 @@ export default function Page(): React.JSX.Element {
             </Button>
           </Stack>
         </Stack>
-        {/* Top-right action button with menu */}
-        <TopRightActions onRefresh={refreshData} />
       </Stack>
 
-    
-  
+      {/* Incidents table */}
+      <Box sx={{ mt: 2 }}>
+        <CustomersTable rowsPerPage={5} onRefresh={refreshData} />
+      </Box>
 
     </Stack>
   );
@@ -212,50 +330,3 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
   return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
 
-// Actions component placed at top-right
-function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
-
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const open = Boolean(anchorEl);
-
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => setAnchorEl(null);
-  const go = (path: string) => {
-    globalThis.location.href = path;
-  };
-
-  const handleOpenDialog = () => {
-    setDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-
-  return (
-    <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
-          color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
-        }}
-      >
-        Record Incident
-      </Button>
-      
-      {/* Add Ore Dialog */}
-      <AddOreDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-        onRefresh={onRefresh}
-      />
-    </React.Fragment>
-  );
-}

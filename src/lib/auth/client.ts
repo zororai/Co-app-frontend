@@ -262,24 +262,22 @@ class AuthClient {
    
     /**
      * Create a new ore transport record
-     * @param oreData The ore transport data to create
-     * @returns A promise that resolves to the response data or error
      */
     async createOre(oreData: {
         shaftNumbers: string;
         weight: string | number;
         numberOfBags: string | number;
         transportStatus: string;
-        selectedTransportdriver: string;
-        selectedTransport: string;
+        selectedTransportdriver?: string;
+        selectedTransport?: string;
         originLocation?: string;
         destination?: string;
         notes?: string;
         transportReason?: string;
         processStatus?: string;
         location?: string;
-        date: string;
-        time: {
+        date?: string;
+        time?: {
             hour: number;
             minute: number;
             second: number;
@@ -338,6 +336,56 @@ class AuthClient {
                 error: error instanceof Error ? error.message : 'Unknown error occurred' 
             };
         }
+    }
+
+    /**
+     * Create an incident record
+     * POST http://localhost:1000/api/incident-management/create
+     */
+    async createIncident(payload: {
+      incidentTitle: string;
+      severityLevel: string;
+      reportedBy: string;
+      description: string;
+      type?: string; // backend expects 'type'
+      incidentType?: string; // allow caller to pass frontend name, we will map
+      attachments: string[]; // base64 or URLs
+      location: string;
+      participants: Array<{ name: string; surname: string; nationalId: string; address: string }>
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      try {
+        const token = localStorage.getItem('custom-auth-token');
+        const requestData = {
+          incidentTitle: payload.incidentTitle,
+          severityLevel: payload.severityLevel,
+          reportedBy: payload.reportedBy,
+          description: payload.description,
+          type: payload.type ?? payload.incidentType ?? '',
+          attachments: payload.attachments ?? [],
+          location: payload.location,
+          participants: payload.participants ?? []
+        };
+
+        const response = await fetch('http://localhost:1000/api/incident-management/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(requestData),
+        });
+
+        if (!response.ok) {
+          const errText = await response.text().catch(() => '');
+          return { success: false, error: errText || `Request failed (${response.status})` };
+        }
+        const data = await response.json().catch(() => ({}));
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error creating incident record:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
     }
 
     /**

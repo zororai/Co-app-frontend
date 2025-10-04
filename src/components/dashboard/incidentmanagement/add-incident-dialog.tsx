@@ -53,6 +53,8 @@ interface AddUserDialogProps {
 // Define steps for the stepper
 const steps = [
   'Incident Details',
+  'Attachments',
+  'Persons Involved',
   'Review & Submit',
   'Confirmation'
 ];
@@ -319,14 +321,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         ).then(attachments => attachments.filter(Boolean));
       };
       
-      // Create incident data object with all fields
+      // Create incident data object for external API
       const incidentData = {
         incidentTitle: formData.incidentTitle,
-        incidentType: formData.incidentType,
+        type: formData.incidentType,
         severityLevel: formData.severityLevel,
         location: formData.location,
         reportedBy: formData.reportedBy,
-        dateReported: formData.dateReported ? formData.dateReported.toISOString() : new Date().toISOString(),
         description: formData.description,
         attachments: await processAttachments(formData.attachments),
         participants: formData.persons
@@ -561,11 +562,32 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   margin="normal"
                 />
               </Grid>
-              
+            </Grid>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                sx={{ 
+                  bgcolor: '#121212', 
+                  color: 'white',
+                  '&:hover': { bgcolor: '#333' } 
+                }}
+              >
+                Next: Attachments
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* Step 1: Attachments */}
+        {activeStep === 1 && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Attachments (Photos/Documents)
+            </Typography>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Attachments (Photos/Documents)
-                </Typography>
                 <input
                   accept="image/*,.pdf,.doc,.docx"
                   style={{ display: 'none' }}
@@ -579,7 +601,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                     Add Files
                   </Button>
                 </label>
-                
+
                 {formData.attachments.length > 0 && (
                   <Box sx={{ mt: 2 }}>
                     {formData.attachments.map((file, index) => (
@@ -603,36 +625,60 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   </Box>
                 )}
               </Grid>
-              
+            </Grid>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={handleBack}
+                sx={{ borderColor: '#121212', color: '#121212' }}
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                sx={{ 
+                  bgcolor: '#121212', 
+                  color: 'white',
+                  '&:hover': { bgcolor: '#333' } 
+                }}
+              >
+                Next: Persons Involved
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* Step 2: Persons Involved */}
+        {activeStep === 2 && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Persons Involved
+            </Typography>
+            <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Divider sx={{ my: 3 }} />
-                <Typography variant="h6" gutterBottom>
-                  Persons Involved
-                </Typography>
-                
                 {formData.persons.map((person, index) => (
                   <Box key={person.id} sx={{ 
                     p: 2, 
                     mb: 2, 
                     border: '1px solid #e0e0e0', 
-                    borderRadius: 1,
-                    position: 'relative'
+                    borderRadius: 1
                   }}>
-                    {index > 0 && (
-                      <IconButton
-                        size="small"
-                        onClick={() => removePerson(index)}
-                        sx={{
-                          position: 'absolute',
-                          right: 8,
-                          top: 8,
-                          color: 'error.main'
-                        }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="subtitle2">Person {index + 1}</Typography>
+                      {index > 0 && (
+                        <IconButton
+                          size="small"
+                          onClick={() => removePerson(index)}
+                          sx={{ color: 'error.main' }}
+                          aria-label="Remove person"
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
+
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6} md={3}>
                         <TextField
@@ -688,15 +734,22 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 </Button>
               </Grid>
             </Grid>
-            
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={handleBack}
+                sx={{ borderColor: '#121212', color: '#121212' }}
+              >
+                Back
+              </Button>
               <Button
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
                   bgcolor: '#121212', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: '#333' },
                 }}
               >
                 Next: Review
@@ -707,8 +760,8 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
         {/* Step 3: Additional Details - Removed as per requirements */}
         
-        {/* Step 2: Review */}
-        {activeStep === 1 && (
+        {/* Step 3: Review */}
+        {activeStep === 3 && (
           <Box>
             <Typography variant="h6" gutterBottom>
               Review Incident Details
@@ -859,15 +912,15 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
 
         {/* Confirmation Step */}
-        {activeStep === 2 && (
+        {activeStep === 4 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
               <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
-                Ore Created Successfully!
+                Incident Created Successfully!
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                The ore record has been created. Here is the reference number:
+                The incident record has been created. Here is the reference number:
               </Typography>
             </Box>
             
