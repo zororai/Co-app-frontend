@@ -74,11 +74,7 @@ export function MainNav(): React.JSX.Element {
             
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-            <Tooltip title="Contacts">
-              <IconButton>
-                <UsersIcon /> 
-              </IconButton>
-            </Tooltip>
+         
             <Tooltip title="Notifications">
               <Badge badgeContent={notificationCount} color="error" max={99}>
                 <IconButton onClick={() => setNotificationsOpen(true)}>

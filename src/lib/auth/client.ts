@@ -2820,6 +2820,20 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     
     localStorage.setItem('custom-auth-token', token);
 
+    // Store user details from response
+    if (data.user) {
+      localStorage.setItem('custom-auth-user', JSON.stringify(data.user));
+    } else {
+      // If user object not in response, store available data
+      const userData = {
+        email: data.email || email,
+        name: data.name || data.username || '',
+        role: data.role || '',
+        id: data.id || data.userId || '',
+      };
+      localStorage.setItem('custom-auth-user', JSON.stringify(userData));
+    }
+
     return { token };
   } catch {
     // Try to parse the error message if it's from the API
@@ -2828,6 +2842,21 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     return { error: 'Invalid email or password' };
   }
 }
+
+  /**
+   * Get current logged-in user details from localStorage
+   */
+  getUser(): { email: string; name: string; role: string; id: string } | null {
+    try {
+      const userStr = localStorage.getItem('custom-auth-user');
+      if (!userStr) return null;
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      return null;
+    }
+  }
+
     async fetchCompanies(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
