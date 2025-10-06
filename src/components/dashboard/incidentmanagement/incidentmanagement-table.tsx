@@ -114,6 +114,7 @@ export function CustomersTable({
   // Fetch incidents from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
     const fetchIncidentsData = async () => {
+      console.log('Fetching incidents data... (refreshTrigger:', refreshTrigger, ')');
       setLoading(true);
       setError('');
       try {

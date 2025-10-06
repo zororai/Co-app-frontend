@@ -339,7 +339,7 @@ export default function Page(): React.JSX.Element {
 
       {/* Incidents table */}
       <Box sx={{ mt: 2 }}>
-        <CustomersTable rowsPerPage={5} onRefresh={refreshData} />
+        <CustomersTable key={refreshKey} rowsPerPage={5} onRefresh={refreshData} />
       </Box>
 
     </Stack>

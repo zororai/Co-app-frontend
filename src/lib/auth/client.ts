@@ -192,6 +192,68 @@ class AuthClient {
     }
 
     /**
+     * Fetch all notifications
+     * GET /api/notifications
+     */
+    async fetchNotifications(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const response = await fetch('/api/notifications', {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch notifications' };
+        }
+        const data = await response.json();
+        return { success: true, data: Array.isArray(data) ? data : [] };
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Fetch notification by ID
+     * GET /api/notifications/{id}
+     */
+    async fetchNotificationById(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const response = await fetch(`/api/notifications/${id}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch notification details' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching notification details:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */

@@ -298,7 +298,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       });
       
       if (Object.keys(errors).length > 0) {
+        console.log('Validation errors found:', errors);
         setValidationErrors(errors);
+        console.log('ValidationErrors state updated to:', errors);
         setActiveStep(0); // Go back to first step to show errors
         setError('Please fill in all required fields');
         setIsSubmitting(false);
@@ -440,6 +442,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   
         </Typography>
         
+        {/* Error Message */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+        
         {/* Stepper */}
         <Box sx={{ width: '100%', mb: 4 }}>
           <Stepper activeStep={activeStep} alternativeLabel>
@@ -457,6 +466,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
             <Typography variant="h6" gutterBottom>
               Incident Details
             </Typography>
+            {console.log('Rendering Step 0, validationErrors:', validationErrors)}
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField

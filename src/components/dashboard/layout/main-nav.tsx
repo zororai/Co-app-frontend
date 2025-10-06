@@ -16,11 +16,34 @@ import { usePopover } from '@/hooks/use-popover';
 
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
+import { NotificationsDialog } from './notifications-dialog';
+import { authClient } from '@/lib/auth/client';
 
 export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const [notificationsOpen, setNotificationsOpen] = React.useState<boolean>(false);
+  const [notificationCount, setNotificationCount] = React.useState<number>(0);
 
   const userPopover = usePopover<HTMLDivElement>();
+
+  // Fetch notification count
+  const fetchNotificationCount = React.useCallback(async () => {
+    const response = await authClient.fetchNotifications();
+    if (response.success && response.data) {
+      setNotificationCount(response.data.length);
+    }
+  }, []);
+
+  // Fetch notification count on mount
+  React.useEffect(() => {
+    fetchNotificationCount();
+  }, [fetchNotificationCount]);
+
+  // Handle closing notifications dialog and refresh count
+  const handleCloseNotifications = React.useCallback(() => {
+    setNotificationsOpen(false);
+    fetchNotificationCount(); // Refresh count when dialog closes
+  }, [fetchNotificationCount]);
 
   return (
     <React.Fragment>
@@ -57,8 +80,8 @@ export function MainNav(): React.JSX.Element {
               </IconButton>
             </Tooltip>
             <Tooltip title="Notifications">
-              <Badge badgeContent={4} color="success" variant="dot">
-                <IconButton>
+              <Badge badgeContent={notificationCount} color="error" max={99}>
+                <IconButton onClick={() => setNotificationsOpen(true)}>
                   <BellIcon />
                 </IconButton>
               </Badge>
@@ -73,6 +96,7 @@ export function MainNav(): React.JSX.Element {
         </Stack>
       </Box>
       <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} />
+      <NotificationsDialog open={notificationsOpen} onClose={handleCloseNotifications} />
       <MobileNav
         onClose={() => {
           setOpenNav(false);
