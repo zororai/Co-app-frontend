@@ -65,14 +65,13 @@ export interface CustomersTableProps {
 
 export function CustomersTable({
   count = 0,
-  rows = [],
   page = 0,
   rowsPerPage = 0,
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
-  // State to store users fetched from API
-  const [users, setUsers] = React.useState<any[]>([]);
+  // State to store incidents fetched from API
+  const [incidents, setIncidents] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
@@ -81,61 +80,65 @@ export function CustomersTable({
     position: 'all'
   });
 
-  // Filter the users based on search, filters, and tab status
+  // Filter the incidents based on search and optional filters
   const filteredRows = React.useMemo(() => {
-    const filtered = users.filter(user => {
-      const matchesSearch = filters.search === '' || 
-        Object.values(user).some(value => 
+    const filtered = incidents.filter((it) => {
+      const matchesSearch =
+        filters.search === '' ||
+        Object.values(it).some((value) =>
           String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
-      
-      // Apply dropdown filter
-      const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
-      const matchesPosition = filters.position === 'all' || user.position === filters.position;
-      
-      // Apply tab filter if provided
-      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
 
-      return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
+      const matchesStatus = filters.status === 'all' || it.status === filters.status;
+      // Position filter is not applicable to incidents; keep for UI consistency
+      const matchesPosition = filters.position === 'all';
+
+      // If a parent tab statusFilter is provided, respect it when incidents carry a status
+      const matchesTabStatus = statusFilter === null || it.status === statusFilter;
+
+      return matchesSearch && matchesStatus && matchesPosition && matchesTabStatus;
     });
     return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+  }, [incidents, filters, statusFilter]);
 
-  const rowIds = React.useMemo(() => {
-    return filteredRows.map((customer) => customer.id);
-  }, [filteredRows]);
-
-  // Initialize selection handling
+  // Selection helpers
+  const rowIds = React.useMemo(() => filteredRows.map((row) => row.id), [filteredRows]);
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
-
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < filteredRows.length;
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
-
-  const handleRedirect = (path: string) => {
-    globalThis.location.href = path;
-  };
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
-  // Fetch drivers from API when component mounts or refreshTrigger changes
+  // Fetch incidents from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
-    const fetchDriverData = async () => {
+    const fetchIncidentsData = async () => {
       setLoading(true);
       setError('');
       try {
-        const fetchedDrivers = await authClient.fetchDrivers();
-        setUsers(fetchedDrivers);
+        const fetched = await authClient.fetchIncidents();
+        const normalized = Array.isArray(fetched)
+          ? fetched.map((it: any, idx: number) => ({
+              id: String(it.id ?? it.incidentId ?? idx),
+              title: it.title,
+              type: it.type,
+              severity: it.severity,
+              location: it.location,
+              reportedBy: it.reportedBy,
+              ...it,
+            }))
+          : [];
+        setIncidents(normalized);
       } catch (error_) {
-        console.error('Error fetching drivers:', error_);
-        setError('Failed to load drivers. Please try again.');
+        console.error('Error fetching incidents:', error_);
+        setError('Failed to load incidents. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDriverData();
+    fetchIncidentsData();
   }, [refreshTrigger]);
 
  
@@ -163,7 +166,7 @@ export function CustomersTable({
       {/* Loading and Error States */}
       {loading && (
         <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>Loading users...</Typography>
+          <Typography>Loading incidents...</Typography>
         </Box>
       )}
       
@@ -218,7 +221,7 @@ export function CustomersTable({
             </Box>
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search incidents..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               style={{
@@ -303,22 +306,20 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Driver Name</TableCell>
-              <TableCell>License Number</TableCell>
-              <TableCell>License Class</TableCell>
-              <TableCell>License Expiry</TableCell>
-              <TableCell>Contact</TableCell>
-              <TableCell>Experience (Years)</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Make Discussion</TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Severity</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Reported By</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No users found
+                    No incidents found
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -339,38 +340,12 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
-                  <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseClass || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseExpiryDate || 'N/A'}</TableCell>
-                  <TableCell>{row.phoneNumber || row.emailAddress || 'N/A'}</TableCell>
-                  <TableCell>{row.yearsOfExperience || '0'}</TableCell>
+                  <TableCell>{row.incidentTitle || row.title || 'N/A'}</TableCell>
+                  <TableCell>{row.type || row.incidentType || 'N/A'}</TableCell>
+                  <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
+                  <TableCell>{row.location || row.address || 'N/A'}</TableCell>
+                  <TableCell>{row.reportedBy || `${row.firstName || ''} ${row.lastName || ''}`.trim() || row.emailAddress || 'N/A'}</TableCell>
                   <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'PENDING' ? '#FFF9C4' : 
-                        row.status === 'REJECTED' ? '#FFCDD2' : 
-                        row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'PENDING' ? '#F57F17' : 
-                        row.status === 'REJECTED' ? '#B71C1C' : 
-                        row.status === 'PUSHED_BACK' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status || 'PENDING'}
-                    </Box>
-                  </TableCell>
-                  
-            
-              
-                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
                         onClick={() => {

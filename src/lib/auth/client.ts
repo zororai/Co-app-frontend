@@ -115,6 +115,38 @@ class AuthClient {
     }
 
     /**
+     * Fetch all incidents
+     * GET http://localhost:1000/api/incident-management/all
+     */
+    async fetchIncidents(): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return [];
+      }
+      try {
+        const response = await fetch('/api/incident-management/all', {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          globalThis.location.href = '/auth/sign-in';
+          return [];
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error fetching incidents:', error);
+        return [];
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */
@@ -353,8 +385,13 @@ class AuthClient {
       location: string;
       participants: Array<{ name: string; surname: string; nationalId: string; address: string }>
     }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return { success: false, error: 'Authentication required' };
+      }
       try {
-        const token = localStorage.getItem('custom-auth-token');
         const requestData = {
           incidentTitle: payload.incidentTitle,
           severityLevel: payload.severityLevel,
@@ -366,21 +403,22 @@ class AuthClient {
           participants: payload.participants ?? []
         };
 
-        const response = await fetch('http://localhost:1000/api/incident-management/create', {
+        const response = await fetch('/api/incident-management/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(requestData),
+          credentials: 'include',
         });
 
         if (!response.ok) {
-          const errText = await response.text().catch(() => '');
-          return { success: false, error: errText || `Request failed (${response.status})` };
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required' };
         }
-        const data = await response.json().catch(() => ({}));
+        const data = await response.json();
         return { success: true, data };
       } catch (error) {
         console.error('Error creating incident record:', error);
@@ -2984,7 +3022,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
         try {
-            const response = await fetch('http://localhost:1000/api/sections/status/deactivated-pending', {
+            const response = await fetch('/api/sections/status/deactivated-pending', {
                 method: 'GET',
                 headers: {
                     'Accept': '*/*',

@@ -49,6 +49,7 @@ export const navItems = [
     title: 'Site Management',
     icon: 'tools',
     items: [
+      { key: 'Safety Check', title: 'Section Safety Check ', href:  paths.dashboard.safetycheck, icon: 'id-card'},
       { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
