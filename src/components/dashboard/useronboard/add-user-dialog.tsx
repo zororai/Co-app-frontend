@@ -268,7 +268,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       }
       
       // Generate temporary password and reference number
-      const tempPass = Math.random().toString(36).slice(-8);
+      const tempPass = '0000';
       setTempPassword(tempPass);
       setReferenceNumber(`USR-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`);
       setSuccess(true);

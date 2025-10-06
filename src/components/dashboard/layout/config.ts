@@ -1,7 +1,7 @@
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 
-export const navItems = [
+export const allNavItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
   { key: 'user-admin-onboarding', 
@@ -99,3 +99,46 @@ export const navItems = [
     ],
   },
 ] satisfies NavItemConfig[];
+
+/**
+ * Filter navigation items based on user permissions
+ * @param permissions - Array of permission strings (e.g., ['user-admin-onboarding', 'useronboard'])
+ * @returns Filtered navigation items that the user has access to
+ */
+export function getNavItemsForUser(permissions: string[]): NavItemConfig[] {
+  // Always include dashboard
+  const permissionSet = new Set(['dashboard', ...permissions]);
+  
+  const filtered: NavItemConfig[] = [];
+  
+  for (const item of allNavItems) {
+    // Check if user has permission for this top-level item
+    if (!permissionSet.has(item.key)) {
+      continue;
+    }
+
+    // If item has sub-items, filter them based on permissions
+    if (item.items) {
+      const filteredSubItems = item.items.filter((subItem) => 
+        permissionSet.has(subItem.key)
+      );
+
+      // Only include parent if it has accessible sub-items
+      if (filteredSubItems.length === 0) {
+        continue;
+      }
+
+      filtered.push({
+        ...item,
+        items: filteredSubItems,
+      });
+    } else {
+      filtered.push(item);
+    }
+  }
+  
+  return filtered;
+}
+
+// Default export for backward compatibility (all items)
+export const navItems = allNavItems;

@@ -6,8 +6,8 @@ export function isNavItemActive({
   href,
   matcher,
   pathname,
-}: Pick<NavItemConfig, 'disabled' | 'external' | 'href' | 'matcher'> & { pathname: string }): boolean {
-  if (disabled || !href || external) {
+}: Pick<NavItemConfig, 'disabled' | 'external' | 'href' | 'matcher'> & { pathname: string | null }): boolean {
+  if (disabled || !href || external || !pathname) {
     return false;
   }
 

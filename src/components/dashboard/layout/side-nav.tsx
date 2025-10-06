@@ -16,15 +16,64 @@ import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
 import { PageLoader } from '@/components/core/page-loader';
+import { authClient } from '@/lib/auth/client';
 
-import { navItems } from './config';
+import { navItems, allNavItems, getNavItemsForUser } from './config';
 import { navIcons } from './nav-icons';
 // No need to import height from @mui/system
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
   const [loading, setLoading] = React.useState(false);
+  const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
   const prevPathRef = React.useRef<string | null>(null);
+
+  // Fetch user permissions and filter navigation items
+  React.useEffect(() => {
+    const fetchPermissions = async () => {
+      try {
+        // Get logged-in user's email
+        const { data: userData } = await authClient.getUser();
+        if (!userData || !userData.email) {
+          console.log('⚠️ No user email found, hiding all nav items');
+          setFilteredNavItems([]);
+          return;
+        }
+
+        // Fetch permissions for the user
+        console.log('🔍 Fetching permissions for:', userData.email);
+        const response = await authClient.fetchUserPermissions(userData.email);
+        
+        console.log('📦 API Response:', { 
+          success: response.success, 
+          hasData: !!response.data,
+          error: response.error,
+          rawData: response.data 
+        });
+        
+        if (response.success && response.data?.permissions) {
+          // Extract permission strings from the response
+          const permissionKeys = response.data.permissions.map((p) => p.permission);
+          console.log('✅ User permissions:', permissionKeys);
+
+          // Filter navigation items based on permissions
+          const filtered = getNavItemsForUser(permissionKeys);
+          console.log('📋 Filtered nav items:', filtered.map(item => ({ key: item.key, title: item.title, hasSubItems: !!item.items })));
+          setFilteredNavItems(filtered);
+        } else {
+          // User not found or no permissions - hide all nav items
+          console.log('⚠️ User not found or no permissions - hiding all nav items');
+          setFilteredNavItems([]);
+        }
+      } catch (error) {
+        // Log errors and hide nav items for security
+        console.warn('Error fetching permissions:', error);
+        setFilteredNavItems([]);
+      }
+    };
+
+    fetchPermissions();
+  }, []);
 
   // Hide loader after route change completes
   React.useEffect(() => {
@@ -127,7 +176,7 @@ export function SideNav(): React.JSX.Element {
         }}
       >
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {renderNavItems({ pathname, items: navItems, onNavigateStart: () => setLoading(true) })}
+          {renderNavItems({ pathname, items: filteredNavItems, onNavigateStart: () => setLoading(true) })}
         </Stack>
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
@@ -136,11 +185,11 @@ export function SideNav(): React.JSX.Element {
   );
 }
 
-function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: NavItemConfig[]; pathname: string; onNavigateStart?: () => void }): React.JSX.Element {
+function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: NavItemConfig[]; pathname: string | null; onNavigateStart?: () => void }): React.JSX.Element {
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
 
-    acc.push(<NavItem key={key} pathname={pathname} onNavigateStart={onNavigateStart} {...item} />);
+    acc.push(<NavItem key={key} pathname={pathname ?? ''} onNavigateStart={onNavigateStart} {...item} />);
 
     return acc;
   }, []);
@@ -153,7 +202,7 @@ function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: Nav
 }
 
 interface NavItemProps extends Omit<NavItemConfig, 'items'> {
-  pathname: string;
+  pathname: string | null;
   items?: NavItemConfig[];
   onNavigateStart?: () => void;
 }

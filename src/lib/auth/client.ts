@@ -254,6 +254,38 @@ class AuthClient {
     }
 
     /**
+     * Fetch user permissions by email
+     * GET /api/users/by-email?email={email}
+     */
+    async fetchUserPermissions(email: string): Promise<{ success: boolean; data?: { permissions: Array<{ permission: string }> }; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const encodedEmail = encodeURIComponent(email);
+        const response = await fetch(`/api/users/by-email?email=${encodedEmail}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch user permissions' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching user permissions:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */
