@@ -300,6 +300,8 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       if (Object.keys(errors).length > 0) {
         setValidationErrors(errors);
         setActiveStep(0); // Go back to first step to show errors
+        setError('Please fill in all required fields');
+        setIsSubmitting(false);
         return;
       }
       
@@ -324,11 +326,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       // Create incident data object for external API
       const incidentData = {
         incidentTitle: formData.incidentTitle,
-        type: formData.incidentType,
         severityLevel: formData.severityLevel,
         location: formData.location,
         reportedBy: formData.reportedBy,
         description: formData.description,
+        status: 'OPEN', // Default status for new incidents
         attachments: await processAttachments(formData.attachments),
         participants: formData.persons
           .filter(p => p.name.trim() || p.surname.trim() || p.nationalId.trim() || p.address.trim())
@@ -356,8 +358,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       // Move to success step
       setActiveStep(steps.length - 1);
       
+      // Clear validation errors on success
+      setValidationErrors({});
+      
       // Refresh parent component if callback provided
       if (onRefresh) {
+        console.log('Calling onRefresh to update table');
         onRefresh();
       }
     } catch (error_) {
@@ -461,11 +467,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('incidentTitle')}
                   placeholder="Enter incident title"
                   margin="normal"
+                  error={!!validationErrors.incidentTitle}
+                  helperText={validationErrors.incidentTitle}
                 />
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" error={!!validationErrors.incidentType}>
                   <InputLabel id="incident-type-label">Incident Type</InputLabel>
                   <Select
                     labelId="incident-type-label"
@@ -480,11 +488,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                       </MenuItem>
                     ))}
                   </Select>
+                  {validationErrors.incidentType && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                      {validationErrors.incidentType}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" error={!!validationErrors.severityLevel}>
                   <InputLabel id="severity-level-label">Severity Level</InputLabel>
                   <Select
                     labelId="severity-level-label"
@@ -499,11 +512,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                       </MenuItem>
                     ))}
                   </Select>
+                  {validationErrors.severityLevel && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                      {validationErrors.severityLevel}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" error={!!validationErrors.location}>
                   <InputLabel id="location-label">Location</InputLabel>
                   <Select
                     labelId="location-label"
@@ -518,17 +536,25 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                       </MenuItem>
                     ))}
                   </Select>
+                  {validationErrors.location && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
+                      {validationErrors.location}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
               
               <Grid item xs={12} sm={6}>
                 <TextField
+                  required
                   fullWidth
                   label="Reported By"
                   value={formData.reportedBy}
                   onChange={handleChange('reportedBy')}
                   placeholder="Enter reporter's name"
                   margin="normal"
+                  error={!!validationErrors.reportedBy}
+                  helperText={validationErrors.reportedBy}
                 />
               </Grid>
               

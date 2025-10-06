@@ -60,10 +60,30 @@ export default function Page(): React.JSX.Element {
   };
 
   const closeQuickAction = () => setQaOpen(false);
-  const sendQuickAction = () => {
-    // TODO: integrate backend send if needed
-    console.log('Quick Action Sent:', { type: qaType, title: qaTitle, message: qaMessage });
-    setQaOpen(false);
+  const sendQuickAction = async () => {
+    console.log('sendQuickAction called');
+    console.log('Current qaType:', qaType);
+    // Map qaType to the required type string for backend
+    const typeString = qaType === 'emergency' ? 'Emergency Alert' : qaType === 'safety' ? 'Safety Reminder' : 'General Notice';
+    console.log('Mapped typeString:', typeString);
+    const notificationPayload = {
+      title: qaTitle || typeString,
+      type: typeString,
+      message: qaMessage,
+    };
+    console.log('Full notification payload:', notificationPayload);
+    try {
+      const res = await authClient.sendNotification(notificationPayload);
+      console.log('Notification response:', res);
+      if (!res.success) {
+        console.error('Failed to send notification', res.error);
+      } else {
+        console.log('Notification sent successfully!');
+        setQaOpen(false);
+      }
+    } catch (err) {
+      console.error('Error sending notification:', err);
+    }
   };
 
   // Function to refresh the miner data

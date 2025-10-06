@@ -147,6 +147,51 @@ class AuthClient {
     }
 
     /**
+     * Send a notification alert
+     * POST /api/notifications
+     */
+    async sendNotification(payload: { title: string; type: string; message: string }): Promise<{ success: boolean; error?: string; data?: any }> {
+      const token = localStorage.getItem('custom-auth-token');
+      console.log('Token check in sendNotification:', token ? 'Token exists' : 'No token found');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const requestBody = {
+          title: payload.title,
+          type: payload.type,
+          message: payload.message,
+        };
+        console.log('Attempting to POST to /api/notifications with payload:', payload);
+        console.log('Request body being sent:', requestBody);
+        console.log('JSON stringified body:', JSON.stringify(requestBody));
+        const response = await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+          credentials: 'include',
+        });
+        console.log('Response status:', response.status, response.statusText);
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.error('Server error:', errorText);
+          return { success: false, error: errorText || 'Request failed' };
+        }
+        const data = await response.json().catch(() => ({}));
+        console.log('Notification sent successfully, response:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error sending notification:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */
@@ -379,8 +424,7 @@ class AuthClient {
       severityLevel: string;
       reportedBy: string;
       description: string;
-      type?: string; // backend expects 'type'
-      incidentType?: string; // allow caller to pass frontend name, we will map
+      status?: string; // backend expects 'status'
       attachments: string[]; // base64 or URLs
       location: string;
       participants: Array<{ name: string; surname: string; nationalId: string; address: string }>
@@ -388,8 +432,7 @@ class AuthClient {
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
         console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
+        return { success: false, error: 'Authentication required. Please sign in first.' };
       }
       try {
         const requestData = {
@@ -397,12 +440,13 @@ class AuthClient {
           severityLevel: payload.severityLevel,
           reportedBy: payload.reportedBy,
           description: payload.description,
-          type: payload.type ?? payload.incidentType ?? '',
           attachments: payload.attachments ?? [],
           location: payload.location,
+          status: payload.status ?? 'OPEN',
           participants: payload.participants ?? []
         };
 
+        console.log('Creating incident with data:', requestData);
         const response = await fetch('/api/incident-management/create', {
           method: 'POST',
           headers: {
@@ -414,11 +458,14 @@ class AuthClient {
           credentials: 'include',
         });
 
+        console.log('Create incident response status:', response.status);
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
-          return { success: false, error: 'Authentication required' };
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error('Create incident error:', errorText);
+          return { success: false, error: errorText || 'Failed to create incident' };
         }
         const data = await response.json();
+        console.log('Incident created successfully:', data);
         return { success: true, data };
       } catch (error) {
         console.error('Error creating incident record:', error);
