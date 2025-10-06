@@ -2842,21 +2842,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     return { error: 'Invalid email or password' };
   }
 }
-
-  /**
-   * Get current logged-in user details from localStorage
-   */
-  getUser(): { email: string; name: string; role: string; id: string } | null {
-    try {
-      const userStr = localStorage.getItem('custom-auth-user');
-      if (!userStr) return null;
-      return JSON.parse(userStr);
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      return null;
-    }
-  }
-
     async fetchCompanies(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -3447,11 +3432,30 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { data: null };
     }
 
+    // Get user details from localStorage
+    try {
+      const userStr = localStorage.getItem('custom-auth-user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        // Map to User type
+        const mappedUser: User = {
+          id: userData.id || '1',
+          name: userData.name || '',
+          avatar: userData.avatar || '/assets/avatar.png',
+          email: userData.email || '',
+        };
+        return { data: mappedUser };
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+    }
+
     return { data: user };
   }
 
   async signOut(): Promise<{ error?: string }> {
     localStorage.removeItem('custom-auth-token');
+    localStorage.removeItem('custom-auth-user');
     return {};
   }
 

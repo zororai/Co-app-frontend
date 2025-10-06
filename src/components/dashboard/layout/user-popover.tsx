@@ -25,8 +25,24 @@ export interface UserPopoverProps {
 
 export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
   const { checkSession } = useUser();
+  const [userName, setUserName] = React.useState<string>('User');
+  const [userEmail, setUserEmail] = React.useState<string>('');
 
   const router = useRouter();
+
+  // Fetch user details when popover opens
+  React.useEffect(() => {
+    if (open) {
+      const fetchUserDetails = async () => {
+        const { data } = await authClient.getUser();
+        if (data) {
+          setUserName(data.name || 'User');
+          setUserEmail(data.email || '');
+        }
+      };
+      fetchUserDetails();
+    }
+  }, [open]);
 
   const handleSignOut = React.useCallback(async (): Promise<void> => {
     try {
@@ -57,9 +73,9 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       slotProps={{ paper: { sx: { width: '240px' } } }}
     >
       <Box sx={{ p: '16px 20px ' }}>
-        <Typography variant="subtitle1">User</Typography>
+        <Typography variant="subtitle1">{userName}</Typography>
         <Typography color="text.secondary" variant="body2">
-          user@commstack.co.uk
+          {userEmail}
         </Typography>
       </Box>
       <Divider />
