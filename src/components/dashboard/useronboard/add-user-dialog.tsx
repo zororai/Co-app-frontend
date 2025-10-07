@@ -382,9 +382,6 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         >
           Add New User
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: '0.95rem' }}>
-          Create a new user account with role-based access permissions.
-        </Typography>
         <IconButton 
           edge="end" 
           onClick={handleClose} 
@@ -400,52 +397,79 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 3, px: 3 }}>
-       
+      {/* Fixed Stepper Section */}
+      <Box sx={{ 
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        backgroundColor: '#fafafa',
+        borderBottom: '1px solid #e0e0e0',
+        px: 3,
+        py: 2
+      }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: '0.95rem' }}>
+          Create a new user account with role-based access permissions.
+        </Typography>
         
-        {/* Stepper */}
-        <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper 
-            activeStep={activeStep} 
-            alternativeLabel
-            sx={{
-              '& .MuiStepIcon-root': {
-                color: '#d1d5db',
-                '&.Mui-active': {
-                  color: 'rgb(5, 5, 68)',
-                },
-                '&.Mui-completed': {
-                  color: 'rgb(5, 5, 68)',
-                },
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': {
+                color: 'rgb(5, 5, 68)',
               },
-              '& .MuiStepLabel-label': {
-                '&.Mui-active': {
-                  color: 'rgb(5, 5, 68)',
-                  fontWeight: 600,
-                },
-                '&.Mui-completed': {
-                  color: 'rgb(5, 5, 68)',
-                  fontWeight: 500,
-                },
+              '&.Mui-completed': {
+                color: 'rgb(5, 5, 68)',
               },
-              '& .MuiStepConnector-line': {
-                borderColor: '#d1d5db',
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': {
+                color: 'rgb(5, 5, 68)',
+                fontWeight: 600,
               },
-              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-                borderColor: 'rgb(5, 5, 68)',
+              '&.Mui-completed': {
+                color: 'rgb(5, 5, 68)',
+                fontWeight: 500,
               },
-              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-                borderColor: 'rgb(5, 5, 68)',
-              },
-            }}
-          >
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
+            },
+            '& .MuiStepConnector-line': {
+              borderColor: '#d1d5db',
+            },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+              borderColor: 'rgb(5, 5, 68)',
+            },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+              borderColor: 'rgb(5, 5, 68)',
+            },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      {/* Scrollable Content Area */}
+      <DialogContent sx={{ 
+        px: 3,
+        py: 2,
+        maxHeight: '60vh',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '6px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#f1f1f1',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: 'rgb(5, 5, 68)',
+          borderRadius: '3px',
+        },
+      }}>
 
         {/* Step content */}
         {activeStep === 0 && (
@@ -560,19 +584,6 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                 </LocalizationProvider>
               </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
           </Box>
         )}
 
@@ -1114,22 +1125,88 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               </ul>
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Close
-              </Button>
-            </Box>
           </Box>
         )}
       </DialogContent>
+
+      {/* Fixed Button Section */}
+      <Box sx={{ 
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: '#fafafa',
+        borderTop: '1px solid #e0e0e0',
+        px: 3,
+        py: 2,
+        display: 'flex',
+        justifyContent: activeStep === 0 ? 'flex-end' : 'space-between',
+        alignItems: 'center'
+      }}>
+        {activeStep > 0 && activeStep < 5 && (
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            sx={{ 
+              borderColor: 'rgb(5, 5, 68)', 
+              color: 'rgb(5, 5, 68)',
+              '&:hover': {
+                borderColor: 'rgb(5, 5, 68)',
+                backgroundColor: 'rgba(5, 5, 68, 0.04)'
+              }
+            }}
+          >
+            Back
+          </Button>
+        )}
+        
+        {activeStep < 4 && (
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            sx={{ 
+              bgcolor: 'rgb(5, 5, 68)', 
+              color: 'white',
+              '&:hover': { 
+                bgcolor: 'rgba(5, 5, 68, 0.8)' 
+              } 
+            }}
+          >
+            Next
+          </Button>
+        )}
+        
+        {activeStep === 4 && (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading}
+            sx={{ 
+              bgcolor: 'rgb(5, 5, 68)', 
+              color: 'white',
+              '&:hover': { 
+                bgcolor: 'rgba(5, 5, 68, 0.8)' 
+              } 
+            }}
+          >
+            {loading ? 'Creating User...' : 'Create User'}
+          </Button>
+        )}
+        
+        {activeStep === 5 && (
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            sx={{ 
+              bgcolor: 'rgb(5, 5, 68)', 
+              color: 'white',
+              '&:hover': { 
+                bgcolor: 'rgba(5, 5, 68, 0.8)' 
+              } 
+            }}
+          >
+            Close
+          </Button>
+        )}
+      </Box>
     </Dialog>
   );
 }

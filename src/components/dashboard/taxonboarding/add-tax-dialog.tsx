@@ -127,27 +127,30 @@ const Grid = ({
 export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
   const [formData, setFormData] = React.useState<TaxFormData>({
-    taxType: '',
-    taxRate: '',
-    location: '',
-    description: ''
-  });
-  
-  const [errors, setErrors] = React.useState<TaxFormErrors>({
-    taxType: false,
-    taxRate: false,
-    location: false
-  });
-  
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState(false);
-  const [taxReference, setTaxReference] = React.useState('');
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   
-  // Reset form when dialog is closed
-  React.useEffect(() => {
+  // Custom TextField styling
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': {
+        color: 'rgb(5, 5, 68)',
+      },
+    },
     if (!open) {
       setActiveStep(0);
       setFormData({
