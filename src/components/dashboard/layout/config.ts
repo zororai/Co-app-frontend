@@ -40,7 +40,8 @@ export const allNavItems = [
       { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
       { key: 'ore-transport', title: 'Ore to Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
       { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
-      
+     
+   
    
     ],
   },
@@ -49,11 +50,13 @@ export const allNavItems = [
     title: 'Site Management',
     icon: 'tools',
     items: [
-      { key: 'Safety Check', title: 'Section Safety Check ', href:  paths.dashboard.safetycheck, icon: 'id-card'},
+
       { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
+      { key: 'issuepenalty', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-    
+      { key: 'incidentresolve', title: 'Incident Resolve ', href: paths.dashboard.resolveissue, icon: 'id-card' },
+      
     ],
   },
   {

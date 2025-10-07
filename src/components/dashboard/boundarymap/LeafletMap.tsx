@@ -505,9 +505,7 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName, sectionId }) => {
       setMessage({ type: 'success', text: 'Saved successfully.' });
       setIsLoading(false);
       // Auto-redirect shortly after showing success dialog
-      setTimeout(() => {
-        router.push('/dashboard/sectionmapping');
-      }, 1500);
+   
     } catch (err) {
       console.error(err);
       setMessage({ type: 'error', text: 'Unexpected error occurred while saving.' });
@@ -640,7 +638,8 @@ const LeafletMap: React.FC<LeafletMapProps> = ({ sectionName, sectionId }) => {
             </Box>
           )}
 
-          {/* Step 3: Save Coordinates */}
+          {/* Step 3: 
+           Coordinates */}
           {activeStep === 2 && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="subtitle2" gutterBottom>
