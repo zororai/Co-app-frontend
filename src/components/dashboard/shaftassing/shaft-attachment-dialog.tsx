@@ -12,7 +12,11 @@ import {
   Typography,
   Alert,
   MenuItem,
+  IconButton,
+  CircularProgress,
 } from '@mui/material';
+import MapIcon from '@mui/icons-material/Map';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -35,6 +39,8 @@ interface ShaftAssignmentData {
   endContractDate: string;
   status: string;
   reason: string;
+  latitude: number;
+  longitude: number;
 }
 
 export function ShaftAttachmentDialog({
@@ -51,9 +57,15 @@ export function ShaftAttachmentDialog({
     endContractDate: '',
     status: 'PENDING',
     reason: '',
+    latitude: 0,
+    longitude: 0,
   });
   const [sections, setSections] = React.useState<any[]>([]);
   const [sectionsLoading, setSectionsLoading] = React.useState(false);
+  const [locationLoading, setLocationLoading] = React.useState(false);
+  const [locationError, setLocationError] = React.useState<string | null>(null);
+  const [locationAccuracy, setLocationAccuracy] = React.useState<number | null>(null);
+  const [manualEntry, setManualEntry] = React.useState(false);
   
   React.useEffect(() => {
     if (open) {
@@ -148,6 +160,131 @@ export function ShaftAttachmentDialog({
     }
   };
 
+  const handleCaptureLocation = () => {
+    console.log('🗺️ Starting high-accuracy location capture...');
+    setLocationLoading(true);
+    setLocationError(null);
+    setLocationAccuracy(null);
+
+    if (!navigator.geolocation) {
+      console.error('❌ Geolocation not supported');
+      setLocationError('Geolocation is not supported by your browser');
+      setLocationLoading(false);
+      return;
+    }
+
+    console.log('📍 Requesting high-accuracy GPS location...');
+    
+    // Try to get the most accurate position by watching position changes
+    let bestAccuracy = Infinity;
+    let bestPosition: GeolocationPosition | null = null;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        attempts++;
+        const accuracy = position.coords.accuracy;
+        
+        console.log(`📡 Position update #${attempts}:`, { 
+          latitude: position.coords.latitude, 
+          longitude: position.coords.longitude, 
+          accuracy: `${accuracy.toFixed(2)}m` 
+        });
+
+        // Keep the most accurate reading
+        if (accuracy < bestAccuracy) {
+          bestAccuracy = accuracy;
+          bestPosition = position;
+        }
+
+        // If we got good accuracy (< 10m) or reached max attempts, use it
+        if (accuracy < 10 || attempts >= maxAttempts) {
+          navigator.geolocation.clearWatch(watchId);
+          
+          if (bestPosition) {
+            const { latitude, longitude } = bestPosition.coords;
+            const lat = parseFloat(latitude.toFixed(7)); // 7 decimals = ~1cm precision
+            const lng = parseFloat(longitude.toFixed(7));
+            
+            console.log('✅ Best location selected:', { 
+              latitude: lat, 
+              longitude: lng, 
+              accuracy: `±${bestAccuracy.toFixed(2)}m`,
+              attempts 
+            });
+            
+            setFormData(prev => ({
+              ...prev,
+              latitude: lat,
+              longitude: lng,
+            }));
+            setLocationAccuracy(bestAccuracy);
+            
+            if (bestAccuracy > 100) {
+              setLocationError(`⚠️ Very poor accuracy (±${bestAccuracy.toFixed(0)}m). GPS not available - using WiFi/IP location. Please go outdoors or enter coordinates manually.`);
+            } else if (bestAccuracy > 50) {
+              setLocationError(`⚠️ Moderate accuracy (±${bestAccuracy.toFixed(0)}m). For better accuracy, move outdoors with clear sky view.`);
+            } else if (bestAccuracy > 20) {
+              setLocationError(`Fair accuracy (±${bestAccuracy.toFixed(0)}m). Consider moving outdoors for better precision.`);
+            }
+          }
+          setLocationLoading(false);
+        }
+      },
+      (error) => {
+        navigator.geolocation.clearWatch(watchId);
+        console.error('❌ Location capture failed:', error);
+        let errorMessage = 'Unable to retrieve your location';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+            console.error('Permission denied by user');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information is unavailable. Please check your device GPS settings.';
+            console.error('Position unavailable');
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out. Please try again.';
+            console.error('Request timed out');
+            break;
+        }
+        setLocationError(errorMessage);
+        setLocationLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      }
+    );
+
+    // Fallback timeout to stop after max time
+    setTimeout(() => {
+      navigator.geolocation.clearWatch(watchId);
+      if (bestPosition && locationLoading) {
+        const { latitude, longitude } = bestPosition.coords;
+        const lat = parseFloat(latitude.toFixed(7));
+        const lng = parseFloat(longitude.toFixed(7));
+        
+        console.log('⏱️ Timeout reached, using best available position:', { 
+          latitude: lat, 
+          longitude: lng, 
+          accuracy: `±${bestAccuracy.toFixed(2)}m` 
+        });
+        
+        setFormData(prev => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng,
+        }));
+        setLocationAccuracy(bestAccuracy);
+        setLocationLoading(false);
+      }
+    }, 20000);
+  };
+
   const handleClose = () => {
     setFormData({
       sectionName: '',
@@ -158,11 +295,15 @@ export function ShaftAttachmentDialog({
       endContractDate: '',
       status: 'PENDING',
       reason: '',
+      latitude: 0,
+      longitude: 0,
     });
     setStartDate(null);
     setEndDate(null);
     setError(null);
     setSuccess(false);
+    setLocationError(null);
+    setLocationAccuracy(null);
     onClose();
   };
 
@@ -355,6 +496,113 @@ export function ShaftAttachmentDialog({
                     },
                   }}
                 />
+              </Box>
+
+              {/* Location Capture Section */}
+              <Box sx={{ mt: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    Shaft Location
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={locationLoading ? <CircularProgress size={20} color="inherit" /> : <MyLocationIcon />}
+                    onClick={handleCaptureLocation}
+                    disabled={loading || locationLoading || manualEntry}
+                    sx={{
+                      bgcolor: '#10b981',
+                      '&:hover': {
+                        bgcolor: '#059669',
+                      },
+                    }}
+                  >
+                    {locationLoading ? 'Capturing...' : 'Auto-Capture GPS'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setManualEntry(!manualEntry);
+                      if (!manualEntry) {
+                        setLocationError(null);
+                        setLocationAccuracy(null);
+                      }
+                    }}
+                    disabled={loading || locationLoading}
+                    sx={{ borderColor: '#6366f1', color: '#6366f1' }}
+                  >
+                    {manualEntry ? 'Switch to GPS' : 'Enter Manually'}
+                  </Button>
+                </Box>
+
+                {locationError && (
+                  <Alert severity={locationAccuracy && locationAccuracy < 50 ? "info" : "warning"} sx={{ mb: 2 }}>
+                    {locationError}
+                  </Alert>
+                )}
+
+                {locationAccuracy && locationAccuracy < 20 && (
+                  <Alert severity="success" sx={{ mb: 2 }}>
+                    ✓ High accuracy location captured (±{locationAccuracy.toFixed(1)}m precision)
+                  </Alert>
+                )}
+
+                {locationAccuracy && locationAccuracy > 100 && (
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    ❌ GPS not available! Accuracy: ±{locationAccuracy.toFixed(0)}m. Please go outdoors or enter coordinates manually.
+                  </Alert>
+                )}
+
+                <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
+                  <TextField
+                    fullWidth
+                    label="Latitude"
+                    value={formData.latitude !== 0 ? formData.latitude : ''}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (!isNaN(value)) {
+                        setFormData(prev => ({ ...prev, latitude: value }));
+                      } else if (e.target.value === '' || e.target.value === '-') {
+                        setFormData(prev => ({ ...prev, latitude: 0 }));
+                      }
+                    }}
+                    InputProps={{ 
+                      readOnly: !manualEntry,
+                      sx: formData.latitude !== 0 ? { color: manualEntry ? 'primary.main' : 'success.main', fontWeight: 600 } : {}
+                    }}
+                    placeholder={manualEntry ? "e.g., -26.123456" : "Click button to capture"}
+                    helperText={manualEntry ? 'Enter latitude (e.g., -26.123456)' : (formData.latitude !== 0 ? (locationAccuracy ? `✓ GPS captured (±${locationAccuracy.toFixed(1)}m)` : '✓ GPS captured') : 'Automatically captured from GPS')}
+                    type={manualEntry ? "number" : "text"}
+                    inputProps={manualEntry ? { step: "0.000001" } : {}}
+                  />
+
+                  <TextField
+                    fullWidth
+                    label="Longitude"
+                    value={formData.longitude !== 0 ? formData.longitude : ''}
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value);
+                      if (!isNaN(value)) {
+                        setFormData(prev => ({ ...prev, longitude: value }));
+                      } else if (e.target.value === '' || e.target.value === '-') {
+                        setFormData(prev => ({ ...prev, longitude: 0 }));
+                      }
+                    }}
+                    InputProps={{ 
+                      readOnly: !manualEntry,
+                      sx: formData.longitude !== 0 ? { color: manualEntry ? 'primary.main' : 'success.main', fontWeight: 600 } : {}
+                    }}
+                    placeholder={manualEntry ? "e.g., 28.123456" : "Click button to capture"}
+                    helperText={manualEntry ? 'Enter longitude (e.g., 28.123456)' : (formData.longitude !== 0 ? '✓ GPS captured' : 'Automatically captured from GPS')}
+                    type={manualEntry ? "number" : "text"}
+                    inputProps={manualEntry ? { step: "0.000001" } : {}}
+                  />
+                </Box>
+                
+                {manualEntry && (
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    💡 Tip: Use Google Maps to find exact coordinates. Right-click on the location and select the coordinates to copy them.
+                  </Alert>
+                )}
               </Box>
             </Box>
           </Box>

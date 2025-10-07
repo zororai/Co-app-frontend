@@ -312,14 +312,14 @@ export function CustomersTable({
               <TableCell>Severity</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Reported By</TableCell>
-              <TableCell>Satatus</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
                     No incidents found
                   </Typography>
