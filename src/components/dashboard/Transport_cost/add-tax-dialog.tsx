@@ -279,21 +279,51 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      {/* Fixed Stepper Section */}
+      <Box sx={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        backgroundColor: '#fafafa',
+        borderBottom: '1px solid #e0e0e0',
+        px: 3,
+        py: 2
+      }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Create a new transport cost entry.
         </Typography>
-        
-        {/* Stepper */}
-        <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
+        <Stepper activeStep={activeStep} alternativeLabel sx={{
+          '& .MuiStepIcon-root': {
+            color: '#d1d5db',
+            '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+            '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+          },
+          '& .MuiStepLabel-label': {
+            '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+            '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+          },
+          '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+          '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+          '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+        }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      {/* Scrollable Content Area */}
+      <DialogContent sx={{
+        px: 3,
+        py: 2,
+        maxHeight: '60vh',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+      }}>
 
         {/* Step 1: Transport Cost Information */}
         {activeStep === 0 && (
@@ -364,19 +394,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
               </Grid>
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom bar */}
           </Box>
         )}
 
@@ -424,27 +442,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
               </Alert>
             )}
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                {isSubmitting ? 'Creating...' : 'Create Transport Cost'}
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom bar */}
           </Box>
         )}
 
@@ -508,22 +506,68 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
               </ul>
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Close
-              </Button>
-            </Box>
+            {/* Close button moved to fixed bottom bar */}
           </Box>
         )}
       </DialogContent>
+
+      {/* Fixed Button Section */}
+      <Box sx={{
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: '#fafafa',
+        borderTop: '1px solid #e0e0e0',
+        px: 3,
+        py: 2,
+        display: 'flex',
+        justifyContent: activeStep === 0 ? 'flex-end' : 'space-between',
+        alignItems: 'center',
+      }}>
+        {activeStep > 0 && activeStep < steps.length - 1 && (
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            sx={{
+              borderColor: 'rgb(5, 5, 68)',
+              color: 'rgb(5, 5, 68)',
+              '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' }
+            }}
+          >
+            Back
+          </Button>
+        )}
+
+        {activeStep < steps.length - 2 && (
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+          >
+            Next
+          </Button>
+        )}
+
+        {activeStep === steps.length - 2 && (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+          >
+            {isSubmitting ? 'Creating...' : 'Create Transport Cost'}
+          </Button>
+        )}
+
+        {activeStep === steps.length - 1 && (
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+          >
+            Close
+          </Button>
+        )}
+      </Box>
     </Dialog>
   );
 }

@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { X as CloseIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { authClient } from '@/lib/auth/client';
-import type { Customer } from './section-table';
+import type { Customer } from './selectsection-table';
 
 interface SectionDialogProps {
   open: boolean;

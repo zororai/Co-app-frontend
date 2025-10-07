@@ -298,6 +298,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
         alignItems: 'center',
         pb: 1
       }}>
