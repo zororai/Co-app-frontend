@@ -147,6 +147,37 @@ class AuthClient {
     }
 
     /**
+     * Fetch incident details by ID
+     * GET http://localhost:1000/api/incident-management/{id}
+     */
+    async fetchIncidentById(incidentId: string): Promise<any> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return null;
+      }
+      try {
+        const response = await fetch(`/api/incident-management/${incidentId}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          console.error('Failed to fetch incident details');
+          return null;
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching incident details:', error);
+        return null;
+      }
+    }
+
+    /**
      * Send a notification alert
      * POST /api/notifications
      */

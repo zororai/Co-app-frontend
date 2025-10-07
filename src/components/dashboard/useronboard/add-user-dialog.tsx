@@ -336,25 +336,49 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 1 }
+        sx: { 
+          borderRadius: 2,
+          overflow: 'hidden'
+        }
       }}
     >
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        pb: 1
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
       }}>
-        <Typography variant="h6" component="div">
+        <Typography 
+          variant="subtitle1" 
+          component="div" 
+          sx={{ 
+            fontWeight: 700,
+            letterSpacing: '0.02em'
+          }}
+        >
           Add New User
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton 
+          edge="end" 
+          onClick={handleClose} 
+          aria-label="close"
+          sx={{ 
+            color: 'white',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.1)'
+            }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      <DialogContent sx={{ pt: 3, px: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: '0.95rem' }}>
           Create a new user account with role-based access permissions.
         </Typography>
         

@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { DriverDetailsDialog } from '@/components/dashboard/driveronboardingstatus/driver-details-dialog';
+import { DriverDetailsDialog } from '@/components/dashboard/incidentmanagement/incident-details-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -312,6 +312,7 @@ export function CustomersTable({
               <TableCell>Severity</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Reported By</TableCell>
+              <TableCell>Satatus</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -346,6 +347,8 @@ export function CustomersTable({
                   <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
                   <TableCell>{row.location || row.address || 'N/A'}</TableCell>
                   <TableCell>{row.reportedBy || `${row.firstName || ''} ${row.lastName || ''}`.trim() || row.emailAddress || 'N/A'}</TableCell>
+                  <TableCell>{row.status} </TableCell>
+                 
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Button 
@@ -365,7 +368,7 @@ export function CustomersTable({
                           }
                         }}
                       >
-                        Make Discussion
+                        View details
                       </Button>
                     </Box>
                   </TableCell>
