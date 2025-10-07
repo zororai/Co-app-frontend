@@ -89,6 +89,26 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
   
+  // Custom TextField styling
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': {
+        color: 'rgb(5, 5, 68)',
+      },
+    },
+  };
+  
   // Permissions state
   const [permissions, setPermissions] = React.useState<Record<string, boolean>>({});
   
@@ -362,6 +382,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         >
           Add New User
         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: '0.95rem' }}>
+          Create a new user account with role-based access permissions.
+        </Typography>
         <IconButton 
           edge="end" 
           onClick={handleClose} 
@@ -378,13 +401,44 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       </DialogTitle>
       
       <DialogContent sx={{ pt: 3, px: 3 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontSize: '0.95rem' }}>
-          Create a new user account with role-based access permissions.
-        </Typography>
+       
         
         {/* Stepper */}
         <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 600,
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 500,
+                },
+              },
+              '& .MuiStepConnector-line': {
+                borderColor: '#d1d5db',
+              },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -411,6 +465,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   error={formSubmitted && !formData.firstName}
                   helperText={formSubmitted && !formData.firstName ? 'First name is required' : ''}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -424,6 +479,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   error={formSubmitted && !formData.lastName}
                   helperText={formSubmitted && !formData.lastName ? 'Last name is required' : ''}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -444,6 +500,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                       : 'This will be used as the username'
                   }
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -456,6 +513,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   error={!!(formSubmitted && formData.phone && !validatePhone(formData.phone))}
                   helperText={formSubmitted && formData.phone && !validatePhone(formData.phone) ? 'Invalid phone format' : ''}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -469,6 +527,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   error={formSubmitted && !formData.idNumber}
                   helperText={formSubmitted && !formData.idNumber ? 'ID Number is required' : ''}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -481,6 +540,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   margin="normal"
                   multiline
                   rows={2}
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -492,7 +552,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     slotProps={{
                       textField: {
                         fullWidth: true,
-                        margin: 'normal'
+                        margin: 'normal',
+                        sx: textFieldStyle
                       }
                     }}
                   />
@@ -541,6 +602,17 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                         ? () => <Typography color="text.secondary">Select user role</Typography> 
                         : undefined
                     }
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                    }}
                   >
                     {roleOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
@@ -571,6 +643,17 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                         ? () => <Typography color="text.secondary">Select user position</Typography> 
                         : undefined
                     }
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                    }}
                   >
                     {positionOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
@@ -600,6 +683,17 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                         ? () => <Typography color="text.secondary">Select user location</Typography> 
                         : undefined
                     }
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                    }}
                   >
                     {locationOptions.map((option) => (
                       <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
@@ -732,6 +826,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   multiline
                   rows={3}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -742,6 +837,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   onChange={handleChange('emergencyContactName')}
                   placeholder="Emergency contact person"
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -754,6 +850,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   error={!!(formSubmitted && formData.emergencyContactPhone && !validatePhone(formData.emergencyContactPhone))}
                   helperText={formSubmitted && formData.emergencyContactPhone && !validatePhone(formData.emergencyContactPhone) ? 'Invalid phone format' : ''}
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
             </Grid>

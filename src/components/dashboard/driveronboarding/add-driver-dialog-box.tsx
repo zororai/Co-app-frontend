@@ -85,6 +85,27 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   const [referenceNumber, setReferenceNumber] = React.useState('');
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  // Custom TextField styling
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': {
+        color: 'rgb(5, 5, 68)',
+      },
+    },
+  };
+
   const [formData, setFormData] = React.useState<DriverFormData>({
     firstName: '',
     lastName: '',
@@ -773,33 +794,86 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 2
+            borderRadius: 2,
+            overflow: 'hidden'
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-            Add New Driver
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new driver in the transport management system
-          </Typography>
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0
+        }}>
+          <Box>
+            <Typography 
+              variant="subtitle1" 
+              component="div" 
+              sx={{ 
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                mb: 0.5
+              }}
+            >
+              Add New Driver
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.875rem' }}>
+              Register a new driver in the transport management system
+            </Typography>
+          </Box>
           <IconButton
             aria-label="close"
             onClick={handleClose}
             sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+              }
             }}
           >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         
-        <Box sx={{ width: '100%', px: 3, py: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+        <Box sx={{ width: '100%', px: 3, pt: 3 }}>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 600,
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 500,
+                },
+              },
+              '& .MuiStepConnector-line': {
+                borderColor: '#d1d5db',
+              },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+            }}
+          >
             {steps.map((label, index) => (
               <Step key={label} completed={activeStep > index}>
                 <StepLabel>{label}</StepLabel>
