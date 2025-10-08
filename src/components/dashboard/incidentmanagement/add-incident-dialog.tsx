@@ -412,6 +412,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
 
 
+  // TextField styling with rgb(5, 5, 68) theme
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: '#d1d5db' },
+      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+    },
+    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -426,21 +436,60 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        pb: 1
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
       }}>
-        <Typography variant="h6" component="div">
-        Report New Incident
-    
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+          Report New Incident
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-  
+      {/* Fixed Stepper Section */}
+      <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          Report and track incidents with detailed information, attachments, and involved persons
         </Typography>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+            },
+            '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+      
+      <DialogContent sx={{ 
+        px: 3, 
+        py: 2, 
+        maxHeight: '60vh', 
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+      }}>
         
         {/* Error Message */}
         {error && (
@@ -448,17 +497,6 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
             {error}
           </Alert>
         )}
-        
-        {/* Stepper */}
-        <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
 
         {/* Step content */}
         {activeStep === 0 && (
@@ -476,6 +514,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('incidentTitle')}
                   placeholder="Enter incident title"
                   margin="normal"
+                  sx={textFieldStyle}
                   error={!!validationErrors.incidentTitle}
                   helperText={validationErrors.incidentTitle}
                 />
@@ -562,6 +601,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('reportedBy')}
                   placeholder="Enter reporter's name"
                   margin="normal"
+                  sx={textFieldStyle}
                   error={!!validationErrors.reportedBy}
                   helperText={validationErrors.reportedBy}
                 />
@@ -595,23 +635,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('description')}
                   placeholder="Enter incident description"
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next: Attachments
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -662,26 +691,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               </Grid>
             </Grid>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next: Persons Involved
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -723,6 +733,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           onChange={handlePersonChange(index, 'name')}
                           margin="normal"
                           size="small"
+                          sx={textFieldStyle}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6} md={3}>
@@ -733,6 +744,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           onChange={handlePersonChange(index, 'surname')}
                           margin="normal"
                           size="small"
+                          sx={textFieldStyle}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6} md={3}>
@@ -743,6 +755,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           onChange={handlePersonChange(index, 'nationalId')}
                           margin="normal"
                           size="small"
+                          sx={textFieldStyle}
                         />
                       </Grid>
                       <Grid item xs={12} sm={6} md={3}>
@@ -753,6 +766,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           onChange={handlePersonChange(index, 'address')}
                           margin="normal"
                           size="small"
+                          sx={textFieldStyle}
                         />
                       </Grid>
                     </Grid>
@@ -770,26 +784,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               </Grid>
             </Grid>
 
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' },
-                }}
-              >
-                Next: Review
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -919,29 +914,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               )}
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' },
-                  mr: 1
-                }}
-              >
-                {isSubmitting ? 'Submitting...' : 'Save Incident'}
-              </Button>
-          
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -962,22 +935,51 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           
        
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Close
-              </Button>
-            </Box>
+            {/* Close button moved to fixed bottom action bar */}
           </Box>
         )}
       </DialogContent>
+      
+      {/* Fixed Bottom Action Bar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, background: '#fafafa', borderTop: '1px solid #eaeaea' }}>
+        {activeStep === steps.length - 1 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              Close
+            </Button>
+          </Box>
+        ) : (
+          <Fragment>
+            <Button
+              variant="outlined"
+              onClick={handleBack}
+              disabled={activeStep === 0}
+              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+            >
+              Back
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            <Button
+              variant="contained"
+              onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
+              disabled={isSubmitting}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              {activeStep === steps.length - 2 ? (isSubmitting ? 'Submitting...' : 'Submit') : 'Next'}
+            </Button>
+          </Fragment>
+        )}
+      </Box>
     </Dialog>
   );
 }
