@@ -845,7 +845,17 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
+   <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}>
+
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
           </Typography>

@@ -343,6 +343,7 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
         alignItems: 'center',
         pb: 1
       }}>
