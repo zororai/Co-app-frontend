@@ -86,6 +86,26 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
   const [success, setSuccess] = React.useState(false);
   const [referenceNumber, setReferenceNumber] = React.useState('');
   const [formSubmitted, setFormSubmitted] = React.useState(false);
+ 
+  // Consistent TextField styling (rgb(5, 5, 68))
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&:hover fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+      '&.Mui-focused fieldset': {
+        borderColor: 'rgb(5, 5, 68)',
+      },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': {
+        color: 'rgb(5, 5, 68)',
+      },
+    },
+  } as const;
 
   // Form state
   const [formData, setFormData] = React.useState({
@@ -376,7 +396,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   placeholder="Enter company name"
                   error={formSubmitted && !formData.companyName}
                   helperText={formSubmitted && !formData.companyName ? "Company name is required" : ""}
-                 
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -389,7 +409,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   placeholder="2019/12345/07"
                   error={formSubmitted && !formData.registrationNumber}
                   helperText={formSubmitted && !formData.registrationNumber ? "Registration number is required" : ""}
-                 
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -404,7 +424,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   placeholder="Enter contact person name"
                   error={formSubmitted && !formData.contactPersonName}
                   helperText={formSubmitted && !formData.contactPersonName ? "Contact person name is required" : ""}
-                  sx={{ padding: 1 }}
+                  sx={{ padding: 1, ...textFieldStyle }}
                  
                 />
               </Box>
@@ -425,7 +445,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                       ? "Please enter a valid email address"
                       : ""
                   }
-                  sx={{ padding: 1 }}                 
+                  sx={{ padding: 1, ...textFieldStyle }}                 
                 />
               </Box>
               
@@ -440,7 +460,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   placeholder="+27 11 123 4567"
                   error={formSubmitted && !formData.contactPhone}
                   helperText={formSubmitted && !formData.contactPhone ? "Contact phone is required" : ""}
-                  sx={{ padding: 1 }}                 
+                  sx={{ padding: 1, ...textFieldStyle }}                 
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -455,7 +475,19 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                     value={formData.serviceType}
                     onChange={handleSelectChange('serviceType')}
                     label="Service Type *"
-                    sx={{ height: 56, borderRadius: 1 }}
+                    sx={{ 
+                      height: 56, 
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgb(5, 5, 68)',
+                      },
+                    }}
                   
                   >
                     {serviceTypes.map((type) => (
@@ -480,7 +512,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   value={formData.headOfficeAddress}
                   onChange={handleChange('headOfficeAddress')}
                   placeholder="Enter head office address"
-                  sx={{ padding: 1 }}
+                  sx={{ padding: 1, ...textFieldStyle }}
                 />
               </Box>
               
@@ -494,10 +526,9 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   value={formData.siteOfficeAddress}
                   onChange={handleChange('siteOfficeAddress')}
                   placeholder="Enter site office address"
-                  sx={{ padding: 1 }}
+                  sx={{ padding: 1, ...textFieldStyle }}
                 />
               </Box>
-              
               {/* Row 6: Emergency Contact Name | Emergency Contact Phone */}
               <Fragment>
                 <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -507,8 +538,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                     value={formData.emergencyContactName}
                     onChange={handleChange('emergencyContactName')}
                     placeholder="Emergency contact person"
-                    sx={{ padding: 1 }}
-                 
+                    sx={{ padding: 1, ...textFieldStyle }}
                   />
                 </Box>
                 <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -518,13 +548,14 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                     value={formData.emergencyContactPhone}
                     onChange={handleChange('emergencyContactPhone')}
                     placeholder="+27 11 987 6543"
-                    sx={{ padding: 1 }}
+                    sx={{ padding: 1, ...textFieldStyle }}
                   />
                 </Box>
               </Fragment>
               
               {/* Row 6.5: Number of Employees */}
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+
                 <TextField
                   fullWidth
                   label="Number of Employees"
@@ -532,7 +563,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                   onChange={handleChange('numberOfEmployees')}
                   placeholder="Enter number of employees"
                   type="number"
-                  sx={{ padding: 1 }}
+                  sx={{ padding: 1, ...textFieldStyle }}
                 />
               </Box>
               
@@ -548,7 +579,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                         textField: {
                           fullWidth: true,
                           variant: 'outlined',
-                          sx: { height: 56 }
+                          sx: { height: 56, ...textFieldStyle }
                         }
                       }}
                     />
@@ -564,7 +595,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
                         textField: {
                           fullWidth: true,
                           variant: 'outlined',
-                          sx: { height: 56 }
+                          sx: { height: 56, ...textFieldStyle }
                         }
                       }}
                     />
@@ -857,11 +888,19 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
         }
       }}
     >
-      <DialogTitle sx={{ m: 0, p: 2 }}>
+        <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}>
+
         Add New Security Company
-        <Typography variant="body2" color="text.secondary">
-          Onboard a new security service provider with complete documentation and location assignments.
-        </Typography>
+     
         <IconButton
           aria-label="close"
           onClick={handleDialogClose}
@@ -875,9 +914,46 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
           <CloseIcon />
         </IconButton>
       </DialogTitle>
+
+      <Typography sx={{ paddingLeft: 2, py: 1 }} variant="body2" color="text.secondary">
+          Onboard a new security service provider with complete documentation and location assignments.
+        </Typography>
       
-      <Box sx={{ width: '100%', px: 3 }}>
-        <Stepper activeStep={activeStep} alternativeLabel>
+      <Box sx={{ width: '100%', px: 3, py: 2 }}>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': {
+                color: 'rgb(5, 5, 68)',
+              },
+              '&.Mui-completed': {
+                color: 'rgb(5, 5, 68)',
+              },
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': {
+                color: 'rgb(5, 5, 68)',
+                fontWeight: 600,
+              },
+              '&.Mui-completed': {
+                color: 'rgb(5, 5, 68)',
+                fontWeight: 500,
+              },
+            },
+            '& .MuiStepConnector-line': {
+              borderColor: '#d1d5db',
+            },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+              borderColor: 'rgb(5, 5, 68)',
+            },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+              borderColor: 'rgb(5, 5, 68)',
+            },
+          }}
+        >
           {steps.map((label, index) => (
             <Step key={label} completed={activeStep > index}>
               <StepLabel>{label}</StepLabel>
@@ -886,7 +962,7 @@ export function AddSecurityCompanyDialog({ open, onClose, onRefresh }: AddSecuri
         </Stepper>
       </Box>
       
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ pt: 2, pb: 2 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}

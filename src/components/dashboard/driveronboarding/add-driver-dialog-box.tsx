@@ -104,6 +104,18 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     additionalNotes: '',
   });
 
+  // Consistent TextField styling (rgb(5, 5, 68))
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': { color: 'rgb(5, 5, 68)' },
+    },
+  } as const;
+
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -344,6 +356,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter first name"
                   error={formSubmitted && !!errors.firstName}
                   helperText={formSubmitted && errors.firstName}
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
@@ -357,6 +370,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter last name"
                   error={formSubmitted && !!errors.lastName}
                   helperText={formSubmitted && errors.lastName}
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -372,6 +386,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter ID number"
                   error={formSubmitted && !!errors.idNumber}
                   helperText={formSubmitted && errors.idNumber}
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
@@ -386,6 +401,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                         required: true,
                         error: formSubmitted && !!errors.dateOfBirth,
                         helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : '',
+                        sx: textFieldStyle,
                       },
                     }}
                   />
@@ -414,6 +430,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter license number"
                   error={formSubmitted && !!errors.licenseNumber}
                   helperText={formSubmitted && errors.licenseNumber}
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
@@ -425,6 +442,11 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     value={formData.licenseClass}
                     onChange={(e) => handleSelectChange(e as any)}
                     label="License Class *"
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                    }}
                   >
                     {licenseClasses.map((option) => (
                       <MenuItem key={option.value} value={option.value}>
@@ -451,6 +473,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                         required: true,
                         error: formSubmitted && !!errors.licenseExpiryDate,
                         helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : '',
+                        sx: textFieldStyle,
                       },
                     }}
                   />
@@ -465,6 +488,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   onChange={handleChange}
                   placeholder="Enter years of experience"
                   type="number"
+                  sx={textFieldStyle}
                 />
               </Box>
             </Box>
@@ -556,6 +580,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter phone number"
                   error={formSubmitted && !!errors.phoneNumber}
                   helperText={formSubmitted && errors.phoneNumber}
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
@@ -569,6 +594,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter email address"
                   error={formSubmitted && !!errors.emailAddress}
                   helperText={formSubmitted && errors.emailAddress}
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -583,6 +609,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   placeholder="Enter address"
                   multiline
                   rows={2}
+                  sx={textFieldStyle}
                 />
               </Box>
             </Box>
@@ -598,6 +625,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   value={formData.emergencyContactName}
                   onChange={handleChange}
                   placeholder="Enter emergency contact name"
+                  sx={textFieldStyle}
                 />
               </Box>
               <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
@@ -608,6 +636,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   value={formData.emergencyContactPhone}
                   onChange={handleChange}
                   placeholder="Enter emergency contact phone"
+                  sx={textFieldStyle}
                 />
               </Box>
             </Box>
@@ -622,13 +651,12 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 onChange={handleChange}
                 multiline
                 rows={3}
-                placeholder="Any additional information about the driver"
+                sx={textFieldStyle}
               />
             </Box>
           </Box>
         );
       }
-      
       case 3: {
         return (
           <Box>
@@ -777,13 +805,21 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
+         <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}>
+
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             Add New Driver
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new driver in the transport management system
-          </Typography>
+         
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -797,9 +833,45 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             <CloseIcon />
           </IconButton>
         </DialogTitle>
+        <Typography variant="body2" color="text.secondary" sx={{ paddingLeft :2 , py: 2 , mt: 0.5 }}>
+            Register a new driver in the transport management system
+          </Typography>
         
         <Box sx={{ width: '100%', px: 3, py: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 600,
+                },
+                '&.Mui-completed': {
+                  color: 'rgb(5, 5, 68)',
+                  fontWeight: 500,
+                },
+              },
+              '& .MuiStepConnector-line': {
+                borderColor: '#d1d5db',
+              },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
+                borderColor: 'rgb(5, 5, 68)',
+              },
+            }}
+          >
             {steps.map((label, index) => (
               <Step key={label} completed={activeStep > index}>
                 <StepLabel>{label}</StepLabel>
@@ -808,7 +880,18 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           </Stepper>
         </Box>
         
-        <DialogContent dividers>
+        <DialogContent 
+          dividers 
+          sx={{
+            px: 3,
+            py: 2,
+            maxHeight: '60vh',
+            overflow: 'auto',
+            '&::-webkit-scrollbar': { width: '6px' },
+            '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+          }}
+        >
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
