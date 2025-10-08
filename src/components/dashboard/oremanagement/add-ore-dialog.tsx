@@ -453,6 +453,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     // You could add a toast notification here
   };
 
+  // TextField styling with rgb(5, 5, 68) theme
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: '#d1d5db' },
+      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+    },
+    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -467,31 +477,60 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        pb: 1
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
       }}>
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
           Assign Ore to Transport
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-  
+      {/* Fixed Stepper Section */}
+      <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          Assign ore to transport with tax information and additional details
         </Typography>
-        
-        {/* Stepper */}
-        <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Box>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+            },
+            '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+      
+      <DialogContent sx={{ 
+        px: 3, 
+        py: 2, 
+        maxHeight: '60vh', 
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+      }}>
 
         {/* Step content */}
         {activeStep === 0 && (
@@ -539,6 +578,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                       margin="normal"
                       helperText={shaftError || "Select shaft numbers from approved assignments"}
                       error={!!shaftError}
+                      sx={textFieldStyle}
                       InputProps={{
                         ...params.InputProps,
                         endAdornment: (
@@ -565,6 +605,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('weight')}
                   placeholder="Enter weight in kg"
                   margin="normal"
+                  sx={textFieldStyle}
                   InputProps={{
                     endAdornment: <InputAdornment position="end">kg</InputAdornment>,
                   }}
@@ -581,6 +622,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   onChange={handleChange('numberOfBags')}
                   placeholder="Enter number of bags"
                   margin="normal"
+                  sx={textFieldStyle}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -601,19 +643,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
               </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -672,6 +702,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           label="Tax Rate (%)"
                           type="number"
                           value={taxItem.taxRate}
+                          sx={textFieldStyle}
                           InputProps={{
                             endAdornment: <InputAdornment position="end">%</InputAdornment>,
                             readOnly: true
@@ -686,6 +717,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           fullWidth
                           label="Location"
                           value={taxItem.location}
+                          sx={textFieldStyle}
                           InputProps={{
                             readOnly: true
                           }}
@@ -699,6 +731,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                           fullWidth
                           label="Description"
                           value={taxItem.description}
+                          sx={textFieldStyle}
                           InputProps={{
                             readOnly: true
                           }}
@@ -736,26 +769,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -808,26 +822,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
         
@@ -959,27 +954,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               </Grid>
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                {isSubmitting ? 'Creating...' : 'Save ore record'}
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -1000,22 +975,51 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           
        
             
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Close
-              </Button>
-            </Box>
+            {/* Close button moved to fixed bottom action bar */}
           </Box>
         )}
       </DialogContent>
+      
+      {/* Fixed Bottom Action Bar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, background: '#fafafa', borderTop: '1px solid #eaeaea' }}>
+        {activeStep === steps.length - 1 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              Close
+            </Button>
+          </Box>
+        ) : (
+          <Fragment>
+            <Button
+              variant="outlined"
+              onClick={handleBack}
+              disabled={activeStep === 0}
+              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+            >
+              Back
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            <Button
+              variant="contained"
+              onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
+              disabled={isSubmitting}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              {activeStep === steps.length - 2 ? (isSubmitting ? 'Creating...' : 'Submit') : 'Next'}
+            </Button>
+          </Fragment>
+        )}
+      </Box>
     </Dialog>
   );
 }
