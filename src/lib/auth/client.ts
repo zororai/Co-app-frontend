@@ -3670,6 +3670,52 @@ cooperativename: string;
   }
 
   /**
+   * Create a penalty record
+   * @param penaltyData The penalty data
+   * @returns A promise that resolves to the response data or throws an error
+   */
+  async createPenalty(penaltyData: {
+    shaftNumber: string;
+    section: string;
+    penaltyFee: string;
+    reportedBy: string;
+    issue: string;
+    remarks: string;
+  }): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch('/api/penalties/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(penaltyData),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to create penalty: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating penalty:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Approve a section
    * @param id The ID of the section to approve
    * @returns A promise that resolves to the response data or null on error

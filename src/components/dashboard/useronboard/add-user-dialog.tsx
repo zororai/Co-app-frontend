@@ -728,26 +728,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               </Grid>
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -797,26 +778,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               </Alert>
             )}
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 
@@ -866,26 +828,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               </Grid>
             </Grid>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                Next
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
         
@@ -1031,27 +974,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               </Grid>
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-              <Button
-                variant="outlined"
-                onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
-              >
-                Back
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ 
-                  bgcolor: '#121212', 
-                  color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
-                }}
-              >
-                {isSubmitting ? 'Creating...' : 'Create User'}
-              </Button>
-            </Box>
+            {/* Buttons moved to fixed bottom action bar */}
           </Box>
         )}
 

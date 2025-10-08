@@ -149,6 +149,16 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
     }
   };
 
+  // TextField styling with rgb(5, 5, 68) theme
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: '#d1d5db' },
+      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+    },
+    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -159,21 +169,36 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
         sx: { borderRadius: 2 }
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          Create Section
-          <IconButton
-            onClick={handleClose}
-            disabled={loading}
-            size="small"
-            sx={{ color: 'text.secondary' }}
-          >
-            <CloseIcon fontSize="var(--icon-fontSize-md)" />
-          </IconButton>
-        </Stack>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
+      }}>
+        Create Section
+        <IconButton
+          onClick={handleClose}
+          disabled={loading}
+          size="small"
+          sx={{ color: 'white' }}
+        >
+          <CloseIcon fontSize="var(--icon-fontSize-md)" />
+        </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ pt: 1 }}>
+      <DialogContent sx={{ 
+        px: 3, 
+        py: 2, 
+        maxHeight: '60vh', 
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+      }}>
         <Stack spacing={3}>
           {error && (
             <Alert severity="error" onClose={() => setError(null)}>
@@ -189,6 +214,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
 
           <TextField
             label="Section Name"
+            sx={{py: 2}}
             value={formData.sectionName}
             onChange={e => {
               setFormData(prev => ({
@@ -204,6 +230,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             required
             placeholder="Enter section name..."
             helperText="Type the section name."
+            sx={textFieldStyle}
           />
 
           <TextField
@@ -223,6 +250,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             required
             placeholder="Enter number of shafts..."
             helperText="Enter the number of shafts for this section."
+            sx={textFieldStyle}
           />
 
           <TextField
@@ -235,6 +263,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             multiline
             rows={3}
             placeholder="Enter reason for section creation"
+            sx={textFieldStyle}
           />
 
           <TextField
@@ -245,15 +274,26 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             fullWidth
             placeholder="Status (default: PENDING)"
             helperText="Default status is PENDING"
+            sx={textFieldStyle}
           />
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3 }}>
+      {/* Fixed Bottom Action Bar */}
+      <DialogActions sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        px: 3, 
+        py: 2, 
+        background: '#fafafa', 
+        borderTop: '1px solid #eaeaea' 
+      }}>
         <Button
           onClick={handleClose}
           disabled={loading}
-          color="inherit"
+          variant="outlined"
+          sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
         >
           Cancel
         </Button>
@@ -262,6 +302,10 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
           disabled={loading || success}
           variant="contained"
           startIcon={loading ? <CircularProgress size={16} /> : null}
+          sx={{ 
+            bgcolor: 'rgb(5, 5, 68)',
+            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+          }}
         >
           {loading ? 'Submitting...' : 'Submit for Approval'}
         </Button>
