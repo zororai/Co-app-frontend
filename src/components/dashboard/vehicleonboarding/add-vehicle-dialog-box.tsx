@@ -102,6 +102,18 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     registrationBook: null,
   });
   
+  // Consistent TextField styling (rgb(5, 5, 68))
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': { color: 'rgb(5, 5, 68)' },
+    },
+  } as const;
+  
   // Fetch approved drivers when component mounts
   React.useEffect(() => {
     const fetchDrivers = async () => {
@@ -362,6 +374,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., ABC123GP"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -375,6 +388,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     label="Vehicle Type"
                     onChange={handleChange}
                     disabled={loading}
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                    }}
                   >
                     {vehicleTypes.map((type) => (
                       <MenuItem key={type.value} value={type.value}>
@@ -400,6 +418,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., Toyota"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -415,6 +434,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., Corolla"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -430,6 +450,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., 2023"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -443,6 +464,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     value={formData.assignedDriver}
                     onChange={handleChange}
                     label="Assigned Driver"
+                    sx={{
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                    }}
                   >
                     <MenuItem value=""><em>None</em></MenuItem>
                     {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
@@ -473,6 +499,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                       error: formSubmitted && !!errors.lastServiceDate,
                       helperText: formSubmitted && errors.lastServiceDate,
                       size: 'small',
+                      sx: textFieldStyle,
                     },
                   }}
                 />
@@ -504,6 +531,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   helperText={formSubmitted && errors.ownerName}
                   required
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -519,6 +547,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., 80-101500D87"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -534,6 +563,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   required
                   placeholder="e.g., +27 11 123 4567"
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
               
@@ -550,6 +580,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   multiline
                   rows={3}
                   size="small"
+                  sx={textFieldStyle}
                 />
               </Box>
             </Box>
@@ -859,9 +890,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new vehicle in the transport management system
-          </Typography>
+    
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -876,9 +905,29 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             <CloseIcon />
           </IconButton>
         </DialogTitle>
+        <Typography variant="body2" color="text.secondary" sx={{ padding : 2, mt: 0.5 }}>
+            Register a new vehicle in the transport management system
+          </Typography>
         
         <Box sx={{ width: '100%', px: 3, py: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+                '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+                '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              },
+              '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            }}
+          >
             {steps.map((label, index) => (
               <Step key={label} completed={activeStep > index}>
                 <StepLabel>{label}</StepLabel>
@@ -887,7 +936,18 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           </Stepper>
         </Box>
 
-        <DialogContent dividers>
+        <DialogContent 
+          dividers
+          sx={{
+            px: 3,
+            py: 2,
+            maxHeight: '60vh',
+            overflow: 'auto',
+            '&::-webkit-scrollbar': { width: '6px' },
+            '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+          }}
+        >
           {/* Error message */}
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>

@@ -298,11 +298,14 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
         alignItems: 'center',
-        pb: 1
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
       }}>
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
           Add Operational Tax
         </Typography>
         <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
