@@ -265,12 +265,17 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
         sx: { borderRadius: 1 }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        pb: 1
-      }}>
+       <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}>
+
         <Typography variant="h6" component="div">
           Add Transport Cost
         </Typography>

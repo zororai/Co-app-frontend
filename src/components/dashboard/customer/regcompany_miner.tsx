@@ -60,9 +60,12 @@ export interface RegMinerDialogProps {
 interface RegMinerFormProps {
   onClose?: () => void;
   onRefresh?: () => void;
+  onStepChange?: (step: number) => void;
+  onNext?: () => void;
+  onBack?: () => void;
 }
 
-function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Element {
+const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () => void }, RegMinerFormProps>(({ onClose, onRefresh, onStepChange }, ref) => {
   // Team members state removed as requested
   const [selectedFileNames, setSelectedFileNames] = React.useState({
     companyLogo: '',
@@ -428,9 +431,21 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
       await handleSubmit(new Event('submit') as any);
       return;
     }
-    setActiveStep(s => s + 1);
+    const newStep = activeStep + 1;
+    setActiveStep(newStep);
+    if (onStepChange) onStepChange(newStep);
   };
-  const handleBack = () => setActiveStep(s => Math.max(0, s - 1));
+  const handleBack = () => {
+    const newStep = Math.max(0, activeStep - 1);
+    setActiveStep(newStep);
+    if (onStepChange) onStepChange(newStep);
+  };
+  
+  // Expose navigation functions to parent
+  React.useImperativeHandle(ref, () => ({
+    handleNext,
+    handleBack
+  }));
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ p: 2, maxWidth: 900 }}>
@@ -445,16 +460,7 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
         </Alert>
       </Snackbar>
 
-      {/* Stepper */}
-      <Box sx={{ mb: 2 }}>
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Box>
+      {/* Stepper moved to fixed header */}
 
       {/* Step 0: Company Information */}
       {activeStep === 0 && (
@@ -808,29 +814,131 @@ function RegMinerForm({ onClose, onRefresh }: RegMinerFormProps): React.JSX.Elem
         </Box>
       )}
 
-      {/* Navigation Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-        <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">Back</Button>
-        {activeStep < steps.length - 1 && (
-          <Button onClick={handleNext} variant="contained">{activeStep === steps.length - 2 ? 'Submit' : 'Next'}</Button>
-        )}
-      </Box>
+      {/* Navigation buttons moved to fixed bottom action bar */}
     </Box>
   );
-}
+});
 
 export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
+  const [activeStep, setActiveStep] = React.useState(0);
+  const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
+  const [formRef, setFormRef] = React.useState<{ handleNext: () => void; handleBack: () => void } | null>(null);
+  
+  const handleStepChange = (step: number) => {
+    setActiveStep(step);
+  };
+  
+  const handleNext = () => {
+    if (formRef?.handleNext) {
+      formRef.handleNext();
+    }
+  };
+  
+  const handleBack = () => {
+    if (formRef?.handleBack) {
+      formRef.handleBack();
+    }
+  };
+  
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Company Miner Registration</span>
-        <IconButton onClick={onClose}>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
+      }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+          Company Miner Registration
+        </Typography>
+        <IconButton onClick={onClose} sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <RegMinerForm onClose={onClose} onRefresh={onRefresh} />
+      
+      {/* Fixed Stepper Section */}
+      <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+          Register a new mining company with complete documentation and owner details
+        </Typography>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+            },
+            '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+      
+      <DialogContent sx={{ px: 3, py: 2, maxHeight: '60vh', overflow: 'auto' }}>
+        <RegMinerForm 
+          onClose={onClose} 
+          onRefresh={onRefresh} 
+          onStepChange={handleStepChange}
+          ref={(ref: any) => setFormRef(ref)}
+        />
       </DialogContent>
+      
+      {/* Fixed Bottom Action Bar */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, py: 2, background: '#fafafa', borderTop: '1px solid #eaeaea' }}>
+        {activeStep === steps.length - 1 ? (
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <Button
+              variant="contained"
+              onClick={onClose}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              Close
+            </Button>
+          </Box>
+        ) : (
+          <>
+            <Button
+              variant="outlined"
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+            >
+              Back
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            <Button
+              variant="contained"
+              onClick={handleNext}
+              sx={{ 
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+              }}
+            >
+              {activeStep === steps.length - 2 ? 'Submit' : 'Next'}
+            </Button>
+          </>
+        )}
+      </Box>
     </Dialog>
   );
 }

@@ -677,13 +677,21 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
+         <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}>
+
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             Add New Mill
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new mill in the system
-          </Typography>
+     
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -697,6 +705,10 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             <CloseIcon />
           </IconButton>
         </DialogTitle>
+
+        <Typography variant="body2" color="text.secondary" sx={{ paddingLeft : 2, mt: 0.5 }}>
+            Register a new mill in the system
+          </Typography>
         
         <Box sx={{ width: '100%', px: 3, py: 2 }}>
           <Stepper activeStep={activeStep} alternativeLabel>
