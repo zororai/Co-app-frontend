@@ -29,6 +29,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { SectionDialog } from '@/components/dashboard/sectioncreation/section-dialog';
+import { PenaltyDetailsDialog } from './penalty-details-dialog';
 
 function noop(): void {
   // do nothing
@@ -106,21 +107,13 @@ export function CustomersTable({
     globalThis.location.href = path;
   };
 
-  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [selectedPenaltyId, setSelectedPenaltyId] = React.useState<string | null>(null);
+  const [isPenaltyDetailsDialogOpen, setIsPenaltyDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
-  const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
-    }
+  const handleViewPenaltyDetails = (penaltyId: string) => {
+    setSelectedPenaltyId(penaltyId);
+    setIsPenaltyDetailsDialogOpen(true);
   };
 
   // Function to refresh the table data
@@ -219,7 +212,7 @@ export function CustomersTable({
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={() => handleViewCustomer(row.id)}
+                    onClick={() => handleViewPenaltyDetails(row.id)}
                     sx={{
                       borderColor: 'rgb(5, 5, 68)',
                       color: 'rgb(5, 5, 68)',
@@ -248,15 +241,14 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Customer Details Dialog */}
-      <SectionDialog
-        open={isViewDialogOpen}
+      {/* Penalty Details Dialog */}
+      <PenaltyDetailsDialog
+        open={isPenaltyDetailsDialogOpen}
         onClose={() => {
-          setIsViewDialogOpen(false);
-          setSelectedCustomer(null);
+          setIsPenaltyDetailsDialogOpen(false);
+          setSelectedPenaltyId(null);
         }}
-        customer={selectedCustomer}
-        onRefresh={refreshTableData}
+        penaltyId={selectedPenaltyId}
       />
     </Card>
   );

@@ -28,6 +28,9 @@ export const allNavItems = [
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
+      { key: 'penality', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
+      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
+      
     ],
   },
   {
@@ -55,7 +58,7 @@ export const allNavItems = [
       { key: 'issuepenalty', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-      { key: 'incidentresolve', title: 'Incident Resolve ', href: paths.dashboard.resolveissue, icon: 'id-card' },
+      { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
       
     ],
   },

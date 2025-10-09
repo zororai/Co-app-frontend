@@ -132,15 +132,23 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
     setError(null);
 
     try {
-      // Create penalty record (you may need to create this endpoint)
+      // Create penalty record
       await authClient.createPenalty({
         shaftNumber: formData.shaftNumber.trim(),
         section: formData.section.trim(),
-        penaltyFee: formData.penaltyFee.trim(),
+        penilatyFee: parseFloat(formData.penaltyFee.trim()) || 0,
         reportedBy: formData.reportedBy.trim(),
         issue: formData.issue.trim(),
         remarks: formData.remarks.trim(),
       });
+
+      // Suspend the shaft assignment if a shaft is selected
+      if (selectedShaft && selectedShaft.id) {
+        await authClient.suspendShaftAssignmentForSHE(
+          selectedShaft.id,
+          formData.issue.trim()
+        );
+      }
 
       setSuccess(true);
       
@@ -266,14 +274,17 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
                 sx={textFieldStyle}
               />
             )}
-            renderOption={(props, option) => (
-              <li {...props}>
-                <div>
-                  <div><strong>Shaft:</strong> {option.shaftNumbers}</div>
-                  <div><small>Section: {option.sectionName || 'N/A'}</small></div>
-                </div>
-              </li>
-            )}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              return (
+                <li key={key} {...otherProps}>
+                  <div>
+                    <div><strong>Shaft:</strong> {option.shaftNumbers}</div>
+                    <div><small>Section: {option.sectionName || 'N/A'}</small></div>
+                  </div>
+                </li>
+              );
+            }}
             isOptionEqualToValue={(option, value) => option.shaftNumbers === value?.shaftNumbers}
           />
 

@@ -3677,7 +3677,7 @@ cooperativename: string;
   async createPenalty(penaltyData: {
     shaftNumber: string;
     section: string;
-    penaltyFee: string;
+    penilatyFee: number;
     reportedBy: string;
     issue: string;
     remarks: string;
@@ -3689,11 +3689,11 @@ cooperativename: string;
       return null;
     }
     try {
-      const response = await fetch('/api/penalties/create', {
+      const response = await fetch('/api/penalities', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          'Accept': '*/*',
           'Authorization': `Bearer ${token}`,
         },
         credentials: 'include',
@@ -3712,6 +3712,111 @@ cooperativename: string;
     } catch (error) {
       console.error('Error creating penalty:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Suspend shaft assignment for SHE (Safety, Health, Environment) violation
+   * @param shaftAssignmentId The ID of the shaft assignment to suspend
+   * @param reason The reason for suspension
+   * @returns A promise that resolves to the response data or throws an error
+   */
+  async suspendShaftAssignmentForSHE(shaftAssignmentId: string | number, reason: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const encodedReason = encodeURIComponent(reason);
+      const response = await fetch(`/api/shaft-assignments/${shaftAssignmentId}/suspend-for-she?reason=${encodedReason}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to suspend shaft assignment: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error suspending shaft assignment:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch all penalties
+   * @returns A promise that resolves to the penalties data or empty array on error
+   */
+  async fetchPenalties(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return [];
+    }
+    try {
+      const response = await fetch('/api/penalities', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        globalThis.location.href = '/auth/sign-in';
+        return [];
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching penalties:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch penalty details by ID
+   * @param penaltyId The ID of the penalty to fetch
+   * @returns A promise that resolves to the penalty details or null on error
+   */
+  async fetchPenaltyById(penaltyId: string): Promise<any> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return null;
+    }
+    try {
+      const response = await fetch(`/api/penalities/${penaltyId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        console.error('Failed to fetch penalty details');
+        return null;
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching penalty details:', error);
+      return null;
     }
   }
 

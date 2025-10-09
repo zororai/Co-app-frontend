@@ -372,6 +372,30 @@ export function CustomersTable({
                       </Button>
                     </Box>
                   </TableCell>
+
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Button 
+                        onClick={() => {
+                          console.log('Button clicked for driver ID:', row.id);
+                          setSelectedDriverId(row.id);
+                          setIsDriverDetailsDialogOpen(true);
+                        }}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          borderColor: '#06131fff',
+                          color: '#081b2fff',
+                          '&:hover': {
+                            borderColor: '#06131fff',
+                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                          }
+                        }}
+                      >
+                        View details
+                      </Button>
+                    </Box>
+                  </TableCell>
                
                 </TableRow>
               );

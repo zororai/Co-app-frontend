@@ -25,48 +25,58 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
 
-  const fetchSection = React.useCallback(async () => {
-    const data = await authClient.fetchSection();
-    // Ensure each customer has cooperativeName and cooperative properties
-    const mappedData = data.map((c: any) => ({
-      ...c,
-      cooperativeName: c.cooperativeName ?? '',
-      cooperative: c.cooperative ?? ''
+  const fetchPenalties = React.useCallback(async () => {
+    const data = await authClient.fetchPenalties();
+    // Map penalty data to match the Customer interface structure
+    const mappedData = data.map((penalty: any) => ({
+      ...penalty,
+      id: penalty.id || `penalty-${Math.random()}`,
+      name: penalty.section || '',
+      numShafts: penalty.shaftNumber || '',
+      fee: penalty.penilatyFee || 0,
+      status: penalty.status || 'PENDING',
+      reason: penalty.issue || '',
+      cooperativeName: penalty.reportedBy || '',
+      cooperative: penalty.reportedBy || '',
+      surname: '',
+      nationId: '',
+      nationIdNumber: '',
+      address: '',
+      phone: '',
+      cellNumber: '',
+      position: '',
+      attachedShaft: false
     }));
     setCustomers(mappedData);
   }, []);
 
   React.useEffect(() => {
-    fetchSection();
-  }, [fetchSection]);
+    fetchPenalties();
+  }, [fetchPenalties]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Shaft Number', 'Section', 'Fee', 'Status', 'Issue', 'Reported By', 'Remarks'
     ];
     const rows = paginatedCustomers.map(c => [
       c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
       c.numShafts,
+      c.name,
+      c.fee,
       c.status,
       c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+      c.cooperativeName,
+      c.remarks || ''
     ]);
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = 'penalties.csv';
     document.body.append(a);
 
     a.click();
@@ -169,7 +179,7 @@ export default function Page(): React.JSX.Element {
         open={open} 
         onClose={() => setOpen(false)} 
         onSuccess={() => {
-          fetchSection(); // Refresh the data after successful creation
+          fetchPenalties(); // Refresh the data after successful creation
         }}
       />
     </Stack>

@@ -230,7 +230,7 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
             required
             placeholder="Enter section name..."
             helperText="Type the section name."
-            sx={textFieldStyle}
+            
           />
 
           <TextField
