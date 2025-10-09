@@ -132,8 +132,31 @@ export function AccountDetailsForm(): React.JSX.Element {
         return;
       }
 
-      console.log('Updating user with ID:', userId);
-      const result = await authClient.updateUser(userId, updateData);
+      console.log('Form submission details:');
+      console.log('- User ID:', userId);
+      console.log('- Update data:', updateData);
+      console.log('- Selected permissions:', selectedPermissions);
+      console.log('- Original user data:', userData);
+
+      // Try self-update first (more likely to have permissions)
+      console.log('Attempting self-update via /api/users/me...');
+      let result = await authClient.updateCurrentUser(updateData);
+      
+      console.log('Self-update result:', result);
+      
+      // If self-update fails with 404 or "not found", try admin update with user ID
+      if (!result.success && (
+        result.error?.includes('not found') || 
+        result.error?.includes('Update endpoint not found') ||
+        result.error?.includes('404')
+      )) {
+        console.log('Self-update endpoint not available (404), trying admin update with user ID...');
+        console.log('Fallback triggered because error contains:', result.error);
+        result = await authClient.updateUser(userId, updateData);
+        console.log('Admin update result:', result);
+      } else if (!result.success) {
+        console.log('Self-update failed but not with 404, error:', result.error);
+      }
       
       if (result.success) {
         setSuccess('User details updated successfully!');

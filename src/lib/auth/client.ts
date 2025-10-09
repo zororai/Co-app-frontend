@@ -380,7 +380,99 @@ class AuthClient {
     }
 
     /**
-     * Update user details by ID
+     * Update current user's own details
+     * PUT /api/users/me (for self-update)
+     */
+    async updateCurrentUser(userData: {
+      name?: string;
+      surname?: string;
+      email?: string;
+      cellNumber?: string;
+      address?: string;
+      position?: string;
+      role?: string;
+      permissions?: Array<{ permission: string }>;
+      status?: string;
+      notes?: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        console.log('Making PUT request to /api/users/me with data:', userData);
+        console.log('Request headers:', {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Content-Type': 'application/json',
+        });
+        
+        const response = await fetch('/api/users/me', {
+          method: 'PUT',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+          credentials: 'include',
+        });
+        
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
+        if (!response.ok) {
+          let errorText = '';
+          try {
+            errorText = await response.text();
+          } catch (textError) {
+            console.error('Failed to read error response:', textError);
+            errorText = `HTTP ${response.status} ${response.statusText}`;
+          }
+          
+          // Silent handling of API errors - no console.error logging
+          
+          // Provide more specific error messages based on status code
+          let userFriendlyError = errorText;
+          if (response.status === 404) {
+            userFriendlyError = 'Update endpoint not found. Trying alternative method...';
+          } else if (response.status === 401) {
+            userFriendlyError = 'Authentication failed. Please sign in again.';
+          } else if (response.status === 403) {
+            userFriendlyError = 'Permission denied. You may not have rights to update user details.';
+          } else if (response.status === 400) {
+            userFriendlyError = 'Invalid data provided. Please check your input.';
+          } else if (response.status >= 500) {
+            userFriendlyError = 'Server error. Please try again later.';
+          } else if (!errorText) {
+            userFriendlyError = `Request failed with status ${response.status}`;
+          }
+          
+          return { success: false, error: userFriendlyError };
+        }
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse response JSON:', jsonError);
+          data = { message: 'Update successful' };
+        }
+        
+        console.log('PUT /api/users/me successful:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error('Network or other error updating user details:', error);
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Network error occurred. Please check your connection.' 
+        };
+      }
+    }
+
+    /**
+     * Update user details by ID (admin function)
      * PUT /api/users/{id}
      */
     async updateUser(userId: string, userData: {
@@ -402,6 +494,12 @@ class AuthClient {
       }
       try {
         console.log(`Making PUT request to /api/users/${userId} with data:`, userData);
+        console.log('Request headers:', {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Content-Type': 'application/json',
+        });
+        
         const response = await fetch(`/api/users/${userId}`, {
           method: 'PUT',
           headers: {
@@ -412,17 +510,57 @@ class AuthClient {
           body: JSON.stringify(userData),
           credentials: 'include',
         });
+        
+        console.log('Response status:', response.status, response.statusText);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (!response.ok) {
-          const errorText = await response.text().catch(() => 'Request failed');
-          console.error(`PUT /api/users/${userId} failed:`, errorText);
-          return { success: false, error: errorText || 'Failed to update user details' };
+          let errorText = '';
+          try {
+            errorText = await response.text();
+          } catch (textError) {
+            console.error('Failed to read error response:', textError);
+            errorText = `HTTP ${response.status} ${response.statusText}`;
+          }
+          
+          // Silent handling of API errors - no console.error logging
+          
+          // Provide more specific error messages based on status code
+          let userFriendlyError = errorText;
+          if (response.status === 404) {
+            userFriendlyError = 'User not found. The user ID may be invalid.';
+          } else if (response.status === 401) {
+            userFriendlyError = 'Authentication failed. Please sign in again.';
+          } else if (response.status === 403) {
+            userFriendlyError = 'Permission denied. You may not have rights to update this user.';
+          } else if (response.status === 400) {
+            userFriendlyError = 'Invalid data provided. Please check your input.';
+          } else if (response.status >= 500) {
+            userFriendlyError = 'Server error. Please try again later.';
+          } else if (!errorText) {
+            userFriendlyError = `Request failed with status ${response.status}`;
+          }
+          
+          return { success: false, error: userFriendlyError };
         }
-        const data = await response.json();
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          console.error('Failed to parse response JSON:', jsonError);
+          // If JSON parsing fails but request was successful, consider it a success
+          data = { message: 'Update successful' };
+        }
+        
         console.log(`PUT /api/users/${userId} successful:`, data);
         return { success: true, data };
       } catch (error) {
-        console.error('Error updating user details:', error);
-        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+        console.error('Network or other error updating user details:', error);
+        return { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Network error occurred. Please check your connection.' 
+        };
       }
     }
 
@@ -1963,35 +2101,6 @@ async fetchOreRecieved(): Promise<any[]> {
       }
   }
 
-
-    async fetchUserById(userId: string): Promise<any> {
-        const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
-            return null;
-        }
-        try {
-            const response = await fetch(`/api/users/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
-                return null;
-            }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error(`Error fetching user with ID ${userId}:`, error);
-            return null;
-        }
-    }
     
     /**
      * Approve a user by ID
