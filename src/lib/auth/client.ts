@@ -431,7 +431,7 @@ class AuthClient {
             errorText = `HTTP ${response.status} ${response.statusText}`;
           }
           
-          // Silent handling of API errors - no console.error logging
+          console.error(`PUT /api/users/me failed with status ${response.status}:`, errorText);
           
           // Provide more specific error messages based on status code
           let userFriendlyError = errorText;
@@ -523,7 +523,7 @@ class AuthClient {
             errorText = `HTTP ${response.status} ${response.statusText}`;
           }
           
-          // Silent handling of API errors - no console.error logging
+          console.error(`PUT /api/users/${userId} failed with status ${response.status}:`, errorText);
           
           // Provide more specific error messages based on status code
           let userFriendlyError = errorText;
@@ -561,6 +561,37 @@ class AuthClient {
           success: false, 
           error: error instanceof Error ? error.message : 'Network error occurred. Please check your connection.' 
         };
+      }
+    }
+
+    /**
+     * Fetch monthly ore transport totals for a specific year
+     * GET /api/ore-transports/monthly-totals?year={year}
+     */
+    async fetchMonthlyOreTotals(year: number): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const response = await fetch(`/api/ore-transports/monthly-totals?year=${year}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch monthly ore totals' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching monthly ore totals:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
       }
     }
 
