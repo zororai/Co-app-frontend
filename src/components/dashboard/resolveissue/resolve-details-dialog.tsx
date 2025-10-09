@@ -303,17 +303,17 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
                       }}
                     >
                       <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                           <Typography variant="body2" color="text.secondary">Name</Typography>
                           <Typography variant="body1">
                             {participant.name} {participant.surname}
                           </Typography>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12, sm: 6 }}>
                           <Typography variant="body2" color="text.secondary">National ID</Typography>
                           <Typography variant="body1">{participant.nationalId || 'N/A'}</Typography>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid size={{ xs: 12 }}>
                           <Typography variant="body2" color="text.secondary">Address</Typography>
                           <Typography variant="body1">{participant.address || 'N/A'}</Typography>
                         </Grid>

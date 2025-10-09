@@ -317,6 +317,116 @@ class AuthClient {
     }
 
     /**
+     * Fetch user details by email
+     * GET /api/users/by-email?email={email}
+     */
+    async fetchUserByEmail(email: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const encodedEmail = encodeURIComponent(email);
+        const response = await fetch(`/api/users/by-email?email=${encodedEmail}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch user details' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Fetch user details by ID
+     * GET /api/users/{id}
+     */
+    async fetchUserById(userId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch user details' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching user details by ID:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Update user details by ID
+     * PUT /api/users/{id}
+     */
+    async updateUser(userId: string, userData: {
+      name?: string;
+      surname?: string;
+      email?: string;
+      cellNumber?: string;
+      address?: string;
+      position?: string;
+      role?: string;
+      permissions?: Array<{ permission: string }>;
+      status?: string;
+      notes?: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        console.log(`Making PUT request to /api/users/${userId} with data:`, userData);
+        const response = await fetch(`/api/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`PUT /api/users/${userId} failed:`, errorText);
+          return { success: false, error: errorText || 'Failed to update user details' };
+        }
+        const data = await response.json();
+        console.log(`PUT /api/users/${userId} successful:`, data);
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error updating user details:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */
@@ -594,6 +704,42 @@ class AuthClient {
         return { success: true, data };
       } catch (error) {
         console.error('Error creating incident record:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Resolve an incident by ID
+     * PUT http://localhost:1000/api/incident-management/{id}/resolve?resolution={resolution}
+     */
+    async resolveIncident(incidentId: string, resolution: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const encodedResolution = encodeURIComponent(resolution);
+        const response = await fetch(`/api/incident-management/${incidentId}/resolve?resolution=${encodedResolution}`, {
+          method: 'PUT',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+
+        console.log('Resolve incident response status:', response.status);
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error('Resolve incident error:', errorText);
+          return { success: false, error: errorText || 'Failed to resolve incident' };
+        }
+        const data = await response.json().catch(() => ({}));
+        console.log('Incident resolved successfully:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error resolving incident:', error);
         return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
       }
     }

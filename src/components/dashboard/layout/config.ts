@@ -148,3 +148,23 @@ export function getNavItemsForUser(permissions: string[]): NavItemConfig[] {
 
 // Default export for backward compatibility (all items)
 export const navItems = allNavItems;
+
+/**
+ * Get all available permissions from the navigation configuration
+ * @returns Array of all permission keys
+ */
+export function getAllAvailablePermissions(): string[] {
+  const permissions = new Set<string>();
+  
+  for (const item of allNavItems) {
+    permissions.add(item.key);
+    
+    if (item.items) {
+      for (const subItem of item.items) {
+        permissions.add(subItem.key);
+      }
+    }
+  }
+  
+  return Array.from(permissions);
+}

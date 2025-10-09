@@ -28,6 +28,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { DriverDetailsDialog } from '@/components/dashboard/incidentmanagement/incident-details-dialog';
+import { IncidentResolutionDialog } from '@/components/dashboard/incidentmanagement/incident-resolution-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -109,6 +110,8 @@ export function CustomersTable({
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
+  const [selectedIncidentId, setSelectedIncidentId] = React.useState<string | null>(null);
+  const [isResolutionDialogOpen, setIsResolutionDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch incidents from API when component mounts or refreshTrigger changes
@@ -347,7 +350,36 @@ export function CustomersTable({
                   <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
                   <TableCell>{row.location || row.address || 'N/A'}</TableCell>
                   <TableCell>{row.reportedBy || `${row.firstName || ''} ${row.lastName || ''}`.trim() || row.emailAddress || 'N/A'}</TableCell>
-                  <TableCell>{row.status} </TableCell>
+                  <TableCell>
+                    {row.status === 'resolved' || row.status === 'investigating' ? (
+                      <Box sx={{
+                        display: 'inline-block',
+                        px: 1,
+                        py: 0.5,
+                        borderRadius: 1,
+                        bgcolor: 
+                          row.status === 'PENDING' ? '#FFF9C4' : 
+                          row.status === 'REJECTED' ? '#FFCDD2' : 
+                          row.status === 'PUSHED_BACK' ? '#FFE0B2' : 
+                          row.status === 'resolved' ? '#C8E6C9' :
+                          row.status === 'investigating' ? '#E3F2FD' :
+                          '#C8E6C9',
+                        color: 
+                          row.status === 'PENDING' ? '#F57F17' : 
+                          row.status === 'REJECTED' ? '#B71C1C' : 
+                          row.status === 'PUSHED_BACK' ? '#E65100' : 
+                          row.status === 'resolved' ? '#1B5E20' :
+                          row.status === 'investigating' ? '#0D47A1' :
+                          '#1B5E20',
+                        fontWeight: 'medium',
+                        fontSize: '0.875rem'
+                      }}>
+                        {row.status}
+                      </Box>
+                    ) : (
+                      row.status
+                    )}
+                  </TableCell>
                  
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -375,25 +407,54 @@ export function CustomersTable({
 
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
-                          setIsDriverDetailsDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        View details
-                      </Button>
+                      {/* Show resolution button only for investigating status */}
+                      {row.status?.toLowerCase() === 'investigating' && (
+                        <Button 
+                          onClick={() => {
+                            console.log('Incident Resolution button clicked for incident ID:', row.id);
+                            setSelectedIncidentId(row.id);
+                            setIsResolutionDialogOpen(true);
+                          }}
+                          variant="outlined"
+                          size="small"
+                          sx={{
+                            borderColor: '#d32f2f',
+                            color: '#d32f2f',
+                            '&:hover': {
+                              borderColor: '#b71c1c',
+                              backgroundColor: 'rgba(211, 47, 47, 0.04)',
+                            }
+                          }}
+                        >
+                          Resolve Incident
+                        </Button>
+                      )}
+                      
+                      {/* Show resolved status indicator */}
+                      {row.status?.toLowerCase() === 'resolved' && (
+                        <Button 
+                          variant="outlined"
+                          size="small"
+                          disabled
+                          sx={{
+                            borderColor: '#2e7d32',
+                            color: '#2e7d32',
+                            '&.Mui-disabled': {
+                              borderColor: '#2e7d32',
+                              color: '#2e7d32',
+                            }
+                          }}
+                        >
+                          ✓ Resolved
+                        </Button>
+                      )}
+                      
+                      {/* Show nothing for other statuses */}
+                      {!['investigating', 'resolved'].includes(row.status?.toLowerCase() || '') && (
+                        <Typography variant="body2" color="text.secondary">
+                          -
+                        </Typography>
+                      )}
                     </Box>
                   </TableCell>
                
@@ -423,6 +484,14 @@ export function CustomersTable({
           onRefresh={refreshTableData}
         />
       )}
+
+      {/* Incident Resolution Dialog */}
+      <IncidentResolutionDialog
+        open={isResolutionDialogOpen}
+        onClose={() => setIsResolutionDialogOpen(false)}
+        incidentId={selectedIncidentId}
+        onResolutionComplete={refreshTableData}
+      />
 
     </Card>
   );
