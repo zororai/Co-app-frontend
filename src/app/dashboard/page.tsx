@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 import { config } from '@/config';
 import { Budget } from '@/components/dashboard/overview/budget';
-
+import { GoldSalesLineChart } from '@/components/dashboard/overview/gold-sales-line-chart';
 import { LatestProducts } from '@/components/dashboard/overview/latest-products';
 import { Sales } from '@/components/dashboard/overview/sales';
 import { TasksProgress } from '@/components/dashboard/overview/tasks-progress';
@@ -63,13 +63,7 @@ export default function Page(): React.JSX.Element {
           xs: 12,
         }}
       >
-        <Sales
-          chartSeries={[
-            { name: 'This year', data: [18, 16, 5, 8, 3, 14, 14, 16, 17, 19, 18, 20] },
-            { name: 'Last year', data: [12, 11, 4, 6, 2, 9, 9, 10, 11, 12, 13, 13] },
-          ]}
-          sx={{ height: '100%' }}
-        />
+        <Sales sx={{ height: '100%' }} />
       </Grid>
       <Grid
         size={{
@@ -96,7 +90,7 @@ export default function Page(): React.JSX.Element {
           xs: 12,
         }}
       >
-      
+        <GoldSalesLineChart sx={{ height: '100%' }} />
       </Grid>
     </Grid>
   );

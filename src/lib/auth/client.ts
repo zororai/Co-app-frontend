@@ -596,6 +596,37 @@ class AuthClient {
     }
 
     /**
+     * Fetch monthly gold sales data for a specific year
+     * GET /api/ore-transports/monthly-gold-sales?year={year}
+     */
+    async fetchMonthlyGoldSales(year: number): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        return { success: false, error: 'Authentication required. Please sign in first.' };
+      }
+      try {
+        const response = await fetch(`/api/ore-transports/monthly-gold-sales?year=${year}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          return { success: false, error: errorText || 'Failed to fetch monthly gold sales data' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching monthly gold sales:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Save section mapping (coordinates and metadata)
      * POST /api/sectionmapping
      */
