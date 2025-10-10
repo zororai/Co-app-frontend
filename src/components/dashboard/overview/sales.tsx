@@ -53,9 +53,16 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
         const totalWeightData = monthlyData.map(item => Math.round(item.totalWeight / 1000 * 100) / 100);
         const totalNewWeightData = monthlyData.map(item => Math.round(item.totalNewWeight / 1000 * 100) / 100);
         
+        // Calculate the difference between total weight and new weight
+        const differenceData = monthlyData.map(item => {
+          const difference = item.totalWeight - item.totalNewWeight;
+          return Math.round(difference / 1000 * 100) / 100;
+        });
+        
         setChartSeries([
           { name: 'Total Weight (tonnes)', data: totalWeightData },
-          { name: 'Total New Weight (tonnes)', data: totalNewWeightData }
+          { name: 'Total New Weight (tonnes)', data: totalNewWeightData },
+          { name: 'Weight Difference (tonnes)', data: differenceData }
         ]);
       } else {
         setError(result.error || 'Failed to fetch ore transport data');
@@ -119,7 +126,7 @@ function useChartOptions(): ApexOptions {
 
   return {
     chart: { background: 'transparent', stacked: false, toolbar: { show: false } },
-    colors: [theme.palette.primary.main, alpha(theme.palette.primary.main, 0.25)],
+    colors: [theme.palette.primary.main, alpha(theme.palette.primary.main, 0.25), theme.palette.error.main],
     dataLabels: { enabled: false },
     fill: { opacity: 1, type: 'solid' },
     grid: {
@@ -128,7 +135,7 @@ function useChartOptions(): ApexOptions {
       xaxis: { lines: { show: false } },
       yaxis: { lines: { show: true } },
     },
-    plotOptions: { bar: { columnWidth: '40px' } },
+    plotOptions: { bar: { columnWidth: '20px' } },
     stroke: { colors: ['transparent'], show: true, width: 2 },
     theme: { mode: theme.palette.mode },
     xaxis: {
