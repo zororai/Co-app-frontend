@@ -1,24 +1,61 @@
+'use client';
+
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
 import type { SxProps } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ArrowDownIcon } from '@phosphor-icons/react/dist/ssr/ArrowDown';
-import { ArrowUpIcon } from '@phosphor-icons/react/dist/ssr/ArrowUp';
+import { CheckCircleIcon } from '@phosphor-icons/react/dist/ssr/CheckCircle';
+import { PauseCircleIcon } from '@phosphor-icons/react/dist/ssr/PauseCircle';
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 
-export interface TotalCustomersProps {
-  diff?: number;
-  trend: 'up' | 'down';
-  sx?: SxProps;
-  value: string;
+import { authClient } from '@/lib/auth/client';
+
+interface ShaftStatusData {
+  suspendedCount: number;
+  approvedCount: number;
 }
 
-export function TotalCustomers({ diff, trend, sx, value }: TotalCustomersProps): React.JSX.Element {
-  const TrendIcon = trend === 'up' ? ArrowUpIcon : ArrowDownIcon;
-  const trendColor = trend === 'up' ? 'var(--mui-palette-success-main)' : 'var(--mui-palette-error-main)';
+export interface TotalCustomersProps {
+  sx?: SxProps;
+}
+
+export function TotalCustomers({ sx }: TotalCustomersProps): React.JSX.Element {
+  const [shaftData, setShaftData] = React.useState<ShaftStatusData>({ suspendedCount: 0, approvedCount: 0 });
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await authClient.fetchShaftStatusCounts();
+      
+      if (result.success && result.data) {
+        const data: ShaftStatusData = result.data;
+        setShaftData(data);
+      } else {
+        setError(result.error || 'Failed to fetch shaft status data');
+        setShaftData({ suspendedCount: 0, approvedCount: 0 });
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setShaftData({ suspendedCount: 0, approvedCount: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchData();
+  }, []);
+
+  const totalShafts = shaftData.approvedCount + shaftData.suspendedCount;
 
   return (
     <Card sx={sx}>
@@ -27,15 +64,41 @@ export function TotalCustomers({ diff, trend, sx, value }: TotalCustomersProps):
           <Stack direction="row" sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }} spacing={3}>
             <Stack spacing={1}>
               <Typography color="text.secondary" variant="overline">
-               Active Shafts
+                Shaft Status
               </Typography>
-              <Typography variant="h4">20</Typography>
+              <Typography variant="h4">
+                {loading ? (
+                  <CircularProgress size={24} />
+                ) : error ? (
+                  <Typography color="error" variant="body2">Error</Typography>
+                ) : (
+                  totalShafts
+                )}
+              </Typography>
             </Stack>
-            <Avatar sx={{ backgroundColor: 'var(--mui-palette-success-main)', height: '56px', width: '56px' }}>
+            <Avatar sx={{ backgroundColor: 'var(--mui-palette-primary-main)', height: '56px', width: '56px' }}>
               <UsersIcon fontSize="var(--icon-fontSize-lg)" />
             </Avatar>
           </Stack>
-       
+          
+          {!loading && !error && (
+            <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between' }}>
+              <Chip
+                icon={<CheckCircleIcon fontSize="var(--icon-fontSize-sm)" />}
+                label={`Active: ${shaftData.approvedCount}`}
+                color="success"
+                variant="outlined"
+                size="small"
+              />
+              <Chip
+                icon={<PauseCircleIcon fontSize="var(--icon-fontSize-sm)" />}
+                label={`Suspended: ${shaftData.suspendedCount}`}
+                color="error"
+                variant="outlined"
+                size="small"
+              />
+            </Stack>
+          )}
         </Stack>
       </CardContent>
     </Card>
