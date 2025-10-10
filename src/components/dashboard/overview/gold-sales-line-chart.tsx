@@ -124,13 +124,13 @@ function useChartOptions(): ApexOptions {
       zoom: { enabled: false },
       width: '100%'
     },
-    colors: [theme.palette.primary.main, theme.palette.secondary.main],
+    colors: ['#FFD700', '#4CAF50'], // Gold color for weight, Green for price
     dataLabels: { enabled: false },
     fill: { 
       type: 'gradient',
       gradient: {
         shade: 'dark',
-        gradientToColors: [alpha(theme.palette.primary.main, 0.4), alpha(theme.palette.secondary.main, 0.4)],
+        gradientToColors: ['rgba(255, 215, 0, 0.4)', 'rgba(76, 175, 80, 0.4)'], // Gold and Green with transparency
         shadeIntensity: 1,
         type: 'vertical',
         opacityFrom: 0.8,
@@ -203,7 +203,7 @@ function useChartOptions(): ApexOptions {
     },
     markers: {
       size: 6,
-      colors: [theme.palette.primary.main, theme.palette.secondary.main],
+      colors: ['#FFD700', '#4CAF50'], // Gold and Green markers
       strokeColors: theme.palette.background.paper,
       strokeWidth: 2,
       hover: {

@@ -89,7 +89,7 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
             {loading ? 'Loading...' : 'Refresh'}
           </Button>
         }
-        title={`Ore Transport Monthly Totals - ${currentYear}`}
+        title={`  Monthly Extracted Ore Totals - ${currentYear}`}
       />
       <CardContent>
         {error ? (
