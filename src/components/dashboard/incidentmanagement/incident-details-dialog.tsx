@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -11,11 +13,13 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
-import { authClient } from '@/lib/auth/client';
-import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
-import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
-import { useState } from 'react';
+import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
+import PrintIcon from '@mui/icons-material/Print';
+import { authClient } from '@/lib/auth/client';
+import { printElementById } from '@/lib/print';
+import dayjs from 'dayjs';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface DriverDetailsDialogProps {
