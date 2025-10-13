@@ -27,7 +27,7 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { DriverDetailsDialog } from '@/components/dashboard/incidentmanagement/incident-details-dialog';
+import { IncidentDetailsDialog } from '@/components/dashboard/incidentmanagement/incident-details-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -108,7 +108,7 @@ export function CustomersTable({
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
-  const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
+  const [isIncidentDetailsDialogOpen, setIsIncidentDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch incidents from API when component mounts or refreshTrigger changes
@@ -147,7 +147,7 @@ export function CustomersTable({
     console.log('View driver details clicked for ID:', driverId);
     setSelectedDriverId(driverId);
     setTimeout(() => {
-      setIsDriverDetailsDialogOpen(true);
+      setIsIncidentDetailsDialogOpen(true);
     }, 0);
   };
 
@@ -355,7 +355,7 @@ export function CustomersTable({
                         onClick={() => {
                           console.log('Button clicked for driver ID:', row.id);
                           setSelectedDriverId(row.id);
-                          setIsDriverDetailsDialogOpen(true);
+                          setIsIncidentDetailsDialogOpen(true);
                         }}
                         variant="outlined"
                         size="small"
@@ -390,12 +390,12 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25]}
       />
       
-      {/* Driver Details Dialog */}
-      {isDriverDetailsDialogOpen && (
-        <DriverDetailsDialog
-          open={isDriverDetailsDialogOpen}
-          onClose={() => setIsDriverDetailsDialogOpen(false)}
-          driverId={selectedDriverId}
+      {/* Incident Details Dialog */}
+      {isIncidentDetailsDialogOpen && (
+        <IncidentDetailsDialog
+          open={isIncidentDetailsDialogOpen}
+          onClose={() => setIsIncidentDetailsDialogOpen(false)}
+          incidentId={selectedDriverId}
           onRefresh={refreshTableData}
         />
       )}
