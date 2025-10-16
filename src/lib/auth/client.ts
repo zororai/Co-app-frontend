@@ -14,9 +14,9 @@ function generateToken(): string {
 const user = {
   id: 'USR-000',
   avatar: '/assets/avatar.png',
-  firstName: 'Sofia',
-  lastName: 'Rivers',
-  email: 'sofia@devias.io',
+  firstName: 'Test',
+  lastName: 'Test',
+  email: 'Test@commstack.co.uk',
 } satisfies User;
 
 export interface SignUpParams {
