@@ -102,12 +102,12 @@ export function SignInForm(): React.JSX.Element {
         <Stack spacing={4} sx={{ maxWidth: 400, mx: 'auto' }}>
           <Stack spacing={1} sx={{ textAlign: 'center' }}>
           <Typography variant="h4">Sign in</Typography>
-          <Typography color="text.secondary" variant="body2">
+          {/* <Typography color="text.secondary" variant="body2">
             Don&apos;t have an account?{' '}
             <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
               Sign up
             </Link>
-          </Typography>
+          </Typography> */}
         </Stack>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
