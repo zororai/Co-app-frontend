@@ -9,6 +9,7 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
 import { ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
 
@@ -16,7 +17,6 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
-import { PageLoader } from '@/components/core/page-loader';
 import { authClient } from '@/lib/auth/client';
 
 import { navItems, allNavItems, getNavItemsForUser } from './config';
@@ -31,17 +31,20 @@ export interface MobileNavProps {
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
   const [loading, setLoading] = React.useState(false);
+  const [permissionsLoading, setPermissionsLoading] = React.useState(true);
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
   const prevPathRef = React.useRef<string | null>(null);
 
   // Fetch user permissions and filter navigation items
   React.useEffect(() => {
     const fetchPermissions = async () => {
+      setPermissionsLoading(true);
       try {
         const { data: userData } = await authClient.getUser();
         if (!userData || !userData.email) {
           console.log('⚠️ No user email found, hiding all nav items');
           setFilteredNavItems([]);
+          setPermissionsLoading(false);
           return;
         }
 
@@ -71,6 +74,8 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         // Log errors and hide nav items for security
         console.warn('Error fetching permissions:', error);
         setFilteredNavItems([]);
+      } finally {
+        setPermissionsLoading(false);
       }
     };
 
@@ -119,7 +124,6 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       onClose={onClose}
       open={open}
     >
-      <PageLoader isVisible={loading} message="Loading..." />
       <Stack spacing={2} sx={{ p: 3 }}>
         <Box
           component={RouterLink}
@@ -139,6 +143,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
             Commstack
           </Typography>
         </Box>
+        
         <Box
           sx={{
             alignItems: 'center',
@@ -155,6 +160,17 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
             </Typography>
           </Box>
         </Box>
+        
+        {/* Loading indicator below Co-App text */}
+        {(permissionsLoading || loading) && (
+          <LinearProgress 
+            sx={{ 
+              width: '100%',
+              mx: -3,
+              mt: -1
+            }} 
+          />
+        )}
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box 
