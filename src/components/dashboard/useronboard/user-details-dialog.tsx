@@ -55,8 +55,13 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchUserById(userId);
-        setUserDetails(details);
+        const result = await authClient.fetchUserById(userId);
+        if (result.success && result.data) {
+          console.log('Fetched user details:', result.data);
+          setUserDetails(result.data);
+        } else {
+          setError(result.error || 'Failed to load user details');
+        }
       } catch (error_) {
         console.error('Error fetching user details:', error_);
         setError('Failed to load user details. Please try again.');
@@ -87,8 +92,10 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       if (result.success) {
         setActionSuccess('User approved successfully');
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
+        const updatedResult = await authClient.fetchUserById(userId);
+        if (updatedResult.success && updatedResult.data) {
+          setUserDetails(updatedResult.data);
+        }
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
       } else {
@@ -121,8 +128,10 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
+        const updatedResult = await authClient.fetchUserById(userId);
+        if (updatedResult.success && updatedResult.data) {
+          setUserDetails(updatedResult.data);
+        }
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
       } else {
@@ -155,8 +164,10 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         setReason('');
         setActionType(null);
         // Refresh user details
-        const updatedDetails = await authClient.fetchUserById(userId);
-        setUserDetails(updatedDetails);
+        const updatedResult = await authClient.fetchUserById(userId);
+        if (updatedResult.success && updatedResult.data) {
+          setUserDetails(updatedResult.data);
+        }
         // Call parent refresh if provided
         if (onRefresh) onRefresh();
       } else {
@@ -331,6 +342,7 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               <Box sx={{ mt: 2 }}>
                 <Typography sx={{ mb: 1 }}><strong>Position:</strong> {userDetails?.position || 'N/A'}</Typography>
                 <Typography sx={{ mb: 1 }}><strong>Role:</strong> {userDetails?.role || 'N/A'}</Typography>
+                <Typography sx={{ mb: 1 }}><strong>Location:</strong> {userDetails?.location || 'N/A'}</Typography>
                 {userDetails?.permissions?.length > 0 && (
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>Permissions:</Typography>
@@ -374,6 +386,27 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
                 </Box>
               </Box>
             )}
+            
+            {/* Audit Information */}
+            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2, bgcolor: '#fafafa' }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                Audit Information
+              </Typography>
+              <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                <Typography sx={{ fontSize: '0.875rem' }}>
+                  <strong>Created By:</strong> {userDetails?.createdBy || 'N/A'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.875rem' }}>
+                  <strong>Created At:</strong> {userDetails?.createdAt ? new Date(userDetails.createdAt).toLocaleDateString() : 'N/A'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.875rem' }}>
+                  <strong>Updated By:</strong> {userDetails?.updatedBy || 'N/A'}
+                </Typography>
+                <Typography sx={{ fontSize: '0.875rem' }}>
+                  <strong>Updated At:</strong> {userDetails?.updatedAt ? new Date(userDetails.updatedAt).toLocaleDateString() : 'N/A'}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </Box>
       </DialogContent>
