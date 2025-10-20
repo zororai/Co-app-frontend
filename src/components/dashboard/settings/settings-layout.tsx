@@ -9,9 +9,14 @@ import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from '@mui/material/OutlinedInput';
 
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import UpdateIcon from '@mui/icons-material/Update';
@@ -86,38 +91,61 @@ export function SettingsLayout(): React.JSX.Element {
       {/* Middle: Content */}
       <Paper sx={{ flexGrow: 1, p: 2, bgcolor: '#d9d9d9' }}>
         {selected === 'shaftFee' && (
-          <Stack spacing={2}>
-            <Typography variant="h6" sx={{ textAlign: 'center', fontWeight: 600 }}>
-              Shaft assignment fee
-            </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label="regFee"
-                type="number"
-                value={regFee}
-                onChange={(e) => setRegFee(e.target.value)}
-              />
-              <TextField
-                fullWidth
-                label="medicalFee"
-                type="number"
-                value={medicalFee}
-                onChange={(e) => setMedicalFee(e.target.value)}
-              />
-            </Stack>
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-              <Button variant="outlined" color="error" startIcon={<DeleteOutlineIcon />} onClick={handleDelete}>
-                Delete
-              </Button>
-              <Button variant="outlined" startIcon={<UpdateIcon />} onClick={handleUpdate}>
-                Update
-              </Button>
-              <Button variant="contained" startIcon={<SendIcon />} onClick={handleSubmit}>
-                Submit
-              </Button>
-            </Stack>
-          </Stack>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
+            <Card>
+              <CardHeader subheader="Configure fees" title="Shaft assignment fee" />
+              <Divider />
+              <CardContent>
+                <Stack spacing={3} sx={{ maxWidth: 'sm' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>regFee</InputLabel>
+                    <OutlinedInput
+                      label="regFee"
+                      name="regFee"
+                      type="number"
+                      value={regFee}
+                      onChange={(e) => setRegFee(e.target.value)}
+                      inputProps={{ min: 0 }}
+                    />
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>medicalFee</InputLabel>
+                    <OutlinedInput
+                      label="medicalFee"
+                      name="medicalFee"
+                      type="number"
+                      value={medicalFee}
+                      onChange={(e) => setMedicalFee(e.target.value)}
+                      inputProps={{ min: 0 }}
+                    />
+                  </FormControl>
+                </Stack>
+              </CardContent>
+              <Divider />
+              <CardActions sx={{ justifyContent: 'flex-end', gap: 1 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteOutlineIcon />}
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+                <Button type="button" variant="outlined" startIcon={<UpdateIcon />} onClick={handleUpdate}>
+                  Update
+                </Button>
+                <Button type="submit" variant="contained" startIcon={<SendIcon />}>
+                  Submit
+                </Button>
+              </CardActions>
+            </Card>
+          </form>
         )}
 
         {selected === 'password' && (
