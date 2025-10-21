@@ -8,14 +8,14 @@ export const allNavItems = [
     title: 'Onboarding Process',
     icon: 'users',
     items: [
-      { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'user'},
-      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
-      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
-      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    { key: 'Taxonboard', title: 'Operational Taxs Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
-    { key: 'mill', title: 'Mill Onboarding', href:  paths.dashboard.mill, icon: 'truck'},
-    { key: 'Production_loan', title: 'Production Loan Onboarding', href:  paths.dashboard.Production_loan, icon: 'truck'},
-    { key: 'Transport_cost', title: 'Transport Cost Onboarding', href:  paths.dashboard.Transport_cost, icon: 'truck'}
+      { key: 'useronboard', title: 'User', href:  paths.dashboard.useronboard, icon: 'user'},
+      { key: 'securityonboard', title: 'Security', href:  paths.dashboard.securityonboarding, icon: 'shield'},
+      { key: 'driveronboard', title: 'Driver ', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
+      { key: 'vehicleonboard', title: 'Vehicle', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
+    { key: 'Taxonboard', title: 'Operational Taxs ', href:  paths.dashboard.taxonboarding, icon: 'truck'},
+    { key: 'mill', title: 'Mill ', href:  paths.dashboard.mill, icon: 'truck'},
+    { key: 'Production_loan', title: 'Production Loan ', href:  paths.dashboard.Production_loan, icon: 'truck'},
+    { key: 'Transport_cost', title: 'Transport Cost ', href:  paths.dashboard.Transport_cost, icon: 'truck'}
  
   ], 
     
