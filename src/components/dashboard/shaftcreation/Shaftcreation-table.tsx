@@ -27,29 +27,18 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
-import { ShaftAttachmentDialog } from '@/components/dashboard/shaftassing/shaft-attachment-dialog';
 
 function noop(): void {
   // do nothing
 }
 
 export interface Customer {
-  cooperativeName: ReactNode;
-  cellNumber: ReactNode;
-  nationIdNumber: any;
   id: string;
-  name: string;
-  surname: string;
-  nationId: string;
-  address: string;
-  phone: string;
-  position: string;
-  cooperative: string;
-  numShafts: number;
+  sectionName: string;
+  shaftNumbers: string;
+  operationStatus: boolean;
   status: 'APPROVED' | 'REJECTED';
-  reason: string;
-  attachedShaft: boolean;
+  assignStatus: string;
   // Optionally, add index signature if you need dynamic keys:
   [key: string]: any;
 }
@@ -112,61 +101,9 @@ export function CustomersTable({
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
-  const handleRedirect = (path: string) => {
-    globalThis.location.href = path;
-  };
-
-  const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
-  const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
-  const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
-
-  const handleViewCustomer = async (customerId: string) => {
-    try {
-      const customerDetails = await authClient.fetchCustomerDetails(customerId);
-      if (customerDetails) {
-        setSelectedCustomer(customerDetails);
-        setIsViewDialogOpen(true);
-      }
-    } catch (error) {
-      console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
-    }
-  };
-
-  const handleShaftAttachment = (customerId: string) => {
-    setSelectedCustomerForShaft(customerId);
-    setIsShaftAttachmentDialogOpen(true);
-  };
 
   return (
     <Card>
-      {/* Action Buttons */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
-          onClick={() => handleRedirect('/dashboard/shaftassign')}
-        >
-          View Syndicate
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
-          onClick={() => handleRedirect('/dashboard/companyshaft')}
-        >
-          View Company
-        </Button>
-      </Box>
-      <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
@@ -214,7 +151,6 @@ export function CustomersTable({
               <TableCell>Section</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Assignment Status</TableCell>
-  
             </TableRow>
           </TableHead>
           <TableBody>
@@ -222,12 +158,8 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  
-                  <TableCell>{row.registrationNumber}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.surname}</TableCell>
-                  <TableCell>{row.cooperativename}</TableCell>
-                  <TableCell>{row.shaftnumber}</TableCell>
+                  <TableCell>{row.shaftNumbers}</TableCell>
+                  <TableCell>{row.sectionName}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -245,36 +177,7 @@ export function CustomersTable({
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Miner Details</button>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleShaftAttachment(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>Shaft Attachment</button>
-                    </Box>
-                  </TableCell>
+                  <TableCell>{row.assignStatus}</TableCell>
                 </TableRow>
               );
             })}
@@ -293,25 +196,6 @@ export function CustomersTable({
           setInternalPage(0);
         })}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
-      />
-      {/* Customer Details Dialog */}
-      <CustomerDetailsDialog
-        open={isViewDialogOpen}
-        onClose={() => {
-          setIsViewDialogOpen(false);
-          setSelectedCustomer(null);
-        }}
-        customer={selectedCustomer}
-      />
-      
-      {/* Shaft Attachment Dialog */}
-      <ShaftAttachmentDialog
-        open={isShaftAttachmentDialogOpen}
-        onClose={() => {
-          setIsShaftAttachmentDialogOpen(false);
-          setSelectedCustomerForShaft(null);
-        }}
-        customerId={selectedCustomerForShaft ?? undefined}
       />
     </Card>
   );

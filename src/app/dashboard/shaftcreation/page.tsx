@@ -33,12 +33,16 @@ export default function Page(): React.JSX.Element {
 
   React.useEffect(() => {
     (async () => {
-      const data = await authClient.fetchApprovedminer();
-      // Ensure each customer has cooperativeName and cooperative properties
-      const normalizedData = data.map((customer: any) => ({
-        ...customer,
-        cooperativeName: customer.cooperativeName ?? '',
-        cooperative: customer.cooperative ?? ''
+      const data = await authClient.fetchAllShaftAssignments();
+      // Normalize the shaft assignment data
+      const normalizedData = data.map((shaft: any) => ({
+        ...shaft,
+        id: shaft.id || shaft.assignmentId || Math.random().toString(),
+        sectionName: shaft.sectionName || '',
+        shaftNumbers: shaft.shaftNumbers || '',
+        operationStatus: shaft.operationStatus || false,
+        status: shaft.status || 'PENDING',
+        assignStatus: shaft.assignStatus || 'UNASSIGNED'
       }));
       setCustomers(normalizedData);
     })();
@@ -49,28 +53,22 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Section Name', 'Shaft Numbers', 'Operation Status', 'Status', 'Assignment Status'
     ];
     const rows = paginatedCustomers.map(c => [
       c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
+      c.sectionName,
+      c.shaftNumbers,
+      c.operationStatus ? 'Active' : 'Inactive',
       c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+      c.assignStatus
     ]);
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = 'shaft-assignments.csv';
     document.body.append(a);
 
     a.click();

@@ -658,6 +658,38 @@ class AuthClient {
     }
 
     /**
+     * Fetch all shaft assignments
+     * GET /api/shaft-assignments
+     */
+    async fetchAllShaftAssignments(): Promise<any[]> {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        console.error('No token found in localStorage');
+        globalThis.location.href = '/auth/signin';
+        return [];
+      }
+      try {
+        const response = await fetch('/api/shaft-assignments', {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          globalThis.location.href = '/auth/sign-in';
+          return [];
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Error fetching all shaft assignments:', error);
+        return [];
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */

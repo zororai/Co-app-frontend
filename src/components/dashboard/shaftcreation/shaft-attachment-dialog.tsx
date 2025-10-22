@@ -66,10 +66,13 @@ export function ShaftAttachmentDialog({
   const [locationError, setLocationError] = React.useState<string | null>(null);
   const [locationAccuracy, setLocationAccuracy] = React.useState<number | null>(null);
   const [manualEntry, setManualEntry] = React.useState(false);
+  const [fees, setFees] = React.useState<any[]>([]);
+  const [feesLoading, setFeesLoading] = React.useState(false);
   
   React.useEffect(() => {
     if (open) {
       fetchSections();
+      fetchFees();
     }
   }, [open]);
 
@@ -82,6 +85,30 @@ export function ShaftAttachmentDialog({
       setSections([]);
     } finally {
       setSectionsLoading(false);
+    }
+  };
+
+  const fetchFees = async () => {
+    setFeesLoading(true);
+    try {
+      const feesResponse = await authClient.fetchShaftAssignmentFees();
+      if (feesResponse.success && feesResponse.data) {
+        setFees(feesResponse.data);
+        // Auto-populate the fees if available
+        if (feesResponse.data.length > 0) {
+          const feeData = feesResponse.data[0]; // Assuming we use the first fee record
+          setFormData(prev => ({
+            ...prev,
+            regFee: feeData.regFee?.toString() || '',
+            medicalFee: feeData.medicalFee?.toString() || ''
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching fees:', error);
+      setFees([]);
+    } finally {
+      setFeesLoading(false);
     }
   };
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
@@ -304,6 +331,8 @@ export function ShaftAttachmentDialog({
     setSuccess(false);
     setLocationError(null);
     setLocationAccuracy(null);
+    setFees([]);
+    setFeesLoading(false);
     onClose();
   };
 
@@ -437,35 +466,23 @@ export function ShaftAttachmentDialog({
                 <TextField
                   fullWidth
                   label="Medical Fee"
-                  placeholder="Please enter Medical Fee"
+                  placeholder={feesLoading ? "Loading fees..." : "Auto-populated from system"}
                   value={formData.medicalFee || ''}
-                  onChange={e => {
-                    const value = e.target.value;
-                    // Allow only valid double values
-                    if (/^\d*(\.\d*)?$/.test(value)) {
-                      setFormData(prev => ({ ...prev, medicalFee: value }));
-                    }
-                  }}
                   required
-                  disabled={loading}
+                  disabled={true}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesLoading ? "Loading fees from system..." : "Automatically populated from system settings"}
                 />
 
                 <TextField
                   fullWidth
                   label="Reg Fee"
-                  placeholder="Please enter Registration Fee"
+                  placeholder={feesLoading ? "Loading fees..." : "Auto-populated from system"}
                   value={formData.regFee || ''}
-                  onChange={e => {
-                    const value = e.target.value;
-                    // Allow only valid double values
-                    if (/^\d*(\.\d*)?$/.test(value)) {
-                      setFormData(prev => ({ ...prev, regFee: value }));
-                    }
-                  }}
                   required
-                  disabled={loading}
+                  disabled={true}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesLoading ? "Loading fees from system..." : "Automatically populated from system settings"}
                 />
               </Box>
 
