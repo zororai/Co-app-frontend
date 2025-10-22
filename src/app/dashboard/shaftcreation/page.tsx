@@ -8,20 +8,19 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
-import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/shaftassing/Shaftassigncustomers-table';
-import type { Customer } from '@/components/dashboard/shaftassing/Shaftassigncustomers-table';
+import { CustomersTable } from '@/components/dashboard/shaftcreation/Shaftcreation-table';
+import type { Customer } from '@/components/dashboard/shaftcreation/Shaftcreation-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { ShaftAttachmentDialog } from '@/components/dashboard/shaftcreation/shaft-attachment-dialog';
 import { authClient } from '@/lib/auth/client';
 
 
@@ -30,6 +29,7 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [isShaftDialogOpen, setIsShaftDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -78,84 +78,32 @@ export default function Page(): React.JSX.Element {
     URL.revokeObjectURL(url);
   };
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
-  }
 
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Assigning Syndicate Miners To Shaft</Typography>
+          <Typography variant="h4">Shaft Creation</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
           </Stack>
         </Stack>
-      
+        <Stack sx={{ alignItems: 'flex-end' }}>
+          <Button 
+            variant="contained"
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            onClick={() => setIsShaftDialogOpen(true)}
+            sx={{
+              bgcolor: '#5f4bfa',
+              color: '#fff',
+              '&:hover': { bgcolor: '#4d3fd6' }
+            }}
+          >
+            Create Shaft
+          </Button>
+        </Stack>
       </Stack>
 
       <CustomersTable
@@ -166,6 +114,10 @@ export default function Page(): React.JSX.Element {
       />
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <ShaftAttachmentDialog 
+        open={isShaftDialogOpen} 
+        onClose={() => setIsShaftDialogOpen(false)} 
+      />
     </Stack>
   );
 }

@@ -112,6 +112,9 @@ export function CustomersTable({
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
+  const handleRedirect = (path: string) => {
+    globalThis.location.href = path;
+  };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -138,6 +141,32 @@ export function CustomersTable({
 
   return (
     <Card>
+      {/* Action Buttons */}
+      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: '#5f4bfa',
+            color: '#fff',
+            '&:hover': { bgcolor: '#4d3fd6' }
+          }}
+          onClick={() => handleRedirect('/dashboard/shaftassign')}
+        >
+          View Syndicate
+        </Button>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: '#5f4bfa',
+            color: '#fff',
+            '&:hover': { bgcolor: '#4d3fd6' }
+          }}
+          onClick={() => handleRedirect('/dashboard/companyshaft')}
+        >
+          View Company
+        </Button>
+      </Box>
+      <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
@@ -180,28 +209,12 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
-              <TableCell>Registration Number</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-            
-              <TableCell>Name Of Cooperative</TableCell>
-              <TableCell>No.Of.Shafts</TableCell>
+              
+              <TableCell>Shaft Number</TableCell>
+              <TableCell>Section</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>View Miner Details</TableCell>
-              <TableCell>Attach Shaft</TableCell>
+              <TableCell>Assignment Status</TableCell>
+  
             </TableRow>
           </TableHead>
           <TableBody>
@@ -209,18 +222,7 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
+                  
                   <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
