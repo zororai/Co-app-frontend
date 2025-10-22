@@ -927,9 +927,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 onClick={handleStepNext}
                 disabled={loading}
                 sx={{
-                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : theme.palette.secondary.main,
+                  bgcolor: theme.palette.secondary.main,
                   '&:hover': {
-                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : theme.palette.secondary.dark
+                    bgcolor: theme.palette.secondary.dark
                   }
                 }}
               >

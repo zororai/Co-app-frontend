@@ -22,8 +22,24 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import Skeleton from '@mui/material/Skeleton';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -72,6 +88,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -81,8 +98,30 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('createdAt');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteCompanyId, setDeleteCompanyId] = React.useState<string | null>(null);
+  const [deleteCompanyName, setDeleteCompanyName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error' | 'info'>('success');
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Filter the users based on search, filters, and tab status, then apply sorting
   const filteredRows = React.useMemo(() => {
     const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
@@ -99,8 +138,25 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -150,7 +206,56 @@ export function CustomersTable({
       }
     } catch (error) {
       console.error('Error fetching customer details:', error);
-      alert('Failed to load customer details');
+      setSnackbarMessage('Failed to load company details');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+  
+  // Handle edit company
+  const handleEditCompany = (companyId: string) => {
+    // TODO: Implement edit functionality
+    setSnackbarMessage('Edit functionality coming soon');
+    setSnackbarSeverity('info');
+    setSnackbarOpen(true);
+  };
+  
+  // Handle delete company - show confirmation dialog
+  const handleDeleteCompany = (companyId: string, companyName: string) => {
+    setDeleteCompanyId(companyId);
+    setDeleteCompanyName(companyName);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Confirm delete company
+  const confirmDeleteCompany = async () => {
+    if (!deleteCompanyId) return;
+    
+    setIsDeleting(true);
+    try {
+      // TODO: Implement actual delete API call
+      // await authClient.deleteSecurityCompany(deleteCompanyId);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Close dialog and refresh
+      setIsDeleteDialogOpen(false);
+      refreshTableData();
+      
+      // Show success message
+      setSnackbarMessage('Security company deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      setSnackbarMessage('Failed to delete company');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+      setDeleteCompanyId(null);
+      setDeleteCompanyName('');
     }
   };
   
@@ -194,15 +299,6 @@ export function CustomersTable({
         bgcolor: '#fff',
         boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        <Typography 
-          variant="subtitle1" 
-          sx={{ 
-            fontWeight: 500, 
-            mb: 2 
-          }}
-        >
-          Filters
-        </Typography>
         <Box sx={{ 
           display: 'flex', 
           gap: 2, 
@@ -310,24 +406,89 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Company Name</TableCell>
-              <TableCell>Contact Person</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Workers</TableCell>
-              <TableCell>Contract Expiry</TableCell>
+              <TableCell sortDirection={sortField === 'companyName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'companyName'}
+                  direction={sortField === 'companyName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('companyName')}
+                >
+                  Company Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'contactPersonName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'contactPersonName'}
+                  direction={sortField === 'contactPersonName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('contactPersonName')}
+                >
+                  Contact Person
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'type' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'type'}
+                  direction={sortField === 'type' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('type')}
+                >
+                  Type
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'numberOfWorks' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'numberOfWorks'}
+                  direction={sortField === 'numberOfWorks' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('numberOfWorks')}
+                >
+                  Workers
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'endContractDate' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'endContractDate'}
+                  direction={sortField === 'endContractDate' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('endContractDate')}
+                >
+                  Contract Expiry
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
-              
-     
-              
             </TableRow>
           </TableHead>
           <TableBody>
+            {/* Loading skeleton rows */}
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="rectangular" width={18} height={18} /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No users found
+                    No security companies found
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -375,25 +536,46 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>{row.numberOfWorks || '0'}</TableCell>
                   <TableCell>{row.endContractDate || 'N/A'}</TableCell>
-                  
-                  
-              
                    <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Security Details</button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Company">
+                        <IconButton 
+                          onClick={() => handleEditCompany(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Company">
+                        <IconButton 
+                          onClick={() => handleDeleteCompany(row.id, row.companyName || row.name || '')}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
-               
                 </TableRow>
               );
             })}
@@ -427,6 +609,61 @@ export function CustomersTable({
         customer={selectedCustomer}
         onRefresh={refreshTableData}
       />
+      
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete <strong>{deleteCompanyName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteCompany} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: 'secondary.main',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }
