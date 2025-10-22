@@ -206,7 +206,17 @@ export default function Page(): React.JSX.Element {
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              },
+              '& .MuiTab-root': {
+                '&.Mui-selected': {
+                  color: 'secondary.main',
+                },
+              },
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />
@@ -287,9 +297,9 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
         startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
         onClick={handleOpenDialog}
         sx={{
-          bgcolor: '#5f4bfa',
+          bgcolor: 'secondary.main',
           color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
+          '&:hover': { bgcolor: 'secondary.dark' }
         }}
       >
         Add New Vehicle

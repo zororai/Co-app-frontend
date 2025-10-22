@@ -12,6 +12,7 @@ import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
@@ -19,6 +20,7 @@ import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, Dialog
 import { useState } from 'react';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
+import { useTheme } from '@mui/material/styles';
 
 interface MillDetailsDialogProps {
   open: boolean;
@@ -27,6 +29,7 @@ interface MillDetailsDialogProps {
 }
 
 export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [mill, setMill] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -93,13 +96,28 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#15073d', p: 2 }}>
-        <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Mill Details</Typography>
+      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: theme.palette.secondary.main, p: 2 }}>
+        <Typography variant="subtitle1" component="span" sx={{ color: 'white', fontWeight: 'bold' }}>Mill Details</Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('mill-details-printable', 'Mill Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={() => printElementById('mill-details-printable', 'Mill Details')} 
+            size="small" 
+            sx={{ 
+              mr: 1, 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
@@ -107,8 +125,61 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
       
       <DialogContent>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
+          <Box sx={{ mt: 2 }}>
+            {/* Header skeleton */}
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Skeleton variant="text" width="40%" height={32} />
+              <Skeleton variant="rounded" width={100} height={24} />
+            </Box>
+            
+            <Divider sx={{ mb: 3 }} />
+            
+            {/* Mill Information skeleton */}
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                {[...Array(4)].map((_, index) => (
+                  <Box key={index}>
+                    <Skeleton variant="text" width="60%" height={20} />
+                    <Skeleton variant="text" width="80%" height={24} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+            
+            {/* Owner Information skeleton */}
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                {[...Array(3)].map((_, index) => (
+                  <Box key={index}>
+                    <Skeleton variant="text" width="60%" height={20} />
+                    <Skeleton variant="text" width="80%" height={24} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+            
+            {/* Status Information skeleton */}
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                {[...Array(3)].map((_, index) => (
+                  <Box key={index}>
+                    <Skeleton variant="text" width="60%" height={20} />
+                    <Skeleton variant="text" width="80%" height={24} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+            
+            {/* Documents skeleton */}
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Skeleton variant="text" width="60%" height={20} />
+              <Skeleton variant="text" width="80%" height={24} />
+              <Skeleton variant="rectangular" width={300} height={200} sx={{ mt: 1, borderRadius: '4px' }} />
+            </Box>
           </Box>
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
@@ -134,81 +205,81 @@ export function MillDetailsDialog({ open, onClose, driverId }: MillDetailsDialog
             <Divider sx={{ mb: 3 }} />
             
             {/* Mill Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2, textTransform: 'uppercase' }}>
                 Mill Information
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Mill ID</Typography>
-                  <Typography variant="body1">{mill.millId || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Mill ID</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.millId || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Mill Name</Typography>
-                  <Typography variant="body1">{mill.millName || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Mill Name</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.millName || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Mill Type</Typography>
-                  <Typography variant="body1">{mill.millType || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Mill Type</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.millType || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Mill Location</Typography>
-                  <Typography variant="body1">{mill.millLocation || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Mill Location</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.millLocation || 'N/A'}</Typography>
                 </Box>
               </Box>
             </Box>
             
             {/* Owner Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2, textTransform: 'uppercase' }}>
                 Owner Information
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Owner Name</Typography>
-                  <Typography variant="body1">{mill.owner || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Owner Name</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.owner || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">ID Number</Typography>
-                  <Typography variant="body1">{mill.idNumber || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>ID Number</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.idNumber || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Address</Typography>
-                  <Typography variant="body1">{mill.address || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Address</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.address || 'N/A'}</Typography>
                 </Box>
               </Box>
             </Box>
             
             {/* Status Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2, textTransform: 'uppercase' }}>
                 Status Information
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Status</Typography>
-                  <Typography variant="body1">{mill.status || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Status</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.status || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Status Health</Typography>
-                  <Typography variant="body1">{mill.statusHealth || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Status Health</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.statusHealth || 'N/A'}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Reason</Typography>
-                  <Typography variant="body1">{mill.reason || 'N/A'}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Reason</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>{mill.reason || 'N/A'}</Typography>
                 </Box>
               </Box>
             </Box>
             
             {/* Documents */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2, textTransform: 'uppercase' }}>
                 Documents
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">Mill Picture</Typography>
-                  <Typography variant="body1">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>Mill Picture</Typography>
+                  <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>
                     {mill.picture ? 'Uploaded' : 'Not uploaded'}
                   </Typography>
                   {mill.picture && (

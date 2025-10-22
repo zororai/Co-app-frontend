@@ -22,8 +22,24 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -74,6 +90,8 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -83,8 +101,30 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('regNumber');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteVehicleId, setDeleteVehicleId] = React.useState<string | null>(null);
+  const [deleteVehicleReg, setDeleteVehicleReg] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+  
+  // Filter the users based on search, filters, and tab status, then apply sorting
   const filteredRows = React.useMemo(() => {
     const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
@@ -101,8 +141,25 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -197,6 +254,37 @@ export function CustomersTable({
       onRefresh();
     }
   }, [onRefresh]);
+  
+  // Handle delete vehicle
+  const handleDeleteClick = (vehicleId: string, regNumber: string) => {
+    setDeleteVehicleId(vehicleId);
+    setDeleteVehicleReg(regNumber);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteVehicle = async () => {
+    if (!deleteVehicleId) return;
+    
+    setIsDeleting(true);
+    try {
+      // TODO: Implement deleteVehicle API method in authClient
+      // await authClient.deleteVehicle(deleteVehicleId);
+      
+      setSnackbarMessage('Vehicle deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      
+      setIsDeleteDialogOpen(false);
+      refreshTableData();
+    } catch (error) {
+      console.error('Error deleting vehicle:', error);
+      setSnackbarMessage('Failed to delete vehicle');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Card>      
@@ -330,27 +418,91 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              
-              <TableCell>Registration Number</TableCell>
-              <TableCell>Owner Name</TableCell>
-              <TableCell>Owner Contact</TableCell>
-              <TableCell>Owner ID</TableCell>
-              <TableCell>Vehicle Type</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell sortDirection={sortField === 'regNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'regNumber'}
+                  direction={sortField === 'regNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('regNumber')}
+                >
+                  Registration Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'ownerName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'ownerName'}
+                  direction={sortField === 'ownerName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('ownerName')}
+                >
+                  Owner Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'ownerCellNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'ownerCellNumber'}
+                  direction={sortField === 'ownerCellNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('ownerCellNumber')}
+                >
+                  Owner Contact
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'ownerIdNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'ownerIdNumber'}
+                  direction={sortField === 'ownerIdNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('ownerIdNumber')}
+                >
+                  Owner ID
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'vehicleType' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'vehicleType'}
+                  direction={sortField === 'vehicleType' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('vehicleType')}
+                >
+                  Vehicle Type
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No users found
+                    No vehicles found
                   </Typography>
                 </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -385,19 +537,32 @@ export function CustomersTable({
                   
             
               
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Vehicle Details</button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleViewUserDetails(row.id)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Vehicle">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(row.id, row.regNumber)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                
@@ -441,6 +606,61 @@ export function CustomersTable({
         vehicleId={selectedVehicleId}
         onRefresh={refreshTableData}
       />
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete vehicle <strong>{deleteVehicleReg}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteVehicle} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }

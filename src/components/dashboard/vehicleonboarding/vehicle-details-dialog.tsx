@@ -13,11 +13,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
+import { useTheme } from '@mui/material/styles';
 
 interface VehicleDetailsDialogProps {
   open: boolean;
@@ -32,6 +34,7 @@ export function VehicleDetailsDialog({
   vehicleId, 
   onRefresh 
 }: VehicleDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [vehicle, setVehicle] = React.useState<any | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -145,24 +148,61 @@ export function VehicleDetailsDialog({
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2,
-          bgcolor: '#15073d'
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Vehicle Details</Typography>
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Vehicle Details
+        </Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('vehicle-details-printable', 'Vehicle Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={() => printElementById('vehicle-details-printable', 'Vehicle Details')} 
+            size="small" 
+            sx={{ 
+              mr: 1, 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-            <CircularProgress />
+          <Box sx={{ p: 3 }}>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+              gap: 2.5 
+            }}>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Skeleton variant="text" width="60%" height={32} sx={{ mb: 2 }} />
+                <Skeleton variant="text" width="100%" />
+                <Skeleton variant="text" width="90%" />
+                <Skeleton variant="text" width="85%" />
+                <Skeleton variant="text" width="95%" />
+                <Skeleton variant="text" width="80%" />
+                <Skeleton variant="rectangular" width="30%" height={28} />
+              </Box>
+            </Box>
           </Box>
         ) : error ? (
           <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
@@ -176,33 +216,94 @@ export function VehicleDetailsDialog({
             </Button>
           </Box>
         ) : vehicle ? (
-          <Box sx={{ p: 2 }} id="vehicle-details-printable">
+          <Box sx={{ p: 3 }} id="vehicle-details-printable">
             <Box sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: 2
+              gap: 2.5
             }}>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
                   Vehicle Information
                 </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Typography><strong>Registration Number:</strong> {vehicle.regNumber || 'N/A'}</Typography>
-                  <Typography><strong>Vehicle Type:</strong> {vehicle.vehicleType || 'N/A'}</Typography>
-                  <Typography><strong>Make:</strong> {vehicle.make || 'N/A'}</Typography>
-                  <Typography><strong>Model:</strong> {vehicle.model || 'N/A'}</Typography>
-                  <Typography><strong>Year:</strong> {vehicle.year || 'N/A'}</Typography>
-                  <Typography><strong>Last Service Date:</strong> {formatDate(vehicle.lastServiceDate)}</Typography>
-                  <Typography>
-                    <strong>Status:</strong>
+                <Box sx={{ 
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                  gap: 1.5,
+                  mt: 2
+                }}>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Registration Number:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.regNumber || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Vehicle Type:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.vehicleType || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Make:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.make || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Model:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.model || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Year:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.year || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Last Service Date:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {formatDate(vehicle.lastServiceDate)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ gridColumn: { xs: '1', sm: 'span 2' } }}>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Status:</strong>
+                    </Typography>
                     <Box
-                      component="span"
                       sx={{
                         display: 'inline-block',
                         px: 1,
                         py: 0.5,
                         borderRadius: 1,
-                        ml: 1,
                         bgcolor:
                           vehicle.status === 'PENDING' ? '#FFF9C4' :
                           vehicle.status === 'REJECTED' ? '#FFCDD2' :
@@ -213,35 +314,118 @@ export function VehicleDetailsDialog({
                           vehicle.status === 'REJECTED' ? '#B71C1C' :
                           vehicle.status === 'PUSHED_BACK' ? '#E65100' :
                           '#1B5E20',
+                        fontWeight: 'medium',
+                        fontSize: '0.875rem'
                       }}
                     >
                       {vehicle.status || 'PENDING'}
                     </Box>
-                  </Typography>
+                  </Box>
                 </Box>
               </Box>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
                   Owner Information
                 </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Typography><strong>Name:</strong> {vehicle.ownerName || 'N/A'}</Typography>
-                  <Typography><strong>ID Number:</strong> {vehicle.ownerIdNumber || 'N/A'}</Typography>
-                  <Typography><strong>Cell Number:</strong> {vehicle.ownerCellNumber || 'N/A'}</Typography>
-                  <Typography><strong>Address:</strong> {vehicle.ownerAddress || 'N/A'}</Typography>
+                <Box sx={{ 
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                  gap: 1.5,
+                  mt: 2
+                }}>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Name:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.ownerName || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>ID Number:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.ownerIdNumber || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ gridColumn: { xs: '1', sm: 'span 2' } }}>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Cell Number:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.ownerCellNumber || 'N/A'}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ gridColumn: { xs: '1', sm: 'span 2' } }}>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Address:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.ownerAddress || 'N/A'}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
-              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ 
+                gridColumn: '1 / -1', 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
                   Assigned Driver
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                  <Typography><strong>Driver ID:</strong> {vehicle.assignedDriver || 'N/A'}</Typography>
-                  {/* Additional driver information can be added here if available */}
+                  <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                    <strong>Driver ID:</strong>
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                    {vehicle.assignedDriver || 'N/A'}
+                  </Typography>
                 </Box>
               </Box>
-              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ 
+                gridColumn: '1 / -1', 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
                   Documents
                 </Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -299,12 +483,32 @@ export function VehicleDetailsDialog({
                 </Box>
               </Box>
               {vehicle.reason && (
-                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ 
+                  gridColumn: '1 / -1', 
+                  border: `2px solid ${theme.palette.secondary.main}`, 
+                  borderRadius: '12px', 
+                  p: 2.5,
+                  bgcolor: '#ffffff'
+                }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ 
+                      color: theme.palette.secondary.main, 
+                      fontWeight: 700, 
+                      mb: 2,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}
+                  >
                     Additional Information
                   </Typography>
                   <Box sx={{ mt: 2 }}>
-                    <Typography><strong>Reason:</strong> {vehicle.reason}</Typography>
+                    <Typography sx={{ fontSize: '0.95rem', mb: 0.5 }}>
+                      <strong>Reason:</strong>
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.95rem', color: 'text.secondary' }}>
+                      {vehicle.reason}
+                    </Typography>
                   </Box>
                 </Box>
               )}

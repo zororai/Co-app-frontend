@@ -32,6 +32,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import { authClient } from '@/lib/auth/client';
+import { useTheme } from '@mui/material/styles';
 
 interface AddVehicleDialogProps {
   open: boolean;
@@ -102,15 +103,17 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     registrationBook: null,
   });
   
-  // Consistent TextField styling (rgb(5, 5, 68))
+  const theme = useTheme();
+  
+  // Consistent TextField styling using theme colors
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '& fieldset': { borderColor: theme.palette.secondary.main },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
     },
     '& .MuiInputLabel-root': {
-      '&.Mui-focused': { color: 'rgb(5, 5, 68)' },
+      '&.Mui-focused': { color: theme.palette.secondary.main },
     },
   } as const;
   
@@ -389,9 +392,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     onChange={handleChange}
                     disabled={loading}
                     sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
                     }}
                   >
                     {vehicleTypes.map((type) => (
@@ -465,9 +468,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     onChange={handleChange}
                     label="Assigned Driver"
                     sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
                     }}
                   >
                     <MenuItem value=""><em>None</em></MenuItem>
@@ -876,18 +879,17 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           }
         }}
       >
-   <DialogTitle sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
-            color: 'white',
-            py: 2.5,
-            px: 3,
-            m: 0
-          }}>
-
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0
+        }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
             {activeStep === steps.length - 1 ? 'Registration Complete' : 'Vehicle Registration'}
           </Typography>
     
@@ -896,10 +898,8 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             onClick={handleClose}
             disabled={loading}
             sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
             }}
           >
             <CloseIcon />
@@ -916,16 +916,16 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             sx={{
               '& .MuiStepIcon-root': {
                 color: '#d1d5db',
-                '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-                '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+                '&.Mui-active': { color: theme.palette.secondary.main },
+                '&.Mui-completed': { color: theme.palette.secondary.main },
               },
               '& .MuiStepLabel-label': {
-                '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-                '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+                '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+                '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
               },
               '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
             }}
           >
             {steps.map((label, index) => (
@@ -945,7 +945,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
             overflow: 'auto',
             '&::-webkit-scrollbar': { width: '6px' },
             '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
           }}
         >
           {/* Error message */}
@@ -983,9 +983,9 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                 onClick={activeStep === steps.length - 2 ? handleSubmit : handleStepNext}
                 disabled={loading}
                 sx={{
-                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
+                  bgcolor: theme.palette.secondary.main,
                   '&:hover': {
-                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
+                    bgcolor: theme.palette.secondary.dark
                   }
                 }}
               >
