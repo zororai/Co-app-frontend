@@ -8,6 +8,7 @@ import '@/styles/global.css';
 import { UserProvider } from '@/contexts/user-context';
 import { LocalizationProvider } from '@/components/core/localization-provider';
 import { ThemeProvider } from '@/components/core/theme-provider/theme-provider';
+import { ApiFetchInterceptorInit } from '@/components/core/api-fetch-interceptor-init';
 
 export const viewport = { width: 'device-width', initialScale: 1 } satisfies Viewport;
 
@@ -22,7 +23,10 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
         <div suppressHydrationWarning>
           <LocalizationProvider>
             <UserProvider>
-              <ThemeProvider>{children}</ThemeProvider>
+              <ThemeProvider>
+                <ApiFetchInterceptorInit />
+                {children}
+              </ThemeProvider>
             </UserProvider>
           </LocalizationProvider>
         </div>
