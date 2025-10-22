@@ -1,5 +1,32 @@
 # Dialog Component Styling Guide
 
+## ⚠️ CRITICAL: Modal Types - Always Update Both!
+
+### Two Modal Types in Each Module
+Each module typically has **TWO separate modal components** that must BOTH be styled consistently:
+
+1. **Create/Add Modal** (e.g., `add-productionloan-dialog.tsx`, `add-mill-dialog-box.tsx`)
+   - Used for creating new records
+   - Usually has a multi-step form with Stepper component
+   - File naming: `add-[module]-dialog.tsx` or `add-[module]-dialog-box.tsx`
+   - Typically includes: Next, Back, Submit buttons
+
+2. **Details/View/Update Modal** (e.g., `Production_Loan-details-dialog.tsx`, `mill-details-dialog.tsx`)
+   - Used for viewing and editing existing records
+   - Displays record details in a read-only or editable format
+   - File naming: `[Module]-details-dialog.tsx` or `[module]-details-dialog.tsx`
+   - Typically includes: Close, Save, Approve, Reject buttons
+
+### When Making Styling Updates:
+✅ **ALWAYS check and update BOTH modal types** in each module
+✅ **Search for both file patterns**: `add-*-dialog*` AND `*-details-dialog*`
+✅ **Verify consistent styling** across both modals (colors, buttons, borders, spacing)
+✅ **Check all buttons in both modals** follow the button styling rules below
+
+### Common Mistake:
+❌ Updating only ONE modal type and forgetting the other
+✅ CORRECT: Update both Create AND Details/Update modals for complete consistency
+
 ## Layout Structure
 - Use `maxWidth="md"` and `fullWidth` for consistent dialog sizing
 - Implement responsive grid layouts with `gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }`

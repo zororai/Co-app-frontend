@@ -19,6 +19,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/material/styles';
 
 interface AddTransportCostDialogProps {
   open: boolean;
@@ -102,6 +103,7 @@ const Grid = ({
 };
 
 export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [formData, setFormData] = React.useState<TransportCostFormData>({
     paymentMethod: '',
@@ -265,21 +267,30 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
         sx: { borderRadius: 1 }
       }}
     >
-       <DialogTitle sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
-            color: 'white',
-            py: 2.5,
-            px: 3,
-            m: 0
-          }}>
-
-        <Typography variant="h6" component="div">
+      <DialogTitle 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0
+        }}
+      >
+        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
           Add Transport Cost
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton 
+          edge="end" 
+          onClick={handleClose} 
+          aria-label="close"
+          sx={{
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -300,16 +311,16 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
         <Stepper activeStep={activeStep} alternativeLabel sx={{
           '& .MuiStepIcon-root': {
             color: '#d1d5db',
-            '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-            '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+            '&.Mui-active': { color: theme.palette.secondary.main },
+            '&.Mui-completed': { color: theme.palette.secondary.main },
           },
           '& .MuiStepLabel-label': {
-            '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-            '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+            '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+            '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
           },
           '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-          '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-          '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+          '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+          '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
         }}>
           {steps.map((label) => (
             <Step key={label}>
@@ -533,9 +544,12 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
             variant="outlined"
             onClick={handleBack}
             sx={{
-              borderColor: 'rgb(5, 5, 68)',
-              color: 'rgb(5, 5, 68)',
-              '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' }
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main,
+              '&:hover': { 
+                borderColor: theme.palette.secondary.dark, 
+                backgroundColor: 'rgba(50, 56, 62, 0.04)' 
+              }
             }}
           >
             Back
@@ -546,7 +560,15 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
           <Button
             variant="contained"
             onClick={handleNext}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ 
+              bgcolor: theme.palette.secondary.main, 
+              color: 'white', 
+              '&:hover': { bgcolor: theme.palette.secondary.dark },
+              '&.MuiButton-contained': {
+                bgcolor: theme.palette.secondary.main,
+                color: 'white'
+              }
+            }}
           >
             Next
           </Button>
@@ -557,7 +579,15 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
             variant="contained"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ 
+              bgcolor: theme.palette.secondary.main, 
+              color: 'white', 
+              '&:hover': { bgcolor: theme.palette.secondary.dark },
+              '&.MuiButton-contained': {
+                bgcolor: theme.palette.secondary.main,
+                color: 'white'
+              }
+            }}
           >
             {isSubmitting ? 'Creating...' : 'Create Transport Cost'}
           </Button>
@@ -567,7 +597,15 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTransportCostDialo
           <Button
             variant="contained"
             onClick={handleClose}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ 
+              bgcolor: theme.palette.secondary.main, 
+              color: 'white', 
+              '&:hover': { bgcolor: theme.palette.secondary.dark },
+              '&.MuiButton-contained': {
+                bgcolor: theme.palette.secondary.main,
+                color: 'white'
+              }
+            }}
           >
             Close
           </Button>
