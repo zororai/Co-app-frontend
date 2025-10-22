@@ -8,18 +8,18 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
 import TextField from '@mui/material/TextField';
-import { Chip, Stack, Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
-import { useState } from 'react';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/material/styles';
 
 interface DriverDetailsDialogProps {
   open: boolean;
@@ -28,6 +28,7 @@ interface DriverDetailsDialogProps {
 }
 
 export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [driver, setDriver] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -183,7 +184,7 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: '#15073d', p: 2 }}>
+      <DialogTitle sx={{ pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: theme.palette.secondary.main, p: 2 }}>
         <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Driver Details</Typography>
         <Box sx={{ display: 'flex' }}>
         <IconButton onClick={() => printElementById('user-details-printable', 'User Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
@@ -197,15 +198,23 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
       
       <DialogContent>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
+          <Box sx={{ mt: 2 }}>
+            {/* Skeleton loading states */}
+            <Box sx={{ mb: 3 }}>
+              <Skeleton variant="rectangular" height={60} sx={{ borderRadius: '8px', mb: 3 }} />
+            </Box>
+            
+            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: '8px', mb: 3 }} />
+            <Skeleton variant="rectangular" height={180} sx={{ borderRadius: '8px', mb: 3 }} />
+            <Skeleton variant="rectangular" height={120} sx={{ borderRadius: '8px', mb: 3 }} />
+            <Skeleton variant="rectangular" height={140} sx={{ borderRadius: '8px' }} />
           </Box>
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>{error}</Alert>
         ) : driver ? (
           <Box sx={{ mt: 2 }} id="driver-details-printable">
             {/* Driver Status */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2 }}>
               <Typography variant="h6">
                 {driver.firstName} {driver.lastName}
               </Typography>
@@ -224,8 +233,8 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             <Divider sx={{ mb: 3 }} />
             
             {/* Personal Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                 Personal Information
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -257,8 +266,8 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             </Box>
             
             {/* License Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                 License Information
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -282,8 +291,8 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             </Box>
             
             {/* Emergency Contact */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                 Emergency Contact
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -299,8 +308,8 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
             </Box>
             
             {/* Documents */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                 Documents
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -340,9 +349,17 @@ export function DriverDetailsDialog({ open, onClose, driverId }: DriverDetailsDi
         )}
       </DialogContent>
       
-      <DialogActions sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'space-between' }}>
-        
-        <Button onClick={onClose} color="primary">
+      <DialogActions sx={{ p: 3, pt: 0, display: 'flex', justifyContent: 'flex-end' }}>
+        <Button 
+          onClick={onClose}
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: '#ffffff',
+            '&:hover': {
+              bgcolor: theme.palette.secondary.dark,
+            },
+          }}
+        >
           Close
         </Button>
       </DialogActions>
