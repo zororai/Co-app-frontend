@@ -5482,7 +5482,6 @@ cooperativename: string;
         console.error('updateSampleResults - Error response:', errorText);
         throw new Error(`Failed to update sample results: ${errorText}`);
       }
-      
       const responseData = await response.text();
       console.log('updateSampleResults - Success response:', responseData);
       
@@ -5495,10 +5494,132 @@ cooperativename: string;
       };
     }
   }
+  /**
+   * Create shaft assignment fee
+   * POST /api/shaft-assignment-fees/create
+   */
+  async createShaftAssignmentFee(payload: { regFee: number; medicalFee: number }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const response = await fetch('/api/shaft-assignment-fees/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to create shaft assignment fee' };
+      }
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating shaft assignment fee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 
+  /**
+   * Get all shaft assignment fees
+   * GET /api/shaft-assignment-fees/all
+   */
+  async fetchShaftAssignmentFees(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const response = await fetch('/api/shaft-assignment-fees/all', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch shaft assignment fees' };
+      }
+      const data = await response.json().catch(() => []);
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      console.error('Error fetching shaft assignment fees:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Update a shaft assignment fee by ID
+   * PUT /api/shaft-assignment-fees/{id}
+   */
+  async updateShaftAssignmentFee(id: string | number, payload: { regFee: number; medicalFee: number }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const response = await fetch(`/api/shaft-assignment-fees/${encodeURIComponent(String(id))}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update shaft assignment fee' };
+      }
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error updating shaft assignment fee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Delete a shaft assignment fee by ID
+   * DELETE /api/shaft-assignment-fees/{id}?deletedBy={name}
+   */
+  async deleteShaftAssignmentFee(id: string | number, deletedBy: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const url = `/api/shaft-assignment-fees/${encodeURIComponent(String(id))}?deletedBy=${encodeURIComponent(deletedBy)}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to delete shaft assignment fee' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting shaft assignment fee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 }
 export const authClient = new AuthClient();
-
-// Usage example after login:
-// const { token } = await authClient.signInWithPassword({ email, password });
-// const customers = await authClient.fetchCustomers(token);
