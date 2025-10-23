@@ -18,30 +18,46 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/driveronboarding/driver-onboading-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyDriverOnboardingTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/driveronboarding/driver-onboading-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+  return (
+    <LazyWrapper>
+      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
 function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+  return (
+    <LazyWrapper>
+      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
 function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+  return (
+    <LazyWrapper>
+      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
 }
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+  return (
+    <LazyWrapper>
+      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddDriverDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddDriverDialog } from '@/components/dashboard/driveronboarding/add-driver-dialog-box';
 
 
 export default function Page(): React.JSX.Element {
@@ -225,7 +241,9 @@ export default function Page(): React.JSX.Element {
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
     </Stack>
   );
 }
@@ -271,12 +289,14 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
         Add New Driver
       </Button>
       
-      {/* Add Security Company Dialog */}
-      <AddDriverDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-        onRefresh={onRefresh}
-      />
+      {/* Add Driver Dialog */}
+      <LazyWrapper>
+        <LazyAddDriverDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+          onRefresh={onRefresh}
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }
