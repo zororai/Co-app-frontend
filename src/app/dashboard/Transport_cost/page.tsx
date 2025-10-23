@@ -18,7 +18,8 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/Transport_cost/transportcost-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyTransportCostTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/Transport_cost/transportcost-table';
 
 
@@ -27,22 +28,37 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddTaxDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddTaxDialog } from '@/components/dashboard/Transport_cost/add-tax-dialog';
 
 
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+  return (
+    <LazyWrapper>
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
 function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+  return (
+    <LazyWrapper>
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
 function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+  return (
+    <LazyWrapper>
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
 }
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+  return (
+    <LazyWrapper>
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 
 export default function Page(): React.JSX.Element {
@@ -250,7 +266,9 @@ export default function Page(): React.JSX.Element {
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
     </Stack>
   );
 }
@@ -297,10 +315,12 @@ function TopRightActions(): React.JSX.Element {
       </Button>
       
       {/* Add Tax Dialog */}
-      <AddTaxDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-      />
+      <LazyWrapper>
+        <LazyAddTaxDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }

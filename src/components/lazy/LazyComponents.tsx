@@ -9,6 +9,9 @@ export const LazyCustomersMainTable = lazy(() => import('@/components/dashboard/
 export const LazyIncidentManagementTable = lazy(() => import('@/components/dashboard/incidentmanagement/incidentmanagement-table').then(module => ({ default: module.CustomersTable })));
 export const LazyProductionLoanTable = lazy(() => import('@/components/dashboard/Production_Loan/productionloan-table').then(module => ({ default: module.CustomersTable })));
 export const LazyOreDispatchTable = lazy(() => import('@/components/dashboard/Ore_Dispatch/ore-table').then(module => ({ default: module.CustomersTable })));
+export const LazyTransportCostTable = lazy(() => import('@/components/dashboard/Transport_cost/transportcost-table').then(module => ({ default: module.CustomersTable })));
+export const LazyMillTable = lazy(() => import('@/components/dashboard/mill/mill-onboading-table').then(module => ({ default: module.CustomersTable })));
+export const LazyVehicleOnboardingTable = lazy(() => import('@/components/dashboard/vehicleonboarding/vehicle-onboarding-table').then(module => ({ default: module.CustomersTable })));
 
 // Lazy load dialog components
 export const LazyUserDetailsDialog = lazy(() => import('@/components/dashboard/useronboard/user-details-dialog').then(module => ({ default: module.UserDetailsDialog })));
@@ -18,6 +21,9 @@ export const LazyRegMinerDialog = lazy(() => import('@/components/dashboard/cust
 export const LazyAddIncidentDialog = lazy(() => import('@/components/dashboard/incidentmanagement/add-incident-dialog').then(module => ({ default: module.AddOreDialog })));
 export const LazyAddProductionLoanDialog = lazy(() => import('@/components/dashboard/Production_Loan/add-productionloan-dialog').then(module => ({ default: module.AddProductionLoanDialog })));
 export const LazyAddOreDialog = lazy(() => import('@/components/dashboard/oreTransport/add-ore-dialog').then(module => ({ default: module.AddOreDialog })));
+export const LazyAddTaxDialog = lazy(() => import('@/components/dashboard/Transport_cost/add-tax-dialog').then(module => ({ default: module.AddTaxDialog })));
+export const LazyAddMillDialog = lazy(() => import('@/components/dashboard/mill/add-mill-dialog-box').then(module => ({ default: module.AddMillDialog })));
+export const LazyAddVehicleDialog = lazy(() => import('@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box').then(module => ({ default: module.AddVehicleDialog })));
 
 // Lazy load chart/visualization components
 export const LazyIntegrationCard = lazy(() => import('@/components/dashboard/integrations/integrations-card').then(module => ({ default: module.IntegrationCard })));
