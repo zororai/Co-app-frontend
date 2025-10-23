@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, ComponentType } from 'react';
+import React, { lazy, ComponentType } from 'react';
 import * as LazyPages from './LazyPages';
 
 // =============================================================================
@@ -190,7 +190,7 @@ export function withLazyRoute(route: string, fallback?: React.ComponentType) {
     const { LazyWrapper } = require('@/components/common/LazyWrapper');
     
     return (
-      <Suspense fallback={fallback ? <fallback /> : <LazyWrapper />}>
+      <Suspense fallback={fallback ? React.createElement(fallback) : <LazyWrapper />}>
         <LazyComponent {...props} />
       </Suspense>
     );

@@ -1,6 +1,7 @@
 'use client';
 
-import { lazy } from 'react';
+import React, { lazy, Suspense } from 'react';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
 
 // Lazy load table components
 export const LazyCustomersTable = lazy(() => import('@/components/dashboard/useronboard/miner-status-table').then(module => ({ default: module.CustomersTable })));
@@ -39,3 +40,22 @@ export const LazyIntegrationCard = lazy(() => import('@/components/dashboard/int
 
 // Lazy load filter components
 export const LazyCompaniesFilters = lazy(() => import('@/components/dashboard/integrations/integrations-filters').then(module => ({ default: module.CompaniesFilters })));
+
+// Pre-wrapped components with Suspense for better performance
+export const SuspenseWrappedMillTable = (props: any) => (
+  <Suspense fallback={<div>Loading table...</div>}>
+    <LazyMillTable {...props} />
+  </Suspense>
+);
+
+export const SuspenseWrappedRegMinerDialog = (props: any) => (
+  <Suspense fallback={null}>
+    <LazyRegMinerDialog {...props} />
+  </Suspense>
+);
+
+export const SuspenseWrappedAddMillDialog = (props: any) => (
+  <Suspense fallback={null}>
+    <LazyAddMillDialog {...props} />
+  </Suspense>
+);
