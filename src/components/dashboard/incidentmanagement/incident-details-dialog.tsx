@@ -278,7 +278,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                   Description
                 </Typography>
                 <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                  <Typography>{incident.description || 'No description provided'}</Typography>
+                  <Typography>{incident.description || 'No description'}</Typography>
                 </Box>
               </Box>
               

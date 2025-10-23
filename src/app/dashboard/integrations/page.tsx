@@ -14,9 +14,9 @@ import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyIntegrationCard, LazyCompaniesFilters } from '@/components/lazy/LazyComponents';
 import type { Integration } from '@/components/dashboard/integrations/integrations-card';
-import { CompaniesFilters } from '@/components/dashboard/integrations/integrations-filters';
 
 export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
 
@@ -90,21 +90,26 @@ export default function Page(): React.JSX.Element {
           
         </div>
       </Stack>
-      <CompaniesFilters />
-      <Grid container spacing={3}>
-        {integrations.map((integration) => (
-          <Grid
-            key={integration.id}
-            size={{
-              lg: 4,
-              md: 6,
-              xs: 12,
-            }}
-          >
-            <IntegrationCard integration={integration} />
-          </Grid>
-        ))}
-      </Grid>
+      <LazyWrapper>
+        <LazyCompaniesFilters />
+      </LazyWrapper>
+      
+      <LazyWrapper>
+        <Grid container spacing={3}>
+          {integrations.map((integration) => (
+            <Grid
+              key={integration.id}
+              size={{
+                lg: 4,
+                md: 6,
+                xs: 12,
+              }}
+            >
+              <LazyIntegrationCard integration={integration} />
+            </Grid>
+          ))}
+        </Grid>
+      </LazyWrapper>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Pagination count={3} size="small" />
       </Box>

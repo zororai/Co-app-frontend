@@ -91,7 +91,7 @@ export function CustomersTable({
 }: CustomersTableProps): React.JSX.Element {
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
+  const [loading, setLoading] = React.useState<boolean>(rows && rows.length > 0 ? false : true);
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
     search: '',
@@ -110,9 +110,20 @@ export function CustomersTable({
     setSortField(field);
   };
 
+  // Use rows prop if provided, otherwise use fetched users
+  const dataSource = rows && rows.length > 0 ? rows : users;
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Table component - rows prop:', rows);
+    console.log('Table component - users state:', users);
+    console.log('Table component - dataSource:', dataSource);
+    console.log('Table component - loading:', loading);
+  }, [rows, users, dataSource, loading]);
+
   // Filter and sort the users
   const filteredRows = React.useMemo(() => {
-    const filtered = users.filter(user => {
+    const filtered = dataSource.filter(user => {
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -147,7 +158,7 @@ export function CustomersTable({
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [users, filters, statusFilter, sortField, sortDirection]);
+  }, [dataSource, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -179,7 +190,15 @@ export function CustomersTable({
   const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
   // Fetch users from API when component mounts or refreshTrigger changes
+  // Only fetch if no rows are provided via props
   React.useEffect(() => {
+    if (rows && rows.length > 0) {
+      // If rows are provided via props, don't fetch and set loading to false
+      setLoading(false);
+      setError('');
+      return;
+    }
+
     const fetchUserData = async () => {
       setLoading(true);
       setError('');
@@ -195,7 +214,7 @@ export function CustomersTable({
     };
 
     fetchUserData();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, rows]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {

@@ -14,14 +14,14 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/customer/customers-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyCustomersMainTable, LazyRegMinerDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/customer/customers-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
 
 
@@ -156,14 +156,18 @@ export default function Page(): React.JSX.Element {
         </div>
       </Stack>
 
-      <CustomersTable
-        count={paginatedCustomers.length}
-        page={page}
-        rows={paginatedCustomers}
-        rowsPerPage={rowsPerPage}
-      />
+      <LazyWrapper>
+        <LazyCustomersMainTable
+          count={paginatedCustomers.length}
+          page={page}
+          rows={paginatedCustomers}
+          rowsPerPage={rowsPerPage}
+        />
+      </LazyWrapper>
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshCustomers} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshCustomers} />
+      </LazyWrapper>
     </Stack>
   );
 }

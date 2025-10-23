@@ -18,30 +18,46 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/Ore_Dispatch/ore-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyOreDispatchTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/Ore_Dispatch/ore-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+  return (
+    <LazyWrapper>
+      <LazyOreDispatchTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
 function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+  return (
+    <LazyWrapper>
+      <LazyOreDispatchTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
 function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreDispatchTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
 }
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreDispatchTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddOreDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/oreTransport/add-ore-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -227,7 +243,9 @@ export default function Page(): React.JSX.Element {
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
     </Stack>
   );
 }
@@ -262,10 +280,12 @@ function TopRightActions(): React.JSX.Element {
     <React.Fragment>
       
       {/* Add Ore Dialog */}
-      <AddOreDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-      />
+      <LazyWrapper>
+        <LazyAddOreDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }

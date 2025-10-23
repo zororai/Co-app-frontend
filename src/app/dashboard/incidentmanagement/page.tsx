@@ -24,10 +24,10 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/incidentmanagement/incidentmanagement-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyIncidentManagementTable, LazyAddIncidentDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/incidentmanagement/incidentmanagement';
 import { authClient } from '@/lib/auth/client';
-import {AddOreDialog } from '@/components/dashboard/incidentmanagement/add-incident-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -205,11 +205,13 @@ export default function Page(): React.JSX.Element {
             </Button>
           </Stack>
           {/* Incident dialog */}
-          <AddOreDialog 
-            open={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            onRefresh={refreshData}
-          />
+          <LazyWrapper>
+            <LazyAddIncidentDialog 
+              open={dialogOpen}
+              onClose={() => setDialogOpen(false)}
+              onRefresh={refreshData}
+            />
+          </LazyWrapper>
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
             <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
               <CardContent>
@@ -339,7 +341,9 @@ export default function Page(): React.JSX.Element {
 
       {/* Incidents table */}
       <Box sx={{ mt: 2 }}>
-        <CustomersTable key={refreshKey} rowsPerPage={5} onRefresh={refreshData} />
+        <LazyWrapper>
+          <LazyIncidentManagementTable key={refreshKey} rowsPerPage={5} onRefresh={refreshData} />
+        </LazyWrapper>
       </Box>
 
     </Stack>
