@@ -32,6 +32,7 @@ export const LazyAddSecurityCompanyDialog = lazy(() => import('@/components/dash
 export const LazyAddDriverDialog = lazy(() => import('@/components/dashboard/driveronboarding/add-driver-dialog-box').then(module => ({ default: module.AddDriverDialog })));
 export const LazyShaftAttachmentDialog = lazy(() => import('@/components/dashboard/shaftcreation/shaft-attachment-dialog').then(module => ({ default: module.ShaftAttachmentDialog })));
 export const LazyAddOreManagementDialog = lazy(() => import('@/components/dashboard/oremanagement/add-ore-dialog').then(module => ({ default: module.AddOreDialog })));
+export const LazyIncidentDetailsDialog = lazy(() => import('@/components/dashboard/incidentmanagement/incident-details-dialog').then(module => ({ default: module.IncidentDetailsDialog })));
 
 // Lazy load chart/visualization components
 export const LazyIntegrationCard = lazy(() => import('@/components/dashboard/integrations/integrations-card').then(module => ({ default: module.IntegrationCard })));

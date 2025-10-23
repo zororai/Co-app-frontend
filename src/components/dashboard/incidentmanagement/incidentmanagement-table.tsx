@@ -27,7 +27,8 @@ import dayjs from 'dayjs';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { IncidentDetailsDialog } from '@/components/dashboard/incidentmanagement/incident-details-dialog';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyIncidentDetailsDialog } from '@/components/lazy/LazyComponents';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -67,13 +68,15 @@ export function CustomersTable({
   count = 0,
   page = 0,
   rowsPerPage = 0,
+  rows = [],
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
-  // State to store incidents fetched from API
-  const [incidents, setIncidents] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
-  const [error, setError] = React.useState<string>('');
+  // Use rows prop instead of fetching data internally
+  const incidents = React.useMemo(() => {
+    return Array.isArray(rows) ? rows : [];
+  }, [rows]);
+
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
@@ -109,38 +112,7 @@ export function CustomersTable({
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isIncidentDetailsDialogOpen, setIsIncidentDetailsDialogOpen] = React.useState(false);
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
-
-  // Fetch incidents from API when component mounts or refreshTrigger changes
-  React.useEffect(() => {
-    const fetchIncidentsData = async () => {
-      console.log('Fetching incidents data... (refreshTrigger:', refreshTrigger, ')');
-      setLoading(true);
-      setError('');
-      try {
-        const fetched = await authClient.fetchIncidents();
-        const normalized = Array.isArray(fetched)
-          ? fetched.map((it: any, idx: number) => ({
-              id: String(it.id ?? it.incidentId ?? idx),
-              title: it.title,
-              type: it.type,
-              severity: it.severity,
-              location: it.location,
-              reportedBy: it.reportedBy,
-              ...it,
-            }))
-          : [];
-        setIncidents(normalized);
-      } catch (error_) {
-        console.error('Error fetching incidents:', error_);
-        setError('Failed to load incidents. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchIncidentsData();
-  }, [refreshTrigger]);
+  // Remove data fetching - use rows prop instead
 
  
   const handleViewUserDetails = (driverId: string) => {
@@ -153,9 +125,6 @@ export function CustomersTable({
 
   // Function to refresh the table data
   const refreshTableData = React.useCallback(() => {
-    // Increment refresh trigger to force a re-render/refresh
-    setRefreshTrigger(prev => prev + 1);
-    
     // Call parent's refresh function if provided
     if (onRefresh) {
       onRefresh();
@@ -163,26 +132,7 @@ export function CustomersTable({
   }, [onRefresh]);
 
   return (
-    <Card>      
-      {/* Loading and Error States */}
-      {loading && (
-        <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>Loading incidents...</Typography>
-        </Box>
-      )}
-      
-      {!loading && error && (
-        <Box sx={{ p: 3, textAlign: 'center', color: 'error.main' }}>
-          <Typography>{error}</Typography>
-          <Button 
-            variant="outlined" 
-            sx={{ mt: 2 }} 
-            onClick={refreshTableData}
-          >
-            Retry
-          </Button>
-        </Box>
-      )}
+    <Card>
       {/* Filters Section */}
       <Box sx={{ 
         p: 2, 
@@ -317,7 +267,7 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {!loading && filteredRows.length === 0 && (
+            {filteredRows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
@@ -392,12 +342,14 @@ export function CustomersTable({
       
       {/* Incident Details Dialog */}
       {isIncidentDetailsDialogOpen && (
-        <IncidentDetailsDialog
-          open={isIncidentDetailsDialogOpen}
-          onClose={() => setIsIncidentDetailsDialogOpen(false)}
-          incidentId={selectedDriverId}
-          onRefresh={refreshTableData}
-        />
+        <LazyWrapper>
+          <LazyIncidentDetailsDialog
+            open={isIncidentDetailsDialogOpen}
+            onClose={() => setIsIncidentDetailsDialogOpen(false)}
+            incidentId={selectedDriverId}
+            onRefresh={refreshTableData}
+          />
+        </LazyWrapper>
       )}
 
     </Card>

@@ -38,6 +38,33 @@ export default function Page(): React.JSX.Element {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [dialogOpen, setDialogOpen] = React.useState(false);
 
+  // Fetch incidents data
+  React.useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const fetched = await authClient.fetchIncidents();
+        const normalized = Array.isArray(fetched)
+          ? fetched.map((it: any, idx: number) => ({
+              id: String(it.id ?? it.incidentId ?? idx),
+              title: it.title,
+              type: it.type,
+              severity: it.severity,
+              location: it.location,
+              reportedBy: it.reportedBy,
+              status: it.status || 'PENDING',
+              ...it,
+            }))
+          : [];
+        setCustomers(normalized);
+      } catch (error) {
+        console.error('Error fetching incidents:', error);
+      }
+    };
+
+    fetchIncidents();
+  }, [refreshKey]);
+
+
   // Quick action dialog state
   const [qaOpen, setQaOpen] = React.useState(false);
   const [qaType, setQaType] = React.useState<'emergency' | 'safety' | 'notice'>('notice');
@@ -342,7 +369,14 @@ export default function Page(): React.JSX.Element {
       {/* Incidents table */}
       <Box sx={{ mt: 2 }}>
         <LazyWrapper>
-          <LazyIncidentManagementTable key={refreshKey} rowsPerPage={5} onRefresh={refreshData} />
+          <LazyIncidentManagementTable 
+            key={refreshKey} 
+            count={customers.length}
+            page={page}
+            rows={customers}
+            rowsPerPage={rowsPerPage} 
+            onRefresh={refreshData} 
+          />
         </LazyWrapper>
       </Box>
 
