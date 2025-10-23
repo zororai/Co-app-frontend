@@ -15,6 +15,7 @@ export const LazyVehicleOnboardingTable = lazy(() => import('@/components/dashbo
 export const LazySecurityOnboardingTable = lazy(() => import('@/components/dashboard/securityonboarding/security-status-table').then(module => ({ default: module.CustomersTable })));
 export const LazyDriverOnboardingTable = lazy(() => import('@/components/dashboard/driveronboarding/driver-onboading-table').then(module => ({ default: module.CustomersTable })));
 export const LazyShaftCreationTable = lazy(() => import('@/components/dashboard/shaftcreation/Shaftcreation-table').then(module => ({ default: module.CustomersTable })));
+export const LazyOreManagementTable = lazy(() => import('@/components/dashboard/oremanagement/oremanage-table').then(module => ({ default: module.CustomersTable })));
 
 // Lazy load dialog components
 export const LazyUserDetailsDialog = lazy(() => import('@/components/dashboard/useronboard/user-details-dialog').then(module => ({ default: module.UserDetailsDialog })));
@@ -30,6 +31,7 @@ export const LazyAddVehicleDialog = lazy(() => import('@/components/dashboard/ve
 export const LazyAddSecurityCompanyDialog = lazy(() => import('@/components/dashboard/securityonboarding/add-security-company-dialog').then(module => ({ default: module.AddSecurityCompanyDialog })));
 export const LazyAddDriverDialog = lazy(() => import('@/components/dashboard/driveronboarding/add-driver-dialog-box').then(module => ({ default: module.AddDriverDialog })));
 export const LazyShaftAttachmentDialog = lazy(() => import('@/components/dashboard/shaftcreation/shaft-attachment-dialog').then(module => ({ default: module.ShaftAttachmentDialog })));
+export const LazyAddOreManagementDialog = lazy(() => import('@/components/dashboard/oremanagement/add-ore-dialog').then(module => ({ default: module.AddOreDialog })));
 
 // Lazy load chart/visualization components
 export const LazyIntegrationCard = lazy(() => import('@/components/dashboard/integrations/integrations-card').then(module => ({ default: module.IntegrationCard })));

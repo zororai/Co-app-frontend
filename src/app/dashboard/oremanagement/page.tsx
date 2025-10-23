@@ -18,21 +18,38 @@ import Papa from 'papaparse';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/oremanagement/oremanage-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyOreManagementTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/oremanagement/oremanage-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
 function PushedBackTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
 function RejectedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
 }
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 
 import Dialog from '@mui/material/Dialog';
@@ -40,9 +57,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddOreManagementDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/oremanagement/add-ore-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -226,7 +242,9 @@ export default function Page(): React.JSX.Element {
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
     </Stack>
   );
 }
@@ -274,11 +292,13 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
       </Button>
       
       {/* Add Ore Dialog */}
-      <AddOreDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-        onRefresh={onRefresh}
-      />
+      <LazyWrapper>
+        <LazyAddOreManagementDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+          onRefresh={onRefresh}
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }

@@ -12,15 +12,14 @@ import dayjs from 'dayjs';
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/shaftcreation/Shaftcreation-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyShaftCreationTable, LazyRegMinerDialog, LazyShaftAttachmentDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/shaftcreation/Shaftcreation-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
-import { ShaftAttachmentDialog } from '@/components/dashboard/shaftcreation/shaft-attachment-dialog';
 import { authClient } from '@/lib/auth/client';
 
 
@@ -104,18 +103,24 @@ export default function Page(): React.JSX.Element {
         </Stack>
       </Stack>
 
-      <CustomersTable
-        count={paginatedCustomers.length}
-        page={page}
-        rows={paginatedCustomers}
-        rowsPerPage={rowsPerPage}
-      />
+      <LazyWrapper>
+        <LazyShaftCreationTable
+          count={paginatedCustomers.length}
+          page={page}
+          rows={paginatedCustomers}
+          rowsPerPage={rowsPerPage}
+        />
+      </LazyWrapper>
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
-      <ShaftAttachmentDialog 
-        open={isShaftDialogOpen} 
-        onClose={() => setIsShaftDialogOpen(false)} 
-      />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
+      <LazyWrapper>
+        <LazyShaftAttachmentDialog 
+          open={isShaftDialogOpen} 
+          onClose={() => setIsShaftDialogOpen(false)} 
+        />
+      </LazyWrapper>
     </Stack>
   );
 }
