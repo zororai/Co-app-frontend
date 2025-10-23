@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -30,21 +31,36 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  // Optimized data fetching with error handling
-  const refreshCustomers = React.useCallback(async () => {
+  // Function to fetch and update customer data
+  const fetchCustomers = React.useCallback(async () => {
     try {
       const data = await authClient.fetchCustomers();
+      console.log('Fetched customer data from API:', data);
       setCustomers(data);
     } catch (error) {
-      console.error('Failed to fetch customers:', error);
+      console.error('API call failed:', error);
       setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
     }
   }, []);
 
+  // Function to refresh the data
+  const refreshCustomers = React.useCallback(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
+
+  // Render UI first, then fetch data with a small delay
   React.useEffect(() => {
-    refreshCustomers();
-  }, [refreshCustomers]);
+    const timer = setTimeout(() => {
+      fetchCustomers();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchCustomers]);
 
   // Memoized pagination to prevent unnecessary recalculation
   const paginatedCustomers = React.useMemo(() => 
@@ -102,14 +118,21 @@ export default function Page(): React.JSX.Element {
         </div>
       </Stack>
 
-      <LazyWrapper>
-        <LazyCustomersMainTable
-          count={paginatedCustomers.length}
-          page={page}
-          rows={paginatedCustomers}
-          rowsPerPage={rowsPerPage}
-        />
-      </LazyWrapper>
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading customers...</Typography>
+        </Stack>
+      ) : (
+        <LazyWrapper>
+          <LazyCustomersMainTable
+            count={paginatedCustomers.length}
+            page={page}
+            rows={paginatedCustomers}
+            rowsPerPage={rowsPerPage}
+          />
+        </LazyWrapper>
+      )}
 
       <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshCustomers} />
     </Stack>
