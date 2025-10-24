@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
@@ -21,17 +22,60 @@ import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table';
 import type { Customer } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table';
 
-// Tab content components
-function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+// Tab content components with loading states
+interface TabProps {
+  customers: Customer[];
+  page: number;
+  rowsPerPage: number;
+  onRefresh: () => void;
+  isLoading?: boolean;
+}
+
+function PendingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading pending ore sample approvals...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
 }
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function PushedBackTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading pushed back ore sample approvals...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
 }
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function RejectedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading rejected ore sample approvals...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
 }
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function ApprovedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading approved ore sample approvals...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
 }
 import Dialog from '@mui/material/Dialog';
@@ -48,6 +92,31 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+
+  // Function to fetch and update sample ore approval data
+  const fetchSampleOreApprovalData = React.useCallback(async () => {
+    try {
+      const data = await authClient.fetchSampleOreApprovalData();
+      console.log('Fetched sample ore approval data from API:', data);
+      setCustomers(data);
+    } catch (error) {
+      console.error('Error fetching sample ore approval data:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSampleOreApprovalData();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchSampleOreApprovalData]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
 

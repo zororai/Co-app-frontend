@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
@@ -20,8 +21,24 @@ import { LazyWrapper } from '@/components/common/LazyWrapper';
 import { LazyMillTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/mill/mill-onboading-table';
 
-// Memoized tab content components
-const PendingTab = React.memo(({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) => {
+// Tab content components with loading states
+interface TabProps {
+  customers: Customer[];
+  page: number;
+  rowsPerPage: number;
+  onRefresh: () => void;
+  isLoading?: boolean;
+}
+
+const PendingTab = React.memo(({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) => {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading pending mill operations...</Typography>
+      </Stack>
+    );
+  }
   return (
     <LazyMillTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
   );
