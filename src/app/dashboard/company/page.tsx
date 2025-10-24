@@ -29,6 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/regcompany_miner';
 import { authClient } from '@/lib/auth/client';
 import { Company, CompanyTable } from '@/components/dashboard/customer/company-table';
+import Papa from 'papaparse';
 
 
 export default function Page(): React.JSX.Element {
