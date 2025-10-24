@@ -101,17 +101,14 @@ export default function Page(): React.JSX.Element {
     filteredCustomers = rejectedCustomers;
     break;
     }
-    case 'APPROVED': { {
+    case 'APPROVED': {
     filteredCustomers = approvedCustomers;
-    // No default
-    }
     break;
     }
     }
 
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
+    // Export all filtered customers, not just paginated ones
+    const rows = filteredCustomers.map((c: any) => [
       c.id,
       c.name,
       c.surname,
@@ -130,7 +127,7 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `ore-management-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();

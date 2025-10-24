@@ -139,37 +139,36 @@ export default function Page(): React.JSX.Element {
   const paginatedCustomers = React.useMemo(() => 
     applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
-  // Memoized export function
   const handleExport = React.useCallback(() => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
     ];
 
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    const rows = customers.map((c: any) => [
+      c.id || '',
+      c.name || '',
+      c.surname || '',
+      c.address || '',
+      c.cellNumber || '',
+      c.position || '',
+      c.cooperativeName || '',
+      c.numShafts || '',
+      c.status || '',
+      c.reason || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }, [paginatedCustomers]);
+  }, [customers]);
 
   
 
@@ -185,6 +184,56 @@ export default function Page(): React.JSX.Element {
             </Button>
           </Stack>
         </Stack>
+        <div>
+          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+            Add Incident
+          </Button>
+        </div>
+      </Stack>
+
+      {/* Quick Action Cards */}
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('emergency')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <WarningCircle size={32} color="#d32f2f" />
+              <Stack>
+                <Typography variant="h6" color="error">Emergency Alert</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send immediate emergency notification
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('safety')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <WarningCircle size={32} color="#ed6c02" />
+              <Stack>
+                <Typography variant="h6" color="warning.main">Safety Reminder</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send safety protocol reminder
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('notice')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Bell size={32} color="#1976d2" />
+              <Stack>
+                <Typography variant="h6" color="primary">General Notice</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send general information notice
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
       </Stack>
 
       {/* Incidents table */}
@@ -207,6 +256,47 @@ export default function Page(): React.JSX.Element {
           </LazyWrapper>
         )}
       </Box>
+
+      {/* Add Incident Dialog */}
+      <LazyWrapper>
+        <LazyAddIncidentDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshData} />
+      </LazyWrapper>
+
+      {/* Quick Action Dialog */}
+      <Dialog open={qaOpen} onClose={closeQuickAction} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {qaType === 'emergency' ? 'Emergency Alert' : 
+           qaType === 'safety' ? 'Safety Reminder' : 'General Notice'}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Title"
+              value={qaTitle}
+              onChange={(e) => setQaTitle(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="Message"
+              value={qaMessage}
+              onChange={(e) => setQaMessage(e.target.value)}
+              multiline
+              rows={4}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeQuickAction}>Cancel</Button>
+          <Button 
+            onClick={sendQuickAction} 
+            variant="contained"
+            color={qaType === 'emergency' ? 'error' : qaType === 'safety' ? 'warning' : 'primary'}
+          >
+            Send {qaType === 'emergency' ? 'Alert' : qaType === 'safety' ? 'Reminder' : 'Notice'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Stack>
   );

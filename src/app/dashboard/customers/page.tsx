@@ -65,24 +65,23 @@ export default function Page(): React.JSX.Element {
   // Memoized pagination to prevent unnecessary recalculation
   const paginatedCustomers = React.useMemo(() => 
     applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
-
   // Memoized export function
   const handleExport = React.useCallback(() => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
+    const rows = customers.map((c: any) => [
+      c.id || '',
+      c.name || '',
+      c.surname || '',
+      c.nationIdNumber || '',
+      c.address || '',
+      c.cellNumber || '',
+      c.position || '',
+      c.cooperativeName || '',
+      c.numShafts || '',
+      c.status || '',
+      c.reason || '',
       c.attachedShaft ? 'Yes' : 'No'
     ]);
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
@@ -90,13 +89,13 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `customers-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  }, [paginatedCustomers]);
+  }, [customers]);
 
 
   return (
@@ -126,9 +125,9 @@ export default function Page(): React.JSX.Element {
       ) : (
         <LazyWrapper>
           <LazyCustomersMainTable
-            count={paginatedCustomers.length}
+            count={customers.length}
             page={page}
-            rows={paginatedCustomers}
+            rows={customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
             rowsPerPage={rowsPerPage}
           />
         </LazyWrapper>

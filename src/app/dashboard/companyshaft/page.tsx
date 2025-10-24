@@ -78,99 +78,32 @@ export default function Page(): React.JSX.Element {
 
   const handleExport = () => {
     const headers = [
-      'Company Name',
-      'Address',
-      'Contact Number',
-      'Email',
-      'Owner Name',
-      'Owner Surname',
-      'Owner ID',
-      'Status',
-      'Reason'
+      'Company Name', 'Address', 'Cell Number', 'Email', 'Owner Name', 'Owner Surname', 'Owner ID Number', 'Status', 'Reason'
     ];
-    const rows = companies.map(company => [
-      company.companyName,
-      company.address,
-      company.cellNumber,
-      company.email,
-      company.ownerName,
-      company.cellNumber,
-      company.ownerSurname,
-      company.shaftnumber,
-      company.ownerIdNumber,
-      company.status,
-      company.reason || ''
+    
+    const rows = companies.map((c: any) => [
+      c.companyName || '',
+      c.address || '',
+      c.cellNumber || '',
+      c.email || '',
+      c.ownerName || '',
+      c.ownerSurname || '',
+      c.ownerIdNumber || '',
+      c.status || '',
+      c.reason || ''
     ]);
-
-    // Format CSV content with proper escaping
-    const csvContent = [headers, ...rows]
-      .map(r => r.map(String)
-      .map(x => `"${x.replaceAll('"', '""')}"`).join(','))
-      .join('\n');
-
-    // Create blob and download
+    
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = globalThis.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'companies.csv');
+    a.href = url;
+    a.download = `company-shafts-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
+
     a.click();
     a.remove();
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to company structure
-        const importedData: Company[] = results.data.map((row: any) => ({
-          id: row.id || `imported-${Math.random().toString(36).slice(2, 11)}`,
-          companyName: row['Company Name'] || '',
-          address: row['Address'] || '',
-          cellNumber: row['Contact Number'] || '',
-          email: row['Email'] || '',
-          ownerName: row['Owner Name'] || '',
-          ownerSurname: row['Owner Surname'] || '',
-          ownerIdNumber: row['Owner ID'] || '',
-          status: row['Status'] || 'Pending',
-          reason: row['Reason'] || '',
-          companyLogo: row['Company Logo'] || '',
-          certificateOfCooperation: row['Certificate Of Cooperation'] || '',
-          cr14Copy: row['CR14 Copy'] || '',
-          miningCertificate: row['Mining Certificate'] || '',
-          taxClearance: row['Tax Clearance'] || '',
-          passportPhoto: row['Passport Photo'] || '',
-          ownerAddress: row['Owner Address'] || '',
-          ownerCellNumber: row['Owner Cell Number'] || ''
-        }));
-
-        setCompanies(importedData);
-        
-        try {
-          // You can add API endpoint to handle bulk import
-          const response = await fetch('/api/companies/import', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(importedData),
-          });
-          
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
+    URL.revokeObjectURL(url);
   };
 
   return (
