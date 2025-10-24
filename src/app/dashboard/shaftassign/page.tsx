@@ -70,28 +70,25 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'Registration Number', 'Name', 'Surname', 'Name Of Cooperative', 'No.Of.Shafts', 'Status'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    
+    // Export all customers, not just paginated ones
+    const rows = customers.map((c: any) => [
+      c.registrationNumber || '',
+      c.name || '',
+      c.surname || '',
+      c.cooperativename || '',
+      c.shaftnumber || '',
+      c.status || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `shaft-assignments-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();

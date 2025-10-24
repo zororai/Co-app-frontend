@@ -38,34 +38,25 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'Title', 'Type', 'Severity', 'Location', 'Reported By', 'Status'
     ];
 
-    // Only Pending is supported
-    const filteredCustomers: Customer[] = pendingCustomers;
-
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    // Export all customers, not just paginated ones
+    const rows = customers.map((c: any) => [
+      c.incidentTitle || c.title || '',
+      c.type || c.incidentType || '',
+      c.severityLevel || c.severity || '',
+      c.location || c.address || '',
+      c.reportedBy || `${c.firstName || ''} ${c.lastName || ''}`.trim() || c.emailAddress || '',
+      c.status || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `incident-resolution-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
