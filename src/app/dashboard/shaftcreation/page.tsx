@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import dayjs from 'dayjs';
@@ -28,6 +29,9 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
   const [isShaftDialogOpen, setIsShaftDialogOpen] = React.useState(false);
 
   React.useEffect(() => {

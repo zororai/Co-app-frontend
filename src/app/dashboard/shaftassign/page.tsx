@@ -166,12 +166,19 @@ export default function Page(): React.JSX.Element {
       
       </Stack>
 
-      <CustomersTable
-        count={paginatedCustomers.length}
-        page={page}
-        rows={paginatedCustomers}
-        rowsPerPage={rowsPerPage}
-      />
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading shaft assignments...</Typography>
+        </Stack>
+      ) : (
+        <CustomersTable
+          count={paginatedCustomers.length}
+          page={page}
+          rows={paginatedCustomers}
+          rowsPerPage={rowsPerPage}
+        />
+      )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>
