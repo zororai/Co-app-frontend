@@ -1722,11 +1722,43 @@ class AuthClient {
           const data = await response.json();
           return Array.isArray(data) ? data : data.users || [];
       } catch (error) {
-          console.error('Error fetching users:', error);
+          console.error('Error fetching ore transport data:', error);
           return [];
       }
   }
 
+    /**
+     * Fetch all refined ore to gold data from the backend
+     * @returns A promise that resolves to an array of refined ore records
+     */
+    async fetchRefinedOreData(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            globalThis.location.href = '/auth/signin';
+            return [];
+        }
+        try {
+            const response = await fetch('/api/refined-ore-to-gold/all', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                globalThis.location.href = '/auth/sign-in';
+                return [];
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : data.records || [];
+        } catch (error) {
+            console.error('Error fetching refined ore data:', error);
+            return [];
+        }
+    }
 
   async fetchOretaxData(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');

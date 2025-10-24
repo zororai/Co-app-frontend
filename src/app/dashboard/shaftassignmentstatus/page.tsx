@@ -105,24 +105,37 @@ export default function Page(): React.JSX.Element {
     try {
       const data = await authClient.fetchShaftstatus();
       console.log('Fetched shaft assignment status data from API:', data);
-        // Normalize status values to match expected enum
-        const normalizedData = data.map((customer: any) => ({
-          ...customer,
-          status: customer.status === "Approved" ? "APPROVED"
-                : customer.status === "Rejected" ? "REJECTED"
-                : customer.status === "Pending" ? "PENDING"
-                : customer.status === "Pushed Back" ? "PUSHED_BACK"
-                : customer.status // fallback to original if already correct
-        }));
-        console.log('Normalized data for table:', normalizedData);
-        setCustomers(normalizedData);
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
-        // Use mock data when API fails
-
-      }
-    })();
+      // Normalize status values to match expected enum
+      const normalizedData = data.map((customer: any) => ({
+        ...customer,
+        status: customer.status === "Approved" ? "APPROVED"
+              : customer.status === "Rejected" ? "REJECTED"
+              : customer.status === "Pending" ? "PENDING"
+              : customer.status === "Pushed Back" ? "PUSHED_BACK"
+              : customer.status // fallback to original if already correct
+      }));
+      console.log('Normalized data for table:', normalizedData);
+      setCustomers(normalizedData);
+    } catch (error) {
+      console.error('Error fetching shaft assignment status data:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
+
+  // Function to refresh the data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+  }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchShaftAssignmentStatus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchShaftAssignmentStatus]);
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -151,10 +164,8 @@ export default function Page(): React.JSX.Element {
     filteredCustomers = rejectedCustomers;
     break;
     }
-    case 'APPROVED': { {
+    case 'APPROVED': {
     filteredCustomers = approvedCustomers;
-    // No default
-    }
     break;
     }
     }
@@ -215,16 +226,16 @@ export default function Page(): React.JSX.Element {
       </Stack>
 
       {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />

@@ -11,8 +11,7 @@ import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import dayjs from 'dayjs';
-
-
+import * as Papa from 'papaparse';
 
 import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/sectioncreation/section-table';
@@ -34,13 +33,18 @@ export default function Page(): React.JSX.Element {
     try {
       const data = await authClient.fetchSection();
       console.log('Fetched section creation data from API:', data);
-    // Ensure each customer has cooperativeName and cooperative properties
-    const mappedData = data.map((c: any) => ({
-      ...c,
-      cooperativeName: c.cooperativeName ?? '',
-      cooperative: c.cooperative ?? ''
-    }));
-    setCustomers(mappedData);
+      // Ensure each customer has cooperativeName and cooperative properties
+      const mappedData = data.map((c: any) => ({
+        ...c,
+        cooperativeName: c.cooperativeName ?? '',
+        cooperative: c.cooperative ?? ''
+      }));
+      setCustomers(mappedData);
+    } catch (error) {
+      console.error('Error fetching section data:', error);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
 
   React.useEffect(() => {

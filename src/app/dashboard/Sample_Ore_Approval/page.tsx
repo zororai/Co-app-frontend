@@ -99,7 +99,7 @@ export default function Page(): React.JSX.Element {
   // Function to fetch and update sample ore approval data
   const fetchSampleOreApprovalData = React.useCallback(async () => {
     try {
-      const data = await authClient.fetchSampleOreApprovalData();
+      const data = await authClient.fetchOreRecieve();
       console.log('Fetched sample ore approval data from API:', data);
       setCustomers(data);
     } catch (error) {

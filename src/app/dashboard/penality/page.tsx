@@ -11,6 +11,7 @@ import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import dayjs from 'dayjs';
+import Papa from 'papaparse';
 
 
 
@@ -33,27 +34,33 @@ export default function Page(): React.JSX.Element {
     try {
       const data = await authClient.fetchPenalties();
       console.log('Fetched penalty data from API:', data);
-    // Map penalty data to match the Customer interface structure
-    const mappedData = data.map((penalty: any) => ({
-      ...penalty,
-      id: penalty.id || `penalty-${Math.random()}`,
-      name: penalty.section || '',
-      numShafts: penalty.shaftNumber || '',
-      fee: penalty.penilatyFee || 0,
-      status: penalty.status || 'PENDING',
-      reason: penalty.issue || '',
-      cooperativeName: penalty.reportedBy || '',
-      cooperative: penalty.reportedBy || '',
-      surname: '',
-      nationId: '',
-      nationIdNumber: '',
-      address: '',
-      phone: '',
-      cellNumber: '',
-      position: '',
-      attachedShaft: false
-    }));
-    setCustomers(mappedData);
+      // Map penalty data to match the Customer interface structure
+      const mappedData = data.map((penalty: any) => ({
+        ...penalty,
+        id: penalty.id || `penalty-${Math.random()}`,
+        name: penalty.section || '',
+        numShafts: penalty.shaftNumber || '',
+        fee: penalty.penilatyFee || 0,
+        status: penalty.status || 'PENDING',
+        reason: penalty.issue || '',
+        cooperativeName: penalty.reportedBy || '',
+        cooperative: penalty.reportedBy || '',
+        surname: '',
+        nationId: '',
+        nationIdNumber: '',
+        address: '',
+        phone: '',
+        cellNumber: '',
+        position: '',
+        attachedShaft: false
+      }));
+      setCustomers(mappedData);
+    } catch (error) {
+      console.error('Error fetching penalties:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
 
   React.useEffect(() => {
@@ -77,7 +84,7 @@ export default function Page(): React.JSX.Element {
       c.cooperativeName,
       c.remarks || ''
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
