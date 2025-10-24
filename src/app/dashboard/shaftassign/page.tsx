@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -30,19 +31,38 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    (async () => {
+  // Function to fetch and update shaft assignment data
+  const fetchShaftAssignments = React.useCallback(async () => {
+    try {
       const data = await authClient.fetchApprovedminer();
+      console.log('Fetched shaft assignment data from API:', data);
       // Ensure each customer has cooperativeName and cooperative properties
       const normalizedData = data.map((customer: any) => ({
         ...customer,
         cooperativeName: customer.cooperativeName ?? '',
         cooperative: customer.cooperative ?? ''
       }));
+      console.log('Normalized shaft assignment data for table:', normalizedData);
       setCustomers(normalizedData);
-    })();
+    } catch (error) {
+      console.error('Error fetching shaft assignments:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchShaftAssignments();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchShaftAssignments]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 

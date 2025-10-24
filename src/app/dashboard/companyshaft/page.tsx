@@ -5,6 +5,7 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -28,6 +29,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/regcompany_miner';
 import { authClient } from '@/lib/auth/client';
 import { Company, CompanyTable } from '@/components/dashboard/companyshaft/company-table';
+import Papa from 'papaparse';
 
 
 export default function Page(): React.JSX.Element {
@@ -35,19 +37,31 @@ export default function Page(): React.JSX.Element {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [companies, setCompanies] = React.useState<Company[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        // Use the correct endpoint method
-        const data = await authClient.fetchCompaniesApproved();
-        setCompanies(data);
-      } catch (error) {
-        console.error('Error fetching companies:', error);
-      }
-    };
-    fetchCompanies();
+  // Function to fetch and update company shaft data
+  const fetchCompanyShafts = React.useCallback(async () => {
+    try {
+      const data = await authClient.fetchCompaniesApproved();
+      console.log('Fetched company shaft data from API:', data);
+      setCompanies(data);
+    } catch (error) {
+      console.error('Error fetching company shafts:', error);
+      setCompanies([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCompanyShafts();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchCompanyShafts]);
 
   const handlePageChange = (_: any, newPage: number) => {
     setPage(newPage);
@@ -174,12 +188,19 @@ export default function Page(): React.JSX.Element {
         
       </Stack>
 
-      <CompanyTable
-        count={companies.length}
-        page={page}
-        rows={paginatedCompanies}
-        rowsPerPage={rowsPerPage}
-      />
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading company shaft assignments...</Typography>
+        </Stack>
+      ) : (
+        <CompanyTable
+          count={companies.length}
+          page={page}
+          rows={paginatedCompanies}
+          rowsPerPage={rowsPerPage}
+        />
+      )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>

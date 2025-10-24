@@ -16,6 +16,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -37,34 +38,48 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  // Optimized data fetching with proper error handling
+  // Function to fetch and update incident data
   const fetchIncidents = React.useCallback(async () => {
     try {
       const fetched = await authClient.fetchIncidents();
+      console.log('Fetched incident data from API:', fetched);
       const normalized = Array.isArray(fetched)
         ? fetched.map((it: any, idx: number) => ({
             id: String(it.id ?? it.incidentId ?? idx),
             title: it.title,
-            type: it.type,
             severity: it.severity,
             location: it.location,
             reportedBy: it.reportedBy,
             status: it.status || 'PENDING',
             ...it,
-          }))
-        : [];
+          }))        : [];
+      console.log('Normalized incident data for table:', normalized);
       setCustomers(normalized);
     } catch (error) {
       console.error('Error fetching incidents:', error);
       setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
     }
   }, []);
 
-  React.useEffect(() => {
+  // Function to refresh the incident data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prev => prev + 1);
     fetchIncidents();
-  }, [fetchIncidents, refreshKey]);
+  }, [fetchIncidents]);
 
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchIncidents();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchIncidents]);
 
   // Quick action dialog state
   const [qaOpen, setQaOpen] = React.useState(false);
@@ -115,11 +130,7 @@ export default function Page(): React.JSX.Element {
     }
   };
 
-  // Function to refresh the miner data
-  // Memoized refresh function
-  const refreshData = React.useCallback(() => {
-    setRefreshKey(prev => prev + 1);
-  }, []);
+  // Note: refreshData already defined above, removing duplicate
 
   // Memoized filtered customers
   const pendingCustomers = React.useMemo(() => customers.filter(c => c.status === 'PENDING'), [customers]);
@@ -178,16 +189,23 @@ export default function Page(): React.JSX.Element {
 
       {/* Incidents table */}
       <Box sx={{ mt: 2 }}>
-        <LazyWrapper>
-          <LazyIncidentManagementTable 
-            key={refreshKey} 
-            count={customers.length}
-            page={page}
-            rows={customers}
-            rowsPerPage={rowsPerPage} 
-            onRefresh={refreshData} 
-          />
-        </LazyWrapper>
+        {isInitialLoading ? (
+          <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+            <CircularProgress />
+            <Typography variant="body2" sx={{ mt: 2 }}>Loading incident reports...</Typography>
+          </Stack>
+        ) : (
+          <LazyWrapper>
+            <LazyIncidentManagementTable 
+              key={refreshKey} 
+              count={customers.length}
+              page={page}
+              rows={customers}
+              rowsPerPage={rowsPerPage} 
+              onRefresh={refreshData} 
+            />
+          </LazyWrapper>
+        )}
       </Box>
 
     </Stack>

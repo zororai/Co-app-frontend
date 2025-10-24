@@ -10,6 +10,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -32,16 +33,60 @@ import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
 import { AddVehicleDialog } from '@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box';
 
-function IdleTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+// Tab content components with loading states
+interface TabProps {
+  customers: Customer[];
+  page: number;
+  rowsPerPage: number;
+  onRefresh: () => void;
+  isLoading?: boolean;
+}
+
+function IdleTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading idle vehicles...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="idle" />;
 }
-function LoadingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function LoadingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading vehicles in loading status...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loading" />;
 }
-function LoadedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function LoadedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading loaded vehicles...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loaded" />;
 }
-function MaintainanceTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+
+function MaintainanceTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading vehicles in maintenance...</Typography>
+      </Stack>
+    );
+  }
   return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="Maintainance" />;
 }
 
@@ -52,35 +97,49 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'Idle' | 'Loading' | 'Loaded' | 'Maintainance'>('Idle');
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  // Function to refresh the miner data
-  const refreshData = React.useCallback(() => {
-    setRefreshKey(prevKey => prevKey + 1);
+  // Function to fetch and update approved vehicles data
+  const fetchApprovedVehicles = React.useCallback(async () => {
+    try {
+      const data = await authClient.fetchApprovedVehicles(); // Use vehicle-specific API
+      console.log('Fetched approved vehicles data from API:', data);
+      // Normalize operational status values
+      const normalizedData = data.map((vehicle: any) => ({
+        ...vehicle,
+        operationalStatus: vehicle.operationalStatus || vehicle.status || 'idle'
+      }));
+      console.log('Normalized approved vehicles data for table:', normalizedData);
+      setCustomers(normalizedData);
+    } catch (error) {
+      console.error('API call failed:', error);
+      // Fallback to pending customers if approved vehicles API doesn't exist
+      try {
+        const fallbackData = await authClient.fetchPendingCustomers();
+        setCustomers(fallbackData as unknown as Customer[]);
+      } catch (fallbackError) {
+        console.error('Fallback API also failed:', fallbackError);
+      }
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
 
+  // Function to refresh the approved vehicles data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+    fetchApprovedVehicles();
+  }, [fetchApprovedVehicles]);
+
+  // Render UI first, then fetch data with a small delay
   React.useEffect(() => {
-    (async () => {
-      try {
-        const data = await authClient.fetchPendingCustomers();
-        console.log('Fetched data from API:', data);
-        // Normalize status values to match expected enum
-        const normalizedData = data.map((customer: any) => ({
-          ...customer,
-          status: customer.status === "Approved" ? "APPROVED"
-                : customer.status === "Rejected" ? "REJECTED"
-                : customer.status === "Pending" ? "PENDING"
-                : customer.status === "Pushed Back" ? "PUSHED_BACK"
-                : customer.status // fallback to original if already correct
-        }));
-        console.log('Normalized data for table:', normalizedData);
-        setCustomers(normalizedData);
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
-        // Use mock data when API fails
-   
-      }
-    })();
-  }, [refreshKey]);
+    const timer = setTimeout(() => {
+      fetchApprovedVehicles();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchApprovedVehicles]);
 
   // Filter customers by selected tab/status
   const idleCustomers = customers.filter(c => c.status === 'idle');
@@ -175,16 +234,16 @@ export default function Page(): React.JSX.Element {
       </Stack>
 
       {tab === 'Idle' && (
-        <IdleTab customers={idleCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <IdleTab customers={idleCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'Loading' && (
-        <LoadingTab customers={loadingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <LoadingTab customers={loadingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'Loaded' && (
-        <LoadedTab customers={loadedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <LoadedTab customers={loadedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
       {tab === 'Maintainance' && (
-        <MaintainanceTab customers={maintainanceCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <MaintainanceTab customers={maintainanceCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
