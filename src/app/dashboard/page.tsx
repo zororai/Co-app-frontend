@@ -1,9 +1,10 @@
-
- 
-
+"use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
@@ -18,7 +19,56 @@ import { Traffic } from '@/components/dashboard/overview/traffic';
 
 export const metadata = { title: `Overview | Dashboard | ${config.site.name}` } satisfies Metadata;
 
+interface DashboardData {
+  budget: { value: number; trend: string };
+  customers: { total: number; trend: string };
+  tasks: { progress: number };
+  profit: { value: number; trend: string };
+}
+
 export default function Page(): React.JSX.Element {
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+  const [dashboardData, setDashboardData] = React.useState<DashboardData | null>(null);
+
+  // Function to fetch dashboard data
+  const fetchDashboardData = React.useCallback(async () => {
+    try {
+      // Simulate dashboard data fetching - replace with actual API calls
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
+      const mockData = {
+        budget: { value: 24000, trend: 'up' },
+        customers: { total: 1600, trend: 'up' },
+        tasks: { progress: 75.5 },
+        profit: { value: 15000, trend: 'down' }
+      };
+      setDashboardData(mockData);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchDashboardData();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchDashboardData]);
+
+  if (isInitialLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 400 }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>Loading Dashboard...</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Fetching latest data and metrics
+        </Typography>
+      </Stack>
+    );
+  }
+
   return (
     <Grid container spacing={3}>
       <Grid
