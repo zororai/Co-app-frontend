@@ -72,24 +72,23 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Shaft Number', 'Section', 'Fee', 'Status', 'Issue', 'Reported By', 'Remarks'
+      'Shaft Number', 'Section', 'Fee', 'Status'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.numShafts,
-      c.name,
-      c.fee,
-      c.status,
-      c.reason,
-      c.cooperativeName,
-      c.remarks || ''
+    
+    // Export all customers, not just paginated ones
+    const rows = customers.map((c: any) => [
+      c.numShafts || '',
+      c.name || '',
+      c.fee || '',
+      c.status || ''
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replace(/"/g, '""')}"`).join(',')).join('\n');
+    
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'penalties.csv';
+    a.download = `penalties-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();

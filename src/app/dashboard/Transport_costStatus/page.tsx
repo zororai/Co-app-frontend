@@ -92,7 +92,7 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'Payment Method', 'Amount/Grams', 'Status', 'Reason'
     ];
 
     // Determine which customers to export based on the current tab
@@ -110,36 +110,26 @@ export default function Page(): React.JSX.Element {
     filteredCustomers = rejectedCustomers;
     break;
     }
-    case 'APPROVED': { {
+    case 'APPROVED': {
     filteredCustomers = approvedCustomers;
-    // No default
-    }
     break;
     }
     }
 
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    // Export all filtered customers, not just paginated ones
+    const rows = filteredCustomers.map((c: any) => [
+      c.paymentMethod || '',
+      c.amountOrGrams ?? '',
+      c.status || '',
+      c.reason || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `transport-cost-status-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
