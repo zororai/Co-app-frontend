@@ -24,11 +24,17 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     }
 
     if (error) {
+      console.log('[AuthGuard]: Error detected:', error);
       setIsChecking(false);
       return;
     }
 
-    if (!user) {
+    // Check if we have a token in localStorage as fallback
+    const token = localStorage.getItem('custom-auth-token');
+    console.log('[AuthGuard]: Token exists:', !!token);
+    console.log('[AuthGuard]: User object:', user);
+
+    if (!user && !token) {
       logger.debug('[AuthGuard]: User is not logged in, redirecting to sign in');
       router.replace(paths.auth.signIn);
       return;

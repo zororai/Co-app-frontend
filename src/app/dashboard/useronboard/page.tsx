@@ -11,15 +11,20 @@ import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import dayjs from 'dayjs';
 
-
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
-import { LazyCustomersTable } from '@/components/lazy/LazyComponents';
+import { LazyCustomersTable, LazyRegMinerDialog, LazyAddUserDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/useronboard/miner-status-table';
+import { authClient } from '@/lib/auth/client';
 
 // Tab content components with loading states
 interface TabProps {
@@ -93,14 +98,6 @@ function ApprovedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: Tab
     </LazyWrapper>
   );
 }
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import { LazyRegMinerDialog, LazyAddUserDialog } from '@/components/lazy/LazyComponents';
-import { authClient } from '@/lib/auth/client';
-
 
 export default function Page(): React.JSX.Element {
   const page = 0;

@@ -63,7 +63,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
 
@@ -835,7 +835,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -928,7 +928,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
 
@@ -960,7 +960,7 @@ class AuthClient {
             });
 
             if (!response.ok) {
-                globalThis.location.href = '/auth/signin';
+                globalThis.location.href = '/auth/sign-in';
                 return { success: false, error: 'Authentication required' };
             }
 
@@ -1099,7 +1099,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
 
@@ -1142,7 +1142,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -1549,7 +1549,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -1577,7 +1577,7 @@ class AuthClient {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -1733,13 +1733,9 @@ class AuthClient {
      */
     async fetchRefinedOreData(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
-            return [];
-        }
+        
         try {
-            const response = await fetch('/api/refined-ore-to-gold/all', {
+            const response = await fetch('/api/ore-transports/security-dispatcher/received', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2328,7 +2324,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
         try {
@@ -2428,7 +2424,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
         try {
@@ -2531,7 +2527,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
         try {
@@ -2578,7 +2574,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
 
@@ -2631,7 +2627,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -2659,7 +2655,7 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -2946,7 +2942,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2979,7 +2975,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3007,7 +3003,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3046,7 +3042,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3074,7 +3070,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3109,7 +3105,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3138,7 +3134,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3170,7 +3166,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -3208,7 +3204,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -3383,7 +3379,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -3423,7 +3419,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3590,7 +3586,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3618,7 +3614,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3646,7 +3642,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3678,7 +3674,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3706,7 +3702,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3763,7 +3759,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3812,7 +3808,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin';
+            globalThis.location.href = '/auth/sign-in';
             return { success: false, message: 'Not authenticated' };
         }
 
@@ -3849,7 +3845,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3878,7 +3874,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3914,7 +3910,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
+            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3954,7 +3950,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Password reset not implemented' };
   }
-
   async updatePassword(_: ResetPasswordParams): Promise<{ error?: string }> {
     return { error: 'Update reset not implemented' };
   }
@@ -3966,6 +3961,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     const token = localStorage.getItem('custom-auth-token');
 
     if (!token) {
+      console.log('[AuthClient]: No token found in localStorage');
       return { data: null };
     }
 
@@ -3974,6 +3970,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const userStr = localStorage.getItem('custom-auth-user');
       if (userStr) {
         const userData = JSON.parse(userStr);
+        console.log('[AuthClient]: Found user data in localStorage:', userData);
         // Map to User type
         const mappedUser: User = {
           id: userData.id || '1',
@@ -3987,6 +3984,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       console.error('Error parsing user data:', error);
     }
 
+    // If we have a token but no user data, return the default user
+    console.log('[AuthClient]: Token exists but no user data, returning default user');
     return { data: user };
   }
 
