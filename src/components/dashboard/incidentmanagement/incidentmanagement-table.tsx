@@ -294,19 +294,6 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Title</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Severity</TableCell>
@@ -330,18 +317,6 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{row.incidentTitle || row.title || 'N/A'}</TableCell>
                   <TableCell>{row.type || row.incidentType || 'N/A'}</TableCell>
                   <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
