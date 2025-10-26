@@ -15,6 +15,7 @@ import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
 import { Controller, useForm } from 'react-hook-form';
@@ -23,7 +24,6 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-import { PageLoader } from '@/components/core/page-loader';
 
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
@@ -89,25 +89,23 @@ export function SignInForm(): React.JSX.Element {
   );
 
   return (
-    <>
-      <PageLoader isVisible={isPending} message="Signing you in..." />
-      <div style={{
-        display: 'flex',
-        minHeight: '100px',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem 0'
-      }}>
+    <div style={{
+      display: 'flex',
+      minHeight: '100px',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem 0'
+    }}>
         <Container maxWidth="sm">
         <Stack spacing={4} sx={{ maxWidth: 400, mx: 'auto' }}>
           <Stack spacing={1} sx={{ textAlign: 'center' }}>
           <Typography variant="h4">Sign in</Typography>
-          <Typography color="text.secondary" variant="body2">
+          {/* <Typography color="text.secondary" variant="body2">
             Don&apos;t have an account?{' '}
             <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
               Sign up
             </Link>
-          </Typography>
+          </Typography> */}
         </Stack>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
@@ -117,7 +115,12 @@ export function SignInForm(): React.JSX.Element {
               render={({ field }) => (
                 <FormControl error={Boolean(errors.email)}>
                   <InputLabel>Email address</InputLabel>
-                  <OutlinedInput {...field} label="Email address" type="email" />
+                  <OutlinedInput 
+                    {...field} 
+                    label="Email address" 
+                    type="email" 
+                    disabled={isPending}
+                  />
                   {errors.email ? <FormHelperText>{errors.email.message}</FormHelperText> : null}
                 </FormControl>
               )}
@@ -150,6 +153,7 @@ export function SignInForm(): React.JSX.Element {
                       )
                     }
                     label="Password"
+                    disabled={isPending}
                     type={showPassword ? 'text' : 'password'}
                   />
                   {errors.password ? <FormHelperText>{errors.password.message}</FormHelperText> : null}
@@ -157,12 +161,12 @@ export function SignInForm(): React.JSX.Element {
               )}
             />
             <div>
-              <Link component={RouterLink} href={paths.auth.resetPassword} variant="subtitle2">
+            {!isPending && <Link component={RouterLink}  href={paths.auth.resetPassword} variant="subtitle2">
                 Forgot password?
-              </Link>
+              </Link>}
             </div>
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button disabled={isPending} type="submit" variant="contained">
+            <Button disabled={isPending} loading={isPending}  type="submit" variant="contained">
               Sign in
             </Button>
           </Stack>
@@ -170,6 +174,5 @@ export function SignInForm(): React.JSX.Element {
         </Stack>
       </Container>
     </div>
-    </>
   );
 }

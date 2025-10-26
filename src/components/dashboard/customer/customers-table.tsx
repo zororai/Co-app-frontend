@@ -138,7 +138,7 @@ export function CustomersTable({
     return filteredRows.map((customer) => customer.id);
   }, [filteredRows]);
 
-  // Initialize selection handling
+  // Initialize selection handling - rowIds is properly memoized to prevent infinite loops
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;

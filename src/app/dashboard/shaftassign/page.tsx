@@ -6,11 +6,13 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import dayjs from 'dayjs';
 import Papa from 'papaparse';
+
 
 
 import { config } from '@/config';
@@ -30,47 +32,63 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
-  React.useEffect(() => {
-    (async () => {
+  // Function to fetch and update shaft assignment data
+  const fetchShaftAssignments = React.useCallback(async () => {
+    try {
       const data = await authClient.fetchApprovedminer();
+      console.log('Fetched shaft assignment data from API:', data);
       // Ensure each customer has cooperativeName and cooperative properties
       const normalizedData = data.map((customer: any) => ({
         ...customer,
         cooperativeName: customer.cooperativeName ?? '',
         cooperative: customer.cooperative ?? ''
       }));
+      console.log('Normalized shaft assignment data for table:', normalizedData);
       setCustomers(normalizedData);
-    })();
+    } catch (error) {
+      console.error('Error fetching shaft assignments:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchShaftAssignments();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchShaftAssignments]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'Registration Number', 'Name', 'Surname', 'Name Of Cooperative', 'No.Of.Shafts', 'Status'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    
+    // Export all customers, not just paginated ones
+    const rows = customers.map((c: any) => [
+      c.registrationNumber || '',
+      c.name || '',
+      c.surname || '',
+      c.cooperativename || '',
+      c.shaftnumber || '',
+      c.status || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `shaft-assignments-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -135,21 +153,9 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Syndicate Miners Shaft Assignment</Typography>
+          <Typography variant="h4">Assigning Syndicate Miners To Shaft</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
+            
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
@@ -158,12 +164,19 @@ export default function Page(): React.JSX.Element {
       
       </Stack>
 
-      <CustomersTable
-        count={paginatedCustomers.length}
-        page={page}
-        rows={paginatedCustomers}
-        rowsPerPage={rowsPerPage}
-      />
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading shaft assignments...</Typography>
+        </Stack>
+      ) : (
+        <CustomersTable
+          count={paginatedCustomers.length}
+          page={page}
+          rows={paginatedCustomers}
+          rowsPerPage={rowsPerPage}
+        />
+      )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>

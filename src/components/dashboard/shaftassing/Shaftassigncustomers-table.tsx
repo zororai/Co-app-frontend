@@ -112,9 +112,6 @@ export function CustomersTable({
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
-  const handleRedirect = (path: string) => {
-    globalThis.location.href = path;
-  };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -141,32 +138,6 @@ export function CustomersTable({
 
   return (
     <Card>
-      {/* Action Buttons */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
-          onClick={() => handleRedirect('/dashboard/shaftassign')}
-        >
-          View Syndicate
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
-          onClick={() => handleRedirect('/dashboard/companyshaft')}
-        >
-          View Company
-        </Button>
-      </Box>
-      <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField

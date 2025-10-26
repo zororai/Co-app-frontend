@@ -16,18 +16,19 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import { WarningCircle, Bell } from '@phosphor-icons/react/dist/ssr';
-import Papa from 'papaparse';
+
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/incidentmanagement/incidentmanagement-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyIncidentManagementTable, LazyAddIncidentDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/incidentmanagement/incidentmanagement';
 import { authClient } from '@/lib/auth/client';
-import {AddOreDialog } from '@/components/dashboard/incidentmanagement/add-incident-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -37,6 +38,48 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+
+  // Function to fetch and update incident data
+  const fetchIncidents = React.useCallback(async () => {
+    try {
+      const fetched = await authClient.fetchIncidents();
+      console.log('Fetched incident data from API:', fetched);
+      const normalized = Array.isArray(fetched)
+        ? fetched.map((it: any, idx: number) => ({
+            id: String(it.id ?? it.incidentId ?? idx),
+            title: it.title,
+            severity: it.severity,
+            location: it.location,
+            reportedBy: it.reportedBy,
+            status: it.status || 'PENDING',
+            ...it,
+          }))        : [];
+      console.log('Normalized incident data for table:', normalized);
+      setCustomers(normalized);
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, []);
+
+  // Function to refresh the incident data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+    fetchIncidents();
+  }, [fetchIncidents]);
+
+  // Render UI first, then fetch data with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchIncidents();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchIncidents]);
 
   // Quick action dialog state
   const [qaOpen, setQaOpen] = React.useState(false);
@@ -44,7 +87,8 @@ export default function Page(): React.JSX.Element {
   const [qaTitle, setQaTitle] = React.useState('');
   const [qaMessage, setQaMessage] = React.useState('');
 
-  const openQuickAction = (type: 'emergency' | 'safety' | 'notice') => {
+  // Memoized quick action handler
+  const openQuickAction = React.useCallback((type: 'emergency' | 'safety' | 'notice') => {
     setQaType(type);
     if (type === 'emergency') {
       setQaTitle('Emergency Alert');
@@ -57,7 +101,7 @@ export default function Page(): React.JSX.Element {
       setQaMessage('');
     }
     setQaOpen(true);
-  };
+  }, []);
 
   const closeQuickAction = () => setQaOpen(false);
   const sendQuickAction = async () => {
@@ -81,109 +125,52 @@ export default function Page(): React.JSX.Element {
         console.log('Notification sent successfully!');
         setQaOpen(false);
       }
-    } catch (err) {
-      console.error('Error sending notification:', err);
+    } catch (error) {
+      console.error('Error sending notification:', error);
     }
   };
 
-  // Function to refresh the miner data
-  const refreshData = React.useCallback(() => {
-    setRefreshKey(prevKey => prevKey + 1);
-  }, []);
+  // Note: refreshData already defined above, removing duplicate
 
-  // Filter customers (only Pending tab remains)
-  const pendingCustomers = customers.filter(c => c.status === 'PENDING');
+  // Memoized filtered customers
+  const pendingCustomers = React.useMemo(() => customers.filter(c => c.status === 'PENDING'), [customers]);
 
-  // Export table data as CSV
-  const handleExport = () => {
+  // Memoized pagination
+  const paginatedCustomers = React.useMemo(() => 
+    applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
+
+  const handleExport = React.useCallback(() => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
     ];
 
-    // Only Pending is supported
-    const filteredCustomers: Customer[] = pendingCustomers;
-
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    const rows = customers.map((c: any) => [
+      c.id || '',
+      c.name || '',
+      c.surname || '',
+      c.address || '',
+      c.cellNumber || '',
+      c.position || '',
+      c.cooperativeName || '',
+      c.numShafts || '',
+      c.status || '',
+      c.reason || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-  };
+  }, [customers]);
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
-  }
+  
 
   return (
     <Stack spacing={3}>
@@ -191,156 +178,125 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
             <Typography variant="h4" sx={{ flexGrow: 1 }}>Incident Report Register</Typography>
-            <Button
-              variant="contained"
-              startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-              onClick={() => setDialogOpen(true)}
-              sx={{
-                bgcolor: '#5f4bfa',
-                color: '#fff',
-                '&:hover': { bgcolor: '#4aa856' }
-              }}
-            >
-              Record Incident
-            </Button>
-          </Stack>
-          {/* Incident dialog */}
-          <AddOreDialog 
-            open={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            onRefresh={refreshData}
-          />
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
-            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
-              <CardContent>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <WarningCircle size={22} color="#ef4444" />
-                  <Typography variant="h6" sx={{ color: '#ffffff' }}>Emergency Alert</Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-                  Send immediate emergency notification
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
-                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
-                  bgcolor: '#d32f2f',
-                  '&:hover': { bgcolor: '#b71c1c' },
-                  color: '#fff',
-                  textTransform: 'none',
-                  fontWeight: 600
-                }} onClick={() => openQuickAction('emergency')}>
-                  Emergency Alert
-                </Button>
-              </CardActions>
-            </Card>
-
-            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
-              <CardContent>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <WarningCircle size={22} color="#f59e0b" />
-                  <Typography variant="h6" sx={{ color: '#ffffff' }}>Safety Reminder</Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-                  Send safety protocol reminder
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
-                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
-                  bgcolor: '#b77906',
-                  '&:hover': { bgcolor: '#975a04' },
-                  color: '#fff',
-                  textTransform: 'none',
-                  fontWeight: 600
-                }} onClick={() => openQuickAction('safety')}>
-                  Safety Reminder
-                </Button>
-              </CardActions>
-            </Card>
-
-            <Card sx={{ flex: 1, bgcolor: 'rgba(30,41,59,1)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 2 }}>
-              <CardContent>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Bell size={22} color="#3b82f6" />
-                  <Typography variant="h6" sx={{ color: '#ffffff' }}>General Notice</Typography>
-                </Stack>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-                  Send general information notice
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
-                <Button fullWidth variant="contained" startIcon={<Bell size={18} />} sx={{
-                  bgcolor: '#2563eb',
-                  '&:hover': { bgcolor: '#1d4ed8' },
-                  color: '#fff',
-                  textTransform: 'none',
-                  fontWeight: 600
-                }} onClick={() => openQuickAction('notice')}>
-                  General Notice
-                </Button>
-              </CardActions>
-            </Card>
-          </Stack>
-          {/* Quick Action Dialog */}
-          <Dialog open={qaOpen} onClose={closeQuickAction} maxWidth="sm" fullWidth>
-            <DialogTitle>{qaTitle}</DialogTitle>
-            <DialogContent>
-              <Stack spacing={2} sx={{ mt: 1 }}>
-                <TextField
-                  fullWidth
-                  label="Title"
-                  value={qaTitle}
-                  onChange={(e) => setQaTitle(e.target.value)}
-                />
-                <TextField
-                  fullWidth
-                  label={qaType === 'safety' ? 'Reminder' : qaType === 'emergency' ? 'Alert' : 'Notice'}
-                  value={qaMessage}
-                  onChange={(e) => setQaMessage(e.target.value)}
-                  multiline
-                  rows={4}
-                  placeholder={qaType === 'safety' ? 'Enter safety reminder...' : qaType === 'emergency' ? 'Enter emergency details...' : 'Enter general notice...'}
-                />
-              </Stack>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeQuickAction} color="inherit">Cancel</Button>
-              <Button
-                variant="contained"
-                onClick={sendQuickAction}
-                sx={{
-                  bgcolor: qaType === 'emergency' ? '#d32f2f' : qaType === 'safety' ? '#b77906' : '#2563eb',
-                  '&:hover': { bgcolor: qaType === 'emergency' ? '#b71c1c' : qaType === 'safety' ? '#975a04' : '#1d4ed8' }
-                }}
-              >
-                Send {qaType === 'safety' ? 'Reminder' : qaType === 'emergency' ? 'Alert' : 'Notice'}
-              </Button>
-            </DialogActions>
-          </Dialog>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
+            
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
           </Stack>
         </Stack>
+        <div>
+          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+            Add Incident
+          </Button>
+        </div>
+      </Stack>
+
+      {/* Quick Action Cards */}
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('emergency')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <WarningCircle size={32} color="#d32f2f" />
+              <Stack>
+                <Typography variant="h6" color="error">Emergency Alert</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send immediate emergency notification
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('safety')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <WarningCircle size={32} color="#ed6c02" />
+              <Stack>
+                <Typography variant="h6" color="warning.main">Safety Reminder</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send safety protocol reminder
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('notice')}>
+          <CardContent>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Bell size={32} color="#1976d2" />
+              <Stack>
+                <Typography variant="h6" color="primary">General Notice</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Send general information notice
+                </Typography>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
       </Stack>
 
       {/* Incidents table */}
       <Box sx={{ mt: 2 }}>
-        <CustomersTable key={refreshKey} rowsPerPage={5} onRefresh={refreshData} />
+        {isInitialLoading ? (
+          <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 300 }}>
+            <CircularProgress />
+            <Typography variant="body2" sx={{ mt: 2 }}>Loading incident reports...</Typography>
+          </Stack>
+        ) : (
+          <LazyWrapper>
+            <LazyIncidentManagementTable 
+              key={refreshKey} 
+              count={customers.length}
+              page={page}
+              rows={customers}
+              rowsPerPage={rowsPerPage} 
+              onRefresh={refreshData} 
+            />
+          </LazyWrapper>
+        )}
       </Box>
+
+      {/* Add Incident Dialog */}
+      <LazyWrapper>
+        <LazyAddIncidentDialog open={open} onClose={() => setOpen(false)} onRefresh={refreshData} />
+      </LazyWrapper>
+
+      {/* Quick Action Dialog */}
+      <Dialog open={qaOpen} onClose={closeQuickAction} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {qaType === 'emergency' ? 'Emergency Alert' : 
+           qaType === 'safety' ? 'Safety Reminder' : 'General Notice'}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Title"
+              value={qaTitle}
+              onChange={(e) => setQaTitle(e.target.value)}
+              fullWidth
+            />
+            <TextField
+              label="Message"
+              value={qaMessage}
+              onChange={(e) => setQaMessage(e.target.value)}
+              multiline
+              rows={4}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeQuickAction}>Cancel</Button>
+          <Button 
+            onClick={sendQuickAction} 
+            variant="contained"
+            color={qaType === 'emergency' ? 'error' : qaType === 'safety' ? 'warning' : 'primary'}
+          >
+            Send {qaType === 'emergency' ? 'Alert' : qaType === 'safety' ? 'Reminder' : 'Notice'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Stack>
   );

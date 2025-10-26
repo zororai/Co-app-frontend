@@ -21,15 +21,17 @@ import { authClient } from '@/lib/auth/client';
 import { printElementById } from '@/lib/print';
 import dayjs from 'dayjs';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import PrintIcon from '@mui/icons-material/Print';
+import { printElementById } from '@/lib/print';
 
-interface DriverDetailsDialogProps {
+interface IncidentDetailsDialogProps {
   open: boolean;
   onClose: () => void;
-  driverId: string | null;
+  incidentId: string | null;
   onRefresh?: () => void; // optional callback to refresh table after actions
 }
 
-export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: DriverDetailsDialogProps): React.JSX.Element {
+export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: IncidentDetailsDialogProps): React.JSX.Element {
   const [incident, setIncident] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -43,13 +45,13 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
   const [actionSuccess, setActionSuccess] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
 
-  // Fetch incident details when dialog opens and driverId changes
+  // Fetch incident details when dialog opens and incidentId changes
   React.useEffect(() => {
-    if (open && driverId) {
+    if (open && incidentId) {
       setLoading(true);
       setError(null);
       
-      authClient.fetchIncidentById(driverId)
+      authClient.fetchIncidentById(incidentId)
         .then((data) => {
           if (data) {
             setIncident(data);
@@ -65,7 +67,7 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
           setLoading(false);
         });
     }
-  }, [open, driverId]);
+  }, [open, incidentId]);
 
   // Handle approve action
   const handleApproveClick = () => {
@@ -73,7 +75,7 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
   };
 
   const handleApproveConfirm = async () => {
-    if (!driverId) return;
+    if (!incidentId) return;
     
     setActionLoading(true);
     setActionError(null);
@@ -107,7 +109,7 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
   };
 
   const handleRejectConfirm = async () => {
-    if (!driverId) return;
+    if (!incidentId) return;
     if (!actionReason.trim()) {
       setActionError('Reason is required for closing');
       return;
@@ -144,7 +146,7 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
   };
 
   const handlePushbackConfirm = async () => {
-    if (!driverId) return;
+    if (!incidentId) return;
     if (!actionReason.trim()) {
       setActionError('Reason is required for escalation');
       return;
@@ -195,168 +197,163 @@ export function DriverDetailsDialog({ open, onClose, driverId, onRefresh }: Driv
           bgcolor: '#15073d'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-          Incident Details
-        </Typography>
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          size="small"
-          sx={{ color: '#9e9e9e' }}
-        >
-          <CloseIcon />
-        </IconButton>
+        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Incident Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton onClick={() => printElementById('incident-details-printable', 'Incident Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       
       <DialogContent>
-        {loading ? (
-          <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-            <CircularProgress />
-            <Typography variant="body1" sx={{ ml: 2 }}>Loading incident details...</Typography>
-          </Box>
-        ) : error ? (
-          <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-              Error
-            </Typography>
-            <Typography>{error}</Typography>
-          </Box>
-        ) : incident ? (
-          <Box sx={{ p: 2 }}>
-            {/* Incident Status */}
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                {incident.incidentTitle || 'Untitled Incident'}
-              </Typography>
-              <Chip 
-                label={incident.status || 'INVESTIGATING'} 
-                sx={{
-                  bgcolor: incident.status === 'RESOLVED' ? '#C8E6C9' : 
-                           incident.status === 'CLOSED' ? '#FFCDD2' : 
-                           incident.status === 'ESCALATED' ? '#FFE0B2' : 
-                           '#FFF9C4',
-                  color: incident.status === 'RESOLVED' ? '#1B5E20' : 
-                         incident.status === 'CLOSED' ? '#B71C1C' : 
-                         incident.status === 'ESCALATED' ? '#E65100' : 
-                         '#F57F17',
-                  fontWeight: 'medium'
-                }}
-              />
+        <Box sx={{ p: 2 }} id="incident-details-printable">
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+              <CircularProgress />
+              <Typography variant="body1" sx={{ ml: 2 }}>Loading incident details...</Typography>
             </Box>
-            
-            <Divider sx={{ mb: 3 }} />
-            
-            {/* Incident Information */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
-                Incident Information
-              </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Box>
-                  <Typography sx={{ mb: 1 }}><strong>Severity Level:</strong></Typography>
-                  <Chip 
-                    label={incident.severityLevel || 'N/A'}
-                    size="small"
-                    sx={{
-                      bgcolor: incident.severityLevel === 'Critical' ? '#FFCDD2' :
-                               incident.severityLevel === 'High' ? '#FFE0B2' :
-                               '#e3f2fd',
-                      color: incident.severityLevel === 'Critical' ? '#B71C1C' :
-                             incident.severityLevel === 'High' ? '#E65100' :
-                             '#1976d2',
-                      fontWeight: 500
-                    }}
-                  />
-                </Box>
-                <Box>
+          ) : error ? (
+            <Box sx={{ p: 2, textAlign: 'center', color: 'error.main' }}>
+              <Typography>{error}</Typography>
+            </Box>
+          ) : incident ? (
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+              gap: 2 
+            }}>
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                  Incident Information
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Typography sx={{ mb: 1 }}><strong>Title:</strong> {incident.incidentTitle || 'Untitled Incident'}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>Severity Level:</strong> 
+                    <Chip 
+                      label={incident.severityLevel || 'N/A'}
+                      size="small"
+                      color={
+                        incident.severityLevel === 'Critical' ? 'error' :
+                        incident.severityLevel === 'High' ? 'warning' :
+                        'default'
+                      }
+                      sx={{ ml: 1 }}
+                    />
+                  </Typography>
                   <Typography sx={{ mb: 1 }}><strong>Reported By:</strong> {incident.reportedBy || 'N/A'}</Typography>
-                </Box>
-                <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
-                  <Typography sx={{ mb: 1 }}><strong>Location:</strong> {incident.location || 'N/A'}</Typography>
-                </Box>
-              </Box>
-            </Box>
-            
-            {/* Description */}
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
-                Description
-              </Typography>
-              <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-                <Typography>
-                  {incident.description || 'No description provided'}
-                </Typography>
-              </Box>
-            </Box>
-            
-            {/* Participants */}
-            {incident.participants && incident.participants.length > 0 && (
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
-                  Participants ({incident.participants.length})
-                </Typography>
-                <Stack spacing={2}>
-                  {incident.participants.map((participant: any, index: number) => (
+                  <Typography><strong>Status:</strong> 
                     <Box 
-                      key={index}
-                      sx={{ 
-                        p: 2, 
-                        border: '1px solid #e0e0e0',
+                      component="span" 
+                      sx={{
+                        display: 'inline-block',
+                        px: 1,
+                        py: 0.5,
                         borderRadius: 1,
-                        bgcolor: '#fafafa'
+                        ml: 1,
+                        bgcolor: incident.status === 'RESOLVED' ? '#C8E6C9' : 
+                                 incident.status === 'CLOSED' ? '#FFCDD2' : 
+                                 incident.status === 'ESCALATED' ? '#FFE0B2' : '#FFF9C4',
+                        color: incident.status === 'RESOLVED' ? '#1B5E20' : 
+                               incident.status === 'CLOSED' ? '#B71C1C' : 
+                               incident.status === 'ESCALATED' ? '#E65100' : '#F57F17',
                       }}
                     >
-                      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                        <Box>
-                          <Typography sx={{ mb: 1 }}><strong>Name:</strong> {participant.name} {participant.surname}</Typography>
-                        </Box>
-                        <Box>
-                          <Typography sx={{ mb: 1 }}><strong>National ID:</strong> {participant.nationalId || 'N/A'}</Typography>
-                        </Box>
-                        <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
-                          <Typography sx={{ mb: 1 }}><strong>Address:</strong> {participant.address || 'N/A'}</Typography>
-                        </Box>
-                      </Box>
+                      {incident.status || 'INVESTIGATING'}
                     </Box>
-                  ))}
-                </Stack>
+                  </Typography>
+                </Box>
               </Box>
-            )}
-            {/* Attachments */}
-            {incident.attachments && incident.attachments.length > 0 && (
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2, mb: 2 }}>
+              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
                 <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
-                  Attachments ({incident.attachments.length})
+                  Location Information
                 </Typography>
-                <Stack spacing={1}>
-                  {incident.attachments.map((attachment: string, index: number) => (
-                    <Box 
-                      key={index}
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: 1,
-                        p: 1.5,
-                        bgcolor: '#f5f5f5',
-                        borderRadius: 1
-                      }}
-                    >
-                      <CheckCircleOutlineIcon fontSize="small" sx={{ color: '#4caf50' }} />
-                      <Typography>{attachment}</Typography>
-                    </Box>
-                  ))}
-                </Stack>
+                <Box sx={{ mt: 2 }}>
+                  <Typography sx={{ mb: 1 }}><strong>Location:</strong> {incident.location || 'N/A'}</Typography>
+                  <Typography sx={{ mb: 1 }}><strong>Date Reported:</strong> {formatDate(incident.dateReported)}</Typography>
+                </Box>
               </Box>
-            )}
-            
-          </Box>
-        ) : (
-          <Box sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body1" color="text.secondary">
-              No incident information available
-            </Typography>
-          </Box>
-        )}
+              
+              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                  Description
+                </Typography>
+                <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                  <Typography>{incident.description || 'No description'}</Typography>
+                </Box>
+              </Box>
+              
+              {incident.participants && incident.participants.length > 0 && (
+                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                    Participants ({incident.participants.length})
+                  </Typography>
+                  <Stack spacing={2} sx={{ mt: 2 }}>
+                    {incident.participants.map((participant: any, index: number) => (
+                      <Box 
+                        key={index}
+                        sx={{ 
+                          p: 2, 
+                          border: '1px solid #e0e0e0',
+                          borderRadius: 1,
+                          bgcolor: '#fafafa'
+                        }}
+                      >
+                     <Box display="flex" flexWrap="wrap" gap={2}>
+  <Box flex="1 1 45%">
+    <Typography><strong>Name:</strong> {participant.name} {participant.surname}</Typography>
+  </Box>
+  <Box flex="1 1 45%">
+    <Typography><strong>National ID:</strong> {participant.nationalId || 'N/A'}</Typography>
+  </Box>
+  <Box flex="1 1 100%">
+    <Typography><strong>Address:</strong> {participant.address || 'N/A'}</Typography>
+  </Box>
+</Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+              
+              {incident.attachments && incident.attachments.length > 0 && (
+                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                    Attachments ({incident.attachments.length})
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Stack spacing={1}>
+                      {incident.attachments.map((attachment: string, index: number) => (
+                        <Box 
+                          key={index}
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1,
+                            p: 1.5,
+                            bgcolor: '#f5f5f5',
+                            borderRadius: 1
+                          }}
+                        >
+                          <CheckCircleOutlineIcon fontSize="small" color="success" />
+                          <Typography variant="body2">{attachment}</Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+              <Typography variant="body1" color="text.secondary">
+                No incident information available
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </DialogContent>
       
       <DialogActions sx={{ p: 2 }}>

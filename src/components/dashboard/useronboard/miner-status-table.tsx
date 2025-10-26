@@ -15,6 +15,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -22,6 +23,20 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -30,6 +45,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
+import { EditUserDialog } from '@/components/dashboard/useronboard/edit-user-dialog';
 
 
 function noop(): void {
@@ -75,17 +91,39 @@ export function CustomersTable({
 }: CustomersTableProps): React.JSX.Element {
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true);
+  const [loading, setLoading] = React.useState<boolean>(rows && rows.length > 0 ? false : true);
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('createdAt');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
+  
+  // Handle sort request
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Use rows prop if provided, otherwise use fetched users
+  const dataSource = rows && rows.length > 0 ? rows : users;
+  
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Table component - rows prop:', rows);
+    console.log('Table component - users state:', users);
+    console.log('Table component - dataSource:', dataSource);
+    console.log('Table component - loading:', loading);
+  }, [rows, users, dataSource, loading]);
+
+  // Filter and sort the users
   const filteredRows = React.useMemo(() => {
-    const filtered = users.filter(user => {
+    const filtered = dataSource.filter(user => {
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -100,8 +138,27 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      // Handle null/undefined values
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      // Convert to strings for comparison
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [dataSource, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -121,10 +178,27 @@ export function CustomersTable({
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [editUserId, setEditUserId] = React.useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteUserId, setDeleteUserId] = React.useState<string | null>(null);
+  const [deleteUserName, setDeleteUserName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
   // Fetch users from API when component mounts or refreshTrigger changes
+  // Only fetch if no rows are provided via props
   React.useEffect(() => {
+    if (rows && rows.length > 0) {
+      // If rows are provided via props, don't fetch and set loading to false
+      setLoading(false);
+      setError('');
+      return;
+    }
+
     const fetchUserData = async () => {
       setLoading(true);
       setError('');
@@ -140,7 +214,7 @@ export function CustomersTable({
     };
 
     fetchUserData();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, rows]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
@@ -159,6 +233,64 @@ export function CustomersTable({
   const handleViewUserDetails = (userId: string) => {
     setSelectedUserId(userId);
     setIsUserDetailsDialogOpen(true);
+  };
+
+  // Function to handle editing user
+  const handleEditUser = (userId: string) => {
+    setEditUserId(userId);
+    setIsEditDialogOpen(true);
+  };
+
+  // Function to handle delete user (open confirmation dialog)
+  const handleDeleteUser = (userId: string, userName: string, userSurname: string) => {
+    setDeleteUserId(userId);
+    setDeleteUserName(`${userName} ${userSurname}`);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Function to confirm and execute delete
+  const confirmDeleteUser = async () => {
+    if (!deleteUserId) return;
+
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`/api/users/${deleteUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Check HTTP status code
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete user'}`);
+      }
+
+      // Success - close dialog and refresh table
+      setIsDeleteDialogOpen(false);
+      setDeleteUserId(null);
+      setDeleteUserName('');
+      refreshTableData();
+      
+      // Show success notification
+      setSnackbarMessage('User deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setSnackbarMessage(`Failed to delete user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Function to refresh the table data
@@ -201,15 +333,6 @@ export function CustomersTable({
         bgcolor: '#fff',
         boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        <Typography 
-          variant="subtitle1" 
-          sx={{ 
-            fontWeight: 500, 
-            mb: 2 
-          }}
-        >
-          Filters
-        </Typography>
         <Box sx={{ 
           display: 'flex', 
           gap: 2, 
@@ -304,21 +427,94 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Phone number</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Role</TableCell>
-             
-              <TableCell>Status</TableCell>
+              <TableCell sortDirection={sortField === 'name' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'name'}
+                  direction={sortField === 'name' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'surname' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'surname'}
+                  direction={sortField === 'surname' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('surname')}
+                >
+                  Surname
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'cellNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'cellNumber'}
+                  direction={sortField === 'cellNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('cellNumber')}
+                >
+                  Phone number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'email' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'email'}
+                  direction={sortField === 'email' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'position' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'position'}
+                  direction={sortField === 'position' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('position')}
+                >
+                  Position
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'role' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'role'}
+                  direction={sortField === 'role' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('role')}
+                >
+                  Role
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Actions</TableCell>
-              
-     
-              
             </TableRow>
           </TableHead>
           <TableBody>
+            {loading && (
+              // Show skeleton rows while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                  <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Skeleton variant="circular" width={32} height={32} />
+                      <Skeleton variant="circular" width={32} height={32} />
+                      <Skeleton variant="circular" width={32} height={32} />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
             {!loading && filteredRows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
@@ -328,7 +524,7 @@ export function CustomersTable({
                 </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -364,19 +560,50 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
               
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View User Details</button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit User">
+                        <IconButton 
+                          onClick={() => handleEditUser(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete User">
+                        <IconButton 
+                          onClick={() => handleDeleteUser(row.id, row.name || '', row.surname || '')}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                
@@ -406,7 +633,71 @@ export function CustomersTable({
         open={isUserDetailsDialogOpen}
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
+        onRefresh={refreshTableData}
       />
+      
+      {/* Edit user dialog */}
+      <EditUserDialog
+        open={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        userId={editUserId}
+        onRefresh={refreshTableData}
+      />
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: 'secondary.main', color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete user <strong>{deleteUserName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteUser} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: 'secondary.main',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }

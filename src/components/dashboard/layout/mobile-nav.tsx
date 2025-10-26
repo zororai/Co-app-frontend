@@ -9,6 +9,7 @@ import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
 import { ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
 
@@ -16,7 +17,6 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { Logo } from '@/components/core/logo';
-import { PageLoader } from '@/components/core/page-loader';
 import { authClient } from '@/lib/auth/client';
 
 import { navItems, allNavItems, getNavItemsForUser } from './config';
@@ -31,51 +31,58 @@ export interface MobileNavProps {
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
   const [loading, setLoading] = React.useState(false);
+  const [permissionsLoading, setPermissionsLoading] = React.useState(true);
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
   const prevPathRef = React.useRef<string | null>(null);
 
-  // Fetch user permissions and filter navigation items
-  React.useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const { data: userData } = await authClient.getUser();
-        if (!userData || !userData.email) {
-          console.log('⚠️ No user email found, hiding all nav items');
-          setFilteredNavItems([]);
-          return;
-        }
+  // Fetch user permissions and filter navigation items using render-ui-first pattern
+  const fetchPermissions = React.useCallback(async () => {
+    try {
+      const { data: userData } = await authClient.getUser();
+      if (!userData || !userData.email) {
+        console.log('⚠️ No user email found, hiding all nav items');
+        setFilteredNavItems([]);
+        return;
+      }
 
-        console.log('🔍 Fetching permissions for:', userData.email);
-        const response = await authClient.fetchUserPermissions(userData.email);
+      console.log('🔍 Fetching permissions for:', userData.email);
+      const response = await authClient.fetchUserPermissions(userData.email);
+      
+      console.log('📦 API Response:', { 
+        success: response.success, 
+        hasData: !!response.data,
+        error: response.error,
+        rawData: response.data 
+      });
+      
+      if (response.success && response.data?.permissions) {
+        const permissionKeys = response.data.permissions.map((p) => p.permission);
+        console.log('✅ User permissions:', permissionKeys);
         
-        console.log('📦 API Response:', { 
-          success: response.success, 
-          hasData: !!response.data,
-          error: response.error,
-          rawData: response.data 
-        });
-        
-        if (response.success && response.data?.permissions) {
-          const permissionKeys = response.data.permissions.map((p) => p.permission);
-          console.log('✅ User permissions:', permissionKeys);
-          
-          const filtered = getNavItemsForUser(permissionKeys);
-          console.log('📋 Filtered nav items:', filtered.map(item => ({ key: item.key, title: item.title, hasSubItems: !!item.items })));
-          setFilteredNavItems(filtered);
-        } else {
-          // User not found or no permissions - hide all nav items
-          console.log('⚠️ User not found or no permissions - hiding all nav items');
-          setFilteredNavItems([]);
-        }
-      } catch (error) {
-        // Log errors and hide nav items for security
-        console.warn('Error fetching permissions:', error);
+        const filtered = getNavItemsForUser(permissionKeys);
+        console.log('📋 Filtered nav items:', filtered.map(item => ({ key: item.key, title: item.title, hasSubItems: !!item.items })));
+        setFilteredNavItems(filtered);
+      } else {
+        // User not found or no permissions - hide all nav items
+        console.log('⚠️ User not found or no permissions - hiding all nav items');
         setFilteredNavItems([]);
       }
-    };
-
-    fetchPermissions();
+    } catch (error) {
+      // Log errors and hide nav items for security
+      console.warn('Error fetching permissions:', error);
+      setFilteredNavItems([]);
+    } finally {
+      setPermissionsLoading(false);
+    }
   }, []);
+
+  // Render UI first, then fetch permissions with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchPermissions();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchPermissions]);
 
   // Hide loader once the route actually changes
   React.useEffect(() => {
@@ -119,7 +126,6 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
       onClose={onClose}
       open={open}
     >
-      <PageLoader isVisible={loading} message="Loading..." />
       <Stack spacing={2} sx={{ p: 3 }}>
         <Box
           component={RouterLink}
@@ -139,6 +145,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
             Commstack
           </Typography>
         </Box>
+        
         <Box
           sx={{
             alignItems: 'center',
@@ -155,6 +162,17 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
             </Typography>
           </Box>
         </Box>
+        
+        {/* Loading indicator below Co-App text */}
+        {(permissionsLoading || loading) && (
+          <LinearProgress 
+            sx={{ 
+              width: '100%',
+              mx: -3,
+              mt: -1
+            }} 
+          />
+        )}
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
       <Box 
