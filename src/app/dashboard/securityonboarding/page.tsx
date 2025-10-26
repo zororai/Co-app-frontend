@@ -10,6 +10,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
@@ -103,6 +104,8 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { LazyRegMinerDialog, LazyAddSecurityCompanyDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -112,6 +115,10 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
+  
+  // Export menu state
+  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
+  const exportMenuOpen = Boolean(exportAnchorEl);
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -153,8 +160,17 @@ export default function Page(): React.JSX.Element {
     return () => clearTimeout(timer);
   }, [fetchSecurityData]);
 
-  // Export table data as CSV (based on current tab filter)
-  const handleExport = React.useCallback(() => {
+  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  // Export table data (based on current tab filter)
+  const handleExport = React.useCallback((format: 'csv' | 'pdf') => {
+    handleExportMenuClose();
     const headers = [
       'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
@@ -190,16 +206,38 @@ export default function Page(): React.JSX.Element {
       (c as any).reason,
       (c as any).attachedShaft ? 'Yes' : 'No'
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'customers.csv';
-    document.body.append(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    if (format === 'csv') {
+      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `security-onboarding-${tab.toLowerCase()}-${timestamp}.csv`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      const doc = new jsPDF();
+      doc.setFontSize(20);
+      doc.text(`Security Onboarding - ${tab}`, 14, 22);
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+      
+      autoTable(doc, {
+        head: [headers],
+        body: rows,
+        startY: 40,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+      
+      doc.save(`security-onboarding-${tab.toLowerCase()}-${timestamp}.pdf`);
+    }
   }, [customers, tab]);
 
   // Import CSV to preview into table state (and POST to backend)
@@ -276,9 +314,22 @@ export default function Page(): React.JSX.Element {
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
+              endIcon={<ArrowDropDownIcon />}
+              onClick={handleExportMenuClick}
+            >
               Export
             </Button>
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={exportMenuOpen}
+              onClose={handleExportMenuClose}
+            >
+              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
+              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
+            </Menu>
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
