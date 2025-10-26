@@ -1,15 +1,15 @@
+ 
+
 "use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
+
 import dayjs from 'dayjs';
 import Papa from 'papaparse';
 
@@ -19,8 +19,6 @@ import { config } from '@/config';
 import { CustomersTable, type Customer } from '@/components/dashboard/penality/penality-table';
 import { SectionDialog } from '@/components/dashboard/penality/penality-dialog';
 import { authClient } from '@/lib/auth/client';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -28,10 +26,6 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
-  
-  // Export menu state
-  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
-  const exportMenuOpen = Boolean(exportAnchorEl);
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -75,17 +69,8 @@ export default function Page(): React.JSX.Element {
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
-  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportAnchorEl(event.currentTarget);
-  };
-
-  const handleExportMenuClose = () => {
-    setExportAnchorEl(null);
-  };
-
-  // Export table data
-  const handleExport = (format: 'csv' | 'pdf') => {
-    handleExportMenuClose();
+  // Export table data as CSV
+  const handleExport = () => {
     const headers = [
       'Shaft Number', 'Section', 'Fee', 'Status'
     ];
@@ -98,37 +83,17 @@ export default function Page(): React.JSX.Element {
       c.status || ''
     ]);
     
-    const timestamp = new Date().toISOString().split('T')[0];
-    
-    if (format === 'csv') {
-      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `penalties-${timestamp}.csv`;
-      document.body.append(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text('Issued Penalties', 14, 22);
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
-      
-      autoTable(doc, {
-        head: [headers],
-        body: rows,
-        startY: 40,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [41, 128, 185] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-      });
-      
-      doc.save(`penalties-${timestamp}.pdf`);
-    }
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `penalties-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.append(a);
+
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
@@ -191,22 +156,9 @@ export default function Page(): React.JSX.Element {
           <Typography variant="h4">Issued Penality</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
-            <Button 
-              color="inherit" 
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuClick}
-            >
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
-            <Menu
-              anchorEl={exportAnchorEl}
-              open={exportMenuOpen}
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
-              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
-            </Menu>
           </Stack>
         </Stack>
         <div>

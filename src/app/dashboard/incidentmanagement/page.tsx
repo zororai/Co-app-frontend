@@ -4,15 +4,13 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -31,8 +29,6 @@ import { LazyWrapper } from '@/components/common/LazyWrapper';
 import { LazyIncidentManagementTable, LazyAddIncidentDialog } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/incidentmanagement/incidentmanagement';
 import { authClient } from '@/lib/auth/client';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -40,10 +36,6 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
-  
-  // Export menu state
-  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
-  const exportMenuOpen = Boolean(exportAnchorEl);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   
@@ -147,16 +139,7 @@ export default function Page(): React.JSX.Element {
   const paginatedCustomers = React.useMemo(() => 
     applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
-  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportAnchorEl(event.currentTarget);
-  };
-
-  const handleExportMenuClose = () => {
-    setExportAnchorEl(null);
-  };
-
-  const handleExport = React.useCallback((format: 'csv' | 'pdf') => {
-    handleExportMenuClose();
+  const handleExport = React.useCallback(() => {
     const headers = [
       'ID', 'Name', 'Surname', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
     ];
@@ -174,37 +157,17 @@ export default function Page(): React.JSX.Element {
       c.reason || ''
     ]);
     
-    const timestamp = new Date().toISOString().split('T')[0];
-    
-    if (format === 'csv') {
-      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `incident-management-${timestamp}.csv`;
-      document.body.append(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text('Incident Report Register', 14, 22);
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
-      
-      autoTable(doc, {
-        head: [headers],
-        body: rows,
-        startY: 40,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [41, 128, 185] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-      });
-      
-      doc.save(`incident-management-${timestamp}.pdf`);
-    }
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.append(a);
+
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }, [customers]);
 
   
@@ -216,22 +179,9 @@ export default function Page(): React.JSX.Element {
           <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
             <Typography variant="h4" sx={{ flexGrow: 1 }}>Incident Report Register</Typography>
             
-            <Button 
-              color="inherit" 
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuClick}
-            >
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
-            <Menu
-              anchorEl={exportAnchorEl}
-              open={exportMenuOpen}
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
-              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
-            </Menu>
           </Stack>
         </Stack>
         <div>

@@ -16,19 +16,19 @@ This document tracks the progress of updating all table components in the `/src/
 - [x] `dashboard/Production_LoanStatus/productionloanstatus-table.tsx`
 - [x] `dashboard/Refined_Ore_to_Gold/orepayout-table.tsx`
 
-### Batch 2 (5 components) - ❌ NOT STARTED
-- [ ] `dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table.tsx`
-- [ ] `dashboard/ShaftLoanStatus/shaftloan-table.tsx`
-- [ ] `dashboard/Transport_cost/transportcost-table.tsx`
-- [ ] `dashboard/Transport_costStatus/transportcost-table.tsx`
-- [ ] `dashboard/approvedvehicles/vehicle-operation-table.tsx`
+### Batch 2 (5 components) - ✅ COMPLETED
+- [x] `dashboard/Sample_Ore_Approval/sampleapprove_to_ore-table.tsx`
+- [x] `dashboard/ShaftLoanStatus/shaftloan-table.tsx`
+- [x] `dashboard/Transport_cost/transportcost-table.tsx`
+- [x] `dashboard/Transport_costStatus/transportcost-table.tsx`
+- [x] `dashboard/approvedvehicles/vehicle-operation-table.tsx`
 
-### Batch 3 (5 components) - ❌ NOT STARTED
-- [ ] `dashboard/borrowing/shaftloan-table.tsx`
-- [ ] `dashboard/companyhealth/companyreg-status-table.tsx`
-- [ ] `dashboard/companyshaft/company-table.tsx`
-- [ ] `dashboard/customer/company-table.tsx`
-- [ ] `dashboard/customer/customers-table.tsx`
+### Batch 3 (5 components) - ✅ COMPLETED
+- [x] `dashboard/borrowing/shaftloan-table.tsx`
+- [x] `dashboard/companyhealth/companyreg-status-table.tsx`
+- [x] `dashboard/companyshaft/company-table.tsx`
+- [x] `dashboard/customer/company-table.tsx`
+- [x] `dashboard/customer/customers-table.tsx` *(already had correct options)*
 
 ### Batch 4 (5 components) - ❌ NOT STARTED
 - [ ] `dashboard/customer/customersCompany-table.tsx`

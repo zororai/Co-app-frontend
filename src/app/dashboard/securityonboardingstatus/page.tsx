@@ -10,7 +10,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
@@ -30,8 +29,6 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { AddSecurityCompanyDialog } from '@/components/dashboard/securityonboarding/add-security-company-dialog';
 
 // Tab content components with loading states
@@ -99,10 +96,6 @@ export default function Page(): React.JSX.Element {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
   
-  // Export menu state
-  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
-  const exportMenuOpen = Boolean(exportAnchorEl);
-  
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
@@ -150,17 +143,8 @@ export default function Page(): React.JSX.Element {
   const rejectedCustomers = React.useMemo(() => customers.filter(c => c.status === 'REJECTED'), [customers]);
   const approvedCustomers = React.useMemo(() => customers.filter(c => c.status === 'APPROVED'), [customers]);
 
-  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportAnchorEl(event.currentTarget);
-  };
-
-  const handleExportMenuClose = () => {
-    setExportAnchorEl(null);
-  };
-
   // Memoized export function to prevent recreation on every render
-  const handleExport = React.useCallback((format: 'csv' | 'pdf') => {
-    handleExportMenuClose();
+  const handleExport = React.useCallback(() => {
     const headers = [
       'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
@@ -204,38 +188,17 @@ export default function Page(): React.JSX.Element {
       c.reason,
       c.attachedShaft ? 'Yes' : 'No'
     ]);
-    
-    const timestamp = new Date().toISOString().split('T')[0];
-    
-    if (format === 'csv') {
-      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `security-onboarding-status-${tab.toLowerCase()}-${timestamp}.csv`;
-      document.body.append(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text(`Security Onboarding Status - ${tab}`, 14, 22);
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
-      
-      autoTable(doc, {
-        head: [headers],
-        body: rows,
-        startY: 40,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [41, 128, 185] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-      });
-      
-      doc.save(`security-onboarding-status-${tab.toLowerCase()}-${timestamp}.pdf`);
-    }
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'customers.csv';
+    document.body.append(a);
+
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }, [tab, pendingCustomers, pushedBackCustomers, rejectedCustomers, approvedCustomers, page, rowsPerPage]);
 
 
@@ -255,22 +218,9 @@ export default function Page(): React.JSX.Element {
             <Tab label="Approved" value="APPROVED" />
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button 
-              color="inherit" 
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuClick}
-            >
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
-            <Menu
-              anchorEl={exportAnchorEl}
-              open={exportMenuOpen}
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
-              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
-            </Menu>
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}

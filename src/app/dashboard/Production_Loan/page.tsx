@@ -11,7 +11,6 @@ import Tab from '@mui/material/Tab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -76,8 +75,6 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { LazyRegMinerDialog, LazyAddProductionLoanDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -87,10 +84,6 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
-  
-  // Export menu state
-  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
-  const exportMenuOpen = Boolean(exportAnchorEl);
 
   // Function to refresh the miner data
   const refreshData = React.useCallback(() => {
@@ -105,17 +98,8 @@ export default function Page(): React.JSX.Element {
   const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
   const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
 
-  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportAnchorEl(event.currentTarget);
-  };
-
-  const handleExportMenuClose = () => {
-    setExportAnchorEl(null);
-  };
-
-  // Export table data
-  const handleExport = (format: 'csv' | 'pdf') => {
-    handleExportMenuClose();
+  // Export table data as CSV
+  const handleExport = () => {
     const headers = [
       'Loan Name', 'Payment Method', 'Amount/Grams', 'Purpose', 'Status', 'Reason'
     ];
@@ -151,37 +135,17 @@ export default function Page(): React.JSX.Element {
       c.reason || ''
     ]);
     
-    const timestamp = new Date().toISOString().split('T')[0];
-    
-    if (format === 'csv') {
-      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `production-loan-${tab.toLowerCase()}-${timestamp}.csv`;
-      document.body.append(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text(`Production Loan - ${tab}`, 14, 22);
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
-      
-      autoTable(doc, {
-        head: [headers],
-        body: rows,
-        startY: 40,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [41, 128, 185] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-      });
-      
-      doc.save(`production-loan-${tab.toLowerCase()}-${timestamp}.pdf`);
-    }
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `production-loan-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.append(a);
+
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   
@@ -203,22 +167,9 @@ export default function Page(): React.JSX.Element {
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
-            <Button 
-              color="inherit" 
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuClick}
-            >
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
-            <Menu
-              anchorEl={exportAnchorEl}
-              open={exportMenuOpen}
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
-              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
-            </Menu>
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}

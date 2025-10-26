@@ -295,7 +295,7 @@ export function CompanyTable({
         onRowsPerPageChange={(event) => onRowsPerPageChange(event)}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+        rowsPerPageOptions={[5, 10, 25]}
       />
     </Card>
   );
