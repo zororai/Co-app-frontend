@@ -824,21 +824,25 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
   const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
   const [formRef, setFormRef] = React.useState<{ handleNext: () => void; handleBack: () => void } | null>(null);
   
-  const handleStepChange = (step: number) => {
+  const handleStepChange = React.useCallback((step: number) => {
     setActiveStep(step);
-  };
+  }, []);
   
-  const handleNext = () => {
+  const handleNext = React.useCallback(() => {
     if (formRef?.handleNext) {
       formRef.handleNext();
     }
-  };
+  }, [formRef]);
   
-  const handleBack = () => {
+  const handleBack = React.useCallback(() => {
     if (formRef?.handleBack) {
       formRef.handleBack();
     }
-  };
+  }, [formRef]);
+
+  const handleRefCallback = React.useCallback((ref: any) => {
+    setFormRef(ref);
+  }, []);
   
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -896,7 +900,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
           onClose={onClose} 
           onRefresh={onRefresh} 
           onStepChange={handleStepChange}
-          ref={(ref: any) => setFormRef(ref)}
+          ref={handleRefCallback}
         />
       </DialogContent>
       
