@@ -3,6 +3,8 @@
 "use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -172,17 +174,37 @@ export default function Page(): React.JSX.Element {
       c.reason || ''
     ]);
     
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.append(a);
-
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    if (format === 'csv') {
+      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `incident-management-${timestamp}.csv`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      const doc = new jsPDF();
+      doc.setFontSize(20);
+      doc.text('Incident Report Register', 14, 22);
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+      
+      autoTable(doc, {
+        head: [headers],
+        body: rows,
+        startY: 40,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+      
+      doc.save(`incident-management-${timestamp}.pdf`);
+    }
   }, [customers]);
 
   
