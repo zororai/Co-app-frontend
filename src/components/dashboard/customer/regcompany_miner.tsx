@@ -822,26 +822,28 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
   const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
-  const [formRef, setFormRef] = React.useState<{ handleNext: () => void; handleBack: () => void } | null>(null);
-  
+  // useRef to hold child imperative handlers without causing re-renders
+  const formRef = React.useRef<{ handleNext: () => void; handleBack: () => void } | null>(null);
+
   const handleStepChange = React.useCallback((step: number) => {
     setActiveStep(step);
   }, []);
-  
+
   const handleNext = React.useCallback(() => {
-    if (formRef?.handleNext) {
-      formRef.handleNext();
+    if (formRef.current?.handleNext) {
+      formRef.current.handleNext();
     }
-  }, [formRef]);
-  
+  }, []);
+
   const handleBack = React.useCallback(() => {
-    if (formRef?.handleBack) {
-      formRef.handleBack();
+    if (formRef.current?.handleBack) {
+      formRef.current.handleBack();
     }
-  }, [formRef]);
+  }, []);
 
   const handleRefCallback = React.useCallback((ref: any) => {
-    setFormRef(ref);
+    // assign to ref.current directly to avoid setState inside a ref callback
+    formRef.current = ref;
   }, []);
   
   return (
