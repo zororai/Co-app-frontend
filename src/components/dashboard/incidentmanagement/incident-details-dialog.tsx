@@ -21,8 +21,7 @@ import { authClient } from '@/lib/auth/client';
 import { printElementById } from '@/lib/print';
 import dayjs from 'dayjs';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import PrintIcon from '@mui/icons-material/Print';
-import { printElementById } from '@/lib/print';
+// ...existing code...
 
 interface IncidentDetailsDialogProps {
   open: boolean;
