@@ -297,6 +297,19 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  checked={selectedAll}
+                  indeterminate={selectedSome}
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      selectAll();
+                    } else {
+                      deselectAll();
+                    }
+                  }}
+                />
+              </TableCell>
               <TableCell>Company Name</TableCell>
               <TableCell>Contact Person</TableCell>
               <TableCell>Type</TableCell>
@@ -323,6 +336,18 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={(event) => {
+                        if (event.target.checked) {
+                          selectOne(row.id);
+                        } else {
+                          deselectOne(row.id);
+                        }
+                      }}
+                    />
+                  </TableCell>
                   <TableCell>{row.companyName || row.name || ''}</TableCell>
                   <TableCell>{row.contactPersonName || ''}</TableCell>
                   <TableCell>{row.type || 'Security'}</TableCell>

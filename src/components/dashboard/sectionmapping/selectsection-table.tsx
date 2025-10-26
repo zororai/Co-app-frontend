@@ -186,6 +186,19 @@ export function CustomersTable({
         <Table sx={{ minWidth: '400px' }}>
           <TableHead>
             <TableRow>
+                    <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedAll}
+                                indeterminate={selectedSome}
+                                onChange={(event) => {
+                                  if (event.target.checked) {
+                                    selectAll();
+                                  } else {
+                                    deselectAll();
+                                  }
+                                }}
+                              />
+                            </TableCell>
               <TableCell>Section Name</TableCell>
               <TableCell>Number of Shaft</TableCell>
               <TableCell>Status</TableCell>
@@ -197,6 +210,18 @@ export function CustomersTable({
             {filteredRows.map((row) => (
               <TableRow hover key={row.id}>
                 
+              <TableCell padding="checkbox">
+                                  <Checkbox
+                                    checked={selected?.has(row.id) ?? false}
+                                    onChange={(event) => {
+                                      if (event.target.checked) {
+                                        selectOne(row.id);
+                                      } else {
+                                        deselectOne(row.id);
+                                      }
+                                    }}
+                                  />
+                                </TableCell>
                 <TableCell>{row.sectionName}</TableCell>
                 <TableCell>{row.numberOfShaft}</TableCell>
                 <TableCell>                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
