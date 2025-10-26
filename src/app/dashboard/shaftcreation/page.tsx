@@ -1,16 +1,16 @@
-  
-
 "use client";
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import dayjs from 'dayjs';
-
 
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
@@ -22,6 +22,8 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { authClient } from '@/lib/auth/client';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -29,6 +31,10 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Export menu state
+  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
+  const exportMenuOpen = Boolean(exportAnchorEl);
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -53,8 +59,17 @@ export default function Page(): React.JSX.Element {
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
-  // Export table data as CSV
-  const handleExport = () => {
+  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  // Export table data
+  const handleExport = (format: 'csv' | 'pdf') => {
+    handleExportMenuClose();
     const headers = [
       'ID', 'Section Name', 'Shaft Numbers', 'Operation Status', 'Status', 'Assignment Status'
     ];
@@ -66,17 +81,38 @@ export default function Page(): React.JSX.Element {
       c.status,
       c.assignStatus
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'shaft-assignments.csv';
-    document.body.append(a);
-
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    if (format === 'csv') {
+      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `shaft-creation-${timestamp}.csv`;
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      const doc = new jsPDF();
+      doc.setFontSize(20);
+      doc.text('Shaft Creation', 14, 22);
+      doc.setFontSize(12);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
+      
+      autoTable(doc, {
+        head: [headers],
+        body: rows,
+        startY: 40,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [41, 128, 185] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+      
+      doc.save(`shaft-creation-${timestamp}.pdf`);
+    }
   };
 
 
@@ -86,9 +122,22 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Shaft Creation</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
+              endIcon={<ArrowDropDownIcon />}
+              onClick={handleExportMenuClick}
+            >
               Export
             </Button>
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={exportMenuOpen}
+              onClose={handleExportMenuClose}
+            >
+              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
+              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
+            </Menu>
           </Stack>
         </Stack>
         <Stack sx={{ alignItems: 'flex-end' }}>
