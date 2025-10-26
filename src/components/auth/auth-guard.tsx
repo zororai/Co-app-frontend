@@ -16,6 +16,7 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
   const router = useRouter();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
+  const [showUI, setShowUI] = React.useState<boolean>(false);
 
   const checkPermissions = async (): Promise<void> => {
     if (isLoading) {
@@ -23,11 +24,17 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     }
 
     if (error) {
+      console.log('[AuthGuard]: Error detected:', error);
       setIsChecking(false);
       return;
     }
 
-    if (!user) {
+    // Check if we have a token in localStorage as fallback
+    const token = localStorage.getItem('custom-auth-token');
+    console.log('[AuthGuard]: Token exists:', !!token);
+    console.log('[AuthGuard]: User object:', user);
+
+    if (!user && !token) {
       logger.debug('[AuthGuard]: User is not logged in, redirecting to sign in');
       router.replace(paths.auth.signIn);
       return;
@@ -40,11 +47,24 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     checkPermissions().catch(() => {
       // noop
     });
-     
   }, [user, error, isLoading]);
 
-  if (isChecking) {
+  // Show UI immediately, then handle auth in background
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowUI(true);
+    }, 50); // Very small delay to allow initial render
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show loading skeleton while auth is checking
+  if (isChecking && !showUI) {
     return null;
+  }
+
+  // Show UI immediately even if auth is still loading
+  if (isLoading || showUI) {
+    return <>{children}</>;
   }
 
   if (error) {

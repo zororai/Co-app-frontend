@@ -8,14 +8,14 @@ export const allNavItems = [
     title: 'Onboarding Process',
     icon: 'users',
     items: [
-      { key: 'useronboard', title: 'User Onboarding', href:  paths.dashboard.useronboard, icon: 'user'},
-      { key: 'securityonboard', title: 'Security Onboarding', href:  paths.dashboard.securityonboarding, icon: 'shield'},
-      { key: 'driveronboard', title: 'Driver Onboarding', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
-      { key: 'vehicleonboard', title: 'Vehicle Onboarding', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    { key: 'Taxonboard', title: 'Operational Taxs Onboarding', href:  paths.dashboard.taxonboarding, icon: 'truck'},
-    { key: 'mill', title: 'Mill Onboarding', href:  paths.dashboard.mill, icon: 'truck'},
-    { key: 'Production_loan', title: 'Production Loan Onboarding', href:  paths.dashboard.Production_loan, icon: 'truck'},
-    { key: 'Transport_cost', title: 'Transport Cost Onboarding', href:  paths.dashboard.Transport_cost, icon: 'truck'}
+      { key: 'useronboard', title: 'User', href:  paths.dashboard.useronboard, icon: 'user'},
+      { key: 'securityonboard', title: 'Security', href:  paths.dashboard.securityonboarding, icon: 'shield'},
+      { key: 'driveronboard', title: 'Driver ', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
+      { key: 'vehicleonboard', title: 'Vehicle', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
+    { key: 'Taxonboard', title: 'Operational Taxs ', href:  paths.dashboard.taxonboarding, icon: 'truck'},
+    { key: 'mill', title: 'Mill ', href:  paths.dashboard.mill, icon: 'truck'},
+    { key: 'Production_loan', title: 'Production Loan ', href:  paths.dashboard.Production_loan, icon: 'truck'},
+    { key: 'Transport_cost', title: 'Transport Cost ', href:  paths.dashboard.Transport_cost, icon: 'truck'}
  
   ], 
     
@@ -29,7 +29,8 @@ export const allNavItems = [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
       { key: 'penality', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
-      
+      { key: 'Shaft Creation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
+  
     ],
   },
   {
@@ -87,16 +88,16 @@ export const allNavItems = [
     title: 'Record Approval Management',
     icon: 'key',
     items: [
-      { key: 'permission-list', title: 'Miner Registration Status', href: paths.dashboard.Syndicate, icon: 'id-card' },
-      { key: 'section-creation', title: 'Section Create Status', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
-      { key: 'shaft-assignment-status', title: 'Shaft Assignment Status', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
-      { key: 'Useronboard-status', title: 'User Status', href: paths.dashboard.useronboardstatus, icon: 'users' },
-      { key: 'driveronboard-status', title: 'Driver Status', href: paths.dashboard.driveronboardingstatus, icon: 'user' },
-      { key: 'securityonboard-status', title: 'Security Status', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
-      { key: 'vehicleonboard-status', title: 'Vehicle Status', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
-      { key: 'taxonboard-status', title: 'Operational Tax Status', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
-      {key:'mill-status', title: 'Mill Status', href: paths.dashboard.millstatus, icon: 'truck' },
-      {key:'Production_LoanStatus', title: 'Production Loan Status', href: paths.dashboard.Production_LoanStatus, icon: 'truck' },
+      { key: 'permission-list', title: 'Miner Registration', href: paths.dashboard.Syndicate, icon: 'id-card' },
+      { key: 'section-creation', title: 'Section Create ', href: paths.dashboard.sectioncreationstatus, icon: 'id-card' },
+      { key: 'shaft-assignment-status', title: 'Shaft Assignment', href: paths.dashboard.shaftassignmentstatus, icon: 'id-card' },
+      { key: 'Useronboard-status', title: 'User ', href: paths.dashboard.useronboardstatus, icon: 'users' },
+      { key: 'driveronboard-status', title: 'Driver ', href: paths.dashboard.driveronboardingstatus, icon: 'user' },
+      { key: 'securityonboard-status', title: 'Security ', href: paths.dashboard.securityonboardingstatus, icon: 'shield' },
+      { key: 'vehicleonboard-status', title: 'Vehicle ', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
+      { key: 'taxonboard-status', title: 'Operational Tax ', href: paths.dashboard.taxonboardingstatus, icon: 'truck' },
+      {key:'mill-status', title: 'Mill ', href: paths.dashboard.millstatus, icon: 'truck' },
+      {key:'Production_LoanStatus', title: 'Production Loan ', href: paths.dashboard.Production_LoanStatus, icon: 'truck' },
       {key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'truck' },
       {key:'Transport_costStatus', title: 'Transport Cost Status', href: paths.dashboard.Transport_costStatus, icon: 'truck' },
 

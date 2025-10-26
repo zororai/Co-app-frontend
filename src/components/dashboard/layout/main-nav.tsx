@@ -34,9 +34,12 @@ export function MainNav(): React.JSX.Element {
     }
   }, []);
 
-  // Fetch notification count on mount
+  // Fetch notification count with delay to avoid blocking RSC
   React.useEffect(() => {
-    fetchNotificationCount();
+    const timer = setTimeout(() => {
+      fetchNotificationCount();
+    }, 200); // Delay to allow layout to render first
+    return () => clearTimeout(timer);
   }, [fetchNotificationCount]);
 
   // Handle closing notifications dialog and refresh count

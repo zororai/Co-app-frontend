@@ -29,7 +29,7 @@ export function SideNav(): React.JSX.Element {
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
   const prevPathRef = React.useRef<string | null>(null);
 
-  // Fetch user permissions and filter navigation items
+  // Fetch user permissions and filter navigation items with delay
   React.useEffect(() => {
     const fetchPermissions = async () => {
       setPermissionsLoading(true);
@@ -77,7 +77,11 @@ export function SideNav(): React.JSX.Element {
       }
     };
 
-    fetchPermissions();
+    // Delay permissions fetch to avoid blocking RSC
+    const timer = setTimeout(() => {
+      fetchPermissions();
+    }, 150); // Small delay to allow layout to render first
+    return () => clearTimeout(timer);
   }, []);
 
   // Hide loader after route change completes

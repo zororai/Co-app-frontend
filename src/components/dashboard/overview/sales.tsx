@@ -60,9 +60,9 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
         });
         
         setChartSeries([
-          { name: 'Total Weight (tonnes)', data: totalWeightData },
-          { name: 'Total New Weight (tonnes)', data: totalNewWeightData },
-          { name: 'Weight Difference (tonnes)', data: differenceData }
+          { name: 'Total Extracted Ore Weight (tonnes)', data: totalWeightData },
+          { name: 'Total ASM Processed  Ore Weight (tonnes)', data: totalNewWeightData },
+          { name: 'Total Dedicted Ore  Weight  (tonnes)', data: differenceData }
         ]);
       } else {
         setError(result.error || 'Failed to fetch ore transport data');

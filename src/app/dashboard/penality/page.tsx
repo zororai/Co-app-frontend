@@ -6,11 +6,13 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import dayjs from 'dayjs';
 import Papa from 'papaparse';
+
 
 
 import { config } from '@/config';
@@ -24,30 +26,41 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
   const fetchPenalties = React.useCallback(async () => {
-    const data = await authClient.fetchPenalties();
-    // Map penalty data to match the Customer interface structure
-    const mappedData = data.map((penalty: any) => ({
-      ...penalty,
-      id: penalty.id || `penalty-${Math.random()}`,
-      name: penalty.section || '',
-      numShafts: penalty.shaftNumber || '',
-      fee: penalty.penilatyFee || 0,
-      status: penalty.status || 'PENDING',
-      reason: penalty.issue || '',
-      cooperativeName: penalty.reportedBy || '',
-      cooperative: penalty.reportedBy || '',
-      surname: '',
-      nationId: '',
-      nationIdNumber: '',
-      address: '',
-      phone: '',
-      cellNumber: '',
-      position: '',
-      attachedShaft: false
-    }));
-    setCustomers(mappedData);
+    try {
+      const data = await authClient.fetchPenalties();
+      console.log('Fetched penalty data from API:', data);
+      // Map penalty data to match the Customer interface structure
+      const mappedData = data.map((penalty: any) => ({
+        ...penalty,
+        id: penalty.id || `penalty-${Math.random()}`,
+        name: penalty.section || '',
+        numShafts: penalty.shaftNumber || '',
+        fee: penalty.penilatyFee || 0,
+        status: penalty.status || 'PENDING',
+        reason: penalty.issue || '',
+        cooperativeName: penalty.reportedBy || '',
+        cooperative: penalty.reportedBy || '',
+        surname: '',
+        nationId: '',
+        nationIdNumber: '',
+        address: '',
+        phone: '',
+        cellNumber: '',
+        position: '',
+        attachedShaft: false
+      }));
+      setCustomers(mappedData);
+    } catch (error) {
+      console.error('Error fetching penalties:', error);
+      setCustomers([]);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
 
   React.useEffect(() => {
@@ -59,24 +72,23 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Shaft Number', 'Section', 'Fee', 'Status', 'Issue', 'Reported By', 'Remarks'
+      'Shaft Number', 'Section', 'Fee', 'Status'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.numShafts,
-      c.name,
-      c.fee,
-      c.status,
-      c.reason,
-      c.cooperativeName,
-      c.remarks || ''
+    
+    // Export all customers, not just paginated ones
+    const rows = customers.map((c: any) => [
+      c.numShafts || '',
+      c.name || '',
+      c.fee || '',
+      c.status || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'penalties.csv';
+    a.download = `penalties-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -143,19 +155,7 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Issued Penality</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
+            
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>

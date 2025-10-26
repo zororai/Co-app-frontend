@@ -6,12 +6,12 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
-import dayjs from 'dayjs';
-import Papa from 'papaparse';
 
+import dayjs from 'dayjs';
+import * as Papa from 'papaparse';
 
 import { config } from '@/config';
 import { CustomersTable } from '@/components/dashboard/sectioncreation/section-table';
@@ -25,49 +25,59 @@ export default function Page(): React.JSX.Element {
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
   const fetchSection = React.useCallback(async () => {
-    const data = await authClient.fetchSection();
-    // Ensure each customer has cooperativeName and cooperative properties
-    const mappedData = data.map((c: any) => ({
-      ...c,
-      cooperativeName: c.cooperativeName ?? '',
-      cooperative: c.cooperative ?? ''
-    }));
-    setCustomers(mappedData);
+    try {
+      const data = await authClient.fetchSection();
+      // Ensure each customer has cooperativeName and cooperative properties
+      const mappedData = data.map((c: any) => ({
+        ...c,
+        cooperativeName: c.cooperativeName ?? '',
+        cooperative: c.cooperative ?? ''
+      }));
+      setCustomers(mappedData);
+    } catch (error) {
+      console.error('Error fetching section data:', error);
+    } finally {
+      setIsInitialLoading(false);
+    }
   }, []);
 
   React.useEffect(() => {
     fetchSection();
   }, [fetchSection]);
 
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
+  // Memoized pagination to prevent unnecessary recalculation
+  const paginatedCustomers = React.useMemo(() => 
+    applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
-  // Export table data as CSV
+  // Export function
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
     ];
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    const rows = customers.map((c: any) => [
+      c.id || '',
+      c.name || '',
+      c.surname || '',
+      c.nationIdNumber || '',
+      c.address || '',
+      c.cellNumber || '',
+      c.position || '',
+      c.cooperativeName || '',
+      c.numShafts || '',
+      c.status || '',
+      c.reason || ''
     ]);
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `section-creation-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -134,19 +144,7 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Section Creation</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
+            
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>

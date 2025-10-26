@@ -10,13 +10,13 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
-import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyIntegrationCard, LazyCompaniesFilters } from '@/components/lazy/LazyComponents';
 import type { Integration } from '@/components/dashboard/integrations/integrations-card';
-import { CompaniesFilters } from '@/components/dashboard/integrations/integrations-filters';
 
 export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
 
@@ -78,10 +78,22 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">View Of Attached Shaft </Typography>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-            <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
-              Import
-            </Button>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}>
+            <Button
+              color="inherit"
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
+              onClick={() => {
+                const tab = 'APPROVED';
+                const a = document.createElement('a');
+                a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(
+                  integrations
+                    .filter((c) => c.title === tab)
+                    .map((c) => Object.values(c).join(','))
+                    .join('\n')
+                )}`;
+                a.download = `integrations-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+              }}
+            >
               Export
             </Button>
           </Stack>
@@ -90,21 +102,26 @@ export default function Page(): React.JSX.Element {
           
         </div>
       </Stack>
-      <CompaniesFilters />
-      <Grid container spacing={3}>
-        {integrations.map((integration) => (
-          <Grid
-            key={integration.id}
-            size={{
-              lg: 4,
-              md: 6,
-              xs: 12,
-            }}
-          >
-            <IntegrationCard integration={integration} />
-          </Grid>
-        ))}
-      </Grid>
+      <LazyWrapper>
+        <LazyCompaniesFilters />
+      </LazyWrapper>
+      
+      <LazyWrapper>
+        <Grid container spacing={3}>
+          {integrations.map((integration) => (
+            <Grid
+              key={integration.id}
+              size={{
+                lg: 4,
+                md: 6,
+                xs: 12,
+              }}
+            >
+              <LazyIntegrationCard integration={integration} />
+            </Grid>
+          ))}
+        </Grid>
+      </LazyWrapper>
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Pagination count={3} size="small" />
       </Box>
