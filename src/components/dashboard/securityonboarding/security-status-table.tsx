@@ -393,73 +393,12 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
-              <TableCell sortDirection={sortField === 'companyName' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'companyName'}
-                  direction={sortField === 'companyName' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('companyName')}
-                >
-                  Company Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'contactPersonName' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'contactPersonName'}
-                  direction={sortField === 'contactPersonName' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('contactPersonName')}
-                >
-                  Contact Person
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'type' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'type'}
-                  direction={sortField === 'type' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('type')}
-                >
-                  Type
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'status'}
-                  direction={sortField === 'status' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'numberOfWorks' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'numberOfWorks'}
-                  direction={sortField === 'numberOfWorks' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('numberOfWorks')}
-                >
-                  Workers
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'endContractDate' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'endContractDate'}
-                  direction={sortField === 'endContractDate' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('endContractDate')}
-                >
-                  Contract Expiry
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Company Name</TableCell>
+              <TableCell>Contact Person</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Workers</TableCell>
+              <TableCell>Contract Expiry</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -497,18 +436,6 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{row.companyName || row.name || ''}</TableCell>
                   <TableCell>{row.contactPersonName || ''}</TableCell>
                   <TableCell>{row.type || 'Security'}</TableCell>

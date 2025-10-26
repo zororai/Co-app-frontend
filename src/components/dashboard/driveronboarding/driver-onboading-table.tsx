@@ -392,70 +392,14 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell sortDirection={sortField === 'firstName' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'firstName'}
-                  direction={sortField === 'firstName' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('firstName')}
-                >
-                  Driver Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'licenseNumber' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'licenseNumber'}
-                  direction={sortField === 'licenseNumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('licenseNumber')}
-                >
-                  License Number
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'licenseClass' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'licenseClass'}
-                  direction={sortField === 'licenseClass' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('licenseClass')}
-                >
-                  License Class
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'licenseExpiryDate' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'licenseExpiryDate'}
-                  direction={sortField === 'licenseExpiryDate' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('licenseExpiryDate')}
-                >
-                  License Expiry
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'phoneNumber' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'phoneNumber'}
-                  direction={sortField === 'phoneNumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('phoneNumber')}
-                >
-                  Contact
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'yearsOfExperience' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'yearsOfExperience'}
-                  direction={sortField === 'yearsOfExperience' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('yearsOfExperience')}
-                >
-                  Experience (Years)
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'status'}
-                  direction={sortField === 'status' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Driver Name</TableCell>
+              <TableCell>License Number</TableCell>
+              <TableCell>License Class</TableCell>
+              <TableCell>License Expiry</TableCell>
+              <TableCell>Contact</TableCell>
+              <TableCell>Experience (Years)</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>View Details</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -489,7 +433,7 @@ export function CustomersTable({
             {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
-                <TableRow hover key={row.id}>
+                <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
                   <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
                   <TableCell>{row.licenseClass || 'N/A'}</TableCell>

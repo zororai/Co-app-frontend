@@ -9,10 +9,21 @@ import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from '@mui/material/OutlinedInput';
+
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import UpdateIcon from '@mui/icons-material/Update';
+import SendIcon from '@mui/icons-material/Send';
 
 import { Notifications } from '@/components/dashboard/settings/notifications';
 import { UpdatePasswordForm } from '@/components/dashboard/settings/update-password-form';
-import { ShaftAssignmentFeeCard } from '@/components/dashboard/settings/shaft-assignment-fee';
 
 export function SettingsLayout(): React.JSX.Element {
   const [selected, setSelected] = React.useState<'shaftFee' | 'password' | 'notifications'>('shaftFee');
@@ -79,20 +90,61 @@ export function SettingsLayout(): React.JSX.Element {
       {/* Middle: Content */}
       <Paper sx={{ flexGrow: 1, p: 2, bgcolor: '#d9d9d9' }}>
         {selected === 'shaftFee' && (
-          <ShaftAssignmentFeeCard
-            initialValues={{ regFee, medicalFee }}
-            onDelete={handleDelete}
-            onUpdate={({ regFee: r, medicalFee: m }) => {
-              setRegFee(r);
-              setMedicalFee(m);
-              handleUpdate();
-            }}
-            onSubmit={({ regFee: r, medicalFee: m }) => {
-              setRegFee(r);
-              setMedicalFee(m);
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
               handleSubmit();
             }}
-          />
+          >
+            <Card>
+              <CardHeader subheader="Configure fees" title="Shaft assignment fee" />
+              <Divider />
+              <CardContent>
+                <Stack spacing={3} sx={{ maxWidth: 'sm' }}>
+                  <FormControl fullWidth>
+                    <InputLabel>regFee</InputLabel>
+                    <OutlinedInput
+                      label="regFee"
+                      name="regFee"
+                      type="number"
+                      value={regFee}
+                      onChange={(e) => setRegFee(e.target.value)}
+                      inputProps={{ min: 0 }}
+                    />
+                  </FormControl>
+                  <FormControl fullWidth>
+                    <InputLabel>medicalFee</InputLabel>
+                    <OutlinedInput
+                      label="medicalFee"
+                      name="medicalFee"
+                      type="number"
+                      value={medicalFee}
+                      onChange={(e) => setMedicalFee(e.target.value)}
+                      inputProps={{ min: 0 }}
+                    />
+                  </FormControl>
+                </Stack>
+              </CardContent>
+              <Divider />
+              <CardActions sx={{ justifyContent: 'flex-end', gap: 1 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteOutlineIcon />}
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+                <Button type="button" variant="outlined" startIcon={<UpdateIcon />} onClick={handleUpdate}>
+                  Update
+                </Button>
+                <Button type="submit" variant="contained" startIcon={<SendIcon />}>
+                  Submit
+                </Button>
+              </CardActions>
+            </Card>
+          </form>
         )}
 
         {selected === 'password' && (
