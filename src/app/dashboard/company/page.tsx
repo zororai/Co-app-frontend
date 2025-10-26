@@ -6,9 +6,6 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -33,8 +30,6 @@ import { RegMinerDialog } from '@/components/dashboard/customer/regcompany_miner
 import { authClient } from '@/lib/auth/client';
 import { Company, CompanyTable } from '@/components/dashboard/customer/company-table';
 import Papa from 'papaparse';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 
 export default function Page(): React.JSX.Element {
@@ -45,10 +40,6 @@ export default function Page(): React.JSX.Element {
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
-  
-  // Export menu state
-  const [exportAnchorEl, setExportAnchorEl] = React.useState<null | HTMLElement>(null);
-  const exportMenuOpen = Boolean(exportAnchorEl);
 
   // Function to fetch and update company data
   const fetchCompanies = React.useCallback(async () => {
@@ -85,17 +76,7 @@ export default function Page(): React.JSX.Element {
     return companies.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   }, [companies, page, rowsPerPage]);
 
-  const handleExportMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setExportAnchorEl(event.currentTarget);
-  };
-
-  const handleExportMenuClose = () => {
-    setExportAnchorEl(null);
-  };
-
-  const handleExport = (format: 'csv' | 'pdf') => {
-    handleExportMenuClose();
-    
+  const handleExport = () => {
     const headers = [
       'Company Name', 'Address', 'Cell Number', 'Email', 'Owner Name', 'Owner Surname', 'Owner ID Number', 'Status', 'Reason'
     ];
@@ -111,38 +92,18 @@ export default function Page(): React.JSX.Element {
       c.status || '',
       c.reason || ''
     ]);
-
-    const timestamp = new Date().toISOString().split('T')[0];
     
-    if (format === 'csv') {
-      const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `companies-${timestamp}.csv`;
-      document.body.append(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } else if (format === 'pdf') {
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text('Registered Company Miners', 14, 22);
-      doc.setFontSize(12);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 32);
-      
-      autoTable(doc, {
-        head: [headers],
-        body: rows,
-        startY: 40,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [41, 128, 185] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-      });
-      
-      doc.save(`companies-${timestamp}.pdf`);
-    }
+    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `companies-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.append(a);
+
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -152,22 +113,9 @@ export default function Page(): React.JSX.Element {
           <Typography variant="h4">Registered Company Miners</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
-            <Button 
-              color="inherit" 
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              endIcon={<ArrowDropDownIcon />}
-              onClick={handleExportMenuClick}
-            >
+            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
-            <Menu
-              anchorEl={exportAnchorEl}
-              open={exportMenuOpen}
-              onClose={handleExportMenuClose}
-            >
-              <MenuItem onClick={() => handleExport('csv')}>Export as CSV</MenuItem>
-              <MenuItem onClick={() => handleExport('pdf')}>Export as PDF</MenuItem>
-            </Menu>
           </Stack>
         </Stack>
         <div>
