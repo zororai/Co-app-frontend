@@ -29,6 +29,7 @@ import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
 import { ShaftAttachmentDialog } from '@/components/dashboard/shaftassing/shaft-attachment-dialog';
+import { ShaftActionDialog } from '@/components/dashboard/shaftassing/shaft-action-dialog';
 
 function noop(): void {
   // do nothing
@@ -115,6 +116,7 @@ export function CustomersTable({
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [isShaftActionDialogOpen, setIsShaftActionDialogOpen] = React.useState(false);
   const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
   const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
 
@@ -132,6 +134,17 @@ export function CustomersTable({
   };
 
   const handleShaftAttachment = (customerId: string) => {
+    setSelectedCustomerForShaft(customerId);
+    setIsShaftActionDialogOpen(true);
+  };
+
+  const handleAttachExisting = (customerId: string) => {
+    // TODO: Implement logic for attaching existing shaft
+    console.log('Attach existing shaft for customer:', customerId);
+    // For now, you can add your existing shaft attachment logic here
+  };
+
+  const handleCreateNew = (customerId: string) => {
     setSelectedCustomerForShaft(customerId);
     setIsShaftAttachmentDialogOpen(true);
   };
@@ -300,6 +313,18 @@ export function CustomersTable({
           setSelectedCustomer(null);
         }}
         customer={selectedCustomer}
+      />
+      
+      {/* Shaft Action Selection Dialog */}
+      <ShaftActionDialog
+        open={isShaftActionDialogOpen}
+        onClose={() => {
+          setIsShaftActionDialogOpen(false);
+          setSelectedCustomerForShaft(null);
+        }}
+        onAttachExisting={handleAttachExisting}
+        onCreateNew={handleCreateNew}
+        customerId={selectedCustomerForShaft}
       />
       
       {/* Shaft Attachment Dialog */}

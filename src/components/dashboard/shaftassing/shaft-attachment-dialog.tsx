@@ -66,6 +66,8 @@ export function ShaftAttachmentDialog({
   const [locationError, setLocationError] = React.useState<string | null>(null);
   const [locationAccuracy, setLocationAccuracy] = React.useState<number | null>(null);
   const [manualEntry, setManualEntry] = React.useState(false);
+  const [feesPopulated, setFeesPopulated] = React.useState(false);
+  const [feesError, setFeesError] = React.useState<string | null>(null);
   
   React.useEffect(() => {
     if (open) {
@@ -97,9 +99,17 @@ export function ShaftAttachmentDialog({
           regFee: feeData.regFee?.toString() || '',
           medicalFee: feeData.medicalFee?.toString() || '',
         }));
+        setFeesPopulated(true);
+        setFeesError(null);
+      } else {
+        // No fee data available
+        setFeesPopulated(false);
+        setFeesError('No fee configuration found. Please contact administrator to set up shaft assignment fees.');
       }
     } catch (error) {
       console.error('Error fetching shaft assignment fees:', error);
+      setFeesPopulated(false);
+      setFeesError('Failed to load fee information. Please enter fees manually or try again later.');
     }
   };
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
@@ -451,6 +461,12 @@ export function ShaftAttachmentDialog({
                 placeholder="Reason for shaft assignment (default)"
               />
 
+              {feesError && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  {feesError}
+                </Alert>
+              )}
+
               <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
                 <TextField
                   fullWidth
@@ -465,8 +481,9 @@ export function ShaftAttachmentDialog({
                     }
                   }}
                   required
-                  disabled={loading}
+                  disabled={loading || feesPopulated}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesPopulated ? 'Fee loaded from system configuration' : undefined}
                 />
 
                 <TextField
@@ -482,8 +499,9 @@ export function ShaftAttachmentDialog({
                     }
                   }}
                   required
-                  disabled={loading}
+                  disabled={loading || feesPopulated}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesPopulated ? 'Fee loaded from system configuration' : undefined}
                 />
               </Box>
 
