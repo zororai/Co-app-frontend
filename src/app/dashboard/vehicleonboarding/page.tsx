@@ -10,38 +10,100 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import dayjs from 'dayjs';
-import Papa from 'papaparse';
+
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyVehicleOnboardingTable } from '@/components/lazy/LazyComponents';
+import { PageSkeleton } from '@/components/common/PageSkeleton';
+import { PerformanceMonitor } from '@/components/debug/PerformanceMonitor';
 import type { Customer } from '@/components/dashboard/vehicleonboarding/vehicle-onboarding-table';
 
-// Tab content components
-function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+// Tab content components with loading states
+interface TabProps {
+  customers: Customer[];
+  page: number;
+  rowsPerPage: number;
+  onRefresh: () => void;
+  isLoading?: boolean;
 }
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+
+function PendingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading pending vehicles...</Typography>
+      </Stack>
+    );
+  }
+  return (
+    <LazyWrapper>
+      <LazyVehicleOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+
+function PushedBackTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading pushed back vehicles...</Typography>
+      </Stack>
+    );
+  }
+  return (
+    <LazyWrapper>
+      <LazyVehicleOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+
+function RejectedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading rejected vehicles...</Typography>
+      </Stack>
+    );
+  }
+  return (
+    <LazyWrapper>
+      <LazyVehicleOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
+}
+
+function ApprovedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>Loading approved vehicles...</Typography>
+      </Stack>
+    );
+  }
+  return (
+    <LazyWrapper>
+      <LazyVehicleOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddVehicleDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddVehicleDialog } from '@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box';
 
 
 export default function Page(): React.JSX.Element {
@@ -51,35 +113,86 @@ export default function Page(): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
+  
+  // Loading state for initial data fetch
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
+  // Immediate render state to ensure skeleton shows instantly
+  const [showUI, setShowUI] = React.useState(false);
 
-  // Function to refresh the miner data
-  const refreshData = React.useCallback(() => {
-    setRefreshKey(prevKey => prevKey + 1);
+  // Function to fetch and update vehicle data with RSC-optimized error handling
+  const fetchVehicles = React.useCallback(async () => {
+    try {
+      console.log('🚗 Fetching vehicle data...');
+      const data = await authClient.fetchVehicles(); // Updated to use vehicle-specific method
+      console.log('✅ Vehicle data fetched successfully:', data);
+      
+      // Normalize status values to match expected enum
+      const normalizedData = data.map((vehicle: any) => ({
+        ...vehicle,
+        status: vehicle.status === "Approved" ? "APPROVED"
+              : vehicle.status === "Rejected" ? "REJECTED"
+              : vehicle.status === "Pending" ? "PENDING"
+              : vehicle.status === "Pushed Back" ? "PUSHED_BACK"
+              : vehicle.status // fallback to original if already correct
+      }));
+      
+      console.log('🔄 Normalized vehicle data for table:', normalizedData);
+      setCustomers(normalizedData);
+    } catch (error) {
+      console.warn('⚠️ Primary vehicle API failed:', error);
+      
+      // Fast fallback to prevent RSC blocking
+      try {
+        console.log('🔄 Attempting fallback API...');
+        const fallbackData = await authClient.fetchPendingCustomers();
+        console.log('✅ Fallback data loaded:', fallbackData);
+        setCustomers(fallbackData as unknown as Customer[]);
+      } catch (fallbackError) {
+        console.error('❌ All APIs failed:', fallbackError);
+        // Set empty array to prevent infinite loading
+        setCustomers([]);
+      }
+    } finally {
+      // Always complete loading to prevent RSC hanging
+      setIsInitialLoading(false);
+      console.log('🏁 Vehicle data fetch completed');
+    }
   }, []);
 
+  // Function to refresh the vehicle data
+  const refreshData = React.useCallback(() => {
+    setRefreshKey(prevKey => prevKey + 1);
+    fetchVehicles();
+  }, [fetchVehicles]);
+
+  // Render UI first, then fetch data with optimized delay for RSC performance
   React.useEffect(() => {
-    (async () => {
-      try {
-        const data = await authClient.fetchPendingCustomers();
-        console.log('Fetched data from API:', data);
-        // Normalize status values to match expected enum
-        const normalizedData = data.map((customer: any) => ({
-          ...customer,
-          status: customer.status === "Approved" ? "APPROVED"
-                : customer.status === "Rejected" ? "REJECTED"
-                : customer.status === "Pending" ? "PENDING"
-                : customer.status === "Pushed Back" ? "PUSHED_BACK"
-                : customer.status // fallback to original if already correct
-        }));
-        console.log('Normalized data for table:', normalizedData);
-        setCustomers(normalizedData);
-      } catch (error) {
-        console.error('API call failed, using mock data:', error);
-        // Use mock data when API fails
-   
-      }
-    })();
-  }, [refreshKey]);
+    const timer = setTimeout(() => {
+      fetchVehicles();
+    }, 200); // Increased delay to ensure layout renders first and RSC completes
+    return () => clearTimeout(timer);
+  }, [fetchVehicles]);
+
+  // Immediate UI render to prevent RSC blocking
+  React.useEffect(() => {
+    // Show UI immediately to prevent blank screen
+    setShowUI(true);
+  }, []);
+
+  // Performance tracking for RSC optimization
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const startTime = performance.now();
+      const checkRSC = () => {
+        const rscEntries = performance.getEntriesByType('navigation');
+        if (rscEntries.length > 0) {
+          const loadTime = performance.now() - startTime;
+          console.log(`🚀 Vehicle Onboarding RSC Performance: ${loadTime.toFixed(2)}ms`);
+        }
+      };
+      setTimeout(checkRSC, 1000);
+    }
+  }, []);
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -90,7 +203,7 @@ export default function Page(): React.JSX.Element {
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
+      'Registration Number', 'Owner Name', 'Owner Contact', 'Owner ID', 'Vehicle Type', 'Status'
     ];
 
     // Determine which customers to export based on the current tab
@@ -108,36 +221,28 @@ export default function Page(): React.JSX.Element {
     filteredCustomers = rejectedCustomers;
     break;
     }
-    case 'APPROVED': { {
+    case 'APPROVED': {
     filteredCustomers = approvedCustomers;
-    // No default
-    }
     break;
     }
     }
 
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
-      c.id,
-      c.name,
-      c.surname,
-      c.nationIdNumber,
-      c.address,
-      c.cellNumber,
-      c.position,
-      c.cooperativeName,
-      c.numShafts,
-      c.status,
-      c.reason,
-      c.attachedShaft ? 'Yes' : 'No'
+    // Export all filtered customers, not just paginated ones
+    const rows = filteredCustomers.map((c: any) => [
+      c.regNumber || '',
+      c.ownerName || '',
+      c.ownerCellNumber || '',
+      c.ownerIdNumber || '',
+      c.vehicleType || '',
+      c.status || ''
     ]);
+    
     const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `vehicle-onboarding-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -145,122 +250,62 @@ export default function Page(): React.JSX.Element {
     URL.revokeObjectURL(url);
   };
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  
 
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
+  // Show skeleton while initial auth/setup is happening - ensures immediate render
+  if (!showUI || (isInitialLoading && customers.length === 0)) {
+    return (
+      <PerformanceMonitor>
+        <PageSkeleton title="Vehicle Registration" showTabs={true} showTable={true} />
+      </PerformanceMonitor>
+    );
   }
 
   return (
-    <Stack spacing={3}>
-      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Vehicle Registration </Typography>
-          <Tabs
-            value={tab}
-            onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ 
-              mb: 2,
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'secondary.main',
-              },
-              '& .MuiTab-root': {
-                '&.Mui-selected': {
-                  color: 'secondary.main',
-                },
-              },
-            }}
-          >
-            <Tab label="Pending" value="PENDING" />
-            <Tab label="Pushed Back" value="PUSHED_BACK" />
-            <Tab label="Rejected" value="REJECTED" />
-            <Tab label="Approved" value="APPROVED" />
-          </Tabs>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
+    <PerformanceMonitor>
+      <Stack spacing={3}>
+        <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
+            <Typography variant="h4">Vehicle Registration </Typography>
+            <Tabs
+              value={tab}
+              onChange={(_e, newValue) => setTab(newValue)}
+              sx={{ mb: 2 }}
             >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
-              Export
-            </Button>
+              <Tab label="Pending" value="PENDING" />
+              <Tab label="Pushed Back" value="PUSHED_BACK" />
+              <Tab label="Rejected" value="REJECTED" />
+              <Tab label="Approved" value="APPROVED" />
+            </Tabs>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              
+              <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+                Export
+              </Button>
+            </Stack>
           </Stack>
+          {/* Top-right action button with menu */}
+          <TopRightActions onRefresh={refreshData} />
         </Stack>
-        {/* Top-right action button with menu */}
-        <TopRightActions onRefresh={refreshData} />
+
+        {tab === 'PENDING' && (
+          <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+        )}
+        {tab === 'PUSHED_BACK' && (
+          <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+        )}
+        {tab === 'REJECTED' && (
+          <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+        )}
+        {tab === 'APPROVED' && (
+          <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+        )}
+
+        <LazyWrapper>
+          <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+        </LazyWrapper>
       </Stack>
-
-      {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
-      )}
-      {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
-      )}
-      {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
-      )}
-      {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
-      )}
-
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
-    </Stack>
+    </PerformanceMonitor>
   );
 }
 
@@ -272,6 +317,7 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const open = Boolean(anchorEl);
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -282,8 +328,12 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
     globalThis.location.href = path;
   };
 
-  const handleOpenDialog = () => {
+  const handleOpenDialog = async () => {
+    setIsLoading(true);
+    // Add a small delay to show loading state
+    await new Promise(resolve => setTimeout(resolve, 500));
     setDialogOpen(true);
+    setIsLoading(false);
   };
 
   const handleCloseDialog = () => {
@@ -294,23 +344,27 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
     <React.Fragment>
       <Button
         variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+        startIcon={isLoading ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : <PlusIcon fontSize="var(--icon-fontSize-md)" />}
         onClick={handleOpenDialog}
+        disabled={isLoading}
         sx={{
           bgcolor: 'secondary.main',
           color: '#fff',
-          '&:hover': { bgcolor: 'secondary.dark' }
+          '&:hover': { bgcolor: '#4aa856' },
+          '&:disabled': { bgcolor: '#9e9e9e', opacity: 0.7 }
         }}
       >
-        Add New Vehicle
+        {isLoading ? 'Loading...' : 'Add New Vehicle'}
       </Button>
       
       {/* Add Vehicle Dialog */}
-      <AddVehicleDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-        onRefresh={onRefresh}
-      />
+      <LazyWrapper>
+        <LazyAddVehicleDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+          onRefresh={onRefresh}
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }

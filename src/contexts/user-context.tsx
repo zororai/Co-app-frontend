@@ -44,12 +44,16 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
   }, []);
 
   React.useEffect(() => {
-    checkSession().catch((error) => {
-      logger.error(error);
-      // noop
-    });
-     
-  }, []);
+    // Delay auth check to allow UI to render first
+    const timer = setTimeout(() => {
+      checkSession().catch((error) => {
+        logger.error(error);
+        // noop
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [checkSession]);
 
   return <UserContext.Provider value={{ ...state, checkSession }}>{children}</UserContext.Provider>;
 }

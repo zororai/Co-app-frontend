@@ -35,52 +35,54 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
   const prevPathRef = React.useRef<string | null>(null);
 
-  // Fetch user permissions and filter navigation items
-  React.useEffect(() => {
-    const fetchPermissions = async () => {
-      setPermissionsLoading(true);
-      try {
-        const { data: userData } = await authClient.getUser();
-        if (!userData || !userData.email) {
-          console.log('⚠️ No user email found, hiding all nav items');
-          setFilteredNavItems([]);
-          setPermissionsLoading(false);
-          return;
-        }
-
-        console.log('🔍 Fetching permissions for:', userData.email);
-        const response = await authClient.fetchUserPermissions(userData.email);
-        
-        console.log('📦 API Response:', { 
-          success: response.success, 
-          hasData: !!response.data,
-          error: response.error,
-          rawData: response.data 
-        });
-        
-        if (response.success && response.data?.permissions) {
-          const permissionKeys = response.data.permissions.map((p) => p.permission);
-          console.log('✅ User permissions:', permissionKeys);
-          
-          const filtered = getNavItemsForUser(permissionKeys);
-          console.log('📋 Filtered nav items:', filtered.map(item => ({ key: item.key, title: item.title, hasSubItems: !!item.items })));
-          setFilteredNavItems(filtered);
-        } else {
-          // User not found or no permissions - hide all nav items
-          console.log('⚠️ User not found or no permissions - hiding all nav items');
-          setFilteredNavItems([]);
-        }
-      } catch (error) {
-        // Log errors and hide nav items for security
-        console.warn('Error fetching permissions:', error);
+  // Fetch user permissions and filter navigation items using render-ui-first pattern
+  const fetchPermissions = React.useCallback(async () => {
+    try {
+      const { data: userData } = await authClient.getUser();
+      if (!userData || !userData.email) {
+        console.log('⚠️ No user email found, hiding all nav items');
         setFilteredNavItems([]);
-      } finally {
-        setPermissionsLoading(false);
+        return;
       }
-    };
 
-    fetchPermissions();
+      console.log('🔍 Fetching permissions for:', userData.email);
+      const response = await authClient.fetchUserPermissions(userData.email);
+      
+      console.log('📦 API Response:', { 
+        success: response.success, 
+        hasData: !!response.data,
+        error: response.error,
+        rawData: response.data 
+      });
+      
+      if (response.success && response.data?.permissions) {
+        const permissionKeys = response.data.permissions.map((p) => p.permission);
+        console.log('✅ User permissions:', permissionKeys);
+        
+        const filtered = getNavItemsForUser(permissionKeys);
+        console.log('📋 Filtered nav items:', filtered.map(item => ({ key: item.key, title: item.title, hasSubItems: !!item.items })));
+        setFilteredNavItems(filtered);
+      } else {
+        // User not found or no permissions - hide all nav items
+        console.log('⚠️ User not found or no permissions - hiding all nav items');
+        setFilteredNavItems([]);
+      }
+    } catch (error) {
+      // Log errors and hide nav items for security
+      console.warn('Error fetching permissions:', error);
+      setFilteredNavItems([]);
+    } finally {
+      setPermissionsLoading(false);
+    }
   }, []);
+
+  // Render UI first, then fetch permissions with a small delay
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchPermissions();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [fetchPermissions]);
 
   // Hide loader once the route actually changes
   React.useEffect(() => {

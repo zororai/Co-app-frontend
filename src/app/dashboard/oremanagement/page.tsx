@@ -12,27 +12,44 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+
 import dayjs from 'dayjs';
-import Papa from 'papaparse';
+
 
 
 import { config } from '@/config';
-import { CustomersTable } from '@/components/dashboard/oremanagement/oremanage-table';
+import { LazyWrapper } from '@/components/common/LazyWrapper';
+import { LazyOreManagementTable } from '@/components/lazy/LazyComponents';
 import type { Customer } from '@/components/dashboard/oremanagement/oremanage-table';
 
 // Tab content components
 function PendingTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+    </LazyWrapper>
+  );
 }
 function PushedBackTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+    </LazyWrapper>
+  );
 }
 function RejectedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+    </LazyWrapper>
+  );
 }
 function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
-  return <CustomersTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />;
+  return (
+    <LazyWrapper>
+      <LazyOreManagementTable key={refreshKey} count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+    </LazyWrapper>
+  );
 }
 
 import Dialog from '@mui/material/Dialog';
@@ -40,9 +57,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
-import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
+import { LazyRegMinerDialog, LazyAddOreManagementDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
-import { AddOreDialog } from '@/components/dashboard/oremanagement/add-ore-dialog';
 
 
 export default function Page(): React.JSX.Element {
@@ -85,17 +101,14 @@ export default function Page(): React.JSX.Element {
     filteredCustomers = rejectedCustomers;
     break;
     }
-    case 'APPROVED': { {
+    case 'APPROVED': {
     filteredCustomers = approvedCustomers;
-    // No default
-    }
     break;
     }
     }
 
-    const paginatedCustomers = applyPagination(filteredCustomers, page, rowsPerPage);
-
-    const rows = paginatedCustomers.map(c => [
+    // Export all filtered customers, not just paginated ones
+    const rows = filteredCustomers.map((c: any) => [
       c.id,
       c.name,
       c.surname,
@@ -114,7 +127,7 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'customers.csv';
+    a.download = `ore-management-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -122,58 +135,7 @@ export default function Page(): React.JSX.Element {
     URL.revokeObjectURL(url);
   };
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    Papa.parse(file, {
-      header: true,
-      complete: async (results: { data: any[]; }) => {
-        // Map CSV rows to your structure
-        const importedData: Customer[] = results.data.map((row: any, idx: number) => ({
-          id: row.id ?? `imported-${idx}`,
-          name: row.name ?? '',
-          surname: row.surname ?? '',
-          nationIdNumber: row.nationIdNumber ?? '',
-          nationId: row.nationId ?? '',
-          address: row.address ?? '',
-          cellNumber: row.cellNumber ?? '',
-          phone: row.phone ?? row.cellNumber ?? '',
-          email: row.email ?? '',
-          status: row.status ?? '',
-          reason: row.reason ?? '',
-          registrationNumber: row.registrationNumber ?? '',
-          registrationDate: row.registrationDate ?? '',
-          position: row.position ?? '',
-          teamMembers: row.teamMembers ? JSON.parse(row.teamMembers) : [],
-          cooperativeDetails: row.cooperativeDetails ? JSON.parse(row.cooperativeDetails) : [],
-          cooperativeName: row.cooperativeName ?? '',
-          cooperative: row.cooperative ?? '', // Added missing property
-          numShafts: row.numShafts ?? 0,
-          attachedShaft: row.attachedShaft === 'Yes' || row.attachedShaft === true,
-        }));
-        console.log('Imported CSV data:', importedData);
-        setCustomers(importedData); // Update table state
-        // Send importedData to backend
-        try {
-          const response = await fetch('/api/miners/import', {
-            method: 'POST',
-            body: JSON.stringify(importedData),
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          if (response.ok) {
-            console.log('Successfully imported data to backend');
-          } else {
-            console.error('Failed to import data:', await response.text());
-          }
-        } catch (error) {
-          console.error('Error sending imported data:', error);
-        }
-      }
-    });
-  }
+  
 
   return (
     <Stack spacing={3}>
@@ -191,19 +153,7 @@ export default function Page(): React.JSX.Element {
             <Tab label="Approved" value="APPROVED" />
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button
-              color="inherit"
-              startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}
-              component="label"
-            >
-              Import
-              <input
-                type="file"
-                accept=".csv"
-                hidden
-                onChange={handleImport}
-              />
-            </Button>
+            
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
             </Button>
@@ -226,7 +176,9 @@ export default function Page(): React.JSX.Element {
         <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <LazyWrapper>
+        <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
+      </LazyWrapper>
     </Stack>
   );
 }
@@ -274,11 +226,13 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
       </Button>
       
       {/* Add Ore Dialog */}
-      <AddOreDialog 
-        open={dialogOpen} 
-        onClose={handleCloseDialog} 
-        onRefresh={onRefresh}
-      />
+      <LazyWrapper>
+        <LazyAddOreManagementDialog 
+          open={dialogOpen} 
+          onClose={handleCloseDialog} 
+          onRefresh={onRefresh}
+        />
+      </LazyWrapper>
     </React.Fragment>
   );
 }

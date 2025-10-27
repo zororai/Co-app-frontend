@@ -405,64 +405,11 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
-              <TableCell sortDirection={sortField === 'taxType' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'taxType'}
-                  direction={sortField === 'taxType' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('taxType')}
-                >
-                  Tax Type
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'taxRate' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'taxRate'}
-                  direction={sortField === 'taxRate' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('taxRate')}
-                >
-                  Tax Rate
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'location' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'location'}
-                  direction={sortField === 'location' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('location')}
-                >
-                  Location
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'description' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'description'}
-                  direction={sortField === 'description' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('description')}
-                >
-                  Description
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'status'}
-                  direction={sortField === 'status' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('status')}
-                >
-                  Status
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Tax Type</TableCell>
+              <TableCell>Tax Rate</TableCell>
+              <TableCell>Location</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -504,18 +451,6 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{row.taxType || ''}</TableCell>
                   <TableCell>{row.taxRate || 0}%</TableCell>
                   <TableCell>{row.location || ''}</TableCell>
