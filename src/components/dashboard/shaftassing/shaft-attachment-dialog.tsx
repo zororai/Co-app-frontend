@@ -70,6 +70,7 @@ export function ShaftAttachmentDialog({
   React.useEffect(() => {
     if (open) {
       fetchSections();
+      fetchShaftAssignmentFees();
     }
   }, [open]);
 
@@ -82,6 +83,23 @@ export function ShaftAttachmentDialog({
       setSections([]);
     } finally {
       setSectionsLoading(false);
+    }
+  };
+
+  const fetchShaftAssignmentFees = async () => {
+    try {
+      const response = await authClient.fetchShaftAssignmentFees();
+      if (response.success && response.data && response.data.length > 0) {
+        // Get the first (latest) fee record
+        const feeData = response.data[0];
+        setFormData(prev => ({
+          ...prev,
+          regFee: feeData.regFee?.toString() || '',
+          medicalFee: feeData.medicalFee?.toString() || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching shaft assignment fees:', error);
     }
   };
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);

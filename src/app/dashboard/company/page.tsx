@@ -139,7 +139,7 @@ export default function Page(): React.JSX.Element {
         />
       )}
 
-      <RegMinerDialog open={open} onClose={() => setOpen(false)} />
+      <RegMinerDialog open={open} onClose={() => setOpen(false)} onRefresh={fetchCompanies} />
     </Stack>
   );
 }

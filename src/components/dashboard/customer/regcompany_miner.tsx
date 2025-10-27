@@ -822,23 +822,29 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
   const [activeStep, setActiveStep] = React.useState(0);
   const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
-  const [formRef, setFormRef] = React.useState<{ handleNext: () => void; handleBack: () => void } | null>(null);
-  
-  const handleStepChange = (step: number) => {
+  // useRef to hold child imperative handlers without causing re-renders
+  const formRef = React.useRef<{ handleNext: () => void; handleBack: () => void } | null>(null);
+
+  const handleStepChange = React.useCallback((step: number) => {
     setActiveStep(step);
-  };
-  
-  const handleNext = () => {
-    if (formRef?.handleNext) {
-      formRef.handleNext();
+  }, []);
+
+  const handleNext = React.useCallback(() => {
+    if (formRef.current?.handleNext) {
+      formRef.current.handleNext();
     }
-  };
-  
-  const handleBack = () => {
-    if (formRef?.handleBack) {
-      formRef.handleBack();
+  }, []);
+
+  const handleBack = React.useCallback(() => {
+    if (formRef.current?.handleBack) {
+      formRef.current.handleBack();
     }
-  };
+  }, []);
+
+  const handleRefCallback = React.useCallback((ref: any) => {
+    // assign to ref.current directly to avoid setState inside a ref callback
+    formRef.current = ref;
+  }, []);
   
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -896,7 +902,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
           onClose={onClose} 
           onRefresh={onRefresh} 
           onStepChange={handleStepChange}
-          ref={(ref: any) => setFormRef(ref)}
+          ref={handleRefCallback}
         />
       </DialogContent>
       

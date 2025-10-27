@@ -3,19 +3,16 @@
 import * as React from 'react';
 import type { Metadata } from 'next';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
-import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
-import { LazyIntegrationCard, LazyCompaniesFilters } from '@/components/lazy/LazyComponents';
+import { LazyIntegrationCard, LazyCompaniesFilters, LazyExportButton } from '@/components/lazy/LazyComponents';
 import type { Integration } from '@/components/dashboard/integrations/integrations-card';
 
 export const metadata = { title: `Integrations | Dashboard | ${config.site.name}` } satisfies Metadata;
@@ -78,24 +75,9 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">View Of Attached Shaft </Typography>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={1}>
-            <Button
-              color="inherit"
-              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
-              onClick={() => {
-                const tab = 'APPROVED';
-                const a = document.createElement('a');
-                a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(
-                  integrations
-                    .filter((c) => c.title === tab)
-                    .map((c) => Object.values(c).join(','))
-                    .join('\n')
-                )}`;
-                a.download = `integrations-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
-              }}
-            >
-              Export
-            </Button>
+            <LazyWrapper>
+              <LazyExportButton integrations={integrations} />
+            </LazyWrapper>
           </Stack>
         </Stack>
         <div>

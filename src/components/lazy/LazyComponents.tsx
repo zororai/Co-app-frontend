@@ -41,6 +41,9 @@ export const LazyIntegrationCard = lazy(() => import('@/components/dashboard/int
 // Lazy load filter components
 export const LazyCompaniesFilters = lazy(() => import('@/components/dashboard/integrations/integrations-filters').then(module => ({ default: module.CompaniesFilters })));
 
+// Lazy load button components
+export const LazyExportButton = lazy(() => import('@/components/dashboard/integrations/export-button').then(module => ({ default: module.ExportButton })));
+
 // Pre-wrapped components with Suspense for better performance
 export const SuspenseWrappedMillTable = (props: any) => (
   <Suspense fallback={<div>Loading table...</div>}>
