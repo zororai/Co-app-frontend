@@ -507,8 +507,8 @@ export function CustomersTable({
                         onClick={() => handleDeleteClick(row.id, row.paymentMethod || 'transport cost')}
                         size="small"
                         sx={{
-                          color: 'error.main',
-                          '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                          color: theme.palette.secondary.main,
+                          '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
                         }}
                       >
                         <DeleteIcon fontSize="small" />
