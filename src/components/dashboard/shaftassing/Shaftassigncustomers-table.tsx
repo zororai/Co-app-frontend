@@ -30,6 +30,7 @@ import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
 import { ShaftAttachmentDialog } from '@/components/dashboard/shaftassing/shaft-attachment-dialog';
 import { ShaftActionDialog } from '@/components/dashboard/shaftassing/shaft-action-dialog';
+import { UnassignedShaftsDialog } from '@/components/dashboard/shaftassing/unassigned-shafts-dialog';
 
 function noop(): void {
   // do nothing
@@ -118,6 +119,7 @@ export function CustomersTable({
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [isShaftActionDialogOpen, setIsShaftActionDialogOpen] = React.useState(false);
   const [isShaftAttachmentDialogOpen, setIsShaftAttachmentDialogOpen] = React.useState(false);
+  const [isUnassignedShaftsDialogOpen, setIsUnassignedShaftsDialogOpen] = React.useState(false);
   const [selectedCustomerForShaft, setSelectedCustomerForShaft] = React.useState<string | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
@@ -139,14 +141,20 @@ export function CustomersTable({
   };
 
   const handleAttachExisting = (customerId: string) => {
-    // TODO: Implement logic for attaching existing shaft
-    console.log('Attach existing shaft for customer:', customerId);
-    // For now, you can add your existing shaft attachment logic here
+    setSelectedCustomerForShaft(customerId);
+    setIsUnassignedShaftsDialogOpen(true);
   };
 
   const handleCreateNew = (customerId: string) => {
     setSelectedCustomerForShaft(customerId);
     setIsShaftAttachmentDialogOpen(true);
+  };
+
+  const handleAssignShaft = (customerId: string, shaftId: string) => {
+    // TODO: Implement the actual shaft assignment logic here
+    console.log('Assigning shaft', shaftId, 'to customer', customerId);
+    // You can add the API call to assign the shaft here
+    alert(`Shaft ${shaftId} assigned to customer ${customerId}`);
   };
 
   return (
@@ -300,6 +308,17 @@ export function CustomersTable({
         onAttachExisting={handleAttachExisting}
         onCreateNew={handleCreateNew}
         customerId={selectedCustomerForShaft}
+      />
+      
+      {/* Unassigned Shafts Dialog */}
+      <UnassignedShaftsDialog
+        open={isUnassignedShaftsDialogOpen}
+        onClose={() => {
+          setIsUnassignedShaftsDialogOpen(false);
+          setSelectedCustomerForShaft(null);
+        }}
+        customerId={selectedCustomerForShaft}
+        onAssignShaft={handleAssignShaft}
       />
       
       {/* Shaft Attachment Dialog */}
