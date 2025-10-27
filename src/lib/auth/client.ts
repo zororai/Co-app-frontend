@@ -5684,5 +5684,68 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
+
+  /**
+   * Fetch approved sections
+   * GET /api/sections/status/approved
+   */
+  async fetchApprovedSections(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const response = await fetch('/api/sections/status/approved', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch approved sections' };
+      }
+      const data = await response.json().catch(() => []);
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      console.error('Error fetching approved sections:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Fetch unassigned shafts by section name
+   * GET /api/shaft-assignments/unassigned/by-section/{sectionName}
+   */
+  async fetchUnassignedShaftsBySection(sectionName: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const encodedSectionName = encodeURIComponent(sectionName);
+      const response = await fetch(`/api/shaft-assignments/unassigned/by-section/${encodedSectionName}`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch unassigned shafts' };
+      }
+      const data = await response.json().catch(() => []);
+      return { success: true, data: Array.isArray(data) ? data : [] };
+    } catch (error) {
+      console.error('Error fetching unassigned shafts by section:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 }
 export const authClient = new AuthClient();
