@@ -12,11 +12,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import IconButton from '@mui/material/IconButton';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTheme } from '@mui/material/styles';
 
 interface ProductionLoanDetailsDialogProps {
   open: boolean;
@@ -26,6 +28,7 @@ interface ProductionLoanDetailsDialogProps {
 }
 
 export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }: ProductionLoanDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [loanDetails, setLoanDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -125,23 +128,53 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
           justifyContent: 'space-between', 
           alignItems: 'center',
           p: 2,
-          bgcolor: '#15073d'
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#ffffff', fontWeight: 'bold' }}>Production Loan Details</Typography>
+        <Typography variant="subtitle1" component="span" sx={{ color: 'white', fontWeight: 'bold' }}>Production Loan Details</Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('production-loan-details-printable', 'Production Loan Details')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+          <IconButton 
+            onClick={() => printElementById('production-loan-details-printable', 'Production Loan Details')} 
+            size="small" 
+            sx={{ 
+              color: 'white', 
+              mr: 1,
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={40} />
+          <Box sx={{ p: 3 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2, mb: 2 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                {[...Array(7)].map((_, index) => (
+                  <Box key={index}>
+                    <Skeleton variant="text" width="60%" height={20} />
+                    <Skeleton variant="text" width="80%" height={24} />
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2 }}>
+              <Skeleton variant="text" width="30%" height={24} sx={{ mb: 2 }} />
+              <Skeleton variant="rectangular" width="100%" height={80} />
+            </Box>
           </Box>
         )}
 
@@ -153,8 +186,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
 
         {!loading && !error && loanDetails && (
           <Box sx={{ display: 'flex', paddingTop:2, flexDirection: 'column', gap: 2 }} id="production-loan-details-printable">
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Loan Information</Typography>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2, textTransform: 'uppercase' }}>Loan Information</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                 <DetailItem label="Loan Name" value={loanDetails.loanName || 'N/A'} />
                 <DetailItem label="Payment Method" value={loanDetails.paymentMethod || 'N/A'} />
@@ -167,8 +200,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             </Box>
             
             {loanDetails.purpose && (
-              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Purpose Details</Typography>
+              <Box sx={{ mt: 2, border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.secondary.main, textTransform: 'uppercase' }}>Purpose Details</Typography>
                 <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1, whiteSpace: 'pre-wrap' }}>
                   <Typography variant="body2">{loanDetails.purpose}</Typography>
                 </Box>
@@ -176,8 +209,8 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
             )}
             
             {loanDetails.tax && loanDetails.tax.length > 0 && (
-              <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Tax Information</Typography>
+              <Box sx={{ mt: 2, border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: theme.palette.secondary.main, textTransform: 'uppercase' }}>Tax Information</Typography>
                 <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
                   {loanDetails.tax.map((taxItem: any, index: number) => (
                     <Box key={index} sx={{ mb: index < loanDetails.tax.length - 1 ? 2 : 0 }}>
@@ -251,8 +284,17 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
         <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
           <Button 
             onClick={onClose} 
-            variant="outlined"
+            variant="contained"
             disabled={actionLoading}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: 'white',
+              '&:hover': { bgcolor: theme.palette.secondary.dark },
+              '&.MuiButton-contained': {
+                bgcolor: theme.palette.secondary.main,
+                color: 'white'
+              }
+            }}
           >
             Close
           </Button>

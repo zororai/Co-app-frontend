@@ -348,7 +348,7 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
         onClick={handleOpenDialog}
         disabled={isLoading}
         sx={{
-          bgcolor: '#5f4bfa',
+          bgcolor: 'secondary.main',
           color: '#fff',
           '&:hover': { bgcolor: '#4aa856' },
           '&:disabled': { bgcolor: '#9e9e9e', opacity: 0.7 }

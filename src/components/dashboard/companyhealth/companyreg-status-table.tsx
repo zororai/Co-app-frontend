@@ -206,19 +206,6 @@ View Company Miner Reg Status Health
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Registration Number</TableCell>
          <TableCell>Company Name</TableCell>
          <TableCell>Company Address</TableCell>
@@ -237,18 +224,6 @@ View Company Miner Reg Status Health
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>

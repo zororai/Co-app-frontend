@@ -32,6 +32,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { authClient } from '../../../lib/auth/client';
 import { Snackbar } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 interface AddMillDialogProps {
   open: boolean;
@@ -94,6 +95,7 @@ const millTypes = [
 ];
 
 export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -681,7 +683,7 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            bgcolor: theme.palette.secondary.main,
             color: 'white',
             py: 2.5,
             px: 3,
@@ -699,7 +701,8 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
               position: 'absolute',
               right: 8,
               top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
             }}
           >
             <CloseIcon />
@@ -711,7 +714,24 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
           </Typography>
         
         <Box sx={{ width: '100%', px: 3, py: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepLabel-root .Mui-completed': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepLabel-root .Mui-active': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepIcon-root.Mui-completed': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepIcon-root.Mui-active': {
+                color: theme.palette.secondary.main,
+              }
+            }}
+          >
             {steps.map((label, index) => (
               <Step key={label} completed={activeStep > index}>
                 <StepLabel>{label}</StepLabel>
@@ -720,7 +740,24 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
           </Stepper>
         </Box>
         
-        <DialogContent dividers>
+        <DialogContent 
+          dividers
+          sx={{
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: 'rgba(0,0,0,0.05)',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.secondary.main,
+              borderRadius: '4px',
+              '&:hover': {
+                backgroundColor: theme.palette.secondary.dark,
+              }
+            }
+          }}
+        >
           {error && (
             <Alert severity="error" sx={{ mb: 3 }}>
               {error}
@@ -754,9 +791,9 @@ export function AddMillDialog({ open, onClose, onSubmit, onRefresh }: AddMillDia
                 onClick={handleStepNext}
                 disabled={loading}
                 sx={{
-                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
+                  bgcolor: theme.palette.secondary.main,
                   '&:hover': {
-                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
+                    bgcolor: theme.palette.secondary.dark
                   }
                 }}
               >

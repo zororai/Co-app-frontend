@@ -10,11 +10,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
+import { useTheme } from '@mui/material/styles';
 
 interface UserDetailsDialogProps {
   open: boolean;
@@ -24,6 +26,7 @@ interface UserDetailsDialogProps {
 }
 
 export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [userDetails, setUserDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -165,26 +168,70 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-        <Box sx={{ display: 'flex',PaddingTop:2, justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
-            Transport Cost Details
-          </Typography>
-          <Box>
-            <IconButton onClick={() => printElementById('transportcost-details-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
-              <PrintIcon />
-            </IconButton>
-            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      <DialogTitle 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
+        }}
+      >
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Transport Cost Details
+        </Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton 
+            onClick={() => printElementById('transportcost-details-printable')} 
+            size="small" 
+            sx={{ 
+              mr: 1, 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            <PrintIcon />
+          </IconButton>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         <Box id="transportcost-details-printable">
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={40} />
+          <Box sx={{ p: 3 }}>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
+              gap: 2.5 
+            }}>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff',
+                gridColumn: '1 / -1'
+              }}>
+                <Skeleton variant="text" width="60%" height={32} sx={{ mb: 2 }} />
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <Box key={idx}>
+                      <Skeleton variant="text" width="40%" height={20} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="text" width="70%" height={24} />
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
           </Box>
         )}
 
@@ -195,10 +242,26 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
         )}
 
         {!loading && !error && userDetails && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{PaddingTop:2, p: 2, border: '1px solid #000080', borderRadius: 1 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Transport Cost Information</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box sx={{ 
+              p: 2.5, 
+              border: `2px solid ${theme.palette.secondary.main}`, 
+              borderRadius: '12px',
+              bgcolor: '#ffffff'
+            }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  mb: 2, 
+                  fontWeight: 700, 
+                  color: theme.palette.secondary.main,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Transport Cost Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <DetailItem label="Payment Method" value={userDetails.paymentMethod || 'N/A'} />
                 <DetailItem label="Amount / Grams" value={
                   userDetails.amountOrGrams !== undefined && userDetails.amountOrGrams !== null
@@ -210,8 +273,24 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               </Box>
             </Box>
             {userDetails.notes && (
-              <Box sx={{ mt: 2, p: 2, border: '1px solid #000080', borderRadius: 1 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: '#FF8F00' }}>Notes</Typography>
+              <Box sx={{ 
+                p: 2.5, 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px',
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle2" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 700, 
+                    color: theme.palette.secondary.main,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Notes
+                </Typography>
                 <Box sx={{ 
                   p: 2, 
                   bgcolor: '#f5f5f5', 
@@ -262,15 +341,29 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
               onClick={cancelAction}
               variant="outlined"
               disabled={actionLoading}
+              sx={{
+                borderColor: 'secondary.main',
+                color: 'secondary.main',
+                '&:hover': {
+                  borderColor: 'secondary.dark',
+                  bgcolor: 'rgba(50, 56, 62, 0.04)'
+                }
+              }}
             >
               Cancel
             </Button>
             <Button 
               onClick={actionType === 'reject' ? handleReject : handlePushBack}
               variant="contained"
-              color="primary"
               disabled={actionLoading || reason.trim() === ''}
-              sx={{ bgcolor: actionType === 'reject' ? '#d32f2f' : '#ed6c02', '&:hover': { bgcolor: actionType === 'reject' ? '#b71c1c' : '#e65100' } }}
+              sx={{ 
+                bgcolor: actionType === 'reject' ? '#d32f2f' : '#ed6c02', 
+                color: 'white',
+                '&:hover': { bgcolor: actionType === 'reject' ? '#b71c1c' : '#e65100' },
+                '&.MuiButton-contained': {
+                  color: 'white'
+                }
+              }}
             >
               {actionLoading ? 'Processing...' : actionType === 'reject' ? 'Confirm Reject' : 'Confirm Push Back'}
             </Button>
@@ -279,7 +372,24 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
-      
+      <DialogActions sx={{ p: 2.5, gap: 1 }}>
+        <Button 
+          onClick={onClose} 
+          variant="contained"
+          disabled={actionLoading}
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            '&:hover': { bgcolor: theme.palette.secondary.dark },
+            '&.MuiButton-contained': {
+              bgcolor: theme.palette.secondary.main,
+              color: 'white'
+            }
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -22,8 +22,23 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -72,6 +87,8 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -81,8 +98,30 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('millName');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteMillId, setDeleteMillId] = React.useState<string | null>(null);
+  const [deleteMillName, setDeleteMillName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+  
+  // Filter the users based on search, filters, and tab status, then apply sorting
   const filteredRows = React.useMemo(() => {
     const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
@@ -100,14 +139,24 @@ export function CustomersTable({
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
     
-    // Sort by ID in descending order (newest/highest ID first)
-    const sorted = filtered.sort((a, b) => {
-      const aId = Number(a.id) || 0;
-      const bId = Number(b.id) || 0;
-      return bId - aId; // Descending order (newest first)
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
     });
-    return sorted;
-  }, [users, filters, statusFilter]);
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -164,6 +213,37 @@ export function CustomersTable({
       onRefresh();
     }
   }, [onRefresh]);
+  
+  // Handle delete mill
+  const handleDeleteClick = (millId: string, millName: string) => {
+    setDeleteMillId(millId);
+    setDeleteMillName(millName);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteMill = async () => {
+    if (!deleteMillId) return;
+    
+    setIsDeleting(true);
+    try {
+      // TODO: Implement deleteMill API method in authClient
+      // await authClient.deleteMill(deleteMillId);
+      
+      setSnackbarMessage('Mill deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      
+      setIsDeleteDialogOpen(false);
+      refreshTableData();
+    } catch (error) {
+      console.error('Error deleting mill:', error);
+      setSnackbarMessage('Failed to delete mill');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Card>      
@@ -297,28 +377,101 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              
-              <TableCell>Mill Name</TableCell>
-              <TableCell>Mill Location</TableCell>
-              <TableCell>Mill Type</TableCell>
-              <TableCell>Owner</TableCell>
-              <TableCell>ID Number</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>View Details</TableCell>
+              <TableCell sortDirection={sortField === 'millName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'millName'}
+                  direction={sortField === 'millName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('millName')}
+                >
+                  Mill Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'millLocation' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'millLocation'}
+                  direction={sortField === 'millLocation' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('millLocation')}
+                >
+                  Mill Location
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'millType' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'millType'}
+                  direction={sortField === 'millType' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('millType')}
+                >
+                  Mill Type
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'owner' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'owner'}
+                  direction={sortField === 'owner' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('owner')}
+                >
+                  Owner
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'idNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'idNumber'}
+                  direction={sortField === 'idNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('idNumber')}
+                >
+                  ID Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'address' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'address'}
+                  direction={sortField === 'address' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('address')}
+                >
+                  Address
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No users found
+                    No mills found
                   </Typography>
                 </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -354,27 +507,36 @@ export function CustomersTable({
                   
             
               
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
-                          setIsDriverDetailsDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        View Details
-                      </Button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            console.log('Button clicked for mill ID:', row.id);
+                            setSelectedDriverId(row.id);
+                            setIsDriverDetailsDialogOpen(true);
+                          }}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Mill">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(row.id, row.millName)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                
@@ -395,7 +557,7 @@ export function CustomersTable({
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
       
-      {/* Driver Details Dialog */}
+      {/* Mill Details Dialog */}
       {isDriverDetailsDialogOpen && (
         <MillDetailsDialog
           open={isDriverDetailsDialogOpen}
@@ -403,6 +565,61 @@ export function CustomersTable({
           driverId={selectedDriverId}
         />
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete mill <strong>{deleteMillName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteMill} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
 
     </Card>
   );

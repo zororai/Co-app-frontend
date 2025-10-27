@@ -24,6 +24,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import { useTheme } from '@mui/material/styles';
 
 interface AddTaxDialogProps {
   open: boolean;
@@ -125,6 +126,7 @@ const Grid = ({
 };
 
 export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [formData, setFormData] = React.useState<TaxFormData>({
     taxType: '',
@@ -299,7 +301,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        background: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -333,19 +335,19 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
             },
             '& .MuiStepLabel-label': {
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 600,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 500,
               },
             },
@@ -353,10 +355,10 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
               borderColor: '#d1d5db',
             },
             '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
             '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
           }}
         >
@@ -376,7 +378,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
         overflow: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
       }}>
 
         {/* Step 1: Tax Information */}
@@ -608,9 +610,9 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
             variant="outlined"
             onClick={handleBack}
             sx={{
-              borderColor: 'rgb(5, 5, 68)',
-              color: 'rgb(5, 5, 68)',
-              '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' }
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main,
+              '&:hover': { borderColor: theme.palette.secondary.dark, backgroundColor: 'rgba(50, 56, 62, 0.04)' }
             }}
           >
             Back
@@ -621,7 +623,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
           <Button
             variant="contained"
             onClick={handleNext}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ bgcolor: theme.palette.secondary.main, color: 'white', '&:hover': { bgcolor: theme.palette.secondary.dark } }}
           >
             Next
           </Button>
@@ -632,7 +634,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
             variant="contained"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ bgcolor: theme.palette.secondary.main, color: 'white', '&:hover': { bgcolor: theme.palette.secondary.dark } }}
           >
             {isSubmitting ? 'Creating...' : 'Send Tax For Approval'}
           </Button>
@@ -642,7 +644,7 @@ export function AddTaxDialog({ open, onClose, onRefresh }: AddTaxDialogProps): R
           <Button
             variant="contained"
             onClick={handleClose}
-            sx={{ bgcolor: 'rgb(5, 5, 68)', color: 'white', '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' } }}
+            sx={{ bgcolor: theme.palette.secondary.main, color: 'white', '&:hover': { bgcolor: theme.palette.secondary.dark } }}
           >
             Close
           </Button>

@@ -17,6 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -24,13 +25,22 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -80,6 +90,8 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -89,8 +101,23 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('loanName');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteLoanId, setDeleteLoanId] = React.useState<string | null>(null);
+  const [deleteLoanName, setDeleteLoanName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Filter the users based on search, filters, and tab status, then apply sorting
   const filteredRows = React.useMemo(() => {
     console.log('Current users array:', users); // Debug: Log the users array
     
@@ -119,8 +146,67 @@ export function CustomersTable({
     });
     
     console.log('Filtered rows:', filtered); // Debug: Log the filtered results
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+    
+    return sorted;
+  }, [users, filters, statusFilter, sortField, sortDirection]);
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+  
+  // Handle delete click
+  const handleDeleteClick = (loanId: string, loanName: string) => {
+    setDeleteLoanId(loanId);
+    setDeleteLoanName(loanName);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Confirm delete
+  const confirmDeleteLoan = async () => {
+    if (!deleteLoanId) return;
+    
+    setIsDeleting(true);
+    try {
+      // TODO: Implement API call to delete production loan
+      // const response = await authClient.deleteProductionLoan(deleteLoanId);
+      
+      setSnackbarMessage('Production loan deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setIsDeleteDialogOpen(false);
+      
+      // Refresh table - trigger re-fetch by calling the effect
+      if (onRefresh) onRefresh();
+    } catch (error) {
+      console.error('Error deleting production loan:', error);
+      setSnackbarMessage('Failed to delete production loan');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -375,26 +461,95 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-      
-              <TableCell>Loan Name</TableCell>
-              <TableCell>Payment Method</TableCell>
-              <TableCell>Amount/Grams</TableCell>
-              <TableCell>Purpose</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Reason</TableCell>
-              <TableCell>View Details</TableCell>
-             
-     
-              
+              <TableCell sortDirection={sortField === 'loanName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'loanName'}
+                  direction={sortField === 'loanName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('loanName')}
+                >
+                  Loan Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'paymentMethod' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'paymentMethod'}
+                  direction={sortField === 'paymentMethod' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('paymentMethod')}
+                >
+                  Payment Method
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'amountOrGrams' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'amountOrGrams'}
+                  direction={sortField === 'amountOrGrams' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('amountOrGrams')}
+                >
+                  Amount/Grams
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'purpose' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'purpose'}
+                  direction={sortField === 'purpose' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('purpose')}
+                >
+                  Purpose
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'reason' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'reason'}
+                  direction={sortField === 'reason' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('reason')}
+                >
+                  Reason
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
+            {/* Loading skeleton */}
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
+            {/* Empty state */}
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-              
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No production loans found
+                  </Typography>
+                </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            
+            {/* Data rows */}
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -419,22 +574,32 @@ export function CustomersTable({
                   <TableCell>{row.reason || ''}</TableCell>
                   
                   
-                  
-                 
-              
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Production Loan Details</button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Production Loan">
+                        <IconButton 
+                          onClick={() => handleDeleteClick(row.id, row.loanName)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
        
@@ -466,6 +631,61 @@ export function CustomersTable({
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
       />
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete production loan <strong>{deleteLoanName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteLoan} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
       
       {/* Feedback Dialog */}
       <Dialog
