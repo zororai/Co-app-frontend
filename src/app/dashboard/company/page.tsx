@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-
+import { useTheme } from '@mui/material/styles';
 
 
 
@@ -33,6 +33,7 @@ import Papa from 'papaparse';
 
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
@@ -119,7 +120,18 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button 
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained" 
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: '#fff',
+              '&:hover': {
+                bgcolor: theme.palette.secondary.dark
+              }
+            }}
+          >
             Reg Company Miner
           </Button>
         </div>

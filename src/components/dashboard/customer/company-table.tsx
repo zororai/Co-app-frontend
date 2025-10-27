@@ -22,6 +22,12 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import dayjs from 'dayjs';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 
 // Removed incorrect imports for Dialog, DialogContent, DialogTitle, IconButton
 import { useSelection } from '@/hooks/use-selection';
@@ -31,7 +37,6 @@ import { IntegrationCard } from '@/components/dashboard/integrations/integration
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import { authClient } from '@/lib/auth/client';
@@ -75,6 +80,13 @@ export function CompanyTable({
   page = 0,
   rowsPerPage = 0,
 }: CompanyTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('companyName');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  const [loading, setLoading] = React.useState<boolean>(false);
+  
   // Dialog state for company details
   const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
   const [companyDialogId, setCompanyDialogId] = useState<string | null>(null);
@@ -152,9 +164,19 @@ export function CompanyTable({
     position: 'all'
   });
 
-  // Filter the rows based on search and filters
+  // Handle sorting
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Filter the rows based on search and filters, then sort
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    let filtered = rows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -165,7 +187,20 @@ export function CompanyTable({
 
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [rows, filters]);
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (aValue === bValue) return 0;
+      
+      const comparison = aValue < bValue ? -1 : 1;
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  }, [rows, filters, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -192,9 +227,9 @@ export function CompanyTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: theme.palette.secondary.main,
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
@@ -203,9 +238,9 @@ export function CompanyTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: theme.palette.secondary.main,
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
@@ -255,68 +290,177 @@ export function CompanyTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Registration Number</TableCell>
-              <TableCell>Company Name</TableCell>
-              <TableCell>Company Address</TableCell>
-              <TableCell>Contact Number</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'registrationNumber'}
+                  direction={sortField === 'registrationNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('registrationNumber')}
+                >
+                  Registration Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'companyName'}
+                  direction={sortField === 'companyName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('companyName')}
+                >
+                  Company Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'address'}
+                  direction={sortField === 'address' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('address')}
+                >
+                  Company Address
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'cellNumber'}
+                  direction={sortField === 'cellNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('cellNumber')}
+                >
+                  Contact Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'email'}
+                  direction={sortField === 'email' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('email')}
+                >
+                  Email
+                </TableSortLabel>
+              </TableCell>
               <TableCell>No of Shaft Assignments</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>View Miner Details</TableCell>
               <TableCell>View Attached Shafts</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => {
-              const isSelected = selected?.has(row.id);
-              return (
-                <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell>{row.registrationNumber}</TableCell>
-                  <TableCell>{row.companyName}</TableCell>
-                  <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.shaftnumber}</TableCell>  
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          bgcolor: 
-                            row.status === 'APPROVED' ?  '#d0f5e8' : '#ffebee',
-                          color: 
-                            row.status === 'APPROVED' ? '#1b5e20' : '#c62828',
-                          fontWeight: 500,
-                          fontSize: 13,
-                        }}
-                      >
-                        {row.status}
+            {loading ? (
+              // Skeleton loading rows
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="text" /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={80} height={24} /></TableCell>
+                  <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
+                  <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
+                </TableRow>
+              ))
+            ) : filteredRows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
+                    No companies found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredRows.map((row) => {
+                const isSelected = selected?.has(row.id);
+                return (
+                  <TableRow hover key={row.id} selected={isSelected}>
+                    <TableCell>{row.registrationNumber}</TableCell>
+                    <TableCell>{row.companyName}</TableCell>
+                    <TableCell>{row.address}</TableCell>
+                    <TableCell>{row.cellNumber}</TableCell>
+                    <TableCell>{row.email}</TableCell>
+                    <TableCell>{row.shaftnumber}</TableCell>  
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 2,
+                            bgcolor: 
+                              row.status === 'APPROVED' ?  '#d0f5e8' : '#ffebee',
+                            color: 
+                              row.status === 'APPROVED' ? '#1b5e20' : '#c62828',
+                            fontWeight: 500,
+                            fontSize: 13,
+                          }}
+                        >
+                          {row.status}
+                        </Box>
                       </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: '1px solid #17212cff',
-                          color: '#17212cff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                        }}
-                        onClick={() => handleOpenCompanyDialog(row.id)}
-                      >
-                        View Company Details
-                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Company Details">
+                        <IconButton
+                          onClick={() => handleOpenCompanyDialog(row.id)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Attached Shafts">
+                        <IconButton
+                          onClick={() => handleViewAttachedShaft(row.id)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </Box>
       {/* Company Details Dialog */}
       <Dialog open={companyDialogOpen} onClose={handleCloseCompanyDialog} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-          Company Details
-          <IconButton onClick={handleCloseCompanyDialog} size="small">
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
+        }}>
+          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+            Company Details
+          </Typography>
+          <IconButton 
+            onClick={handleCloseCompanyDialog} 
+            size="small"
+            sx={{
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -465,64 +609,24 @@ export function CompanyTable({
             </Box>
           ) : null}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseCompanyDialog} color="primary">Close</Button>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button 
+            onClick={handleCloseCompanyDialog}
+            variant="outlined"
+            sx={{
+              color: theme.palette.secondary.main,
+              borderColor: theme.palette.secondary.main,
+              '&:hover': {
+                borderColor: theme.palette.secondary.dark,
+                bgcolor: 'rgba(50, 56, 62, 0.04)'
+              }
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '2px 12px',
-                        }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
-                      >
-                     
-                      </button>
-                    </Box>
-                  </TableCell>
-                   <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <button 
-                        style={{
-                          background: 'none',
-                           border: '1px solid #17212cff',
-                          color: '#17212cff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                        }}
-                        onClick={() => handleViewAttachedShaft(row.id)}
-                      >
-                      View Attached Shafts
-                      </button>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '2px 12px',
-                        }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
-                      >
-                     
-                      </button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Box>
+
       <Divider />
       <TablePagination
         component="div"
@@ -537,27 +641,51 @@ export function CompanyTable({
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
-          {/* Shaft Assignments Dialog */}
-            <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
-              <DialogTitle>Attached Shaft Assignments</DialogTitle>
-              <DialogContent>
-                {shaftLoading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
-                    <CircularProgress />
-                  </Box>
-                ) : shaftError ? (
-                  <Typography color="error">{shaftError}</Typography>
-                ) : shaftAssignments.length === 0 ? (
-                  <Typography>No shaft assignments found for this customer.</Typography>
-                ) : (
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-                    {shaftAssignments.map((assignment, idx) => (
-                      <IntegrationCard key={assignment.id || idx} integration={assignment} />
-                    ))}
-                  </Box>
-                )}
-              </DialogContent>
-            </Dialog>
+      {/* Shaft Assignments Dialog */}
+      <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          p: 2.5
+        }}>
+          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+            Attached Shaft Assignments
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ p: 3 }}>
+          {shaftLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
+              <CircularProgress />
+            </Box>
+          ) : shaftError ? (
+            <Typography color="error">{shaftError}</Typography>
+          ) : shaftAssignments.length === 0 ? (
+            <Typography>No shaft assignments found for this customer.</Typography>
+          ) : (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+              {shaftAssignments.map((assignment, idx) => (
+                <IntegrationCard key={assignment.id || idx} integration={assignment} />
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button 
+            onClick={() => setShaftDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              color: theme.palette.secondary.main,
+              borderColor: theme.palette.secondary.main,
+              '&:hover': {
+                borderColor: theme.palette.secondary.dark,
+                bgcolor: 'rgba(50, 56, 62, 0.04)'
+              }
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
