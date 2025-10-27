@@ -165,8 +165,45 @@ export function ShaftAttachmentDialog({
       console.log('Submitting shaft assignment:', payload);
       let result;
       try {
+        // First API call - Create shaft assignment
         result = await authClient.createShaftAssignment(payload);
-        console.log('Shaft assignment result:', result);
+        console.log('Shaft assignment created successfully:', result);
+        
+        // Extract the shaft ID from the creation result
+        const shaftId = result?.id || result?.data?.id;
+        
+        if (shaftId) {
+          // Second API call - Assign the shaft using the returned ID
+          try {
+            const assignResult = await authClient.assignShaftAssignment(shaftId);
+            console.log('Shaft assignment assigned successfully:', assignResult);
+            
+            if (!assignResult.success) {
+              console.warn('Shaft assignment failed but continuing:', assignResult.error);
+            }
+          } catch (assignError) {
+            console.error('Critical error in shaft assignment:', assignError);
+            // Don't let this stop the success flow
+          }
+        } else {
+          console.warn('No shaft ID returned from creation, skipping assignment');
+        }
+        
+        // Third API call - Update shaft number for the miner (if needed)
+        if (customerId && formData.shaftNumbers) {
+          try {
+            const updateResult = await authClient.updateShaftNumberForRegMiner(customerId, formData.shaftNumbers);
+            console.log('Shaft number update result:', updateResult);
+            
+            if (!updateResult.success) {
+              console.warn('Shaft number update failed but continuing:', updateResult.error);
+            }
+          } catch (updateError) {
+            console.error('Critical error in shaft number update:', updateError);
+            // Don't let this stop the success flow
+          }
+        }
+        
         setSuccess(true);
         setTimeout(() => {
           handleClose();

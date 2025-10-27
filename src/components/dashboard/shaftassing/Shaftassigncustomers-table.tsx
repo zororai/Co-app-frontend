@@ -303,7 +303,7 @@ export function CustomersTable({
         open={isShaftActionDialogOpen}
         onClose={() => {
           setIsShaftActionDialogOpen(false);
-          setSelectedCustomerForShaft(null);
+          // Don't clear selectedCustomerForShaft here as it might be needed for the next dialog
         }}
         onAttachExisting={handleAttachExisting}
         onCreateNew={handleCreateNew}
@@ -315,7 +315,7 @@ export function CustomersTable({
         open={isUnassignedShaftsDialogOpen}
         onClose={() => {
           setIsUnassignedShaftsDialogOpen(false);
-          setSelectedCustomerForShaft(null);
+          setSelectedCustomerForShaft(null); // Clear when truly closing
         }}
         customerId={selectedCustomerForShaft}
         onAssignShaft={handleAssignShaft}
@@ -326,7 +326,7 @@ export function CustomersTable({
         open={isShaftAttachmentDialogOpen}
         onClose={() => {
           setIsShaftAttachmentDialogOpen(false);
-          setSelectedCustomerForShaft(null);
+          setSelectedCustomerForShaft(null); // Clear when truly closing
         }}
         customerId={selectedCustomerForShaft ?? undefined}
       />

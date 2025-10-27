@@ -45,9 +45,9 @@ export function initializeFetchInterceptor(): void {
       // Call original fetch
       const response = await originalFetch(input, init);
 
-      // Intercept 403 Forbidden responses
-      if (response.status === 403) {
-        console.warn('403 Forbidden detected, triggering session expiry handler');
+      // Intercept 401 Unauthorized and 403 Forbidden responses
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`${response.status} ${response.status === 401 ? 'Unauthorized' : 'Forbidden'} detected, triggering session expiry handler`);
         handle403Error();
       }
 
@@ -86,13 +86,13 @@ function showNotification(title: string, body: string): void {
 }
 
 /**
- * Handle 403 Forbidden response
+ * Handle 401 Unauthorized and 403 Forbidden responses
  */
 function handle403Error(): void {
   // Show push notification
   showNotification(
     'Session Expired',
-    'Your session has expired due to insufficient permissions. Please sign in again.'
+    'Your session has expired or you lack sufficient permissions. Please sign in again.'
   );
 
   // Clear authentication token
@@ -133,8 +133,8 @@ export async function apiFetch(
       return response;
     }
 
-    // Intercept 403 Forbidden responses
-    if (response.status === 403) {
+    // Intercept 401 Unauthorized and 403 Forbidden responses
+    if (response.status === 401 || response.status === 403) {
       handle403Error();
       
       // Return the response anyway (useful for logging or error handling)
