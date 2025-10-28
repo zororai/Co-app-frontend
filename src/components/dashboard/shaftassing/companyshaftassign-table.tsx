@@ -27,6 +27,7 @@ import { sortNewestFirst } from '@/utils/sort';
 // Removed incorrect imports for Dialog, DialogContent, DialogTitle, IconButton
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
+import { authClient } from '@/lib/auth/client';
 
 function noop(): void {
   // do nothing
@@ -66,15 +67,36 @@ export function CompanyTable({
   page = 0,
   rowsPerPage = 0,
 }: CompanyTableProps): React.JSX.Element {
+  const [companies, setCompanies] = React.useState<Company[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [internalPage, setInternalPage] = React.useState(page);
+  const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage || 5);
   const [filters, setFilters] = React.useState({
     search: '',
     status: 'all',
     position: 'all'
   });
 
-  // Filter the rows based on search and filters
+  // Fetch approved companies on component mount
+  React.useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const data = await authClient.fetchApprovedCompanies();
+        setCompanies(data);
+      } catch (error) {
+        console.error('Error fetching approved companies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Filter the companies based on search and filters
   const filteredRows = React.useMemo(() => {
-    return rows.filter(row => {
+    const dataToFilter = companies.length > 0 ? companies : rows;
+    return dataToFilter.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -85,7 +107,12 @@ export function CompanyTable({
 
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [rows, filters]);
+  }, [companies, rows, filters]);
+
+  // Paginate filtered rows
+  const paginatedRows = React.useMemo(() => {
+    return filteredRows.slice(internalPage * internalRowsPerPage, internalPage * internalRowsPerPage + internalRowsPerPage);
+  }, [filteredRows, internalPage, internalRowsPerPage]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -106,43 +133,7 @@ export function CompanyTable({
   }
 
   return (
-    <Card>
-      {/* Action Buttons */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#4a5568',
-            color: '#fff',
-            borderRadius: '25px',
-            px: 3,
-            py: 1,
-            textTransform: 'none',
-            fontWeight: 500,
-            '&:hover': { bgcolor: '#2d3748' }
-          }}
-          onClick={() => handleRedirect('/dashboard/customers')}
-        >
-          Assign Shaft to Syndicate
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: '#4a5568',
-            color: '#fff',
-            borderRadius: '25px',
-            px: 3,
-            py: 1,
-            textTransform: 'none',
-            fontWeight: 500,
-            '&:hover': { bgcolor: '#2d3748' }
-          }}
-          onClick={() => handleRedirect('/dashboard/company')}
-        >
-          Assign Shaft to Company
-        </Button>
-      </Box>
-      <Divider />
+    <>
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
@@ -185,31 +176,42 @@ export function CompanyTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Shaft Reg Number</TableCell>
               <TableCell>Company Name</TableCell>
               <TableCell>Company Address</TableCell>
               <TableCell>Contact Number</TableCell>
               <TableCell>Email</TableCell>
-              <TableCell>Owner Name</TableCell>
-              <TableCell>Owner Surname</TableCell>
-              <TableCell>Owner ID</TableCell>
+              <TableCell>No of Shaft</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => {
-              const isSelected = selected?.has(row.id);
-              return (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Loading approved companies...
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : paginatedRows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No approved companies found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedRows.map((row) => {
+                const isSelected = selected?.has(row.id);
+                return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                   <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
+                  <TableCell>{row.cellNumber || 'N/A'}</TableCell>
                   <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.ownerName}</TableCell>
-                  <TableCell>{row.ownerSurname}</TableCell>
-                  <TableCell>{row.ownerIdNumber}</TableCell>
+                  <TableCell>{row.shaftCount || 0}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box
@@ -218,11 +220,11 @@ export function CompanyTable({
                           py: 0.5,
                           borderRadius: 2,
                           bgcolor: 
-                            row.status === 'Approved' ? 'success.light' : 
-                            row.status === 'Rejected' ? 'error.light' : 'warning.light',
+                            row.status === 'APPROVED' ? '#d0f5e8' : 
+                            row.status === 'REJECTED' ? '#ffebee' : '#fff3e0',
                           color: 
-                            row.status === 'Approved' ? 'success.main' : 
-                            row.status === 'Rejected' ? 'error.main' : 'warning.main',
+                            row.status === 'APPROVED' ? '#1b5e20' : 
+                            row.status === 'REJECTED' ? '#c62828' : '#e65100',
                           fontWeight: 500,
                           fontSize: 13,
                         }}
@@ -264,25 +266,27 @@ export function CompanyTable({
                     </Box>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </Box>
       <Divider />
       <TablePagination
         component="div"
-        count={count}
+        count={filteredRows.length}
         onPageChange={(event, newPage) => {
-          // Implement your page change logic here
-          // For now, just call noop or handle as needed
-          noop();
+          setInternalPage(newPage);
         }}
-        onRowsPerPageChange={(event) => onRowsPerPageChange(event)}
-        page={page}
-        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(event) => {
+          setInternalRowsPerPage(Number.parseInt(event.target.value, 10));
+          setInternalPage(0);
+        }}
+        page={internalPage}
+        rowsPerPage={internalRowsPerPage}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
-    </Card>
+    </>
   );
 }

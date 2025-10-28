@@ -2802,6 +2802,38 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         }
     }
     /**
+     * Fetch approved companies for shaft assignment
+     * GET /api/companies/status/approved
+     */
+    async fetchApprovedCompanies(): Promise<any[]> {
+        const token = localStorage.getItem('custom-auth-token');
+        if (!token) {
+            console.error('No token found in localStorage');
+            globalThis.location.href = '/auth-sign-in';
+            return [];
+        }
+        try {
+            const response = await fetch('/api/companies/status/approved', {
+                method: 'GET',
+                headers: {
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token}`,
+                },
+                credentials: 'include',
+            });
+            if (!response.ok) {
+                console.error('Failed to fetch approved companies');
+                return [];
+            }
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error fetching approved companies:', error);
+            return [];
+        }
+    }
+
+    /**
      * Fetch companies from the endpoint /api/companies
      * Returns an array of companies or an empty array on error.
      */

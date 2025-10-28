@@ -31,6 +31,7 @@ import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-
 import { ShaftAttachmentDialog } from '@/components/dashboard/shaftassing/shaft-attachment-dialog';
 import { ShaftActionDialog } from '@/components/dashboard/shaftassing/shaft-action-dialog';
 import { UnassignedShaftsDialog } from '@/components/dashboard/shaftassing/unassigned-shafts-dialog';
+import { CompanyTable } from '@/components/dashboard/shaftassing/companyshaftassign-table';
 
 function noop(): void {
   // do nothing
@@ -73,6 +74,8 @@ export function CustomersTable({
   onPageChange,
   onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
+  // State to manage which table to show
+  const [activeTable, setActiveTable] = React.useState<'syndicate' | 'company'>('syndicate');
   // Local state for pagination if not controlled by parent
   const [internalPage, setInternalPage] = React.useState(page);
   const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
@@ -157,8 +160,52 @@ export function CustomersTable({
     alert(`Shaft ${shaftId} assigned to customer ${customerId}`);
   };
 
+  const handleTableSwitch = (table: 'syndicate' | 'company') => {
+    setActiveTable(table);
+  };
+
   return (
     <Card>
+      {/* Action Buttons */}
+      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: activeTable === 'syndicate' ? '#2d3748' : '#4a5568',
+            color: '#fff',
+            borderRadius: '25px',
+            px: 3,
+            py: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': { bgcolor: '#2d3748' }
+          }}
+          onClick={() => handleTableSwitch('syndicate')}
+        >
+          Assign Shaft to Syndicate
+        </Button>
+        <Button
+          variant="contained"
+          sx={{
+            bgcolor: activeTable === 'company' ? '#2d3748' : '#4a5568',
+            color: '#fff',
+            borderRadius: '25px',
+            px: 3,
+            py: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': { bgcolor: '#2d3748' }
+          }}
+          onClick={() => handleTableSwitch('company')}
+        >
+          Assign Shaft to Company
+        </Button>
+      </Box>
+      <Divider />
+      
+      {/* Conditionally render tables based on activeTable state */}
+      {activeTable === 'syndicate' ? (
+        <>
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <TextField
@@ -330,6 +377,16 @@ export function CustomersTable({
         }}
         customerId={selectedCustomerForShaft ?? undefined}
       />
+        </>
+      ) : (
+        /* Render Company Table */
+        <CompanyTable 
+          count={0}
+          rows={[]}
+          page={0}
+          rowsPerPage={5}
+        />
+      )}
     </Card>
   );
 }
