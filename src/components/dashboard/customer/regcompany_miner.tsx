@@ -159,12 +159,6 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       newErrors.address = 'Address is required';
       isValid = false;
     }
-    if (!form.cellNumber.trim()) {
-      newErrors.cellNumber = 'Cell number is required';
-    } else if (!/^\d{10}$/.test(form.cellNumber.trim())) {
-      newErrors.cellNumber = 'Invalid cell number format';
-      isValid = false;
-    }
     if (!form.registrationNumber.trim()) {
       newErrors.registrationNumber = 'Registration number is required';
       isValid = false;
@@ -246,6 +240,10 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
   ) => {
     if ('target' in e && e.target) {
       const { name, value, files, type } = e.target as HTMLInputElement;
+      if (!name) {
+        console.warn('Change event without a name attribute', e);
+        return;
+      }
       
       if (type === 'file' && files) {
         // Passport photo validation: must upload exactly 1
@@ -402,7 +400,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -497,36 +495,13 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Cell number ff</InputLabel>
           <TextField
-            name="cellNumber"
+            name="contactNumber"
             placeholder="Enter your mobile number"
             fullWidth
             value={form.cellNumber}
             onChange={handleChange}
-          />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-          <InputLabel>Registration Number</InputLabel>
-          <TextField
-            name="registrationNumber"
-            placeholder="Please enter registration number"
-            fullWidth
-            value={form.registrationNumber}
-            onChange={handleChange}
-            error={!!errors.registrationNumber}
-            helperText={errors.registrationNumber}
-            required
-          />
-        </Box>
-        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-          <InputLabel>Industry</InputLabel>
-          <TextField
-            name="industry"
-            placeholder="Please enter industry"
-            fullWidth
-            value={form.industry}
-            onChange={handleChange}
-            error={!!errors.industry}
-            helperText={errors.industry}
+            error={!!errors.cellNumber}
+            helperText={errors.cellNumber}
             required
           />
         </Box>
@@ -873,21 +848,18 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
   
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle 
-        component="div"
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          bgcolor: theme.palette.secondary.main,
-          color: 'white',
-          py: 2.5,
-          px: 3,
-          m: 0
-        }}
-      >
-        <Typography variant="h6" sx={{ fontWeight: 600, color: 'white' }}>
-          Company Miner Registration ff
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
+      }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+          Company Miner Registration
         </Typography>
         <IconButton 
           onClick={onClose} 
