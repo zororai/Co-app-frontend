@@ -28,6 +28,7 @@ import { sortNewestFirst } from '@/utils/sort';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
+import { CompanyShaftActionDialog } from './company-shaft-action-dialog';
 
 function noop(): void {
   // do nothing
@@ -76,6 +77,9 @@ export function CompanyTable({
     status: 'all',
     position: 'all'
   });
+  const [shaftDialogOpen, setShaftDialogOpen] = React.useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState<string | null>(null);
+  const [selectedCompanyName, setSelectedCompanyName] = React.useState<string>('');
 
   // Fetch approved companies on component mount
   React.useEffect(() => {
@@ -126,6 +130,34 @@ export function CompanyTable({
 
   const handleRedirect = (path: string) => {
     globalThis.location.href = path;
+  };
+
+  const handleViewCustomer = (companyId: string) => {
+    // Navigate to company details page
+    handleRedirect(`/dashboard/companies/${companyId}`);
+  };
+
+  const handleShaftAttachment = (companyId: string) => {
+    const company = companies.find(c => c.id === companyId);
+    setSelectedCompanyId(companyId);
+    setSelectedCompanyName(company?.companyName || '');
+    setShaftDialogOpen(true);
+  };
+
+  const handleAttachExistingShaft = (companyId: string) => {
+    // Navigate to existing shaft attachment page
+    handleRedirect(`/dashboard/shafts/attach-existing?companyId=${companyId}`);
+  };
+
+  const handleCreateNewShaft = (companyId: string) => {
+    // Navigate to new shaft creation page
+    handleRedirect(`/dashboard/shafts/create-new?companyId=${companyId}`);
+  };
+
+  const handleCloseShaftDialog = () => {
+    setShaftDialogOpen(false);
+    setSelectedCompanyId(null);
+    setSelectedCompanyName('');
   };
 
   function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -182,7 +214,8 @@ export function CompanyTable({
               <TableCell>Email</TableCell>
               <TableCell>No of Shaft</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>View Miner Details</TableCell>
+              <TableCell>Attach Shaft</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -233,11 +266,36 @@ export function CompanyTable({
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-             
-                    </Box>
-                  </TableCell>
+                 <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <button 
+                                        onClick={() => handleViewCustomer(row.id)}
+                                        style={{
+                                          background: 'none',
+                                          border: '1px solid #06131fff',
+                                          color: '#081b2fff',
+                                          borderRadius: '6px',
+                                          padding: '2px 12px',
+                                          cursor: 'pointer',
+                                          fontWeight: 500,
+                                      }}>View Miner Details</button>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell>
+                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                      <button 
+                                        onClick={() => handleShaftAttachment(row.id)}
+                                        style={{
+                                          background: 'none',
+                                          border: '1px solid #06131fff',
+                                          color: '#081b2fff',
+                                          borderRadius: '6px',
+                                          padding: '2px 12px',
+                                          cursor: 'pointer',
+                                          fontWeight: 500,
+                                      }}>Shaft Attachment</button>
+                                    </Box>
+                                  </TableCell>
                 </TableRow>
                 );
               })
@@ -259,6 +317,15 @@ export function CompanyTable({
         page={internalPage}
         rowsPerPage={internalRowsPerPage}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
+      />
+      
+      <CompanyShaftActionDialog
+        open={shaftDialogOpen}
+        onClose={handleCloseShaftDialog}
+        onAttachExisting={handleAttachExistingShaft}
+        onCreateNew={handleCreateNewShaft}
+        companyId={selectedCompanyId}
+        companyName={selectedCompanyName}
       />
     </>
   );
