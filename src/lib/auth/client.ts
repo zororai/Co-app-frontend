@@ -61,11 +61,6 @@ class AuthClient {
         permissions?: Record<string, boolean>;
     }): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
 
         try {
             // Map frontend fields to backend expected fields
@@ -92,14 +87,13 @@ class AuthClient {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 body: JSON.stringify(requestData),
                 credentials: 'include',
             });
 
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return { success: false, error: 'Authentication required' };
             }
 
@@ -120,22 +114,16 @@ class AuthClient {
      */
     async fetchIncidents(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-      }
       try {
         const response = await fetch('/api/incident-management/all', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
           return [];
         }
         const data = await response.json();
@@ -152,16 +140,12 @@ class AuthClient {
      */
     async fetchIncidentById(incidentId: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return null;
-      }
       try {
         const response = await fetch(`/api/incident-management/${incidentId}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -184,10 +168,6 @@ class AuthClient {
     async sendNotification(payload: { title: string; type: string; message: string }): Promise<{ success: boolean; error?: string; data?: any }> {
       const token = localStorage.getItem('custom-auth-token');
       console.log('Token check in sendNotification:', token ? 'Token exists' : 'No token found');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const requestBody = {
           title: payload.title,
@@ -202,7 +182,7 @@ class AuthClient {
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           body: JSON.stringify(requestBody),
           credentials: 'include',
@@ -228,16 +208,12 @@ class AuthClient {
      */
     async fetchNotifications(): Promise<{ success: boolean; data?: any[]; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch('/api/notifications', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -259,16 +235,12 @@ class AuthClient {
      */
     async fetchNotificationById(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch(`/api/notifications/${id}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -290,17 +262,13 @@ class AuthClient {
      */
     async fetchUserPermissions(email: string): Promise<{ success: boolean; data?: { permissions: Array<{ permission: string }> }; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const encodedEmail = encodeURIComponent(email);
         const response = await fetch(`/api/users/by-email?email=${encodedEmail}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -322,17 +290,13 @@ class AuthClient {
      */
     async fetchUserByEmail(email: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const encodedEmail = encodeURIComponent(email);
         const response = await fetch(`/api/users/by-email?email=${encodedEmail}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -354,16 +318,12 @@ class AuthClient {
      */
     async fetchUserById(userId: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch(`/api/users/${userId}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -396,23 +356,18 @@ class AuthClient {
       notes?: string;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
-        console.log('Making PUT request to /api/users/me with data:', userData);
         console.log('Request headers:', {
           'Accept': '*/*',
-          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Authorization': `Bearer ${token?.substring(0, 20) || 'null'}...`,
           'Content-Type': 'application/json',
         });
         
-        const response = await fetch('/api/users/me', {
+        const response = await fetch('/api/users/${userId}', {
           method: 'PUT',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
@@ -488,15 +443,11 @@ class AuthClient {
       notes?: string;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         console.log(`Making PUT request to /api/users/${userId} with data:`, userData);
         console.log('Request headers:', {
           'Accept': '*/*',
-          'Authorization': `Bearer ${token.substring(0, 20)}...`,
+          'Authorization': `Bearer ${token?.substring(0, 20) || 'null'}...`,
           'Content-Type': 'application/json',
         });
         
@@ -504,7 +455,7 @@ class AuthClient {
           method: 'PUT',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(userData),
@@ -570,16 +521,12 @@ class AuthClient {
      */
     async fetchMonthlyOreTotals(year: number): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch(`/api/ore-transports/monthly-totals?year=${year}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -601,16 +548,12 @@ class AuthClient {
      */
     async fetchMonthlyGoldSales(year: number): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch(`/api/ore-transports/monthly-gold-sales?year=${year}`, {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -632,16 +575,12 @@ class AuthClient {
      */
     async fetchShaftStatusCounts(): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch('/api/shaft-assignments/status-counts', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -663,22 +602,16 @@ class AuthClient {
      */
     async fetchAllShaftAssignments(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-      }
       try {
         const response = await fetch('/api/shaft-assignments', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
           return [];
         }
         const data = await response.json();
@@ -695,16 +628,12 @@ class AuthClient {
      */
     async fetchApprovedSecurityCompaniesCount(): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch('/api/security-companies/status/approved-count', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -726,16 +655,12 @@ class AuthClient {
      */
     async fetchApprovedMinersCount(): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const response = await fetch('/api/miners/approved-count', {
           method: 'GET',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -767,24 +692,18 @@ class AuthClient {
       }>;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
-      }
       try {
         const response = await fetch('/api/sectionmapping', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           body: JSON.stringify(payload),
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
           return { success: false, error: 'Authentication required' };
         }
         const data = await response.json();
@@ -801,23 +720,17 @@ class AuthClient {
      */
     async activateSection(sectionId: string | number): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
-      }
       try {
         const safeId = encodeURIComponent(String(sectionId).trim());
         const response = await fetch(`/api/sections/${safeId}/activate`, {
           method: 'PUT',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
           return { success: false, error: 'Authentication required' };
         }
         return { success: true };
@@ -833,22 +746,16 @@ class AuthClient {
      */
     async fetchApprovedProductionLoans(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/production-loan/approved', {
                 method: 'GET',
                 headers: {
                     Accept: '*/*',
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return [];
             }
             const data = await response.json();
@@ -864,23 +771,17 @@ class AuthClient {
      */
     async fetchSectionsApproved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/sections/status/approved', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return [];
             }
             const data = await response.json();
@@ -926,11 +827,7 @@ class AuthClient {
         }>;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
+       
 
         try {
             // Format the data according to the API requirements
@@ -953,14 +850,13 @@ class AuthClient {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 body: JSON.stringify(requestData),
                 credentials: 'include',
             });
 
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return { success: false, error: 'Authentication required' };
             }
 
@@ -990,10 +886,6 @@ class AuthClient {
       participants: Array<{ name: string; surname: string; nationalId: string; address: string }>
     }): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const requestData = {
           incidentTitle: payload.incidentTitle,
@@ -1012,7 +904,7 @@ class AuthClient {
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           body: JSON.stringify(requestData),
           credentials: 'include',
@@ -1039,17 +931,13 @@ class AuthClient {
      */
     async resolveIncident(incidentId: string, resolution: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return { success: false, error: 'Authentication required. Please sign in first.' };
-      }
       try {
         const encodedResolution = encodeURIComponent(resolution);
         const response = await fetch(`/api/incident-management/${incidentId}/resolve?resolution=${encodedResolution}`, {
           method: 'PUT',
           headers: {
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -1097,11 +985,6 @@ class AuthClient {
         siteRiskAssessmentReport: string;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
 
         try {
             const response = await fetch('/api/security-companies/register', {
@@ -1109,14 +992,13 @@ class AuthClient {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 body: JSON.stringify(securityCompanyData),
                 credentials: 'include',
             });
 
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return { success: false, error: 'Authentication required' };
             }
 
@@ -1140,23 +1022,17 @@ class AuthClient {
      */
     async fetchDriverById(driverId: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return null;
-        }
         try {
             const response = await fetch(`/api/drivers/${driverId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
                 return { success: false, error: 'Authentication required' };
             }
             const data = await response.json();
@@ -1168,23 +1044,17 @@ class AuthClient {
     }
     async fetchMillById(driverId: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return null;
-      }
       try {
           const response = await fetch(`/api/mill-onboarding/${driverId}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
@@ -1202,11 +1072,6 @@ class AuthClient {
    */
   async approveMill(millId: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
 
           const response = await fetch(`/api/mill-onboarding/${millId}/approve`, {
@@ -1214,13 +1079,12 @@ class AuthClient {
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           
@@ -1242,24 +1106,18 @@ class AuthClient {
    */
   async rejectMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/mill-onboarding/${millId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           
@@ -1281,24 +1139,18 @@ class AuthClient {
    */
   async pushbackMill(millId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/mill-onboarding/${millId}/pushback?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           
@@ -1318,11 +1170,6 @@ class AuthClient {
    */
   async fetchLoansByShaftNumber(shaftNumber: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return [];
-      }
       try {
           const safeShaft = encodeURIComponent(String(shaftNumber).trim());
           const url = `/api/shaft-assignments/by-shaft-number/${safeShaft}/loans`;
@@ -1330,12 +1177,11 @@ class AuthClient {
               method: 'GET',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
@@ -1352,11 +1198,6 @@ class AuthClient {
    */
   async fetchShaftAssignmentsByMiner(minerId: string | number): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return [];
-      }
       try {
           const safeId = encodeURIComponent(String(minerId).trim());
           const url = `/api/shaft-assignments/by-miner/${safeId}`;
@@ -1364,12 +1205,11 @@ class AuthClient {
               method: 'GET',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return [];
           }
           const data = await response.json();
@@ -1388,7 +1228,6 @@ class AuthClient {
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
           return [];
       }
       try {
@@ -1398,12 +1237,11 @@ class AuthClient {
               method: 'GET',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           const data = await response.json();
@@ -1420,22 +1258,16 @@ class AuthClient {
    */
   async approveShaftLoan(assignmentId: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/shaft-assignments/${assignmentId}/loan/approve`, {
               method: 'PUT',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           return { success: true };
@@ -1451,11 +1283,6 @@ class AuthClient {
    */
   async rejectShaftLoan(assignmentId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const url = new URL(`/api/shaft-assignments/${assignmentId}/loan/reject`, globalThis.location.origin);
           if (reason) url.searchParams.set('reason', reason);
@@ -1463,12 +1290,11 @@ class AuthClient {
               method: 'PUT',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           return { success: true };
@@ -1484,11 +1310,6 @@ class AuthClient {
    */
   async pushBackShaftLoan(assignmentId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const url = new URL(`/api/shaft-assignments/${assignmentId}/loan/pushback`, globalThis.location.origin);
           if (reason) url.searchParams.set('reason', reason);
@@ -1496,7 +1317,7 @@ class AuthClient {
               method: 'PUT',
               headers: {
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -1517,11 +1338,6 @@ class AuthClient {
    */
   async payShaftLoan(assignmentId: string | number, amountPaid: number): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const safeId = encodeURIComponent(String(assignmentId).trim());
           const url = new URL(`/api/shaft-assignments/${safeId}/loan/payment`, globalThis.location.origin);
@@ -1535,7 +1351,6 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
               return { success: false, error: 'Authentication required' };
           }
           return { success: true };
@@ -1547,18 +1362,13 @@ class AuthClient {
 
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/security-companies/register', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -1575,18 +1385,13 @@ class AuthClient {
 
     async fetchSecurityCompany(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/security-companies', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -1607,18 +1412,13 @@ class AuthClient {
      */
     async approveTransportCost(id: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
-      }
       try {
         const response = await fetch(`/api/transport-cost-onboarding/${id}/approve`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -1638,18 +1438,13 @@ class AuthClient {
      */
     async rejectTransportCost(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
-      }
       try {
         const response = await fetch(`/api/transport-cost-onboarding/${id}/reject?reason=${encodeURIComponent(reason)}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -1669,18 +1464,13 @@ class AuthClient {
      */
     async pushbackTransportCost(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return { success: false, error: 'Authentication required' };
-      }
       try {
         const response = await fetch(`/api/transport-cost-onboarding/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         });
@@ -1700,18 +1490,13 @@ class AuthClient {
      */
     async fetchOreTransportData(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return [];
-      }
       try {
           const response = await fetch('/api/ore-transports/allOre', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -1740,7 +1525,7 @@ class AuthClient {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -1758,18 +1543,13 @@ class AuthClient {
 
   async fetchOretaxData(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-    }
     try {
         const response = await fetch('/api/ore-transports/with-selected-transportdriver-changed', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -1785,18 +1565,13 @@ class AuthClient {
 }
 async fetchOreDispatcher(): Promise<any[]> {
   const token = localStorage.getItem('custom-auth-token');
-  if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-  }
   try {
       const response = await fetch('/api/ore-transports/security-dispatcher/not-specified', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
       });
@@ -1812,18 +1587,13 @@ async fetchOreDispatcher(): Promise<any[]> {
 }
 async fetchOreRecieve(): Promise<any[]> {
   const token = localStorage.getItem('custom-auth-token');
-  if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-  }
   try {
       const response = await fetch('/api/ore-transports/security-dispatcher/received', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
       });
@@ -1840,18 +1610,13 @@ async fetchOreRecieve(): Promise<any[]> {
 
 async fetchOreRecieved(): Promise<any[]> {
   const token = localStorage.getItem('custom-auth-token');
-  if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-  }
   try {
       const response = await fetch('/api/ore-transports/security-dispatcher/dispatched', {
           method: 'GET',
           headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': `Bearer ${token}`,
+              'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
       });
@@ -1867,18 +1632,13 @@ async fetchOreRecieved(): Promise<any[]> {
 }
   async fetchtax(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-    }
     try {
         const response = await fetch('/api/taxdidections', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -1896,18 +1656,13 @@ async fetchOreRecieved(): Promise<any[]> {
 
   async fetchTransportCost(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-    }
     try {
         const response = await fetch('/api/transport-cost-onboarding', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -1928,18 +1683,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async fetchTransportCostDetails(id: string): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return null;
-    }
     try {
         const response = await fetch(`/api/transport-cost-onboarding/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -1976,7 +1726,7 @@ async fetchOreRecieved(): Promise<any[]> {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             body: JSON.stringify(costData),
             credentials: 'include',
@@ -2004,18 +1754,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async fetchApprovedTaxDirections(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-    }
     try {
         const response = await fetch('/api/taxdidections/approved', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -2050,7 +1795,7 @@ async fetchOreRecieved(): Promise<any[]> {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': '*/*',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             body: JSON.stringify(taxData),
             credentials: 'include',
@@ -2074,18 +1819,13 @@ async fetchOreRecieved(): Promise<any[]> {
   
   async fetchUsers(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-        console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
-        return [];
-    }
     try {
         const response = await fetch('/api/users', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -2105,18 +1845,13 @@ async fetchOreRecieved(): Promise<any[]> {
      */
     async fetchProductionDetails(customerId: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return null;
-      }
       try {
           const response = await fetch(`/api/production-loan/${customerId}`, {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2137,18 +1872,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async fetchProductionData(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return [];
-      }
       try {
           const response = await fetch('/api/production-loan/all', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2169,18 +1899,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async createProductionLoan(loanData: any): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch('/api/production-loan/create', {
               method: 'POST',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
               body: JSON.stringify(loanData)
@@ -2207,18 +1932,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async approveProductionLoan(loanId: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/production-loan/${loanId}/approve`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2246,18 +1966,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async rejectProductionLoan(loanId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/production-loan/${loanId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2285,18 +2000,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async pushbackProductionLoan(loanId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/production-loan/${loanId}/push-back?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2322,18 +2032,13 @@ async fetchOreRecieved(): Promise<any[]> {
      */
     async approveUser(userId: string): Promise<{ success: boolean; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
         try {
             const response = await fetch(`/api/users/${userId}/approve`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2354,18 +2059,13 @@ async fetchOreRecieved(): Promise<any[]> {
     }
     async approveTax(userId: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/taxdidections/${userId}/approve`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2391,18 +2091,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async fetchActivatedMills(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return [];
-      }
       try {
           const response = await fetch('/api/mill-onboarding/activated', {
               method: 'GET',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': '*/*',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2422,18 +2117,13 @@ async fetchOreRecieved(): Promise<any[]> {
      */
     async rejectUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
         try {
             const response = await fetch(`/api/users/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2455,18 +2145,13 @@ async fetchOreRecieved(): Promise<any[]> {
 
     async pushtax(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/taxdidections/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2489,18 +2174,13 @@ async fetchOreRecieved(): Promise<any[]> {
 
     async rejectTax(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
-      if (!token) {
-          console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
-          return { success: false, error: 'Authentication required' };
-      }
       try {
           const response = await fetch(`/api/taxdidections/${userId}/reject?reason=${encodeURIComponent(reason)}`, {
               method: 'PUT',
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -2525,18 +2205,13 @@ async fetchOreRecieved(): Promise<any[]> {
      */
     async pushbackUser(userId: string, reason: string): Promise<{ success: boolean; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
-        }
         try {
             const response = await fetch(`/api/users/${userId}/pushback?reason=${encodeURIComponent(reason)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2584,7 +2259,7 @@ async fetchOreRecieved(): Promise<any[]> {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 body: JSON.stringify(millData),
                 credentials: 'include',
@@ -2625,18 +2300,13 @@ async fetchOreRecieved(): Promise<any[]> {
 
     async fetchSections(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/sections', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2653,18 +2323,13 @@ async fetchOreRecieved(): Promise<any[]> {
     }
     async fetchAllMiners(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
-        if (!token) {
-            console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
-            return [];
-        }
         try {
             const response = await fetch('/api/sections/miners', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2685,18 +2350,13 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async fetchapprovedshaft(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-    }
     try {
       const response = await fetch('/api/shaft-assignments/approved', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Accept': '*/*',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token || ''}`,
         },
         credentials: 'include',
       });
@@ -2714,11 +2374,6 @@ async fetchOreRecieved(): Promise<any[]> {
 
   async fetchDrivers(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-    }
     try {
       const response = await fetch('/api/drivers', {
         method: 'GET',
@@ -2742,11 +2397,6 @@ async fetchOreRecieved(): Promise<any[]> {
   }
   async fetchMill(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return [];
-    }
     try {
       const response = await fetch('/api/mill-onboarding/all', {
         method: 'GET',
@@ -2775,11 +2425,6 @@ async fetchOreRecieved(): Promise<any[]> {
    */
   async approveDriver(driverId: string): Promise<{ success: boolean; error?: string }> {
   const token = localStorage.getItem('custom-auth-token');
-  if (!token) {
-    console.error('No token found in localStorage');
-    globalThis.location.href = '/auth/signin';
-    return { success: false, error: 'Authentication required' };
-  }
   try {
     const response = await fetch(`/api/drivers/${driverId}/approve`, {
       method: 'PUT',
@@ -2815,17 +2460,16 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   const token = localStorage.getItem('custom-auth-token');
   if (!token) {
     console.error('No token found in localStorage');
-    globalThis.location.href = '/auth/signin';
+    globalThis.location.href = '/auth/sign-in';
     return { success: false, error: 'Authentication required' };
   }
-
   try {
     const response = await fetch(`/api/ore-transports/${oreId}/apply-tax`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${token || ''}`,
       },
       credentials: 'include',
     });
@@ -2951,7 +2595,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': '*/*',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -2984,7 +2628,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3012,7 +2656,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3052,7 +2696,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3080,7 +2724,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3115,7 +2759,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3144,7 +2788,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3175,7 +2819,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3213,7 +2857,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3270,7 +2914,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             const response = await fetch('/api/companies/register', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json' // Added Content-Type header
                 },
@@ -3388,7 +3032,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3428,7 +3072,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -3454,7 +3098,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -3480,7 +3124,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -3511,7 +3155,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -3539,7 +3183,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${token || ''}`,
             },
             credentials: 'include',
         });
@@ -3567,7 +3211,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${token || ''}`,
               },
               credentials: 'include',
           });
@@ -3595,7 +3239,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',
             });
@@ -4073,8 +3717,7 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return null;
+      throw new Error('Authentication required. Please sign in first.');
     }
     const response = await fetch('/api/shaft-assignments', {
       method: 'POST',
@@ -4113,11 +3756,7 @@ cooperativename: string;
     reason: string;
   }): Promise<any> {
     const token = localStorage.getItem('custom-auth-token');
-    if (!token) {
-      console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return null;
-    }
+ 
     try {
       const response = await fetch('/api/sections/create', {
         method: 'POST',
@@ -5414,7 +5053,7 @@ cooperativename: string;
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         }
@@ -5474,7 +5113,7 @@ cooperativename: string;
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         }
@@ -5535,7 +5174,7 @@ cooperativename: string;
           headers: {
             'Content-Type': 'application/json',
             'Accept': '*/*',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${token || ''}`,
           },
           credentials: 'include',
         }
