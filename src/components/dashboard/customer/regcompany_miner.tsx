@@ -873,17 +873,20 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
   
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        bgcolor: theme.palette.secondary.main,
-        color: 'white',
-        py: 2.5,
-        px: 3,
-        m: 0
-      }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
+      <DialogTitle 
+        component="div"
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600, color: 'white' }}>
           Company Miner Registration ff
         </Typography>
         <IconButton 

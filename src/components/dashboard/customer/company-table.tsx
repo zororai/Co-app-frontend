@@ -442,15 +442,18 @@ export function CompanyTable({
       </Box>
       {/* Company Details Dialog */}
       <Dialog open={companyDialogOpen} onClose={handleCloseCompanyDialog} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          p: 2.5,
-          bgcolor: theme.palette.secondary.main,
-          color: 'white'
-        }}>
-          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+        <DialogTitle 
+          component="div"
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            p: 2.5,
+            bgcolor: theme.palette.secondary.main,
+            color: 'white'
+          }}
+        >
+          <Typography variant="h6" component="h2" sx={{ color: 'white', fontWeight: 600 }}>
             Company Details
           </Typography>
           <IconButton 
@@ -643,12 +646,15 @@ export function CompanyTable({
       />
       {/* Shaft Assignments Dialog */}
       <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{
-          bgcolor: theme.palette.secondary.main,
-          color: 'white',
-          p: 2.5
-        }}>
-          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+        <DialogTitle 
+          component="div"
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            p: 2.5
+          }}
+        >
+          <Typography variant="h6" component="h2" sx={{ color: 'white', fontWeight: 600 }}>
             Attached Shaft Assignments
           </Typography>
         </DialogTitle>
