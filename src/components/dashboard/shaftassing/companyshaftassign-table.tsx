@@ -220,11 +220,11 @@ export function CompanyTable({
                           py: 0.5,
                           borderRadius: 2,
                           bgcolor: 
-                            row.status === 'APPROVED' ? '#d0f5e8' : 
-                            row.status === 'REJECTED' ? '#ffebee' : '#fff3e0',
+                            row.status === 'Approved' ? '#d0f5e8' : 
+                            row.status === 'Rejected' ? '#ffebee' : '#fff3e0',
                           color: 
-                            row.status === 'APPROVED' ? '#1b5e20' : 
-                            row.status === 'REJECTED' ? '#c62828' : '#e65100',
+                            row.status === 'Approved' ? '#1b5e20' : 
+                            row.status === 'Rejected' ? '#c62828' : '#e65100',
                           fontWeight: 500,
                           fontSize: 13,
                         }}
