@@ -1423,7 +1423,6 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
           return { success: false, error: 'Authentication required' };
         }
         return { success: true };
