@@ -235,34 +235,7 @@ export function CompanyTable({
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: '1px solid #1976d2',
-                          color: '#1976d2',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                        }}
-                        onClick={() => alert(row.reason || 'No reason provided')}
-                      >
-                        Reason
-                      </button>
-                      <button 
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '2px 12px',
-                        }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
-                      >
-                        <span role="img" aria-label="view" style={{ fontSize: 20 }}>📄</span>
-                      </button>
+             
                     </Box>
                   </TableCell>
                 </TableRow>
