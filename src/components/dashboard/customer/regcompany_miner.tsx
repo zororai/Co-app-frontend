@@ -402,7 +402,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const valid = !!form.companyName && !!form.address && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -495,15 +495,38 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
           />
         </Box>
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-          <InputLabel>Cell number</InputLabel>
+          <InputLabel>Cell number ff</InputLabel>
           <TextField
-            name="contactNumber"
+            name="cellNumber"
             placeholder="Enter your mobile number"
             fullWidth
             value={form.cellNumber}
             onChange={handleChange}
-            error={!!errors.cellNumber}
-            helperText={errors.cellNumber}
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+          <InputLabel>Registration Number</InputLabel>
+          <TextField
+            name="registrationNumber"
+            placeholder="Please enter registration number"
+            fullWidth
+            value={form.registrationNumber}
+            onChange={handleChange}
+            error={!!errors.registrationNumber}
+            helperText={errors.registrationNumber}
+            required
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+          <InputLabel>Industry</InputLabel>
+          <TextField
+            name="industry"
+            placeholder="Please enter industry"
+            fullWidth
+            value={form.industry}
+            onChange={handleChange}
+            error={!!errors.industry}
+            helperText={errors.industry}
             required
           />
         </Box>
@@ -861,7 +884,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
         m: 0
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
-          Company Miner Registration
+          Company Miner Registration ff
         </Typography>
         <IconButton 
           onClick={onClose} 
@@ -877,7 +900,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
       {/* Fixed Stepper Section */}
       <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          Register a new mining company with complete documentation and owner details
+          /// Register a new mining company with complete documentation and owner details
         </Typography>
         <Stepper 
           activeStep={activeStep} 

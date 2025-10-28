@@ -132,7 +132,7 @@ export default function Page(): React.JSX.Element {
               }
             }}
           >
-            Reg Company Miner
+            Reg Company Miner gg
           </Button>
         </div>
       </Stack>

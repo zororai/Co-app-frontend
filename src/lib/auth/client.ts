@@ -611,9 +611,10 @@ class AuthClient {
           },
           credentials: 'include',
         });
-        if (!response.ok) {
-          return [];
-        }
+      if (!response.ok) {
+        globalThis.location.href = '/auth-sign-in';
+        return [];
+      }
         const data = await response.json();
         return Array.isArray(data) ? data : [];
       } catch (error) {
@@ -1321,10 +1322,9 @@ class AuthClient {
               },
               credentials: 'include',
           });
-          if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
-          }
+      if (!response.ok) {
+        return { success: false, error: 'Authentication required' };
+      }
           return { success: true };
       } catch (error) {
           console.error(`Error pushing back shaft loan for assignment ${assignmentId}:`, error);
