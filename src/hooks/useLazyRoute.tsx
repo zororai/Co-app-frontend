@@ -3,7 +3,28 @@
 import { useMemo, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
 import { getLazyComponent, isLazyRoute } from '@/components/lazy/LazyRouteMap';
-import { LazyWrapper } from '@/components/common/LazyWrapper';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+
+// Default fallback component for lazy loading
+const DefaultFallback = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '200px',
+      gap: 2
+    }}
+  >
+    <CircularProgress size={32} />
+    <Typography variant="body2" color="text.secondary">
+      Loading...
+    </Typography>
+  </Box>
+);
 
 /**
  * Hook for managing lazy-loaded routes
@@ -36,7 +57,7 @@ export function useLazyRoute(route?: string) {
       return null;
     }
 
-    const FallbackComponent = fallback || LazyWrapper;
+    const FallbackComponent = fallback || DefaultFallback;
 
     return (
       <Suspense fallback={<FallbackComponent />}>

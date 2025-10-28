@@ -22,7 +22,13 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import dayjs from 'dayjs';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -75,6 +81,7 @@ export function CustomersTable({
   onPageChange,
   onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   
   // Local state for pagination if not controlled by parent
   const [internalPage, setInternalPage] = React.useState(page);
@@ -89,6 +96,20 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('registrationNumber');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Loading state
+  const [loading, setLoading] = React.useState<boolean>(false);
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
 
   // State for attached shaft dialog
@@ -118,7 +139,7 @@ export function CustomersTable({
   // Sort then filter the rows based on search and filters
   const sortedRows = React.useMemo(() => sortNewestFirst(rows), [rows]);
   const filteredRows = React.useMemo(() => {
-    return sortedRows.filter(row => {
+    const filtered = sortedRows.filter(row => {
       const matchesSearch = filters.search === '' || 
         Object.values(row).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -127,7 +148,25 @@ export function CustomersTable({
       const matchesPosition = filters.position === 'all' || row.position === filters.position;
       return matchesSearch && matchesStatus && matchesPosition;
     });
-  }, [sortedRows, filters]);
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [sortedRows, filters, sortField, sortDirection]);
 
   // Paginate filtered rows
   const paginatedRows = React.useMemo(() => {
@@ -171,9 +210,9 @@ export function CustomersTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: theme.palette.secondary.main,
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
@@ -182,9 +221,9 @@ export function CustomersTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: theme.palette.secondary.main,
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
@@ -234,22 +273,92 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-         
-              <TableCell>RegistrationNumber</TableCell>
-              {/* Action Buttons 
-                       <TableCell>Name Of Cooperative</TableCell>
-                       */}
-              <TableCell>Name</TableCell>
-              <TableCell>Surname</TableCell>
-              <TableCell>Nationality ID Number</TableCell>
-              <TableCell>No.Of.Shafts</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>View Syndicate Details</TableCell>
-              <TableCell>View Attached Shafts</TableCell>
+              <TableCell sortDirection={sortField === 'registrationNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'registrationNumber'}
+                  direction={sortField === 'registrationNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('registrationNumber')}
+                >
+                  Registration Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'name' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'name'}
+                  direction={sortField === 'name' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('name')}
+                >
+                  Name
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'surname' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'surname'}
+                  direction={sortField === 'surname' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('surname')}
+                >
+                  Surname
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'nationIdNumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'nationIdNumber'}
+                  direction={sortField === 'nationIdNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('nationIdNumber')}
+                >
+                  Nationality ID Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'shaftnumber' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'shaftnumber'}
+                  direction={sortField === 'shaftnumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('shaftnumber')}
+                >
+                  No. Of Shafts
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedRows.map((row) => {
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
+            {!loading && paginatedRows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No customers found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            
+            {!loading && paginatedRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
@@ -282,33 +391,31 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Application Details</button>
-                    </Box>
-                  </TableCell>
-                      <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewAttachedShaft(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Attached Shaft</button>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="View Application Details">
+                        <IconButton 
+                          onClick={() => handleViewCustomer(row.id)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="View Attached Shaft">
+                        <IconButton 
+                          onClick={() => handleViewAttachedShaft(row.id)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>

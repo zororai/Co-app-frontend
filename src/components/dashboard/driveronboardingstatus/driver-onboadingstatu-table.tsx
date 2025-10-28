@@ -290,19 +290,6 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Driver Name</TableCell>
               <TableCell>License Number</TableCell>
               <TableCell>License Class</TableCell>
@@ -327,18 +314,6 @@ export function CustomersTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
                   <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
                   <TableCell>{row.licenseClass || 'N/A'}</TableCell>
@@ -408,7 +383,7 @@ export function CustomersTable({
         onRowsPerPageChange={noop}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
       
       {/* Driver Details Dialog */}

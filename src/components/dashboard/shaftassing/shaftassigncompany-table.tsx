@@ -112,24 +112,34 @@ export function CompanyTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: '#4a5568',
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            borderRadius: '25px',
+            px: 3,
+            py: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': { bgcolor: '#2d3748' }
           }}
           onClick={() => handleRedirect('/dashboard/customers')}
         >
-          Syndicate
+          Assign Shaft to Syndicate
         </Button>
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
+            bgcolor: '#4a5568',
             color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
+            borderRadius: '25px',
+            px: 3,
+            py: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            '&:hover': { bgcolor: '#2d3748' }
           }}
           onClick={() => handleRedirect('/dashboard/company')}
         >
-          Company
+          Assign Shaft to Company
         </Button>
       </Box>
       <Divider />
@@ -175,19 +185,6 @@ export function CompanyTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Shaft Reg Number</TableCell>
               <TableCell>Company Name</TableCell>
               <TableCell>Company Address</TableCell>
@@ -205,18 +202,6 @@ export function CompanyTable({
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                    <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>
@@ -296,7 +281,7 @@ export function CompanyTable({
         onRowsPerPageChange={(event) => onRowsPerPageChange(event)}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
     </Card>
   );

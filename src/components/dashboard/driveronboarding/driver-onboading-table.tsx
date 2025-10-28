@@ -15,6 +15,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -22,6 +23,20 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -81,8 +96,19 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('createdAt');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
+  
+  // Handle sort request
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
-  // Filter the users based on search, filters, and tab status, then sort newest first
+  // Filter and sort the users
   const filteredRows = React.useMemo(() => {
     const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
@@ -99,8 +125,27 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      // Handle null/undefined values
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      // Convert to strings for comparison
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -118,7 +163,14 @@ export function CustomersTable({
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteDriverId, setDeleteDriverId] = React.useState<string | null>(null);
+  const [deleteDriverName, setDeleteDriverName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error' | 'info'>('success');
 
   // Fetch drivers from API when component mounts or refreshTrigger changes
   React.useEffect(() => {
@@ -139,13 +191,71 @@ export function CustomersTable({
     fetchDriverData();
   }, [refreshTrigger]);
 
- 
+  // Function to handle viewing driver details
   const handleViewUserDetails = (driverId: string) => {
-    console.log('View driver details clicked for ID:', driverId);
     setSelectedDriverId(driverId);
-    setTimeout(() => {
-      setIsDriverDetailsDialogOpen(true);
-    }, 0);
+    setIsDriverDetailsDialogOpen(true);
+  };
+
+  // Function to handle editing driver
+  const handleEditDriver = (driverId: string) => {
+    // TODO: Implement edit functionality
+    console.log('Edit driver:', driverId);
+    setSnackbarMessage('Edit functionality coming soon');
+    setSnackbarSeverity('info');
+    setSnackbarOpen(true);
+  };
+
+  // Function to handle delete driver (open confirmation dialog)
+  const handleDeleteDriver = (driverId: string, firstName: string, lastName: string) => {
+    setDeleteDriverId(driverId);
+    setDeleteDriverName(`${firstName} ${lastName}`);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Function to confirm and execute delete
+  const confirmDeleteDriver = async () => {
+    if (!deleteDriverId) return;
+
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const response = await fetch(`/api/drivers/${deleteDriverId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      // Check HTTP status code
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Failed to delete driver'}`);
+      }
+
+      // Success - close dialog and refresh table
+      setIsDeleteDialogOpen(false);
+      setDeleteDriverId(null);
+      setDeleteDriverName('');
+      refreshTableData();
+      
+      // Show success notification
+      setSnackbarMessage('Driver deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error deleting driver:', error);
+      setSnackbarMessage(`Failed to delete driver: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   // Function to refresh the table data
@@ -188,15 +298,6 @@ export function CustomersTable({
         bgcolor: '#fff',
         boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        <Typography 
-          variant="subtitle1" 
-          sx={{ 
-            fontWeight: 500, 
-            mb: 2 
-          }}
-        >
-          Filters
-        </Typography>
         <Box sx={{ 
           display: 'flex', 
           gap: 2, 
@@ -291,19 +392,6 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Driver Name</TableCell>
               <TableCell>License Number</TableCell>
               <TableCell>License Class</TableCell>
@@ -315,6 +403,24 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
             {!loading && filteredRows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
@@ -324,22 +430,10 @@ export function CustomersTable({
                 </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
                   <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
                   <TableCell>{row.licenseClass || 'N/A'}</TableCell>
@@ -368,33 +462,46 @@ export function CustomersTable({
                       {row.status || 'PENDING'}
                     </Box>
                   </TableCell>
-                  
-            
-              
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
-                          setIsDriverDetailsDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        View Details
-                      </Button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Driver">
+                        <IconButton 
+                          onClick={() => handleEditDriver(row.id)}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Driver">
+                        <IconButton 
+                          onClick={() => handleDeleteDriver(row.id, row.firstName || '', row.lastName || '')}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
-               
                 </TableRow>
               );
             })}
@@ -409,7 +516,7 @@ export function CustomersTable({
         onRowsPerPageChange={noop}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
       
       {/* Driver Details Dialog */}
@@ -421,6 +528,60 @@ export function CustomersTable({
         />
       )}
 
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: 'secondary.main', color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete driver <strong>{deleteDriverName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteDriver} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: 'secondary.main',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }

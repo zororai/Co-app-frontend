@@ -3,3 +3,6 @@ dist/
 .next/
 next.config.mjs
 next.config.mjs
+
+# Documentation folders
+docs/

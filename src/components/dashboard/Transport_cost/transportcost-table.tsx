@@ -22,8 +22,23 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
+import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -73,6 +88,8 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -82,10 +99,32 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('paymentMethod');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteTransportCostId, setDeleteTransportCostId] = React.useState<string | null>(null);
+  const [deleteTransportCostName, setDeleteTransportCostName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
-  // Filter the users based on search, filters, and tab status
+  // Filter and sort the users
   const filteredRows = React.useMemo(() => {
-    return users.filter(user => {
+    const filtered = users.filter(user => {
       const matchesSearch = filters.search === '' || 
         Object.values(user).some(value => 
           String(value).toLowerCase().includes(filters.search.toLowerCase())
@@ -100,7 +139,25 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    return [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -170,6 +227,41 @@ export function CustomersTable({
       onRefresh();
     }
   }, [onRefresh]);
+  
+  // Handle delete click
+  const handleDeleteClick = (transportCostId: string, paymentMethod: string) => {
+    setDeleteTransportCostId(transportCostId);
+    setDeleteTransportCostName(paymentMethod);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  // Confirm delete
+  const confirmDeleteTransportCost = async () => {
+    if (!deleteTransportCostId) return;
+    
+    setIsDeleting(true);
+    try {
+      const result = await authClient.rejectTransportCost(deleteTransportCostId, 'Deleted by administrator');
+      if (result.success) {
+        setSnackbarMessage('Transport cost deleted successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        setIsDeleteDialogOpen(false);
+        refreshTableData();
+      } else {
+        setSnackbarMessage(result.error || 'Failed to delete transport cost');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('Error deleting transport cost:', error);
+      setSnackbarMessage('Failed to delete transport cost');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <Card>      
@@ -303,24 +395,72 @@ export function CustomersTable({
       <Table sx={{ minWidth: '800px' }}>
         <TableHead>
           <TableRow>
-            <TableCell>Payment Method</TableCell>
-            <TableCell>Amount/Grams</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Reason</TableCell>
+            <TableCell sortDirection={sortField === 'paymentMethod' ? sortDirection : false}>
+              <TableSortLabel
+                active={sortField === 'paymentMethod'}
+                direction={sortField === 'paymentMethod' ? sortDirection : 'asc'}
+                onClick={() => handleSort('paymentMethod')}
+              >
+                Payment Method
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={sortField === 'amountOrGrams' ? sortDirection : false}>
+              <TableSortLabel
+                active={sortField === 'amountOrGrams'}
+                direction={sortField === 'amountOrGrams' ? sortDirection : 'asc'}
+                onClick={() => handleSort('amountOrGrams')}
+              >
+                Amount/Grams
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+              <TableSortLabel
+                active={sortField === 'status'}
+                direction={sortField === 'status' ? sortDirection : 'asc'}
+                onClick={() => handleSort('status')}
+              >
+                Status
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sortDirection={sortField === 'reason' ? sortDirection : false}>
+              <TableSortLabel
+                active={sortField === 'reason'}
+                direction={sortField === 'reason' ? sortDirection : 'asc'}
+                onClick={() => handleSort('reason')}
+              >
+                Reason
+              </TableSortLabel>
+            </TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
+          {loading && Array.from({ length: 5 }).map((_, index) => (
+            <TableRow key={`skeleton-${index}`}>
+              <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+              <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+              <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+              <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Skeleton variant="circular" width={32} height={32} />
+                  <Skeleton variant="circular" width={32} height={32} />
+                </Box>
+              </TableCell>
+            </TableRow>
+          ))}
+          
           {!loading && filteredRows.length === 0 && (
             <TableRow>
               <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
                 <Typography variant="body1" color="text.secondary">
-                  No users found
+                  No transport cost entries found
                 </Typography>
               </TableCell>
             </TableRow>
           )}
-          {filteredRows.map((row) => {
+          
+          {!loading && filteredRows.map((row) => {
             return (
               <TableRow hover key={row.id}>
                 <TableCell>{row.paymentMethod || ''}</TableCell>
@@ -349,18 +489,31 @@ export function CustomersTable({
                 </TableCell>
                 <TableCell>{row.reason || ''}</TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <button 
-                      onClick={() => handleViewUserDetails(row.id)}
-                      style={{
-                        background: 'none',
-                        border: '1px solid #06131fff',
-                        color: '#081b2fff',
-                        borderRadius: '6px',
-                        padding: '2px 12px',
-                        cursor: 'pointer',
-                        fontWeight: 500,
-                    }}>View Tax Details</button>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Tooltip title="View Details">
+                      <IconButton 
+                        onClick={() => handleViewUserDetails(row.id)}
+                        size="small"
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                        }}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete">
+                      <IconButton 
+                        onClick={() => handleDeleteClick(row.id, row.paymentMethod || 'transport cost')}
+                        size="small"
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
@@ -394,7 +547,76 @@ export function CustomersTable({
       open={isUserDetailsDialogOpen}
       onClose={() => setIsUserDetailsDialogOpen(false)}
       userId={selectedUserId}
+      onRefresh={refreshTableData}
     />
+    
+    {/* Delete confirmation dialog */}
+    <Dialog
+      open={isDeleteDialogOpen}
+      onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+        Confirm Delete
+      </DialogTitle>
+      <DialogContent sx={{ mt: 2 }}>
+        <DialogContentText>
+          Are you sure you want to delete transport cost entry <strong>{deleteTransportCostName}</strong>?
+          <br />
+          This action cannot be undone.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions sx={{ p: 2 }}>
+        <Button 
+          onClick={() => setIsDeleteDialogOpen(false)} 
+          disabled={isDeleting}
+          variant="outlined"
+          sx={{
+            borderColor: 'secondary.main',
+            color: 'secondary.main',
+            '&:hover': {
+              borderColor: 'secondary.dark',
+              bgcolor: 'rgba(50, 56, 62, 0.04)'
+            }
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={confirmDeleteTransportCost} 
+          variant="contained"
+          disabled={isDeleting}
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            '&:hover': { bgcolor: theme.palette.secondary.dark },
+            '&.MuiButton-contained': {
+              bgcolor: theme.palette.secondary.main,
+              color: 'white'
+            }
+          }}
+        >
+          {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+    
+    {/* Snackbar for notifications */}
+    <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    >
+      <Alert 
+        onClose={() => setSnackbarOpen(false)} 
+        severity={snackbarSeverity}
+        sx={{ width: '100%' }}
+      >
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
   </Card>
   );
 }

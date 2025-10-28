@@ -35,6 +35,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/material/styles';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -93,6 +94,7 @@ const locationOptions = [
 ];
 
 export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -345,7 +347,7 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            bgcolor: theme.palette.secondary.main,
             color: 'white',
             py: 2.5,
             px: 3,
@@ -354,7 +356,15 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
         <Typography variant="h6" component="div">
           Add Production Loan
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton 
+          edge="end" 
+          onClick={handleClose} 
+          aria-label="close"
+          sx={{
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -366,7 +376,24 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
         
         {/* Stepper */}
         <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepLabel-root .Mui-completed': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepLabel-root .Mui-active': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepIcon-root.Mui-completed': {
+                color: theme.palette.secondary.main,
+              },
+              '& .MuiStepIcon-root.Mui-active': {
+                color: theme.palette.secondary.main,
+              }
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -443,9 +470,9 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 Next
@@ -518,7 +545,14 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: theme.palette.secondary.main, 
+                  color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    bgcolor: 'rgba(50, 56, 62, 0.04)'
+                  }
+                }}
               >
                 Back
               </Button>
@@ -527,9 +561,9 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 {isSubmitting ? 'Creating...' : 'Send Production Loan For Approval'}
@@ -556,9 +590,15 @@ export function AddProductionLoanDialog({ open, onClose, onRefresh }: AddUserDia
                 variant="contained"
                 onClick={handleClose}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main,
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { 
+                    bgcolor: theme.palette.secondary.dark 
+                  },
+                  '&.MuiButton-contained': {
+                    bgcolor: theme.palette.secondary.main,
+                    color: 'white'
+                  }
                 }}
               >
                 Close

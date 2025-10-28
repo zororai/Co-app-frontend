@@ -66,10 +66,13 @@ export function ShaftAttachmentDialog({
   const [locationError, setLocationError] = React.useState<string | null>(null);
   const [locationAccuracy, setLocationAccuracy] = React.useState<number | null>(null);
   const [manualEntry, setManualEntry] = React.useState(false);
+  const [feesPopulated, setFeesPopulated] = React.useState(false);
+  const [feesError, setFeesError] = React.useState<string | null>(null);
   
   React.useEffect(() => {
     if (open) {
       fetchSections();
+      fetchShaftAssignmentFees();
     }
   }, [open]);
 
@@ -82,6 +85,31 @@ export function ShaftAttachmentDialog({
       setSections([]);
     } finally {
       setSectionsLoading(false);
+    }
+  };
+
+  const fetchShaftAssignmentFees = async () => {
+    try {
+      const response = await authClient.fetchShaftAssignmentFees();
+      if (response.success && response.data && response.data.length > 0) {
+        // Get the first (latest) fee record
+        const feeData = response.data[0];
+        setFormData(prev => ({
+          ...prev,
+          regFee: feeData.regFee?.toString() || '',
+          medicalFee: feeData.medicalFee?.toString() || '',
+        }));
+        setFeesPopulated(true);
+        setFeesError(null);
+      } else {
+        // No fee data available
+        setFeesPopulated(false);
+        setFeesError('No fee configuration found. Please contact administrator to set up shaft assignment fees.');
+      }
+    } catch (error) {
+      console.error('Error fetching shaft assignment fees:', error);
+      setFeesPopulated(false);
+      setFeesError('Failed to load fee information. Please enter fees manually or try again later.');
     }
   };
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
@@ -137,8 +165,38 @@ export function ShaftAttachmentDialog({
       console.log('Submitting shaft assignment:', payload);
       let result;
       try {
+        // First API call - Create shaft assignment
         result = await authClient.createShaftAssignment(payload);
-        console.log('Shaft assignment result:', result);
+        
+        // Extract the shaft ID from the creation result
+        const shaftId = result?.id || result?.data?.id;
+        
+        if (shaftId) {
+          // Second API call - Assign the shaft using the returned ID
+          try {
+            const assignResult = await authClient.assignShaftAssignment(shaftId);
+            
+            if (!assignResult.success) {
+              console.warn('Shaft assignment failed but continuing:', assignResult.error);
+            }
+          } catch (assignError: any) {
+            console.error('Shaft assignment failed:', assignError);
+          }
+        }
+        
+        // Third API call - Update shaft number for the miner (if needed)
+        if (customerId && formData.shaftNumbers) {
+          try {
+            const updateResult = await authClient.updateShaftNumberForRegMiner(customerId, formData.shaftNumbers);
+            
+            if (!updateResult.success) {
+              console.warn('Shaft number update failed but continuing:', updateResult.error);
+            }
+          } catch (updateError: any) {
+            console.error('Shaft number update failed:', updateError);
+          }
+        }
+        
         setSuccess(true);
         setTimeout(() => {
           handleClose();
@@ -433,6 +491,12 @@ export function ShaftAttachmentDialog({
                 placeholder="Reason for shaft assignment (default)"
               />
 
+              {feesError && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  {feesError}
+                </Alert>
+              )}
+
               <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: '1fr 1fr' }}>
                 <TextField
                   fullWidth
@@ -447,8 +511,9 @@ export function ShaftAttachmentDialog({
                     }
                   }}
                   required
-                  disabled={loading}
+                  disabled={loading || feesPopulated}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesPopulated ? 'Fee loaded from system configuration' : undefined}
                 />
 
                 <TextField
@@ -464,8 +529,9 @@ export function ShaftAttachmentDialog({
                     }
                   }}
                   required
-                  disabled={loading}
+                  disabled={loading || feesPopulated}
                   inputProps={{ inputMode: 'decimal', pattern: '[0-9]*[.,]?[0-9]*' }}
+                  helperText={feesPopulated ? 'Fee loaded from system configuration' : undefined}
                 />
               </Box>
 

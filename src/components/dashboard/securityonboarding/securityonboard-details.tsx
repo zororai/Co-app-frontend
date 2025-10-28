@@ -14,10 +14,12 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import PrintIcon from '@mui/icons-material/Print';
 import { printElementById } from '@/lib/print';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { useTheme } from '@mui/material/styles';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -27,10 +29,12 @@ interface CustomerDetailsDialogProps {
 }
 
 export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: CustomerDetailsDialogProps): React.JSX.Element  {
+  const theme = useTheme();
   const [status, setStatus] = React.useState<string>('');
   const [reason, setReason] = React.useState<string>('');
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   
   // Don't render the dialog content if it's not open
   if (!open) {
@@ -47,22 +51,44 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           justifyContent: 'space-between', 
           alignItems: 'center',
           p: 2,
-          bgcolor: '#15073d'
+          bgcolor: theme.palette.secondary.main
         }}
       >
         <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Security Company Details</Typography>
-        <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-          <CloseIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-          <CircularProgress />
-          <Typography variant="body1" sx={{ ml: 2 }}>Loading company details...</Typography>
+        <Box sx={{ mt: 2 }}>
+          <Skeleton variant="rectangular" height={60} sx={{ borderRadius: '8px', mb: 3 }} />
+          <Skeleton variant="rectangular" height={200} sx={{ borderRadius: '8px', mb: 3 }} />
+          <Skeleton variant="rectangular" height={180} sx={{ borderRadius: '8px', mb: 3 }} />
+          <Skeleton variant="rectangular" height={120} sx={{ borderRadius: '8px' }} />
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button 
+          onClick={onClose}
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: '#ffffff',
+            '&:hover': {
+              bgcolor: theme.palette.secondary.dark,
+            },
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
       </Dialog>
     );
@@ -76,16 +102,31 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2,
-          bgcolor: '#15073d'
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Security Company Details</Typography>
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>Security Company Details</Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('security-details-printable', 'Security Company Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={() => printElementById('security-details-printable', 'Security Company Details')} 
+            size="small" 
+            sx={{ 
+              mr: 1, 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
@@ -97,16 +138,16 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
             gap: 2 
           }}>
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Company Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Company Name:</strong> {customer.companyName}</Typography>
-                <Typography><strong>Registration Number:</strong> {customer.registrationNumber}</Typography>
-                <Typography><strong>Service Type:</strong> {customer.serviceType}</Typography>
-                <Typography><strong>Number of Workers:</strong> {customer.numberOfWorks}</Typography>
-                <Typography><strong>Status:</strong> 
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Company Name:</strong> {customer.companyName}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Registration Number:</strong> {customer.registrationNumber}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Service Type:</strong> {customer.serviceType}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Number of Workers:</strong> {customer.numberOfWorks}</Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}><strong>Status:</strong> 
                   <Box 
                     component="span" 
                     sx={{
@@ -130,41 +171,41 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Contact Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Contact Person:</strong> {customer.contactPersonName}</Typography>
-                <Typography><strong>Contact Email:</strong> {customer.contactEmail}</Typography>
-                <Typography><strong>Contact Phone:</strong> {customer.contactPhone}</Typography>
-                <Typography><strong>Emergency Contact:</strong> {customer.emergencyContactName}</Typography>
-                <Typography><strong>Emergency Phone:</strong> {customer.emergencyContactPhone}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Contact Person:</strong> {customer.contactPersonName}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Contact Email:</strong> {customer.contactEmail}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Contact Phone:</strong> {customer.contactPhone}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Emergency Contact:</strong> {customer.emergencyContactName}</Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}><strong>Emergency Phone:</strong> {customer.emergencyContactPhone}</Typography>
               </Box>
             </Box>
             
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Address Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Head Office Address:</strong> {customer.headOfficeAddress}</Typography>
-                <Typography><strong>Site Address:</strong> {customer.siteAddress}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Head Office Address:</strong> {customer.headOfficeAddress}</Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}><strong>Site Address:</strong> {customer.siteAddress}</Typography>
               </Box>
             </Box>
             
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Contract Information
               </Typography>
               <Box sx={{ mt: 2 }}>
-                <Typography><strong>Start Date:</strong> {customer.startContractDate}</Typography>
-                <Typography><strong>End Date:</strong> {customer.endContractDate}</Typography>
+                <Typography sx={{ mb: 1.5, fontSize: '0.95rem' }}><strong>Start Date:</strong> {customer.startContractDate}</Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}><strong>End Date:</strong> {customer.endContractDate}</Typography>
               </Box>
             </Box>
             
-            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ gridColumn: '1 / -1', border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Locations
               </Typography>
               <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -183,12 +224,12 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
               </Box>
             </Box>
             
-            <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+            <Box sx={{ gridColumn: '1 / -1', border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Documents
               </Typography>
               <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Tax Clearance:</strong>{' '}
                   {customer.validTaxClearance ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -197,7 +238,7 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                     </Box>
                   ) : 'Not uploaded'}
                 </Typography>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Company Logo:</strong>{' '}
                   {customer.companyLogo ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -206,7 +247,7 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                     </Box>
                   ) : 'Not uploaded'}
                 </Typography>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Certificate of Cooperation:</strong>{' '}
                   {customer.getCertificateOfCooperation ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -215,7 +256,7 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                     </Box>
                   ) : 'Not uploaded'}
                 </Typography>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Operating License:</strong>{' '}
                   {customer.operatingLicense ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -224,7 +265,7 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                     </Box>
                   ) : 'Not uploaded'}
                 </Typography>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Proof of Insurance:</strong>{' '}
                   {customer.proofOfInsurance ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -233,7 +274,7 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
                     </Box>
                   ) : 'Not uploaded'}
                 </Typography>
-                <Typography>
+                <Typography sx={{ fontSize: '0.95rem' }}>
                   <strong>Risk Assessment Report:</strong>{' '}
                   {customer.siteRiskAssessmentReport ? (
                     <Box component="span" sx={{ color: 'success.main', display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
@@ -246,20 +287,33 @@ export function SecurityDetailsDialog({ open, onClose, customer, onRefresh }: Cu
             </Box>
 
             {customer.reason && (
-              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ gridColumn: '1 / -1', border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5 }}>
+                <Typography variant="subtitle1" sx={{ color: theme.palette.secondary.main, fontWeight: 700, mb: 2, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   Additional Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                  <Typography><strong>Reason:</strong> {customer.reason}</Typography>
+                  <Typography sx={{ fontSize: '0.95rem' }}><strong>Reason:</strong> {customer.reason}</Typography>
                 </Box>
               </Box>
             )}
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+      <DialogActions sx={{ p: 2.5, gap: 1 }}>
+        <Button 
+          onClick={onClose}
+          variant="outlined"
+          sx={{
+            borderColor: 'secondary.main',
+            color: 'secondary.main',
+            '&:hover': {
+              borderColor: 'secondary.dark',
+              bgcolor: 'rgba(50, 56, 62, 0.04)'
+            }
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

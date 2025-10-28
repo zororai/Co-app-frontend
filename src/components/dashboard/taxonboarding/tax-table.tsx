@@ -15,6 +15,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
+import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -22,6 +23,21 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -73,6 +89,8 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
+  
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -82,6 +100,28 @@ export function CustomersTable({
     status: 'all',
     position: 'all'
   });
+  
+  // Sorting state
+  const [sortField, setSortField] = React.useState<string>('taxType');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+  
+  // Delete dialog state
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deleteUserId, setDeleteUserId] = React.useState<string | null>(null);
+  const [deleteUserName, setDeleteUserName] = React.useState<string>('');
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
+  
+  // Handle sorting
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
 
   // Filter the users based on search, filters, and tab status
   const filteredRows = React.useMemo(() => {
@@ -100,8 +140,27 @@ export function CustomersTable({
 
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
-    return sortNewestFirst(filtered);
-  }, [users, filters, statusFilter]);
+    
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+    
+    return sorted;
+  }, [users, filters, statusFilter, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -171,6 +230,48 @@ export function CustomersTable({
       onRefresh();
     }
   }, [onRefresh]);
+  
+  // Handle delete user
+  const handleDeleteClick = (userId: string, userName: string) => {
+    setDeleteUserId(userId);
+    setDeleteUserName(userName);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDeleteUser = async () => {
+    if (!deleteUserId) return;
+    
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      const response = await fetch(`/api/tax/${deleteUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete tax');
+      }
+      
+      setSnackbarMessage('Tax deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setIsDeleteDialogOpen(false);
+      refreshTableData();
+    } catch (error) {
+      console.error('Error deleting tax:', error);
+      setSnackbarMessage('Failed to delete tax');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsDeleting(false);
+      setDeleteUserId(null);
+      setDeleteUserName('');
+    }
+  };
 
   return (
     <Card>      
@@ -304,63 +405,56 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
               <TableCell>Tax Type</TableCell>
               <TableCell>Tax Rate</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
-              
-     
-              
             </TableRow>
           </TableHead>
           <TableBody>
+            {/* Skeleton loading rows */}
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell padding="checkbox">
+                  <Skeleton variant="rectangular" width={18} height={18} />
+                </TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
+            {/* Empty state */}
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
-                    No users found
+                    No taxes found
                   </Typography>
                 </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            
+            {/* Data rows */}
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(row.id);
-                        } else {
-                          deselectOne(row.id);
-                        }
-                      }}
-                    />
-                  </TableCell>
                   <TableCell>{row.taxType || ''}</TableCell>
-                  <TableCell>{row.taxRate || 0}</TableCell>
+                  <TableCell>{row.taxRate || 0}%</TableCell>
                   <TableCell>{row.location || ''}</TableCell>
                   <TableCell>{row.description || ''}</TableCell>
-                
-                  
-                  
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -383,23 +477,45 @@ export function CustomersTable({
                       {row.status}
                     </Box>
                   </TableCell>
-              
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Tax Details</button>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleViewUserDetails(row.id)}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Tax">
+                        <IconButton
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Tax">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteClick(row.id, row.taxType || 'this tax')}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
-               
                 </TableRow>
               );
             })}
@@ -414,7 +530,7 @@ export function CustomersTable({
         onRowsPerPageChange={noop}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
       
       {/* Customer Details Dialog */}
@@ -432,6 +548,61 @@ export function CustomersTable({
         onClose={() => setIsUserDetailsDialogOpen(false)}
         userId={selectedUserId}
       />
+      
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => !isDeleting && setIsDeleteDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: theme.palette.secondary.main, color: 'white' }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <DialogContentText>
+            Are you sure you want to delete <strong>{deleteUserName}</strong>?
+            <br />
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={() => setIsDeleteDialogOpen(false)} 
+            disabled={isDeleting}
+            sx={{ color: 'text.secondary' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmDeleteUser} 
+            variant="contained"
+            disabled={isDeleting}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            {isDeleting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setSnackbarOpen(false)} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }

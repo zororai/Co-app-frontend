@@ -89,6 +89,9 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
     ownerCellNumber: '',
     ownerIdNumber: ''
   });
+
+  // Debug: Log form state
+  console.log('Current form state:', form);
   
   // State for form validation errors
   const [errors, setErrors] = React.useState<ErrorState>({
@@ -146,6 +149,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
     }
     if (!form.contactNumber.trim()) {
       newErrors.contactNumber = 'Contact number is required';
+      isValid = false;
     } else if (!/^\d{10}$/.test(form.contactNumber.trim())) {
       newErrors.contactNumber = 'Invalid contact number format';
       isValid = false;
@@ -224,88 +228,52 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
     return isValid;
   };
 
-  const handleChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | React.ChangeEvent<{ name?: string; value: unknown }>
-  ) => {
-    if ('target' in e && e.target) {
-      const { name, value, files, type } = e.target as HTMLInputElement;
-      
-      if (type === 'file' && files) {
-        // Passport photo validation: must upload exactly 1
-        if (name === 'passportPhotos') {
-          if (files.length !== 1) {
-            setErrors(prev => ({
-              ...prev,
-              [name]: 'Please upload exactly 1 passport photo.'
-            }));
-            setSelectedFileNames(prev => ({
-              ...prev,
-              [name]: ''
-            }));
-            setForm(prev => ({
-              ...prev,
-              [name]: ''
-            }));
-            return;
-          }
-          // Validate file is an image
-          if (!files[0].type.startsWith('image/')) {
-            setErrors(prev => ({
-              ...prev,
-              [name]: 'File must be an image.'
-            }));
-            return;
-          }
-          // Store file name
-          setSelectedFileNames(prev => ({
-            ...prev,
-            [name]: files[0].name
-          }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const target = e.target as HTMLInputElement;
+    const { name, value, files, type } = target;
+    
+    // Ensure name exists
+    if (!name) return;
+    
+    console.log('handleChange called:', { name, value, type });
+    alert(`Input detected: ${name} = ${value}`);
+    
+    if (type === 'file' && files) {
+      // Passport photo validation: must upload exactly 1
+      if (name === 'passportPhotos') {
+        if (files.length !== 1) {
           setErrors(prev => ({
+            ...prev,
+            [name]: 'Please upload exactly 1 passport photo.'
+          }));
+          setSelectedFileNames(prev => ({
             ...prev,
             [name]: ''
           }));
-          // Convert file to base64 and save as string
-          const reader = new FileReader();
-          reader.addEventListener('load', () => {
-            const base64String = reader.result as string;
-            setForm(prev => ({
-              ...prev,
-              [name]: base64String
-            }));
-          });
-          reader.readAsDataURL(files[0]);
+          setForm(prev => ({
+            ...prev,
+            [name]: ''
+          }));
           return;
         }
-        // ...existing code for other file fields...
-        const file = files[0];
-        if (!file) return;
+        // Validate file is an image
+        if (!files[0].type.startsWith('image/')) {
+          setErrors(prev => ({
+            ...prev,
+            [name]: 'File must be an image.'
+          }));
+          return;
+        }
+        // Store file name
         setSelectedFileNames(prev => ({
           ...prev,
-          [name]: file.name
+          [name]: files[0].name
         }));
-        const isImageField = ['companyLogo'].includes(name);
-        const isPDFField = ['cr14Document', 'taxClearance', 'certificateOfCooperation', 'miningCertificate'].includes(name);
-        if (isImageField && !file.type.startsWith('image/')) {
-          setErrors(prev => ({
-            ...prev,
-            [name]: 'Please select an image file'
-          }));
-          return;
-        }
-        if (isPDFField && !file.type.match('application/pdf') && !file.type.startsWith('image/')) {
-          setErrors(prev => ({
-            ...prev,
-            [name]: 'Please select a PDF or image file'
-          }));
-          return;
-        }
         setErrors(prev => ({
           ...prev,
           [name]: ''
         }));
+        // Convert file to base64 and save as string
         const reader = new FileReader();
         reader.addEventListener('load', () => {
           const base64String = reader.result as string;
@@ -314,13 +282,56 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
             [name]: base64String
           }));
         });
-        reader.readAsDataURL(file);
-      } else {
+        reader.readAsDataURL(files[0]);
+        return;
+      }
+      // Handle other file fields
+      const file = files[0];
+      if (!file) return;
+      setSelectedFileNames(prev => ({
+        ...prev,
+        [name]: file.name
+      }));
+      const isImageField = ['companyLogo'].includes(name);
+      const isPDFField = ['cr14Document', 'taxClearance', 'certificateOfCooperation', 'miningCertificate'].includes(name);
+      if (isImageField && !file.type.startsWith('image/')) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: 'Please select an image file'
+        }));
+        return;
+      }
+      if (isPDFField && !file.type.match('application/pdf') && !file.type.startsWith('image/')) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: 'Please select a PDF or image file'
+        }));
+        return;
+      }
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        const base64String = reader.result as string;
         setForm(prev => ({
           ...prev,
-          [name]: value,
+          [name]: base64String
         }));
-      }
+      });
+      reader.readAsDataURL(file);
+    } else {
+      // Handle text inputs
+      setForm(prev => ({
+        ...prev,
+        [name]: value as string,
+      }));
+      // Clear any existing errors for this field
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
@@ -429,19 +440,7 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
             required
           />
         </Box>
-        <Box flex="1 1 48%">
-          <InputLabel>Cell number</InputLabel>
-          <TextField
-            name="contactNumber"
-            placeholder="Enter your mobile number"
-            fullWidth
-            value={form.contactNumber}
-            onChange={handleChange}
-            error={!!errors.contactNumber}
-            helperText={errors.contactNumber}
-            required
-          />
-        </Box>
+  
         <Box flex="1 1 48%">
           <InputLabel>Email</InputLabel>
           <TextField

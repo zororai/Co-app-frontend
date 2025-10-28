@@ -32,6 +32,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { authClient } from '../../../lib/auth/client';
 import { Snackbar } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 interface AddDriverDialogProps {
   open: boolean;
@@ -78,6 +79,7 @@ const licenseClasses = [
 ];
 
 export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDriverDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -104,15 +106,15 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     additionalNotes: '',
   });
 
-  // Consistent TextField styling (rgb(5, 5, 68))
+  // Consistent TextField styling using theme colors
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '& fieldset': { borderColor: theme.palette.secondary.main },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
     },
     '& .MuiInputLabel-root': {
-      '&.Mui-focused': { color: 'rgb(5, 5, 68)' },
+      '&.Mui-focused': { color: theme.palette.secondary.main },
     },
   } as const;
 
@@ -443,9 +445,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     onChange={(e) => handleSelectChange(e as any)}
                     label="License Class *"
                     sx={{
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'rgb(5, 5, 68)' },
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
                     }}
                   >
                     {licenseClasses.map((option) => (
@@ -809,7 +811,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
-            background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+            bgcolor: theme.palette.secondary.main,
             color: 'white',
             py: 2.5,
             px: 3,
@@ -845,19 +847,19 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
               '& .MuiStepIcon-root': {
                 color: '#d1d5db',
                 '&.Mui-active': {
-                  color: 'rgb(5, 5, 68)',
+                  color: theme.palette.secondary.main,
                 },
                 '&.Mui-completed': {
-                  color: 'rgb(5, 5, 68)',
+                  color: theme.palette.secondary.main,
                 },
               },
               '& .MuiStepLabel-label': {
                 '&.Mui-active': {
-                  color: 'rgb(5, 5, 68)',
+                  color: theme.palette.secondary.main,
                   fontWeight: 600,
                 },
                 '&.Mui-completed': {
-                  color: 'rgb(5, 5, 68)',
+                  color: theme.palette.secondary.main,
                   fontWeight: 500,
                 },
               },
@@ -865,10 +867,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 borderColor: '#d1d5db',
               },
               '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-                borderColor: 'rgb(5, 5, 68)',
+                borderColor: theme.palette.secondary.main,
               },
               '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-                borderColor: 'rgb(5, 5, 68)',
+                borderColor: theme.palette.secondary.main,
               },
             }}
           >
@@ -889,7 +891,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             overflow: 'auto',
             '&::-webkit-scrollbar': { width: '6px' },
             '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-            '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+            '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
           }}
         >
           {error && (
@@ -925,9 +927,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 onClick={handleStepNext}
                 disabled={loading}
                 sx={{
-                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
+                  bgcolor: theme.palette.secondary.main,
                   '&:hover': {
-                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
+                    bgcolor: theme.palette.secondary.dark
                   }
                 }}
               >

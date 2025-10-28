@@ -22,6 +22,7 @@ import {
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { authClient } from '@/lib/auth/client';
+import { useTheme } from '@mui/material/styles';
 
 interface TeamMemberError {
   name: string;
@@ -399,7 +400,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.cellNumber && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -492,15 +493,16 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
           />
         </Box>
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-          <InputLabel>Cell number</InputLabel>
+          <InputLabel>Cell number ff</InputLabel>
           <TextField
-            name="cellNumber"
-            placeholder="Enter your mobilexx number"
+            name="contactNumber"
+            placeholder="Enter your mobile number"
             fullWidth
             value={form.cellNumber}
-            onChange={(e) =>
-              setForm(prev => ({ ...prev, cellNumber: (e.target as HTMLInputElement).value }))
-            }
+            onChange={handleChange}
+            error={!!errors.cellNumber}
+            helperText={errors.cellNumber}
+            required
           />
         </Box>
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -817,6 +819,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 });
 
 export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const steps = ['Company Info', 'Required Documents', 'Owner Details', 'Review', 'Confirmation'];
   // useRef to hold child imperative handlers without causing re-renders
@@ -856,9 +859,15 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
         m: 0
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-          Company Miner Registration zoro
+          Company Miner Registration
         </Typography>
-        <IconButton onClick={onClose} sx={{ color: 'white' }}>
+        <IconButton 
+          onClick={onClose} 
+          sx={{ 
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -866,7 +875,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
       {/* Fixed Stepper Section */}
       <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          Register a new mining company with complete documentation and owner details
+          /// Register a new mining company with complete documentation and owner details
         </Typography>
         <Stepper 
           activeStep={activeStep} 
@@ -874,16 +883,16 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
           sx={{
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
-              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-active': { color: theme.palette.secondary.main },
+              '&.Mui-completed': { color: theme.palette.secondary.main },
             },
             '& .MuiStepLabel-label': {
-              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+              '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
             },
             '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
           }}
         >
           {steps.map((label) => (
@@ -911,8 +920,9 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
               variant="contained"
               onClick={onClose}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                '&:hover': { bgcolor: theme.palette.secondary.dark } 
               }}
             >
               Close
@@ -924,7 +934,18 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
               variant="outlined"
               disabled={activeStep === 0}
               onClick={handleBack}
-              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+              sx={{ 
+                borderColor: theme.palette.secondary.main, 
+                color: theme.palette.secondary.main, 
+                '&:hover': { 
+                  borderColor: theme.palette.secondary.dark, 
+                  bgcolor: 'rgba(50, 56, 62, 0.04)' 
+                },
+                '&.Mui-disabled': {
+                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                  color: 'rgba(0, 0, 0, 0.26)'
+                }
+              }}
             >
               Back
             </Button>
@@ -933,8 +954,9 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
               variant="contained"
               onClick={handleNext}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                '&:hover': { bgcolor: theme.palette.secondary.dark } 
               }}
             >
               {activeStep === steps.length - 2 ? 'Submit' : 'Next'}

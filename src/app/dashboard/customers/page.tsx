@@ -111,7 +111,16 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button 
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained"
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: 'secondary.main',
+              color: '#fff',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
             Reg Syndicate Miner
           </Button>
         </div>
