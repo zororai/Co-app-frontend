@@ -158,12 +158,6 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       newErrors.address = 'Address is required';
       isValid = false;
     }
-    if (!form.cellNumber.trim()) {
-      newErrors.cellNumber = 'Cell number is required';
-    } else if (!/^\d{10}$/.test(form.cellNumber.trim())) {
-      newErrors.cellNumber = 'Invalid cell number format';
-      isValid = false;
-    }
     if (!form.registrationNumber.trim()) {
       newErrors.registrationNumber = 'Registration number is required';
       isValid = false;
@@ -245,6 +239,10 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
   ) => {
     if ('target' in e && e.target) {
       const { name, value, files, type } = e.target as HTMLInputElement;
+      if (!name) {
+        console.warn('Change event without a name attribute', e);
+        return;
+      }
       
       if (type === 'file' && files) {
         // Passport photo validation: must upload exactly 1
@@ -401,7 +399,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -496,14 +494,13 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
           <InputLabel>Cell number</InputLabel>
           <TextField
-            name="contactNumber"
-            placeholder="Enter your mobile number"
+            name="cellNumber"
+            placeholder="Enter your mobilexx number"
             fullWidth
             value={form.cellNumber}
-            onChange={handleChange}
-            error={!!errors.cellNumber}
-            helperText={errors.cellNumber}
-            required
+            onChange={(e) =>
+              setForm(prev => ({ ...prev, cellNumber: (e.target as HTMLInputElement).value }))
+            }
           />
         </Box>
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
@@ -859,7 +856,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
         m: 0
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-          Company Miner Registration
+          Company Miner Registration zoro
         </Typography>
         <IconButton onClick={onClose} sx={{ color: 'white' }}>
           <CloseIcon />

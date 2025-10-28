@@ -120,7 +120,7 @@ export default function Page(): React.JSX.Element {
         </Stack>
         <div>
           <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
-            Reg Company Miner
+            Reg Company Miner rr
           </Button>
         </div>
       </Stack>

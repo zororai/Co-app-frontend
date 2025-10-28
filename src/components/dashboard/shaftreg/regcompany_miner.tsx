@@ -727,7 +727,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Company Miner Registration</span>
+        <span>Company Miner Registration zz</span>
         <IconButton onClick={onClose}>
           <CloseIcon />
         </IconButton>
