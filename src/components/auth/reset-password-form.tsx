@@ -10,8 +10,10 @@ import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
+import { useTheme } from '@mui/material/styles';
 
 import { authClient } from '@/lib/auth/client';
 
@@ -22,6 +24,7 @@ type Values = zod.infer<typeof schema>;
 const defaultValues = { email: '' } satisfies Values;
 
 export function ResetPasswordForm(): React.JSX.Element {
+  const theme = useTheme();
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
   const {
@@ -65,8 +68,27 @@ export function ResetPasswordForm(): React.JSX.Element {
             )}
           />
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-          <Button disabled={isPending} type="submit" variant="contained">
-            Send recovery link
+          <Button 
+            disabled={isPending} 
+            type="submit" 
+            variant="contained"
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: '#fff',
+              '&:hover': {
+                bgcolor: theme.palette.secondary.dark
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'rgba(0, 0, 0, 0.12)',
+                color: 'rgba(0, 0, 0, 0.26)'
+              }
+            }}
+          >
+            {isPending ? (
+              <CircularProgress size={24} sx={{ color: 'white' }} />
+            ) : (
+              'Send recovery link'
+            )}
           </Button>
         </Stack>
       </form>
