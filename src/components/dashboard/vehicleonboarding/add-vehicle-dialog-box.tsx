@@ -154,12 +154,71 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     fetchDrivers();
   }, []);
 
+  // Validate Zimbabwean ID number format
+  const validateZimbabweanID = (idNumber: string): string | null => {
+    // Remove any spaces or dashes for validation
+    const cleanId = idNumber.replace(/[\s-]/g, '');
+    
+    // Check if it's exactly 11 characters
+    if (cleanId.length !== 11) {
+      return 'ID number must be exactly 11 characters';
+    }
+    
+    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
+    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    if (!idPattern.test(cleanId)) {
+      return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
+    }
+    
+    return null; // Valid
+  };
+
+  // Format ID number with dashes
+  const formatIdNumber = (value: string): string => {
+    // Remove all non-alphanumeric characters
+    const clean = value.replace(/[^0-9A-Za-z]/g, '');
+    
+    // Apply formatting: XX-XXXXXXDXX
+    if (clean.length <= 2) {
+      return clean;
+    } else if (clean.length <= 8) {
+      return `${clean.slice(0, 2)}-${clean.slice(2)}`;
+    } else if (clean.length <= 10) {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8)}`;
+    } else {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
+    }
+  };
+
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name?: string; value: string } }, child?: React.ReactNode): void => {
     const { name, value } = e.target;
+    
+    let processedValue = value;
+    let fieldErrors = { ...errors };
+    
+    // Special handling for ID number
+    if (name === 'ownerIdNumber') {
+      processedValue = formatIdNumber(value);
+      
+      // Validate ID number if it's not empty
+      if (processedValue.trim()) {
+        const validationError = validateZimbabweanID(processedValue);
+        if (validationError) {
+          fieldErrors.ownerIdNumber = validationError;
+        } else {
+          delete fieldErrors.ownerIdNumber;
+        }
+      } else {
+        delete fieldErrors.ownerIdNumber;
+      }
+      
+      setErrors(fieldErrors);
+    }
+    
     setFormData({
       ...formData,
-      [name as string]: value,
+      [name as string]: processedValue,
     });
   };
 
@@ -538,6 +597,14 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                 />
               </Box>
               
+              {/* 
+                Zimbabwean ID Format: XX-XXXXXXDXX (11 characters total)
+                - First 2 digits: District where ID was registered
+                - Next 6 digits: Serial number for that district  
+                - Next 1 character: Check letter for verification
+                - Last 2 digits: District of origin for applicant
+                Example: 67-657432D45
+              */}
               <Box sx={{ flex: '1 1 calc(50% - 8px)', minWidth: '240px' }}>
                 <TextField
                   fullWidth
@@ -545,11 +612,18 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   name="ownerIdNumber"
                   value={formData.ownerIdNumber}
                   onChange={handleChange}
-                  error={formSubmitted && !!errors.ownerIdNumber}
-                  helperText={formSubmitted && errors.ownerIdNumber}
+                  error={!!errors.ownerIdNumber}
+                  helperText={
+                    errors.ownerIdNumber || 
+                    "Format: XX-XXXXXXDXX (District-Serial+Check+Origin). Example: 67-657432D45"
+                  }
                   required
-                  placeholder="e.g., 80-101500D87"
+                  placeholder="67-657432D45"
                   size="small"
+                  inputProps={{
+                    maxLength: 13, // XX-XXXXXXDXX = 13 characters with dashes
+                    style: { textTransform: 'uppercase' }
+                  }}
                   sx={textFieldStyle}
                 />
               </Box>
