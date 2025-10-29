@@ -55,6 +55,8 @@ export function UnassignedShaftsDialog({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedShaft, setSelectedShaft] = React.useState<string | null>(null);
+  const [selectedShaftData, setSelectedShaftData] = React.useState<UnassignedShaft | null>(null);
+  const [isAssigning, setIsAssigning] = React.useState(false);
 
   // Fetch sections when dialog opens
   React.useEffect(() => {
@@ -128,7 +130,53 @@ export function UnassignedShaftsDialog({
     setUnassignedShafts([]);
     setError(null);
     setSelectedShaft(null);
+    setSelectedShaftData(null);
+    setIsAssigning(false);
     onClose();
+  };
+
+  const handleSaveShaft = async () => {
+    if (!selectedShaft || !selectedShaftData || !customerId) {
+      setError('Please select a shaft and ensure customer is selected');
+      return;
+    }
+
+    setIsAssigning(true);
+    setError(null);
+
+    try {
+      // Step 1: Update miner ID for the shaft assignment
+      const updateMinerResult = await authClient.updateShaftMinerId(selectedShaft, customerId);
+      if (!updateMinerResult.success) {
+        throw new Error(updateMinerResult.error || 'Failed to update shaft miner ID');
+      }
+
+      // Step 2: Assign the shaft to the miner
+      const assignResult = await authClient.assignShaftToMiner(selectedShaft);
+      if (!assignResult.success) {
+        throw new Error(assignResult.error || 'Failed to assign shaft to miner');
+      }
+
+      // Step 3: Update shaft number for the registered miner
+      const updateShaftNumberResult = await authClient.updateRegMinerShaftNumber(
+        customerId,
+        selectedShaftData.shaftNumbers
+      );
+      if (!updateShaftNumberResult.success) {
+        throw new Error(updateShaftNumberResult.error || 'Failed to update registered miner shaft number');
+      }
+
+      // Success - close dialog and refresh parent
+      if (onAssignShaft) {
+        onAssignShaft(customerId, selectedShaft);
+      }
+      handleClose();
+    } catch (error) {
+      console.error('Error in shaft assignment workflow:', error);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred during shaft assignment');
+    } finally {
+      setIsAssigning(false);
+    }
   };
 
   return (
@@ -235,8 +283,13 @@ export function UnassignedShaftsDialog({
                     sx={{
                       '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.04)' },
                       cursor: 'pointer',
+                      bgcolor: selectedShaft === shaft.id ? 'rgba(5, 5, 68, 0.08)' : 'transparent',
+                      border: selectedShaft === shaft.id ? '2px solid rgb(5, 5, 68)' : '1px solid transparent',
                     }}
-                    onClick={() => setSelectedShaft(shaft.id)}
+                    onClick={() => {
+                      setSelectedShaft(shaft.id);
+                      setSelectedShaftData(shaft);
+                    }}
                   >
                     <ListItemText
                       primary={
@@ -285,9 +338,10 @@ export function UnassignedShaftsDialog({
         )}
       </DialogContent>
       
-      <DialogActions sx={{ px: 3, py: 2, justifyContent: 'flex-end' }}>
+      <DialogActions sx={{ px: 3, py: 2, justifyContent: 'space-between' }}>
         <Button 
           onClick={handleClose}
+          disabled={isAssigning}
           sx={{ 
             color: 'text.secondary',
             '&:hover': {
@@ -297,6 +351,21 @@ export function UnassignedShaftsDialog({
         >
           Cancel
         </Button>
+        
+        {selectedShaft && (
+          <Button
+            variant="contained"
+            onClick={handleSaveShaft}
+            disabled={isAssigning || !selectedShaft}
+            startIcon={isAssigning ? <CircularProgress size={20} /> : null}
+            sx={{
+              bgcolor: 'rgb(5, 5, 68)',
+              '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
+            }}
+          >
+            {isAssigning ? 'Saving Shaft...' : 'Save Shaft'}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

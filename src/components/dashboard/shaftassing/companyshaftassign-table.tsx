@@ -29,6 +29,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CompanyShaftActionDialog } from './company-shaft-action-dialog';
+import { CompanyDetailsDialog } from './company-details-dialog';
 
 function noop(): void {
   // do nothing
@@ -80,6 +81,9 @@ export function CompanyTable({
   const [shaftDialogOpen, setShaftDialogOpen] = React.useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = React.useState<string | null>(null);
   const [selectedCompanyName, setSelectedCompanyName] = React.useState<string>('');
+  const [companyDetailsDialogOpen, setCompanyDetailsDialogOpen] = React.useState(false);
+  const [selectedCompanyDetails, setSelectedCompanyDetails] = React.useState<any>(null);
+  const [loadingCompanyDetails, setLoadingCompanyDetails] = React.useState(false);
 
   // Fetch approved companies on component mount
   React.useEffect(() => {
@@ -132,9 +136,21 @@ export function CompanyTable({
     globalThis.location.href = path;
   };
 
-  const handleViewCustomer = (companyId: string) => {
-    // Navigate to company details page
-    handleRedirect(`/dashboard/companies/${companyId}`);
+  const handleViewCustomer = async (companyId: string) => {
+    setLoadingCompanyDetails(true);
+    try {
+      const companyData = await authClient.fetchCompanyById(companyId);
+      if (companyData) {
+        setSelectedCompanyDetails(companyData);
+        setCompanyDetailsDialogOpen(true);
+      } else {
+        console.error('Failed to fetch company details');
+      }
+    } catch (error) {
+      console.error('Error fetching company details:', error);
+    } finally {
+      setLoadingCompanyDetails(false);
+    }
   };
 
   const handleShaftAttachment = (companyId: string) => {
@@ -158,6 +174,11 @@ export function CompanyTable({
     setShaftDialogOpen(false);
     setSelectedCompanyId(null);
     setSelectedCompanyName('');
+  };
+
+  const handleCloseCompanyDetailsDialog = () => {
+    setCompanyDetailsDialogOpen(false);
+    setSelectedCompanyDetails(null);
   };
 
   function onRowsPerPageChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -270,15 +291,16 @@ export function CompanyTable({
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                       <button 
                                         onClick={() => handleViewCustomer(row.id)}
+                                        disabled={loadingCompanyDetails}
                                         style={{
                                           background: 'none',
                                           border: '1px solid #06131fff',
-                                          color: '#081b2fff',
+                                          color: loadingCompanyDetails ? '#ccc' : '#081b2fff',
                                           borderRadius: '6px',
                                           padding: '2px 12px',
-                                          cursor: 'pointer',
+                                          cursor: loadingCompanyDetails ? 'not-allowed' : 'pointer',
                                           fontWeight: 500,
-                                      }}>View Miner Details</button>
+                                      }}>{loadingCompanyDetails ? 'Loading...' : 'View Company Details'}</button>
                                     </Box>
                                   </TableCell>
                                   <TableCell>
@@ -326,6 +348,12 @@ export function CompanyTable({
         onCreateNew={handleCreateNewShaft}
         companyId={selectedCompanyId}
         companyName={selectedCompanyName}
+      />
+      
+      <CompanyDetailsDialog
+        open={companyDetailsDialogOpen}
+        onClose={handleCloseCompanyDetailsDialog}
+        company={selectedCompanyDetails}
       />
     </>
   );

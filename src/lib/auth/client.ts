@@ -2589,10 +2589,9 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`/api/companies/${id}`, {
+            const response = await fetch(`http://localhost:1000/api/companies/${id}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': '*/*',
                     'Authorization': `Bearer ${token || ''}`,
                 },
@@ -5482,6 +5481,101 @@ cooperativename: string;
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       console.error('Error fetching unassigned shafts by section:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Update miner ID for a shaft assignment
+   * PUT /api/shaft-assignments/{shaftId}/update-miner-id?newMinerId={newMinerId}
+   */
+  async updateShaftMinerId(shaftId: string, newMinerId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const encodedShaftId = encodeURIComponent(shaftId);
+      const encodedMinerId = encodeURIComponent(newMinerId);
+      const response = await fetch(`/api/shaft-assignments/${encodedShaftId}/update-miner-id?newMinerId=${encodedMinerId}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update shaft miner ID' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating shaft miner ID:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Assign a shaft to a miner
+   * PUT /api/shaft-assignments/assign/{shaftId}
+   */
+  async assignShaftToMiner(shaftId: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const encodedShaftId = encodeURIComponent(shaftId);
+      const response = await fetch(`/api/shaft-assignments/assign/${encodedShaftId}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to assign shaft to miner' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error assigning shaft to miner:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Update shaft number for a registered miner
+   * PUT /api/shaft-assignments/regminer/update-shaftnumber/{minerId}?shaftNumber={shaftNumber}
+   */
+  async updateRegMinerShaftNumber(minerId: string, shaftNumber: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const encodedMinerId = encodeURIComponent(minerId);
+      const encodedShaftNumber = encodeURIComponent(shaftNumber);
+      const response = await fetch(`/api/shaft-assignments/regminer/update-shaftnumber/${encodedMinerId}?shaftNumber=${encodedShaftNumber}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update registered miner shaft number' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating registered miner shaft number:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
