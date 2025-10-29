@@ -27,7 +27,7 @@ export const allNavItems = [
     icon: 'buildings',
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.penality, icon: 'id-card'},
+     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
      // { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.penality, icon: 'id-card'},
      
     ],
