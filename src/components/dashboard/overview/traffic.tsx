@@ -33,6 +33,7 @@ export interface TrafficProps {
 }
 
 export function Traffic({ sx }: TrafficProps): React.JSX.Element {
+  const theme = useTheme();
   const [chartSeries, setChartSeries] = React.useState<number[]>([]);
   const [labels, setLabels] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -89,7 +90,7 @@ export function Traffic({ sx }: TrafficProps): React.JSX.Element {
             color="inherit"
             onClick={handleRefresh}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
+            startIcon={loading ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
             size="small"
           >
             {loading ? 'Loading...' : 'Refresh'}
@@ -103,7 +104,7 @@ export function Traffic({ sx }: TrafficProps): React.JSX.Element {
           </Alert>
         ) : loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: theme.palette.secondary.main }} />
           </Box>
         ) : (
           <Stack spacing={2}>
@@ -136,7 +137,7 @@ function useChartOptions(labels: string[]): ApexOptions {
 
   return {
     chart: { background: 'transparent' },
-    colors: [theme.palette.success.main, theme.palette.error.main], // Green for Active, Red for Suspended
+    colors: [theme.palette.secondary.main, theme.palette.secondary.dark], // Dark navy theme colors
     dataLabels: { enabled: false },
     labels,
     legend: { show: false },

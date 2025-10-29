@@ -5,6 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import type { SxProps } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ListBulletsIcon } from '@phosphor-icons/react/dist/ssr/ListBullets';
 
@@ -14,6 +15,8 @@ export interface TasksProgressProps {
 }
 
 export function TasksProgress({ value, sx }: TasksProgressProps): React.JSX.Element {
+  const theme = useTheme();
+  
   return (
     <Card sx={sx}>
       <CardContent>
@@ -25,7 +28,11 @@ export function TasksProgress({ value, sx }: TasksProgressProps): React.JSX.Elem
               </Typography>
               <Typography variant="h4">20</Typography>
             </Stack>
-            <Avatar sx={{ backgroundColor: 'var(--mui-palette-warning-main)', height: '56px', width: '56px' }}>
+            <Avatar sx={{ 
+              backgroundColor: theme.palette.secondary.main,
+              height: '56px', 
+              width: '56px' 
+            }}>
               <ListBulletsIcon fontSize="var(--icon-fontSize-lg)" />
             </Avatar>
           </Stack>
