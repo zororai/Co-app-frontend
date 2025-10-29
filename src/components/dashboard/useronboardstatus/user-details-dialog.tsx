@@ -37,8 +37,12 @@ export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogPr
       setLoading(true);
       setError('');
       try {
-        const details = await authClient.fetchUserById(userId);
-        setUserDetails(details);
+        const response = await authClient.fetchUserById(userId);
+        if (response.success && response.data) {
+          setUserDetails(response.data);
+        } else {
+          setError(response.error || 'Failed to load user details. Please try again.');
+        }
       } catch (error_) {
         console.error('Error fetching user details:', error_);
         setError('Failed to load user details. Please try again.');
