@@ -17,6 +17,7 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import PrintIcon from '@mui/icons-material/Print';
+import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import { printElementById } from '@/lib/print';
 import dayjs from 'dayjs';
@@ -31,6 +32,7 @@ interface IncidentDetailsDialogProps {
 }
 
 export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: IncidentDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [incident, setIncident] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -356,7 +358,15 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
       </DialogContent>
       
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose} variant="outlined">
+        <Button 
+          onClick={onClose} 
+          variant="contained"
+          sx={{
+            bgcolor: theme.palette.secondary.main,
+            color: '#fff',
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
+          }}
+        >
           Close
         </Button>
       </DialogActions>

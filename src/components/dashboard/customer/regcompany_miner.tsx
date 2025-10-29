@@ -400,7 +400,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10}$/.test(form.cellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -493,9 +493,9 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
           />
         </Box>
         <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-          <InputLabel>Cell number ff</InputLabel>
+          <InputLabel>Cell Number</InputLabel>
           <TextField
-            name="contactNumber"
+            name="cellNumber"
             placeholder="Enter your mobile number"
             fullWidth
             value={form.cellNumber}
