@@ -15,8 +15,10 @@ import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
+import { useTheme } from '@mui/material/styles';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
@@ -36,6 +38,7 @@ const defaultValues = { firstName: '', lastName: '', email: '', password: '', te
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
+  const theme = useTheme();
 
   const { checkSession } = useUser();
 
@@ -91,7 +94,18 @@ export function SignUpForm(): React.JSX.Element {
         <Typography variant="h4">Sign up</Typography>
         <Typography color="text.secondary" variant="body2">
           Already have an account?{' '}
-          <Link component={RouterLink} href={paths.auth.signIn} underline="hover" variant="subtitle2">
+          <Link 
+            component={RouterLink} 
+            href={paths.auth.signIn} 
+            underline="hover" 
+            variant="subtitle2"
+            sx={{
+              color: theme.palette.secondary.main,
+              '&:hover': {
+                color: theme.palette.secondary.dark
+              }
+            }}
+          >
             Sign in
           </Link>
         </Typography>
@@ -160,8 +174,27 @@ export function SignUpForm(): React.JSX.Element {
             )}
           />
           {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-          <Button disabled={isPending} type="submit" variant="contained">
-            Sign up
+          <Button 
+            disabled={isPending} 
+            type="submit" 
+            variant="contained"
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: '#fff',
+              '&:hover': {
+                bgcolor: theme.palette.secondary.dark
+              },
+              '&.Mui-disabled': {
+                bgcolor: 'rgba(0, 0, 0, 0.12)',
+                color: 'rgba(0, 0, 0, 0.26)'
+              }
+            }}
+          >
+            {isPending ? (
+              <CircularProgress size={24} sx={{ color: 'white' }} />
+            ) : (
+              'Sign up'
+            )}
           </Button>
         </Stack>
       </form>
