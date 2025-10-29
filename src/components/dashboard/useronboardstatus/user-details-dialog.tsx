@@ -19,9 +19,10 @@ interface UserDetailsDialogProps {
   open: boolean;
   onClose: () => void;
   userId: string | null;
+  onRefresh?: () => void;
 }
 
-export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogProps): React.JSX.Element {
+export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDetailsDialogProps): React.JSX.Element {
   const [userDetails, setUserDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -106,6 +107,12 @@ export function UserDetailsDialog({ open, onClose, userId }: UserDetailsDialogPr
 
       // Optimistically update local state
       setUserDetails((prev: any) => prev ? { ...prev, status, reason: showReasonField ? reason : prev.reason } : prev);
+      
+      // Call refresh callback to update parent table
+      if (onRefresh) {
+        onRefresh();
+      }
+      
       // Reset selection
       setStatus('');
       setReason('');

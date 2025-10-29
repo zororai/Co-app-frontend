@@ -78,7 +78,6 @@ export interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   onRefresh?: () => void; // Optional callback to refresh data from parent
-  statusFilter?: 'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED' | null; // Optional status filter
 }
 
 export function CustomersTable({
@@ -87,7 +86,6 @@ export function CustomersTable({
   page = 0,
   rowsPerPage = 0,
   onRefresh,
-  statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
@@ -95,7 +93,6 @@ export function CustomersTable({
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
     search: '',
-    status: 'all',
     position: 'all'
   });
   
@@ -130,13 +127,9 @@ export function CustomersTable({
         );
       
       // Apply dropdown filter
-      const matchesDropdownStatus = filters.status === 'all' || user.status === filters.status;
       const matchesPosition = filters.position === 'all' || user.position === filters.position;
-      
-      // Apply tab filter if provided
-      const matchesTabStatus = statusFilter === null || user.status === statusFilter;
 
-      return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
+      return matchesSearch && matchesPosition;
     });
     
     // Apply sorting
@@ -158,7 +151,7 @@ export function CustomersTable({
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [dataSource, filters, statusFilter, sortField, sortDirection]);
+  }, [dataSource, filters, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -367,26 +360,6 @@ export function CustomersTable({
               }}
             />
           </Box>
-          <FormControl sx={{ minWidth: 150 }}>
-            <Select
-              value={filters.status}
-              displayEmpty
-              size="small"
-              sx={{ 
-                '& .MuiSelect-select': { 
-                  py: 1,
-                  fontSize: '14px'
-                }
-              }}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-            >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="REJECTED">Rejected</MenuItem>
-              <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
-              <MenuItem value="APPROVED">Approved</MenuItem>
-            </Select>
-          </FormControl>
           <FormControl sx={{ minWidth: 150 }}>
             <Select
               value={filters.position}
