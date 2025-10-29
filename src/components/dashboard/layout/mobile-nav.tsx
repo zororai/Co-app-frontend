@@ -12,6 +12,8 @@ import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
 import { ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
+import { MagnifyingGlass as SearchIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
+import { useTheme } from '@mui/material/styles';
 
 import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
@@ -30,9 +32,11 @@ export interface MobileNavProps {
 
 export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const theme = useTheme();
   const [loading, setLoading] = React.useState(false);
   const [permissionsLoading, setPermissionsLoading] = React.useState(true);
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState<string>('');
   const prevPathRef = React.useRef<string | null>(null);
 
   // Fetch user permissions and filter navigation items using render-ui-first pattern
@@ -98,20 +102,55 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
     prevPathRef.current = pathname;
   }, [pathname, loading, onClose]);
 
+  // Filter nav items based on search query
+  const searchFilteredNavItems = React.useMemo(() => {
+    if (!searchQuery.trim()) {
+      return filteredNavItems;
+    }
+
+    const query = searchQuery.toLowerCase();
+    
+    const filterItems = (items: NavItemConfig[]): NavItemConfig[] => {
+      return items.reduce((acc: NavItemConfig[], item) => {
+        const titleMatch = item.title?.toLowerCase().includes(query) || false;
+        
+        // If item has children, filter them recursively
+        if (item.items && item.items.length > 0) {
+          const filteredChildren = filterItems(item.items);
+          
+          // Include parent if title matches or if any children match
+          if (titleMatch || filteredChildren.length > 0) {
+            acc.push({
+              ...item,
+              items: filteredChildren.length > 0 ? filteredChildren : item.items
+            });
+          }
+        } else if (titleMatch) {
+          // Include item if title matches
+          acc.push(item);
+        }
+        
+        return acc;
+      }, []);
+    };
+
+    return filterItems(filteredNavItems);
+  }, [filteredNavItems, searchQuery]);
+
   return (
     <Drawer
       PaperProps={{
         sx: {
-          '--MobileNav-background': 'var(--mui-palette-neutral-950)',
+          '--MobileNav-background': theme.palette.secondary.main,
           '--MobileNav-color': 'var(--mui-palette-common-white)',
-          '--NavItem-color': 'var(--mui-palette-neutral-300)',
-          '--NavItem-hover-background': 'rgba(255, 255, 255, 0.04)',
-          '--NavItem-active-background': 'var(--mui-palette-primary-main)',
-          '--NavItem-active-color': 'var(--mui-palette-primary-contrastText)',
-          '--NavItem-disabled-color': 'var(--mui-palette-neutral-500)',
-          '--NavItem-icon-color': 'var(--mui-palette-neutral-400)',
-          '--NavItem-icon-active-color': 'var(--mui-palette-primary-contrastText)',
-          '--NavItem-icon-disabled-color': 'var(--mui-palette-neutral-600)',
+          '--NavItem-color': 'rgba(255, 255, 255, 0.9)',
+          '--NavItem-hover-background': 'rgba(255, 255, 255, 0.1)',
+          '--NavItem-active-background': theme.palette.secondary.dark,
+          '--NavItem-active-color': 'var(--mui-palette-common-white)',
+          '--NavItem-disabled-color': 'rgba(255, 255, 255, 0.5)',
+          '--NavItem-icon-color': 'rgba(255, 255, 255, 0.7)',
+          '--NavItem-icon-active-color': 'var(--mui-palette-common-white)',
+          '--NavItem-icon-disabled-color': 'rgba(255, 255, 255, 0.4)',
           bgcolor: 'var(--MobileNav-background)',
           color: 'var(--MobileNav-color)',
           display: 'flex',
@@ -130,7 +169,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         <Box
           component={RouterLink}
           href={paths.home}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none', color: 'inherit' }}
         >
           <Box
             component="img"
@@ -138,43 +177,87 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
             alt="Logo"
             sx={{
               height: 50,
-              width: 50
+              width: 50,
+              flexShrink: 0
             }}
           />
-          <Typography variant="h6" gutterBottom={false}>
-            Commstack
-          </Typography>
-        </Box>
-        
-        <Box
-          sx={{
-            alignItems: 'center',
-            backgroundColor: 'var(--mui-palette-neutral-950)',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            display: 'flex',
-            p: '10px 12px',
-          }}
-        >
-          <Box sx={{ flex: '1 1 auto' }}>
-            <Typography color="inherit" variant="subtitle1">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontSize: '1.125rem',
+                lineHeight: 1.2,
+                fontWeight: 600,
+                color: 'white'
+              }}
+            >
+              Commstack
+            </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                fontSize: '0.75rem',
+                lineHeight: 1,
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontWeight: 400
+              }}
+            >
               Co-App
             </Typography>
           </Box>
         </Box>
         
-        {/* Loading indicator below Co-App text */}
+        {/* Search box for filtering menu items */}
+        <Box sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          borderRadius: 1,
+          px: 1.5,
+          py: 1,
+          bgcolor: 'rgba(255, 255, 255, 0.05)',
+          '&:focus-within': {
+            borderColor: 'rgba(255, 255, 255, 0.4)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)'
+          }
+        }}>
+          <SearchIcon 
+            fontSize={18}
+            style={{ color: 'rgba(255, 255, 255, 0.7)', marginRight: '8px', flexShrink: 0 }}
+          />
+          <input
+            type="text"
+            placeholder="Search menu..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              border: 'none',
+              outline: 'none',
+              width: '100%',
+              background: 'transparent',
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontFamily: 'inherit'
+            }}
+          />
+        </Box>
+        
+        {/* Loading indicator below logo */}
         {(permissionsLoading || loading) && (
           <LinearProgress 
             sx={{ 
               width: '100%',
               mx: -3,
-              mt: -1
+              mt: -1,
+              '& .MuiLinearProgress-bar': {
+                bgcolor: 'rgba(255, 255, 255, 0.9)'
+              },
+              bgcolor: 'rgba(255, 255, 255, 0.2)'
             }} 
           />
         )}
       </Stack>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
       <Box 
         component="nav" 
         sx={{ 
@@ -196,10 +279,10 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         }}
       >
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {renderNavItems({ pathname, items: filteredNavItems, onNavigateStart: () => setLoading(true) })}
+          {renderNavItems({ pathname, items: searchFilteredNavItems, onNavigateStart: () => setLoading(true) })}
         </Stack>
       </Box>
-      <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
+      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
     
     </Drawer>
   );
@@ -279,12 +362,22 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
+          transition: 'background-color 0.2s ease',
           ...(disabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',
             cursor: 'not-allowed',
           }),
-          ...(active && { bgcolor: 'var(--NavItem-active-background)', color: 'var(--NavItem-active-color)' }),
+          ...(!disabled && !active && {
+            '&:hover': {
+              bgcolor: 'var(--NavItem-hover-background)',
+            },
+          }),
+          ...(active && { 
+            bgcolor: 'var(--NavItem-active-background)', 
+            color: 'var(--NavItem-active-color)',
+            fontWeight: 600
+          }),
         }}
       >
         <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>

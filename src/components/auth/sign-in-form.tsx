@@ -20,6 +20,7 @@ import { EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { EyeSlashIcon } from '@phosphor-icons/react/dist/ssr/EyeSlash';
 import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
+import { useTheme } from '@mui/material/styles';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
@@ -36,6 +37,7 @@ type Values = zod.infer<typeof schema>;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
+  const theme = useTheme();
 
   const { checkSession } = useUser();
 
@@ -100,12 +102,25 @@ export function SignInForm(): React.JSX.Element {
         <Stack spacing={4} sx={{ maxWidth: 400, mx: 'auto' }}>
           <Stack spacing={1} sx={{ textAlign: 'center' }}>
           <Typography variant="h4">Sign in</Typography>
-          {/* <Typography color="text.secondary" variant="body2">
+          {/* Uncomment if sign-up is enabled:
+          <Typography color="text.secondary" variant="body2">
             Don&apos;t have an account?{' '}
-            <Link component={RouterLink} href={paths.auth.signUp} underline="hover" variant="subtitle2">
+            <Link 
+              component={RouterLink} 
+              href={paths.auth.signUp} 
+              underline="hover" 
+              variant="subtitle2"
+              sx={{
+                color: theme.palette.secondary.main,
+                '&:hover': {
+                  color: theme.palette.secondary.dark
+                }
+              }}
+            >
               Sign up
             </Link>
-          </Typography> */}
+          </Typography>
+          */}
         </Stack>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Stack spacing={2}>
@@ -161,13 +176,46 @@ export function SignInForm(): React.JSX.Element {
               )}
             />
             <div>
-            {!isPending && <Link component={RouterLink}  href={paths.auth.resetPassword} variant="subtitle2">
+            {!isPending && (
+              <Link 
+                component={RouterLink}  
+                href={paths.auth.resetPassword} 
+                variant="subtitle2"
+                sx={{
+                  color: theme.palette.secondary.main,
+                  textDecoration: 'none',
+                  '&:hover': {
+                    color: theme.palette.secondary.dark,
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
                 Forgot password?
-              </Link>}
+              </Link>
+            )}
             </div>
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button disabled={isPending} loading={isPending}  type="submit" variant="contained">
-              Sign in
+            <Button 
+              disabled={isPending} 
+              type="submit" 
+              variant="contained"
+              sx={{
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                '&:hover': {
+                  bgcolor: theme.palette.secondary.dark
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'rgba(0, 0, 0, 0.12)',
+                  color: 'rgba(0, 0, 0, 0.26)'
+                }
+              }}
+            >
+              {isPending ? (
+                <CircularProgress size={24} sx={{ color: 'white' }} />
+              ) : (
+                'Sign in'
+              )}
             </Button>
           </Stack>
         </form>
