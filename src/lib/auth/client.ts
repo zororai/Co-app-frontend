@@ -5579,5 +5579,37 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
+
+  /**
+   * Update shaft number for a company
+   * PUT /api/shaft-assignments/company/update-shaftnumber/{companyId}?shaftNumber={shaftNumber}
+   */
+  async updateCompanyShaftNumber(companyId: string, shaftNumber: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const encodedCompanyId = encodeURIComponent(companyId);
+      const encodedShaftNumber = encodeURIComponent(shaftNumber);
+      const response = await fetch(`/api/shaft-assignments/company/update-shaftnumber/${encodedCompanyId}?shaftNumber=${encodedShaftNumber}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update company shaft number' };
+      }
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating company shaft number:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 }
 export const authClient = new AuthClient();

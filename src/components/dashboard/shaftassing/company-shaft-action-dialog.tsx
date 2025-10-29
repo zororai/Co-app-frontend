@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import LinkIcon from '@mui/icons-material/Link';
 import { ShaftAttachmentDialog } from './companyshaft-attachment-dialog';
+import { UnassignedShaftsDialog } from './unassignedcompany-shafts-dialog';
 
 export interface CompanyShaftActionDialogProps {
   open: boolean;
@@ -34,11 +35,10 @@ export function CompanyShaftActionDialog({
   companyName,
 }: CompanyShaftActionDialogProps): React.JSX.Element {
   const [attachmentDialogOpen, setAttachmentDialogOpen] = React.useState(false);
+  const [unassignedShaftsDialogOpen, setUnassignedShaftsDialogOpen] = React.useState(false);
 
   const handleAttachExisting = () => {
-    if (companyId) {
-      onAttachExisting(companyId);
-    }
+    setUnassignedShaftsDialogOpen(true);
     onClose();
   };
 
@@ -49,6 +49,16 @@ export function CompanyShaftActionDialog({
 
   const handleAttachmentDialogClose = () => {
     setAttachmentDialogOpen(false);
+  };
+
+  const handleUnassignedShaftsDialogClose = () => {
+    setUnassignedShaftsDialogOpen(false);
+  };
+
+  const handleShaftAssigned = (companyId: string, shaftId: string) => {
+    // Call the parent's onAttachExisting callback to refresh data
+    onAttachExisting(companyId);
+    setUnassignedShaftsDialogOpen(false);
   };
 
   return (
@@ -164,6 +174,13 @@ export function CompanyShaftActionDialog({
         open={attachmentDialogOpen}
         onClose={handleAttachmentDialogClose}
         customerId={companyId || undefined}
+      />
+      
+      <UnassignedShaftsDialog
+        open={unassignedShaftsDialogOpen}
+        onClose={handleUnassignedShaftsDialogClose}
+        customerId={companyId}
+        onAssignShaft={handleShaftAssigned}
       />
     </>
   );
