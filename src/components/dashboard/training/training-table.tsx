@@ -35,6 +35,7 @@ import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { TrainingDetailsDialog } from './training-details-dialog';
 
 export interface Training {
   id: string;
@@ -83,6 +84,10 @@ export function TrainingTable({
   const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set());
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedTraining, setSelectedTraining] = React.useState<string | null>(null);
+  
+  // Dialog states
+  const [viewDialogOpen, setViewDialogOpen] = React.useState(false);
+  const [selectedTrainingId, setSelectedTrainingId] = React.useState<string | null>(null);
 
   // Sorting function
   const handleSort = (field: string) => {
@@ -132,6 +137,16 @@ export function TrainingTable({
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedTraining(null);
+  };
+
+  const handleViewTraining = (trainingId: string) => {
+    setSelectedTrainingId(trainingId);
+    setViewDialogOpen(true);
+  };
+
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+    setSelectedTrainingId(null);
   };
 
   const getStatusColor = (status: Training['status']) => {
@@ -381,7 +396,7 @@ export function TrainingTable({
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Tooltip title="View Details">
                         <IconButton 
-                          onClick={() => {}}
+                          onClick={() => handleViewTraining(row.id)}
                           size="small"
                           sx={{
                             color: 'secondary.main',
@@ -438,6 +453,14 @@ export function TrainingTable({
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
+      />
+
+      {/* Training Details Dialog */}
+      <TrainingDetailsDialog
+        open={viewDialogOpen}
+        onClose={handleCloseViewDialog}
+        trainingId={selectedTrainingId}
+        onRefresh={onRefresh}
       />
     </Card>
   );

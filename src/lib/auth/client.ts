@@ -5679,6 +5679,40 @@ cooperativename: string;
   }
 
   /**
+   * Fetch training by ID
+   * GET /api/trainers/{id}
+   */
+  async fetchTrainingById(id: string): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch training details' };
+      }
+      
+      const data = await response.json().catch(() => null);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching training details:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Fetch all trainings
    * GET /api/trainers
    */
