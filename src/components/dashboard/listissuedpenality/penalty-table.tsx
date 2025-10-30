@@ -45,17 +45,21 @@ import { authClient } from '@/lib/auth/client';
 
 export interface Penalty {
   id: string;
-  employeeName: string;
-  employeeId: string;
-  violationType: string;
-  description: string;
-  penaltyAmount: number;
-  issueDate: string;
-  dueDate: string;
-  status: 'Pending' | 'Paid' | 'Overdue' | 'Cancelled';
-  issuedBy: string;
-  department: string;
-  location: string;
+  mineNumber: string;
+  issuedAt: string;
+  fineAmount: number;
+  status: string;
+  // Legacy fields for backward compatibility
+  employeeName?: string;
+  employeeId?: string;
+  violationType?: string;
+  description?: string;
+  penaltyAmount?: number;
+  issueDate?: string;
+  dueDate?: string;
+  issuedBy?: string;
+  department?: string;
+  location?: string;
 }
 
 function noop(): void {
@@ -81,6 +85,11 @@ export function PenaltyTable({
   error = '',
   onRefresh
 }: PenaltyTableProps): React.JSX.Element {
+  
+  // Contraventions data state
+  const [contraventions, setContraventions] = React.useState<Penalty[]>([]);
+  const [contraventionsLoading, setContraventionsLoading] = React.useState(false);
+  const [contraventionsError, setContraventionsError] = React.useState('');
   
   // Filter state
   const [filters, setFilters] = React.useState({
@@ -112,6 +121,52 @@ export function PenaltyTable({
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
+  // Fetch contraventions data
+  const fetchContraventions = React.useCallback(async () => {
+    setContraventionsLoading(true);
+    setContraventionsError('');
+    
+    try {
+      const result = await authClient.fetchContraventions();
+      
+      if (result.success && result.data) {
+        // Transform API data to match our interface
+        const transformedData: Penalty[] = result.data.map((item: any) => ({
+          id: item.id || Math.random().toString(36).substr(2, 9),
+          mineNumber: item.mineNumber || '',
+          issuedAt: item.issuedAt || '',
+          fineAmount: item.fineAmount || 0,
+          status: item.status || 'Pending',
+          // Map to legacy fields for display compatibility
+          employeeName: item.mineNumber || 'Unknown',
+          employeeId: item.mineNumber || '',
+          violationType: 'Contravention',
+          description: item.descriptionOfOffence || '',
+          penaltyAmount: item.fineAmount || 0,
+          issueDate: item.issuedAt || '',
+          dueDate: item.issuedAt || '',
+          issuedBy: item.raisedby || '',
+          department: 'Mining',
+          location: item.place || ''
+        }));
+        
+        setContraventions(transformedData);
+      } else {
+        setContraventionsError(result.error || 'Failed to fetch contraventions');
+      }
+    } catch (error) {
+      setContraventionsError('An error occurred while fetching contraventions');
+      console.error('Error fetching contraventions:', error);
+    } finally {
+      setContraventionsLoading(false);
+    }
+  }, []);
+
+  // Load contraventions on component mount
+  React.useEffect(() => {
+    fetchContraventions();
+  }, [fetchContraventions]);
+
   // Sorting function
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -124,15 +179,18 @@ export function PenaltyTable({
 
   // Filtering and sorting logic
   const filteredRows = React.useMemo(() => {
-    let filtered = rows.filter(row => {
+    // Use contraventions data if available, otherwise fall back to props rows
+    const dataToFilter = contraventions.length > 0 ? contraventions : rows;
+    let filtered = dataToFilter.filter(row => {
       const matchesSearch = filters.search === '' || 
-        row.employeeName.toLowerCase().includes(filters.search.toLowerCase()) ||
-        row.employeeId.toLowerCase().includes(filters.search.toLowerCase()) ||
-        row.violationType.toLowerCase().includes(filters.search.toLowerCase()) ||
-        row.description.toLowerCase().includes(filters.search.toLowerCase());
+        (row.employeeName || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+        (row.employeeId || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+        (row.violationType || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+        (row.description || '').toLowerCase().includes(filters.search.toLowerCase()) ||
+        row.mineNumber.toLowerCase().includes(filters.search.toLowerCase());
       
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
-      const matchesViolationType = filters.violationType === 'all' || row.violationType === filters.violationType;
+      const matchesViolationType = filters.violationType === 'all' || (row.violationType || '') === filters.violationType;
       
       return matchesSearch && matchesStatus && matchesViolationType;
     });
@@ -159,7 +217,7 @@ export function PenaltyTable({
     });
 
     return filtered;
-  }, [rows, filters, sortField, sortDirection]);
+  }, [contraventions, rows, filters, sortField, sortDirection]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, penaltyId: string) => {
     setAnchorEl(event.currentTarget);
@@ -197,6 +255,7 @@ export function PenaltyTable({
     setSnackbarOpen(true);
     
     // Refresh the table
+    fetchContraventions();
     if (onRefresh) {
       onRefresh();
     }
@@ -229,6 +288,7 @@ export function PenaltyTable({
         setSnackbarOpen(true);
         
         // Refresh the table
+        fetchContraventions();
         if (onRefresh) {
           onRefresh();
         }
@@ -266,25 +326,34 @@ export function PenaltyTable({
     }
   };
 
-  const selectedSome = selectedRows.size > 0 && selectedRows.size < rows.length;
-  const selectedAll = rows.length > 0 && selectedRows.size === rows.length;
+  // Use contraventions data for selection logic
+  const dataForSelection = contraventions.length > 0 ? contraventions : rows;
+  const selectedSome = selectedRows.size > 0 && selectedRows.size < dataForSelection.length;
+  const selectedAll = dataForSelection.length > 0 && selectedRows.size === dataForSelection.length;
+  
+  // Determine current loading and error states
+  const currentLoading = contraventionsLoading || loading;
+  const currentError = contraventionsError || error;
 
   return (
     <Card>      
       {/* Loading and Error States */}
-      {loading && (
+      {currentLoading && (
         <Box sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>Loading penalties...</Typography>
+          <Typography>Loading contraventions...</Typography>
         </Box>
       )}
       
-      {!loading && error && (
+      {!currentLoading && currentError && (
         <Box sx={{ p: 3, textAlign: 'center', color: 'error.main' }}>
-          <Typography>{error}</Typography>
+          <Typography>{currentError}</Typography>
           <Button 
             variant="outlined" 
             sx={{ mt: 2 }} 
-            onClick={onRefresh}
+            onClick={() => {
+              fetchContraventions();
+              if (onRefresh) onRefresh();
+            }}
           >
             Retry
           </Button>
@@ -387,18 +456,10 @@ export function PenaltyTable({
                   direction={sortField === 'employeeName' ? sortDirection : 'asc'}
                   onClick={() => handleSort('employeeName')}
                 >
-                  Employee
+                     Miner Number
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortField === 'violationType' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'violationType'}
-                  direction={sortField === 'violationType' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('violationType')}
-                >
-                  Violation Type
-                </TableSortLabel>
-              </TableCell>
+            
               <TableCell sortDirection={sortField === 'penaltyAmount' ? sortDirection : false}>
                 <TableSortLabel
                   active={sortField === 'penaltyAmount'}
@@ -439,7 +500,7 @@ export function PenaltyTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading && (
+            {currentLoading && (
               // Show skeleton rows while loading
               Array.from({ length: 5 }).map((_, index) => (
                 <TableRow key={`skeleton-${index}`}>
@@ -459,7 +520,7 @@ export function PenaltyTable({
                 </TableRow>
               ))
             )}
-            {!loading && filteredRows.length === 0 && (
+            {!currentLoading && filteredRows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
                   <Typography variant="body1" color="text.secondary">
@@ -468,31 +529,28 @@ export function PenaltyTable({
                 </TableCell>
               </TableRow>
             )}
-            {!loading && filteredRows.map((row) => {
+            {!currentLoading && filteredRows.map((row) => {
               const isSelected = selectedRows.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>
                     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                      <Avatar sx={{ width: 32, height: 32 }}>
-                        {row.employeeName.split(' ').map(n => n[0]).join('')}
-                      </Avatar>
+
                       <Box>
-                        <Typography variant="subtitle2">{row.employeeName}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          ID: {row.employeeId}
+                       <Typography variant="body2" color="text.secondary">
+                         {row.mineNumber}
                         </Typography>
                       </Box>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.violationType || ''}</TableCell>
+                
                   <TableCell>
                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                      ${row.penaltyAmount?.toLocaleString() || '0'}
+                      ${(row.fineAmount || row.penaltyAmount || 0).toLocaleString()}
                     </Typography>
                   </TableCell>
-                  <TableCell>{new Date(row.issueDate).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(row.dueDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(row.issuedAt || row.issueDate || '').toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(row.dueDate || row.issuedAt || '').toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -547,7 +605,7 @@ export function PenaltyTable({
                       </Tooltip>
                       <Tooltip title="Delete Penalty">
                         <IconButton 
-                          onClick={() => handleDeletePenalty(row.id, row.employeeName)}
+                          onClick={() => handleDeletePenalty(row.id, row.employeeName || row.mineNumber)}
                           size="small"
                           sx={{
                             color: 'error.main',

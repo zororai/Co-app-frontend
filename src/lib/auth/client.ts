@@ -866,6 +866,40 @@ class AuthClient {
     }
 
     /**
+     * Fetch all contraventions
+     * GET /api/contraventions
+     */
+    async fetchContraventions(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            const response = await fetch('/api/contraventions', {
+                method: 'GET',
+                headers: {
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Request failed');
+                console.error('Failed to fetch contraventions:', errorText);
+                return { success: false, error: errorText || 'Failed to fetch contraventions' };
+            }
+
+            const data = await response.json();
+            console.log('Contraventions fetched successfully:', data);
+            return { success: true, data: Array.isArray(data) ? data : [] };
+        } catch (error) {
+            console.error('Error fetching contraventions:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
+    /**
      * Create a new ore transport record
      */
     async createOre(oreData: {

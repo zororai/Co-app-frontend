@@ -318,7 +318,7 @@ export function EditTrainingDialog({ open, onClose, trainingId, onSuccess }: Edi
           bgcolor: '#fafafa'
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle3" sx={{ fontWeight: 600 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
               Trainee {index + 1}
             </Typography>
             {formData.trainees.length > 1 && (
