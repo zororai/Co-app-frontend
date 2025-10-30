@@ -54,6 +54,8 @@ export const allNavItems = [
       { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
      { key: 'guilty', title: 'Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
+     { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
+    
     ],
   },
   {

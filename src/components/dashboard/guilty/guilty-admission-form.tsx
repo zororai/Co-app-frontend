@@ -9,7 +9,6 @@ import {
   Stack,
   Typography,
   Box,
-  Grid,
   Divider,
   Alert,
   CircularProgress,
@@ -94,10 +93,9 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   });
 
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [success, setSuccess] = React.useState(false);
 
-  // Print function
   const handlePrint = () => {
     // Create a new window for printing
     const printWindow = window.open('', '_blank');
@@ -361,14 +359,18 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   };
 
   const handleInputChange = (field: keyof GuiltyAdmissionFormData) => (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: event.target.value,
     }));
-    if (error) {
-      setError(null);
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: '',
+      }));
     }
   };
 
@@ -378,9 +380,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
       ...prev,
       contraventions: prev.contraventions.map((item, i) => i === index ? value : item)
     }));
-    if (error) {
-      setError(null);
-    }
   };
 
   // Add new contravention
@@ -401,30 +400,101 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     }
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Required field validation
+    if (!formData.raisedBy.trim()) {
+      newErrors.raisedBy = 'Please fill out this field';
+    }
+    if (!formData.idOrNrNumber.trim()) {
+      newErrors.idOrNrNumber = 'Please fill out this field';
+    }
+    if (!formData.address.trim()) {
+      newErrors.address = 'Please fill out this field';
+    }
+    if (!formData.occupation.trim()) {
+      newErrors.occupation = 'Please fill out this field';
+    }
+    if (!formData.admitGuilty.trim()) {
+      newErrors.admitGuilty = 'Please fill out this field';
+    }
+    if (!formData.descriptionOfOffence.trim()) {
+      newErrors.descriptionOfOffence = 'Please fill out this field';
+    }
+
+    // Date validation - prevent past dates
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (formData.issuedDate && formData.issuedDate < today) {
+      newErrors.issuedDate = 'Date cannot be in the past';
+    }
+    
+    if (formData.date && formData.date < today) {
+      newErrors.date = 'Date cannot be in the past';
+    }
+    
+    if (formData.dateCharged && formData.dateCharged < today) {
+      newErrors.dateCharged = 'Date cannot be in the past';
+    }
+    
+    if (formData.acceptedDate && formData.acceptedDate < today) {
+      newErrors.acceptedDate = 'Date cannot be in the past';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     
-    // Basic validation
-    if (!formData.raisedBy.trim()) {
-      setError('Raised by field is required');
-      return;
-    }
-    if (!formData.admitGuilty.trim()) {
-      setError('Admission of guilt statement is required');
-      return;
-    }
-    if (!formData.descriptionOfOffence.trim()) {
-      setError('Description of offence is required');
+    if (!validateForm()) {
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
-      // Here you would typically call an API to submit the form
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Prepare data for API submission
+      const contraventionData = {
+        contraventionOf: formData.contraventions.filter(c => c.trim() !== ''),
+        raisedby: formData.raisedBy,
+        idOrNrNumber: formData.idOrNrNumber,
+        address: formData.address,
+        occupation: formData.occupation,
+        holderOf: formData.holderOf,
+        number: formData.holderNumber,
+        issuedAt: formData.issuedAt,
+        issuedTime: formData.time,
+        admitof: formData.admitGuilty,
+        descriptionOfOffence: formData.descriptionOfOffence,
+        place: formData.place,
+        offenceDate: formData.date,
+        offenceTime: formData.signatureTime,
+        signatureOfOffender: formData.offenderSignature,
+        dateCharged: formData.dateCharged,
+        mineNumber: formData.mineNumber,
+        inspectorOfMines: formData.inspectorAccepted,
+        acceptedDate: formData.acceptedDate,
+        status: 'Submitted',
+        remarks: '',
+        fineAmount: parseFloat(formData.totalAmount) || 0,
+        Accountamount1: formData.firstAccountAmount,
+        Accountamount2: formData.secondAccountAmount,
+        Accountamount3: formData.thirdAccountAmount,
+        signed: formData.officialSigned,
+        shemanager: formData.sheManagerSigned,
+        inspeptorofminers: formData.inspectorAccepted,
+      };
+
+      // Submit to API
+      const result = await authClient.createContravention(contraventionData);
+      
+      if (!result.success) {
+        setErrors({ submit: result.error || 'Failed to submit admission of guilt' });
+        return;
+      }
       
       setSuccess(true);
       
@@ -464,11 +534,15 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
         setSuccess(false);
       }, 3000);
     } catch (error_) {
-      setError(error_ instanceof Error ? error_.message : 'Failed to submit admission of guilt');
+      console.error('Error submitting contravention:', error_);
+      setErrors({ submit: error_ instanceof Error ? error_.message : 'Failed to submit admission of guilt' });
     } finally {
       setLoading(false);
     }
   };
+
+  // Get today's date for validation
+  const today = new Date().toISOString().split('T')[0];
 
   // TextField styling to match the project theme
   const textFieldStyle = {
@@ -483,11 +557,11 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   return (
     <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
       <CardContent sx={{ p: 4 }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <Stack spacing={4}>
-            {error && (
-              <Alert severity="error" onClose={() => setError(null)}>
-                {error}
+            {errors.submit && (
+              <Alert severity="error" onClose={() => setErrors((prev) => ({ ...prev, submit: '' }))}>
+                {errors.submit}
               </Alert>
             )}
             
@@ -568,29 +642,36 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
 
             {/* Personal Details Section */}
             <Box>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Raised by"
-                    value={formData.raisedBy}
-                    onChange={handleInputChange('raisedBy')}
-                    disabled={loading}
-                    fullWidth
-                    required
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="ID Or NR Number"
-                    value={formData.idOrNrNumber}
-                    onChange={handleInputChange('idOrNrNumber')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12}>
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Raised by"
+                      value={formData.raisedBy}
+                      onChange={handleInputChange('raisedBy')}
+                      disabled={loading}
+                      fullWidth
+                      required
+                      error={!!errors.raisedBy}
+                      helperText={errors.raisedBy}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="ID Or NR Number"
+                      value={formData.idOrNrNumber}
+                      onChange={handleInputChange('idOrNrNumber')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.idOrNrNumber}
+                      helperText={errors.idOrNrNumber}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box>
                   <TextField
                     label="Address"
                     value={formData.address}
@@ -599,179 +680,221 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                     fullWidth
                     multiline
                     rows={2}
+                    error={!!errors.address}
+                    helperText={errors.address}
                     sx={textFieldStyle}
                   />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Occupation"
-                    value={formData.occupation}
-                    onChange={handleInputChange('occupation')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Holder Of"
-                    value={formData.holderOf}
-                    onChange={handleInputChange('holderOf')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Number"
-                    value={formData.holderNumber}
-                    onChange={handleInputChange('holderNumber')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Issued At"
-                    value={formData.issuedAt}
-                    onChange={handleInputChange('issuedAt')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Date"
-                    value={formData.issuedDate}
-                    onChange={handleInputChange('issuedDate')}
-                    disabled={loading}
-                    fullWidth
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Time"
-                    value={formData.time}
-                    onChange={handleInputChange('time')}
-                    disabled={loading}
-                    fullWidth
-                    type="time"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-              </Grid>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Occupation"
+                      value={formData.occupation}
+                      onChange={handleInputChange('occupation')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.occupation}
+                      helperText={errors.occupation}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Holder Of"
+                      value={formData.holderOf}
+                      onChange={handleInputChange('holderOf')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.holderOf}
+                      helperText={errors.holderOf}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Number"
+                      value={formData.holderNumber}
+                      onChange={handleInputChange('holderNumber')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.holderNumber}
+                      helperText={errors.holderNumber}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Issued At"
+                      value={formData.issuedAt}
+                      onChange={handleInputChange('issuedAt')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.issuedAt}
+                      helperText={errors.issuedAt}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Date"
+                      value={formData.issuedDate}
+                      onChange={handleInputChange('issuedDate')}
+                      disabled={loading}
+                      fullWidth
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.issuedDate}
+                      helperText={errors.issuedDate}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
+                    <TextField
+                      label="Time"
+                      value={formData.time}
+                      onChange={handleInputChange('time')}
+                      disabled={loading}
+                      fullWidth
+                      type="time"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.time}
+                      helperText={errors.time}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
 
             <Divider />
 
             {/* Admission Section */}
             <Box>
-              <TextField
-                label="Admit that I am guilty of contravening"
-                value={formData.admitGuilty}
-                onChange={handleInputChange('admitGuilty')}
-                disabled={loading}
-                fullWidth
-                required
-                multiline
-                rows={2}
-                sx={textFieldStyle}
-              />
-            </Box>
-
-            <Box>
-              <TextField
-                label="Description of Offence"
-                value={formData.descriptionOfOffence}
-                onChange={handleInputChange('descriptionOfOffence')}
-                disabled={loading}
-                fullWidth
-                required
-                multiline
-                rows={4}
-                sx={textFieldStyle}
-              />
+              <Stack spacing={3}>
+                <TextField
+                  label="Admit that I am guilty of contravening"
+                  value={formData.admitGuilty}
+                  onChange={handleInputChange('admitGuilty')}
+                  disabled={loading}
+                  fullWidth
+                  multiline
+                  rows={4}
+                  error={!!errors.admitGuilty}
+                  helperText={errors.admitGuilty}
+                  sx={textFieldStyle}
+                />
+                <TextField
+                  label="Description of Offence"
+                  value={formData.descriptionOfOffence}
+                  onChange={handleInputChange('descriptionOfOffence')}
+                  disabled={loading}
+                  fullWidth
+                  required
+                  multiline
+                  rows={4}
+                  error={!!errors.descriptionOfOffence}
+                  helperText={errors.descriptionOfOffence}
+                  sx={textFieldStyle}
+                />
+              </Stack>
             </Box>
 
             <Divider />
 
             {/* Signature Section */}
             <Box>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Place"
-                    value={formData.place}
-                    onChange={handleInputChange('place')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date"
-                    value={formData.date}
-                    onChange={handleInputChange('date')}
-                    disabled={loading}
-                    fullWidth
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Time"
-                    value={formData.signatureTime}
-                    onChange={handleInputChange('signatureTime')}
-                    disabled={loading}
-                    fullWidth
-                    type="time"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Signature (Of Offender)"
-                    value={formData.offenderSignature}
-                    onChange={handleInputChange('offenderSignature')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date Charged"
-                    value={formData.dateCharged}
-                    onChange={handleInputChange('dateCharged')}
-                    disabled={loading}
-                    fullWidth
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Mine Number"
-                    value={formData.mineNumber}
-                    onChange={handleInputChange('mineNumber')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-              </Grid>
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Place"
+                      value={formData.place}
+                      onChange={handleInputChange('place')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.place}
+                      helperText={errors.place}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Date"
+                      value={formData.date}
+                      onChange={handleInputChange('date')}
+                      disabled={loading}
+                      fullWidth
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.date}
+                      helperText={errors.date}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Time"
+                      value={formData.signatureTime}
+                      onChange={handleInputChange('signatureTime')}
+                      disabled={loading}
+                      fullWidth
+                      type="time"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.signatureTime}
+                      helperText={errors.signatureTime}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Signature (Of Offender)"
+                      value={formData.offenderSignature}
+                      onChange={handleInputChange('offenderSignature')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.offenderSignature}
+                      helperText={errors.offenderSignature}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Date Charged"
+                      value={formData.dateCharged}
+                      onChange={handleInputChange('dateCharged')}
+                      disabled={loading}
+                      fullWidth
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.dateCharged}
+                      helperText={errors.dateCharged}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Mine Number"
+                      value={formData.mineNumber}
+                      onChange={handleInputChange('mineNumber')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.mineNumber}
+                      helperText={errors.mineNumber}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
 
             <Divider />
@@ -781,52 +904,65 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Payment Details
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Total Amount"
-                    value={formData.totalAmount}
-                    onChange={handleInputChange('totalAmount')}
-                    disabled={loading}
-                    fullWidth
-                    type="number"
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="1st Account Amount"
-                    value={formData.firstAccountAmount}
-                    onChange={handleInputChange('firstAccountAmount')}
-                    disabled={loading}
-                    fullWidth
-                    type="number"
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="2nd Account Amount"
-                    value={formData.secondAccountAmount}
-                    onChange={handleInputChange('secondAccountAmount')}
-                    disabled={loading}
-                    fullWidth
-                    type="number"
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="3rd Account Amount"
-                    value={formData.thirdAccountAmount}
-                    onChange={handleInputChange('thirdAccountAmount')}
-                    disabled={loading}
-                    fullWidth
-                    type="number"
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-              </Grid>
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Total Amount"
+                      value={formData.totalAmount}
+                      onChange={handleInputChange('totalAmount')}
+                      disabled={loading}
+                      fullWidth
+                      type="number"
+                      error={!!errors.totalAmount}
+                      helperText={errors.totalAmount}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="1st Account Amount"
+                      value={formData.firstAccountAmount}
+                      onChange={handleInputChange('firstAccountAmount')}
+                      disabled={loading}
+                      fullWidth
+                      type="number"
+                      error={!!errors.firstAccountAmount}
+                      helperText={errors.firstAccountAmount}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="2nd Account Amount"
+                      value={formData.secondAccountAmount}
+                      onChange={handleInputChange('secondAccountAmount')}
+                      disabled={loading}
+                      fullWidth
+                      type="number"
+                      error={!!errors.secondAccountAmount}
+                      helperText={errors.secondAccountAmount}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="3rd Account Amount"
+                      value={formData.thirdAccountAmount}
+                      onChange={handleInputChange('thirdAccountAmount')}
+                      disabled={loading}
+                      fullWidth
+                      type="number"
+                      error={!!errors.thirdAccountAmount}
+                      helperText={errors.thirdAccountAmount}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
 
             <Divider />
@@ -836,50 +972,63 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Official Signatures
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Signed"
-                    value={formData.officialSigned}
-                    onChange={handleInputChange('officialSigned')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="(S.H.E MANAGER)"
-                    value={formData.sheManagerSigned}
-                    onChange={handleInputChange('sheManagerSigned')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Accepted (Inspector Of Mines)"
-                    value={formData.inspectorAccepted}
-                    onChange={handleInputChange('inspectorAccepted')}
-                    disabled={loading}
-                    fullWidth
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Date"
-                    value={formData.acceptedDate}
-                    onChange={handleInputChange('acceptedDate')}
-                    disabled={loading}
-                    fullWidth
-                    type="date"
-                    InputLabelProps={{ shrink: true }}
-                    sx={textFieldStyle}
-                  />
-                </Grid>
-              </Grid>
+              <Stack spacing={3}>
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Signed"
+                      value={formData.officialSigned}
+                      onChange={handleInputChange('officialSigned')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.officialSigned}
+                      helperText={errors.officialSigned}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="(S.H.E MANAGER)"
+                      value={formData.sheManagerSigned}
+                      onChange={handleInputChange('sheManagerSigned')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.sheManagerSigned}
+                      helperText={errors.sheManagerSigned}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Accepted (Inspector Of Mines)"
+                      value={formData.inspectorAccepted}
+                      onChange={handleInputChange('inspectorAccepted')}
+                      disabled={loading}
+                      fullWidth
+                      error={!!errors.inspectorAccepted}
+                      helperText={errors.inspectorAccepted}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
+                    <TextField
+                      label="Date"
+                      value={formData.acceptedDate}
+                      onChange={handleInputChange('acceptedDate')}
+                      disabled={loading}
+                      fullWidth
+                      type="date"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!errors.acceptedDate}
+                      helperText={errors.acceptedDate}
+                      sx={textFieldStyle}
+                    />
+                  </Box>
+                </Box>
+              </Stack>
             </Box>
 
             <Box sx={{ mt: 4, textAlign: 'center' }}>

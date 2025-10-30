@@ -800,6 +800,72 @@ class AuthClient {
      */
    
     /**
+     * Create a new contravention record
+     * POST /api/contraventions
+     */
+    async createContravention(contraventionData: {
+        contraventionOf: string[];
+        raisedby: string;
+        idOrNrNumber: string;
+        address: string;
+        occupation: string;
+        holderOf: string;
+        number: string;
+        issuedAt: string;
+        issuedTime: string;
+        admitof: string;
+        descriptionOfOffence: string;
+        place: string;
+        offenceDate: string;
+        offenceTime: string;
+        signatureOfOffender: string;
+        dateCharged: string;
+        mineNumber: string;
+        inspectorOfMines: string;
+        acceptedDate: string;
+        status: string;
+        remarks: string;
+        fineAmount: number;
+        Accountamount1: string;
+        Accountamount2: string;
+        Accountamount3: string;
+        signed: string;
+        shemanager: string;
+        inspeptorofminers: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            console.log('Sending contravention data to API:', JSON.stringify(contraventionData));
+            const response = await fetch('/api/contraventions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                body: JSON.stringify(contraventionData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Request failed');
+                console.error('Contravention creation failed:', errorText);
+                return { success: false, error: errorText || 'Failed to create contravention' };
+            }
+
+            const data = await response.json();
+            console.log('Contravention created successfully:', data);
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error creating contravention:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
+    /**
      * Create a new ore transport record
      */
     async createOre(oreData: {
@@ -5608,6 +5674,92 @@ cooperativename: string;
       return { success: true };
     } catch (error) {
       console.error('Error updating company shaft number:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Fetch all trainings
+   * GET /api/trainers
+   */
+  async fetchTrainings(): Promise<{ success: boolean; error?: string; data?: any[] }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const response = await fetch('http://localhost:1000/api/trainers', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch trainings' };
+      }
+      
+      const data = await response.json().catch(() => []);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching trainings:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Create a new training
+   * POST /api/trainers
+   */
+  async createTraining(trainingData: {
+    trainingType: string;
+    trainerName: string;
+    scheduleDate: string;
+    location: string;
+    materials: string[];
+    safetyProtocols: string[];
+    trainees: Array<{
+      name: string;
+      employeeId: string;
+      department: string;
+      position: string;
+      attended: boolean;
+      feedback: string;
+    }>;
+    status: string;
+  }): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const response = await fetch('http://localhost:1000/api/trainers', {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(trainingData),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to create training' };
+      }
+      
+      const data = await response.json().catch(() => null);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating training:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
