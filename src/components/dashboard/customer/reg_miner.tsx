@@ -225,6 +225,14 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     return true;
   };
 
+  const validateForm = () => {
+    const personalInfoValid = validatePersonalInfo();
+    const idPictureValid = validateIdPicture();
+    const teamMembersValid = validateTeamMembers();
+    
+    return personalInfoValid && idPictureValid && teamMembersValid;
+  };
+
   const handleNext = async () => {
     // Per-step validation
     if (activeStep === 0 && !validatePersonalInfo()) return;

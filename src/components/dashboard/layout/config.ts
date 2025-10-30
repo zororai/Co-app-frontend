@@ -50,11 +50,12 @@ export const allNavItems = [
     title: 'SHE Management',
     icon: 'buildings',
     items: [
-      { key: 'penality', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
-      { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
+     { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
-     { key: 'guilty', title: 'Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
+     { key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
+     { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'id-card' },
      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
+     { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
     
     ],
   },

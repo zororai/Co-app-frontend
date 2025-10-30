@@ -7,6 +7,8 @@ export const paths = {
     shafttransfare: '/dashboard/shafttransfare',
     safetycheck: '/dashboard/safetycheck',
     map: '/dashboard/map',
+    shaftinspection: '/dashboard/shaftinspection',
+    listissuedpenality: '/dashboard/listissuedpenality',
     training: '/dashboard/training',
     guilty: '/dashboard/guilty',
     resolveissue: '/dashboard/resolveissue',
