@@ -53,7 +53,7 @@ export const allNavItems = [
       { key: 'penality', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
       { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
-     
+     { key: 'guilty', title: 'Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
     ],
   },
   {
