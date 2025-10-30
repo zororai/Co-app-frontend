@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { PenaltyTable } from '@/components/dashboard/penalty/penalty-table';
+import { PenaltyTable } from '@/components/dashboard/listissuedpenality/penalty-table';
 
 export default function Page(): React.JSX.Element {
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);

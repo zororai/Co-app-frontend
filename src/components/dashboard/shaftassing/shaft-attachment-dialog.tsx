@@ -155,12 +155,14 @@ export function ShaftAttachmentDialog({
         throw new Error('Please fill in all required fields');
       }
 
-      // Add minerId and always include status and reason in the payload
+      // Add minerId and always include status, reason, latitude, and longitude in the payload
       const payload = {
         ...formData,
         status: 'PENDING',
         reason: 'Newly created shaft waiting for approval',
-        minerId: customerId
+        minerId: customerId,
+        latitude: formData.latitude || 0,
+        longitude: formData.longitude || 0
       };
       console.log('Submitting shaft assignment:', payload);
       let result;
