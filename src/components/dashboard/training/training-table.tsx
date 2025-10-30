@@ -153,33 +153,193 @@ export function TrainingTable({
   const selectedAll = rows.length > 0 && selectedRows.size === rows.length;
 
   return (
-    <Card>
+    <Card>      
+      {/* Loading and Error States */}
+      {loading && (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography>Loading trainings...</Typography>
+        </Box>
+      )}
+      
+      {!loading && error && (
+        <Box sx={{ p: 3, textAlign: 'center', color: 'error.main' }}>
+          <Typography>{error}</Typography>
+          <Button 
+            variant="outlined" 
+            sx={{ mt: 2 }} 
+            onClick={onRefresh}
+          >
+            Retry
+          </Button>
+        </Box>
+      )}
+      
+      {/* Filters Section */}
+      <Box sx={{ 
+        p: 2, 
+        mb: 2,
+        borderRadius: 1,
+        bgcolor: '#fff',
+        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          <Box sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            border: '1px solid #e0e0e0',
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+            minWidth: 220
+          }}>
+            <Box component="span" sx={{ color: '#9e9e9e', mr: 1 }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+              </svg>
+            </Box>
+            <input
+              type="text"
+              placeholder="Search trainings..."
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              style={{
+                border: 'none',
+                outline: 'none',
+                width: '100%',
+                background: 'transparent',
+                fontSize: '14px'
+              }}
+            />
+          </Box>
+          <FormControl sx={{ minWidth: 150 }}>
+            <Select
+              value={filters.status}
+              displayEmpty
+              size="small"
+              sx={{ 
+                '& .MuiSelect-select': { 
+                  py: 1,
+                  fontSize: '14px'
+                }
+              }}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            >
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="Scheduled">Scheduled</MenuItem>
+              <MenuItem value="In Progress">In Progress</MenuItem>
+              <MenuItem value="Completed">Completed</MenuItem>
+              <MenuItem value="Cancelled">Cancelled</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <Select
+              value={filters.trainingType}
+              displayEmpty
+              size="small"
+              sx={{ 
+                '& .MuiSelect-select': { 
+                  py: 1,
+                  fontSize: '14px'
+                }
+              }}
+              onChange={(e) => setFilters(prev => ({ ...prev, trainingType: e.target.value }))}
+            >
+              <MenuItem value="all">All Types</MenuItem>
+              <MenuItem value="Hazard Handling">Hazard Handling</MenuItem>
+              <MenuItem value="Equipment Safety">Equipment Safety</MenuItem>
+              <MenuItem value="Fire Safety">Fire Safety</MenuItem>
+              <MenuItem value="Chemical Safety">Chemical Safety</MenuItem>
+              <MenuItem value="Emergency Response">Emergency Response</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
+      
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-             
-              <TableCell>Training Type</TableCell>
+              <TableCell sortDirection={sortField === 'trainingType' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'trainingType'}
+                  direction={sortField === 'trainingType' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('trainingType')}
+                >
+                  Training Type
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Trainer</TableCell>
-              <TableCell>Schedule Date</TableCell>
-              <TableCell>Location</TableCell>
+              <TableCell sortDirection={sortField === 'scheduleDate' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'scheduleDate'}
+                  direction={sortField === 'scheduleDate' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('scheduleDate')}
+                >
+                  Schedule Date
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'location' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'location'}
+                  direction={sortField === 'location' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('location')}
+                >
+                  Location
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Trainees</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => {
+            {loading && (
+              // Show skeleton rows while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                  <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Skeleton variant="circular" width={32} height={32} />
+                      <Skeleton variant="circular" width={32} height={32} />
+                      <Skeleton variant="circular" width={32} height={32} />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+            {!loading && filteredRows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No trainings found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            {!loading && filteredRows.map((row) => {
               const isSelected = selectedRows.has(row.id);
-
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-                  
-                  <TableCell>
-                    <Stack sx={{ alignItems: 'flex-start' }}>
-                      <Typography variant="subtitle2">{row.trainingType}</Typography>
-                    </Stack>
-                  </TableCell>
+                  <TableCell>{row.trainingType || ''}</TableCell>
                   <TableCell>
                     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                       <Avatar sx={{ width: 32, height: 32 }}>
@@ -188,34 +348,80 @@ export function TrainingTable({
                       <Typography variant="subtitle2">{row.trainerName}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {new Date(row.scheduleDate).toLocaleDateString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">{row.location}</Typography>
-                  </TableCell>
+                  <TableCell>{new Date(row.scheduleDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{row.location || ''}</TableCell>
                   <TableCell>
                     <Typography variant="body2">
                       {row.trainees.length} trainee{row.trainees.length !== 1 ? 's' : ''}
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      color={getStatusColor(row.status)}
-                      label={row.status}
-                      size="small"
-                      variant="outlined"
-                    />
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: 
+                        row.status === 'Scheduled' ? '#FFF9C4' : 
+                        row.status === 'Cancelled' ? '#FFCDD2' : 
+                        row.status === 'In Progress' ? '#FFE0B2' : 
+                        '#C8E6C9',
+                      color: 
+                        row.status === 'Scheduled' ? '#F57F17' : 
+                        row.status === 'Cancelled' ? '#B71C1C' : 
+                        row.status === 'In Progress' ? '#E65100' : 
+                        '#1B5E20',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.status}
+                    </Box>
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      onClick={(event) => handleMenuClick(event, row.id)}
-                      size="small"
-                    >
-                      <DotsThreeVerticalIcon fontSize="var(--icon-fontSize-sm)" />
-                    </IconButton>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => {}}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit Training">
+                        <IconButton 
+                          onClick={() => {}}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Training">
+                        <IconButton 
+                          onClick={() => {}}
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': {
+                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                            }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -226,40 +432,13 @@ export function TrainingTable({
       <Divider />
       <TablePagination
         component="div"
-        count={count}
-        onPageChange={() => {}}
-        onRowsPerPageChange={() => {}}
+        count={filteredRows.length}
+        onPageChange={noop}
+        onRowsPerPageChange={noop}
         page={page}
         rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem onClick={handleMenuClose}>
-          <EyeIcon fontSize="var(--icon-fontSize-sm)" style={{ marginRight: 8 }} />
-          View Details
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          <PencilSimpleIcon fontSize="var(--icon-fontSize-sm)" style={{ marginRight: 8 }} />
-          Edit Training
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ color: 'error.main' }}>
-          <TrashIcon fontSize="var(--icon-fontSize-sm)" style={{ marginRight: 8 }} />
-          Delete Training
-        </MenuItem>
-      </Menu>
     </Card>
   );
 }
