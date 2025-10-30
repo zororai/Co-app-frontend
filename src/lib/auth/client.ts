@@ -5780,6 +5780,58 @@ cooperativename: string;
   }
 
   /**
+   * Update a training by ID
+   * PUT /api/trainers/{id}
+   */
+  async updateTraining(id: string, trainingData: {
+    trainingType: string;
+    trainerName: string;
+    scheduleDate: string;
+    location: string;
+    materials: string[];
+    safetyProtocols: string[];
+    trainees: {
+      name: string;
+      employeeId: string;
+      department: string;
+      position: string;
+      attended: boolean;
+      feedback: string;
+    }[];
+    status: string;
+  }): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(trainingData),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update training' };
+      }
+      
+      const data = await response.json().catch(() => null);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error updating training:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Create a new training
    * POST /api/trainers
    */

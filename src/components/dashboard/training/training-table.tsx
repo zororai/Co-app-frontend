@@ -44,6 +44,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { TrainingDetailsDialog } from './training-details-dialog';
+import { EditTrainingDialog } from './edit-training-dialog';
 import { authClient } from '@/lib/auth/client';
 
 export interface Training {
@@ -96,6 +97,7 @@ export function TrainingTable({
   
   // Dialog states
   const [viewDialogOpen, setViewDialogOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [selectedTrainingId, setSelectedTrainingId] = React.useState<string | null>(null);
   
   // Delete dialog states
@@ -166,6 +168,27 @@ export function TrainingTable({
   const handleCloseViewDialog = () => {
     setViewDialogOpen(false);
     setSelectedTrainingId(null);
+  };
+
+  const handleEditTraining = (trainingId: string) => {
+    setSelectedTrainingId(trainingId);
+    setEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setSelectedTrainingId(null);
+  };
+
+  const handleEditSuccess = () => {
+    setSnackbarMessage('Training updated successfully');
+    setSnackbarSeverity('success');
+    setSnackbarOpen(true);
+    
+    // Refresh the table
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   const handleDeleteTraining = (trainingId: string, trainingName: string) => {
@@ -474,7 +497,7 @@ export function TrainingTable({
                       </Tooltip>
                       <Tooltip title="Edit Training">
                         <IconButton 
-                          onClick={() => {}}
+                          onClick={() => handleEditTraining(row.id)}
                           size="small"
                           sx={{
                             color: 'secondary.main',
@@ -525,6 +548,14 @@ export function TrainingTable({
         onClose={handleCloseViewDialog}
         trainingId={selectedTrainingId}
         onRefresh={onRefresh}
+      />
+
+      {/* Edit Training Dialog */}
+      <EditTrainingDialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        trainingId={selectedTrainingId}
+        onSuccess={handleEditSuccess}
       />
 
       {/* Delete Confirmation Dialog */}
