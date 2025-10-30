@@ -27,6 +27,14 @@ import {
   Button,
   Skeleton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Snackbar,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { DotsThreeVertical as DotsThreeVerticalIcon } from '@phosphor-icons/react/dist/ssr/DotsThreeVertical';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
@@ -36,6 +44,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { TrainingDetailsDialog } from './training-details-dialog';
+import { authClient } from '@/lib/auth/client';
 
 export interface Training {
   id: string;
@@ -88,6 +97,16 @@ export function TrainingTable({
   // Dialog states
   const [viewDialogOpen, setViewDialogOpen] = React.useState(false);
   const [selectedTrainingId, setSelectedTrainingId] = React.useState<string | null>(null);
+  
+  // Delete dialog states
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [trainingToDelete, setTrainingToDelete] = React.useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
+  
+  // Success/Error states
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
   // Sorting function
   const handleSort = (field: string) => {
@@ -147,6 +166,51 @@ export function TrainingTable({
   const handleCloseViewDialog = () => {
     setViewDialogOpen(false);
     setSelectedTrainingId(null);
+  };
+
+  const handleDeleteTraining = (trainingId: string, trainingName: string) => {
+    setTrainingToDelete({ id: trainingId, name: trainingName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setTrainingToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!trainingToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      const result = await authClient.deleteTraining(trainingToDelete.id);
+      
+      if (result.success) {
+        setSnackbarMessage('Training deleted successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        
+        // Refresh the table
+        if (onRefresh) {
+          onRefresh();
+        }
+      } else {
+        setSnackbarMessage(result.error || 'Failed to delete training');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage('An error occurred while deleting the training');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setDeleteLoading(false);
+      handleCloseDeleteDialog();
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const getStatusColor = (status: Training['status']) => {
@@ -424,12 +488,12 @@ export function TrainingTable({
                       </Tooltip>
                       <Tooltip title="Delete Training">
                         <IconButton 
-                          onClick={() => {}}
+                          onClick={() => handleDeleteTraining(row.id, row.trainingType)}
                           size="small"
                           sx={{
-                            color: 'secondary.main',
+                            color: 'error.main',
                             '&:hover': {
-                              bgcolor: 'rgba(50, 56, 62, 0.08)'
+                              bgcolor: 'rgba(211, 47, 47, 0.08)'
                             }
                           }}
                         >
@@ -462,6 +526,56 @@ export function TrainingTable({
         trainingId={selectedTrainingId}
         onRefresh={onRefresh}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Delete Training
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete the training "{trainingToDelete?.name}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleCloseDeleteDialog}
+            disabled={deleteLoading}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }

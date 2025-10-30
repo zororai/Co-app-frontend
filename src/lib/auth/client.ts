@@ -5747,6 +5747,39 @@ cooperativename: string;
   }
 
   /**
+   * Delete a training by ID
+   * DELETE /api/trainers/{id}
+   */
+  async deleteTraining(id: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to delete training' };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting training:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Create a new training
    * POST /api/trainers
    */
