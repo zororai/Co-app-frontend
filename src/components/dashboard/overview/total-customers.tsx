@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
@@ -8,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
 import type { SxProps } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { CheckCircleIcon } from '@phosphor-icons/react/dist/ssr/CheckCircle';
 import { PauseCircleIcon } from '@phosphor-icons/react/dist/ssr/PauseCircle';
@@ -25,6 +24,7 @@ export interface TotalCustomersProps {
 }
 
 export function TotalCustomers({ sx }: TotalCustomersProps): React.JSX.Element {
+  const theme = useTheme();
   const [shaftData, setShaftData] = React.useState<ShaftStatusData>({ suspendedCount: 0, approvedCount: 0 });
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -68,7 +68,7 @@ export function TotalCustomers({ sx }: TotalCustomersProps): React.JSX.Element {
               </Typography>
               <Typography variant="h4">
                 {loading ? (
-                  <CircularProgress size={24} />
+                  <CircularProgress size={24} sx={{ color: theme.palette.secondary.main }} />
                 ) : error ? (
                   <Typography color="error" variant="body2">Error</Typography>
                 ) : (
@@ -76,7 +76,11 @@ export function TotalCustomers({ sx }: TotalCustomersProps): React.JSX.Element {
                 )}
               </Typography>
             </Stack>
-            <Avatar sx={{ backgroundColor: 'var(--mui-palette-primary-main)', height: '56px', width: '56px' }}>
+            <Avatar sx={{ 
+              backgroundColor: theme.palette.secondary.main,
+              height: '56px', 
+              width: '56px' 
+            }}>
               <UsersIcon fontSize="var(--icon-fontSize-lg)" />
             </Avatar>
           </Stack>
