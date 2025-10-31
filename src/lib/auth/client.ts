@@ -5788,7 +5788,7 @@ cooperativename: string;
   }): Promise<{ success: boolean; error?: string; data?: any }> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
-      console.error('No token found in localStorage');
+      console.warn('No token found in localStorage');
       return { success: false, error: 'Authentication required. Please sign in first.' };
     }
     
@@ -5875,14 +5875,8 @@ cooperativename: string;
    */
   async createShaftInspection(inspectionData: {
     inspectorName: string;
-    location: string;
+
     inspectionDate: string;
-    inspectionTime: {
-      hour: number;
-      minute: number;
-      second: number;
-      nano: number;
-    };
     status: string;
     inspectionType: string;
     hazardControlProgram: string;

@@ -204,15 +204,14 @@ export function ShaftInspectionDialog({
     if (!formData.inspectorName.trim()) {
       errors.inspectorName = 'Inspector name is required';
     }
-    if (!formData.location.trim()) {
-      errors.location = 'Location is required';
-    }
+   
     if (!formData.inspectionDate) {
       errors.inspectionDate = 'Inspection date is required';
     }
-    if (!formData.inspectionTime) {
-      errors.inspectionTime = 'Inspection time is required';
+    if (!formData.status) {
+      errors.status = 'Status is required';
     }
+ 
     if (formData.inspectionType.length === 0) {
       errors.inspectionType = 'At least one inspection type is required';
     }
@@ -235,6 +234,13 @@ export function ShaftInspectionDialog({
       return;
     }
 
+    // Ensure user is authenticated before proceeding
+    const token = typeof window !== 'undefined' ? localStorage.getItem('custom-auth-token') : null;
+    if (!token) {
+      setError('Authentication required. Please sign in first.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccessMessage(null);
@@ -251,17 +257,26 @@ export function ShaftInspectionDialog({
         attachments.push(base64);
       }
 
+      // Combine date and time to ISO string per API expectations
+      let inspectionDateISO = '';
+      if (formData.inspectionDate) {
+        let dt = dayjs(formData.inspectionDate);
+        if (formData.inspectionTime) {
+          dt = dt
+            .hour(formData.inspectionTime.hour())
+            .minute(formData.inspectionTime.minute())
+            .second(formData.inspectionTime.second() || 0)
+            .millisecond(0);
+        } else {
+          dt = dt.startOf('day');
+        }
+        inspectionDateISO = dt.toISOString();
+      }
+
       // Prepare the data according to the API specification
       const inspectionData = {
         inspectorName: formData.inspectorName,
-        location: formData.location,
-        inspectionDate: formData.inspectionDate?.format('YYYY-MM-DD') || '',
-        inspectionTime: {
-          hour: formData.inspectionTime?.hour() || 0,
-          minute: formData.inspectionTime?.minute() || 0,
-          second: formData.inspectionTime?.second() || 0,
-          nano: 0
-        },
+        inspectionDate: inspectionDateISO,
         status: formData.status,
         inspectionType: formData.inspectionType.length > 0 ? formData.inspectionType[0] : '',
         hazardControlProgram: formData.hazardControlProgram,
@@ -384,17 +399,7 @@ export function ShaftInspectionDialog({
                   error={!!validationErrors.inspectorName}
                   helperText={validationErrors.inspectorName}
                 />
-                <TextField
-                  fullWidth
-                  label="Location"
-                  value={formData.location}
-                  onChange={handleChange('location')}
-                  placeholder="Enter facility or site name"
-                  size="small"
-                  sx={textFieldStyle}
-                  error={!!validationErrors.location}
-                  helperText={validationErrors.location}
-                />
+              
               </Box>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
@@ -421,8 +426,6 @@ export function ShaftInspectionDialog({
                       fullWidth: true,
                       size: 'small',
                       sx: textFieldStyle,
-                      error: !!validationErrors.inspectionTime,
-                      helperText: validationErrors.inspectionTime
                     }
                   }}
                 />
@@ -619,23 +622,7 @@ export function ShaftInspectionDialog({
             </Typography>
             
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <FormControl fullWidth size="small" sx={textFieldStyle}>
-              <InputLabel>Section Name</InputLabel>
-              <Select
-                value={formData.sectionName || ''}
-                onChange={handleChange('sectionName')}
-                label="Section Name"
-              >
-                <MenuItem value="">
-                  <em>Select section</em>
-                </MenuItem>
-                {sectionOptions.map((section) => (
-                  <MenuItem key={section} value={section}>
-                    {section}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          
               
               <TextField
                 fullWidth

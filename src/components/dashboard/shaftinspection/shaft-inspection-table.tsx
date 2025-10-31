@@ -284,15 +284,17 @@ export function ShaftInspectionTable({
     setSnackbarOpen(false);
   };
 
-  // Helper function to format time object to string
-  const formatTime = (timeObj: { hour: number; minute: number; second: number; nano: number } | string): string => {
-    if (typeof timeObj === 'string') {
-      return timeObj;
-    }
-    const { hour, minute } = timeObj;
-    const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;
+  // Helper function to format time object to string (robust against missing fields)
+  const formatTime = (
+    timeObj?: { hour?: number; minute?: number; second?: number; nano?: number } | string | null
+  ): string => {
+    if (!timeObj) return '';
+    if (typeof timeObj === 'string') return timeObj;
+    const hourNum = Number(timeObj.hour ?? 0);
+    const minuteNum = Number(timeObj.minute ?? 0);
+    const period = hourNum >= 12 ? 'PM' : 'AM';
+    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+    return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
   };
 
   const dataToDisplay = filteredRows;
