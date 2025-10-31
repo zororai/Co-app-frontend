@@ -57,8 +57,8 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       return 'ID number must be exactly 11 characters';
     }
     
-    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
-    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    // Check format: 2 digits + 6 digits + 1 letter + 2 digits (e.g., 67-657432D45)
+    const idPattern = /^\d{8}[A-Za-z]\d{2}$/;
     if (!idPattern.test(cleanId)) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
@@ -126,6 +126,8 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         // Special handling for ID number
         if (name === 'nationId') {
           processedValue = formatIdNumber(value as string);
+          // Ensure consistent uppercase display for the letter part
+          processedValue = processedValue.toUpperCase();
           
           // Validate ID number if it's not empty
           if (processedValue.trim()) {
@@ -159,9 +161,14 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   const handleTeamChange = (idx: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    let processedValue = value as string;
+    // Apply formatting and uppercase for team member ID numbers
+    if (name === 'idNumber') {
+      processedValue = formatIdNumber(processedValue).toUpperCase();
+    }
     setTeamMembers((prev) => {
       const updated = [...prev];
-      (updated[idx] as any)[name] = value;
+      (updated[idx] as any)[name] = processedValue;
       return updated;
     });
   };
@@ -215,7 +222,12 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       const errs: string[] = [];
       if (!member.name.trim()) errs.push('Name');
       if (!member.surname.trim()) errs.push('Surname');
-      if (!member.idNumber.trim()) errs.push('ID Number');
+      if (!member.idNumber.trim()) {
+        errs.push('ID Number');
+      } else {
+        const idErr = validateZimbabweanID(member.idNumber);
+        if (idErr) errs.push('Invalid ID format');
+      }
       return errs.length ? errs.join(', ') : '';
     });
     if (teamErrors.some(e => e !== '')) {
@@ -556,8 +568,26 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
                     fullWidth
                     value={member.idNumber}
                     onChange={(e) => handleTeamChange(idx, e)}
-                    error={!!errors.teamMembers[idx] && errors.teamMembers[idx].includes('ID Number')}
-                    helperText={errors.teamMembers[idx] && errors.teamMembers[idx].includes('ID Number') ? 'ID Number is required' : ''}
+                    error={
+                      !!errors.teamMembers[idx] && (
+                        errors.teamMembers[idx].includes('ID Number') ||
+                        errors.teamMembers[idx].includes('Invalid ID format')
+                      )
+                    }
+                    helperText={
+                      errors.teamMembers[idx]
+                        ? errors.teamMembers[idx].includes('ID Number')
+                          ? 'ID Number is required'
+                          : errors.teamMembers[idx].includes('Invalid ID format')
+                            ? 'Format: XX-XXXXXXDXX (e.g., 67-657432D45)'
+                            : ''
+                        : ''
+                    }
+                    placeholder="67-657432D45"
+                    inputProps={{
+                      maxLength: 13, // XX-XXXXXXDXX = 13 characters with dash
+                      style: { textTransform: 'uppercase' }
+                    }}
                     required
                   />
                 </Box>
