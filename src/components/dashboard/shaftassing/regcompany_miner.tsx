@@ -15,6 +15,7 @@ import {
   DialogContent, 
   Snackbar 
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { authClient } from '@/lib/auth/client';
@@ -721,11 +722,28 @@ function RegMinerForm({ onClose }: RegMinerFormProps): React.JSX.Element {
 }
 
 export function RegMinerDialog({ open, onClose }: RegMinerDialogProps): React.JSX.Element {
+  const theme = useTheme();
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>Company Miner Registration gg</span>
-        <IconButton onClick={onClose}>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        bgcolor: theme.palette.secondary.main,
+        color: 'white',
+        p: 2.5
+      }}>
+        <Typography component="span" variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+          Company Miner Registration
+        </Typography>
+        <IconButton 
+          onClick={onClose}
+          size="small"
+          sx={{ 
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>

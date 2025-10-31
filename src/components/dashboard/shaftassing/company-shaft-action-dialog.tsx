@@ -11,6 +11,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import LinkIcon from '@mui/icons-material/Link';
@@ -36,6 +37,7 @@ export function CompanyShaftActionDialog({
 }: CompanyShaftActionDialogProps): React.JSX.Element {
   const [attachmentDialogOpen, setAttachmentDialogOpen] = React.useState(false);
   const [unassignedShaftsDialogOpen, setUnassignedShaftsDialogOpen] = React.useState(false);
+  const theme = useTheme();
 
   const handleAttachExisting = () => {
     setUnassignedShaftsDialogOpen(true);
@@ -79,11 +81,9 @@ export function CompanyShaftActionDialog({
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          background: 'linear-gradient(135deg, rgb(5, 5, 68) 0%, rgb(5, 5, 68) 100%)',
+          bgcolor: theme.palette.secondary.main,
           color: 'white',
-          py: 2.5,
-          px: 3,
-          m: 0
+          p: 2.5
         }}>
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
             Company Shaft Assignment
@@ -107,11 +107,11 @@ export function CompanyShaftActionDialog({
               sx={{
                 py: 2,
                 px: 3,
-                borderColor: 'rgb(5, 5, 68)',
-                color: 'rgb(5, 5, 68)',
+                borderColor: theme.palette.secondary.main,
+                color: theme.palette.secondary.main,
                 '&:hover': {
-                  borderColor: 'rgb(5, 5, 68)',
-                  backgroundColor: 'rgba(5, 5, 68, 0.04)',
+                  borderColor: theme.palette.secondary.dark,
+                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
                 },
                 justifyContent: 'flex-start',
                 textAlign: 'left',
@@ -135,9 +135,9 @@ export function CompanyShaftActionDialog({
               sx={{
                 py: 2,
                 px: 3,
-                bgcolor: 'rgb(5, 5, 68)',
+                bgcolor: theme.palette.secondary.main,
                 '&:hover': {
-                  bgcolor: 'rgba(5, 5, 68, 0.9)',
+                  bgcolor: theme.palette.secondary.dark,
                 },
                 justifyContent: 'flex-start',
                 textAlign: 'left',

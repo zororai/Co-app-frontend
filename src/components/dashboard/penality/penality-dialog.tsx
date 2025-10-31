@@ -220,11 +220,9 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
-        py: 2.5,
-        px: 3,
-        m: 0
+        p: 2.5
       }}>
         Issue A Penality
         <IconButton

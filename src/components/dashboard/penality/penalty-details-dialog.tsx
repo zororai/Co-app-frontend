@@ -88,13 +88,26 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
     return date.toLocaleString();
   };
 
-  // Get status color
-  const getStatusColor = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case 'APPROVED': return 'success';
-      case 'PENDING': return 'warning';
-      case 'REJECTED': return 'error';
-      default: return 'default';
+  // Get status badge styling
+  const getStatusStyle = (status: string) => {
+    const upperStatus = status?.toUpperCase();
+    switch (upperStatus) {
+      case 'APPROVED':
+        return {
+          bgcolor: '#C8E6C9',
+          color: '#1B5E20'
+        };
+      case 'REJECTED':
+        return {
+          bgcolor: '#FFCDD2',
+          color: '#B71C1C'
+        };
+      case 'PENDING':
+      default:
+        return {
+          bgcolor: theme.palette.secondary.light || 'rgba(50, 56, 62, 0.12)',
+          color: theme.palette.secondary.main
+        };
     }
   };
 
@@ -112,11 +125,9 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
-        py: 2.5,
-        px: 3,
-        m: 0
+        p: 2.5
       }}>
         Penalty Details
         <IconButton
@@ -135,7 +146,7 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
         overflow: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
       }}>
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -153,7 +164,7 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
           <Stack spacing={3}>
             {/* Basic Information */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 2, color: 'rgb(5, 5, 68)' }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.secondary.main }}>
                 Basic Information
               </Typography>
               <Stack spacing={2}>
@@ -176,18 +187,27 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
                 <Divider />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="body1"><strong>Status:</strong></Typography>
-                  <Chip 
-                    label={penaltyDetails.status} 
-                    color={getStatusColor(penaltyDetails.status) as any}
-                    size="small"
-                  />
+                  <Box 
+                    component="span"
+                    sx={{
+                      display: 'inline-block',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 1,
+                      fontSize: '0.875rem',
+                      fontWeight: 'medium',
+                      ...getStatusStyle(penaltyDetails.status)
+                    }}
+                  >
+                    {penaltyDetails.status}
+                  </Box>
                 </Box>
               </Stack>
             </Box>
 
             {/* Issue Details */}
             <Box>
-              <Typography variant="h6" sx={{ mb: 2, color: 'rgb(5, 5, 68)' }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.secondary.main }}>
                 Issue Details
               </Typography>
               <Stack spacing={2}>

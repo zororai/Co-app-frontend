@@ -21,6 +21,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -128,6 +132,7 @@ export function CompanyTable({
 
   // Initialize selection handling
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
+  const theme = useTheme();
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
@@ -289,18 +294,20 @@ export function CompanyTable({
                   </TableCell>
                  <TableCell>
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                      <button 
-                                        onClick={() => handleViewCustomer(row.id)}
-                                        disabled={loadingCompanyDetails}
-                                        style={{
-                                          background: 'none',
-                                          border: '1px solid #06131fff',
-                                          color: loadingCompanyDetails ? '#ccc' : '#081b2fff',
-                                          borderRadius: '6px',
-                                          padding: '2px 12px',
-                                          cursor: loadingCompanyDetails ? 'not-allowed' : 'pointer',
-                                          fontWeight: 500,
-                                      }}>{loadingCompanyDetails ? 'Loading...' : 'View Company Details'}</button>
+                                      <Tooltip title="View Company Details">
+                                        <IconButton
+                                          onClick={() => handleViewCustomer(row.id)}
+                                          disabled={loadingCompanyDetails}
+                                          size="small"
+                                          sx={{
+                                            color: theme.palette.secondary.main,
+                                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' },
+                                            '&:disabled': { color: 'rgba(0, 0, 0, 0.26)' }
+                                          }}
+                                        >
+                                          <VisibilityIcon fontSize="small" />
+                                        </IconButton>
+                                      </Tooltip>
                                     </Box>
                                   </TableCell>
                                   <TableCell>

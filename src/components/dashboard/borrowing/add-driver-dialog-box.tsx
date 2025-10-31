@@ -779,21 +779,29 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-            Add New Driver
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new driver in the transport management system
-          </Typography>
+        <DialogTitle sx={{ 
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          p: 2.5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Box>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
+              Add New Driver
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 0.5, color: 'rgba(255, 255, 255, 0.8)' }}>
+              Register a new driver in the transport management system
+            </Typography>
+          </Box>
           <IconButton
             aria-label="close"
             onClick={handleClose}
+            size="small"
             sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
             }}
           >
             <CloseIcon />
