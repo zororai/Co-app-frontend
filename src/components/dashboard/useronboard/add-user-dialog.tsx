@@ -130,7 +130,6 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     emergencyContactPhone: ''
   });
 
-  // Email validation function
   const validateEmail = (email: string): boolean => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return re.test(email);
@@ -142,11 +141,74 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     return re.test(phone);
   };
 
+  // Zimbabwean ID validation function
+  const validateZimbabweanID = (idNumber: string): { isValid: boolean; error?: string } => {
+    // Remove any spaces or dashes for validation
+    const cleanId = idNumber.replace(/[\s-]/g, '');
+    
+    // Check if it's exactly 11 characters
+    if (cleanId.length !== 11) {
+      return { isValid: false, error: 'ID must be exactly 11 characters (e.g., 67-657432-D45)' };
+    }
+    
+    // Check format: 2 digits + 6 digits + 1 letter + 2 digits
+    const idPattern = /^(\d{2})(\d{6})([A-Za-z])(\d{2})$/;
+    const match = cleanId.match(idPattern);
+    
+    if (!match) {
+      return { isValid: false, error: 'Invalid format. Expected: XX-XXXXXX-LXX (e.g., 67-657432-D45)' };
+    }
+    
+    const [, registrationDistrict, serialNumber, checkLetter, originDistrict] = match;
+    
+    // Validate district codes (01-99)
+    const regDistrict = parseInt(registrationDistrict);
+    const origDistrict = parseInt(originDistrict);
+    
+    if (regDistrict < 1 || regDistrict > 99) {
+      return { isValid: false, error: 'Registration district must be between 01-99' };
+    }
+    
+    if (origDistrict < 1 || origDistrict > 99) {
+      return { isValid: false, error: 'Origin district must be between 01-99' };
+    }
+    
+    // Validate check letter (A-Z)
+    if (!/^[A-Za-z]$/.test(checkLetter)) {
+      return { isValid: false, error: 'Check letter must be A-Z' };
+    }
+    
+    return { isValid: true };
+  };
+
+  // Format ID number with dashes for display
+  const formatIdNumber = (value: string): string => {
+    const cleanValue = value.replace(/[\s-]/g, '');
+    if (cleanValue.length <= 2) return cleanValue;
+    if (cleanValue.length <= 8) return `${cleanValue.slice(0, 2)}-${cleanValue.slice(2)}`;
+    if (cleanValue.length <= 9) return `${cleanValue.slice(0, 2)}-${cleanValue.slice(2, 8)}-${cleanValue.slice(8)}`;
+    return `${cleanValue.slice(0, 2)}-${cleanValue.slice(2, 8)}-${cleanValue.slice(8, 9)}${cleanValue.slice(9, 11)}`;
+  };
+
   // Handle form field changes
   const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [field]: event.target.value
+    });
+  };
+
+  // Handle ID number changes with formatting
+  const handleIdNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    // Allow only numbers, letters, spaces, and dashes
+    const cleanValue = value.replace(/[^0-9A-Za-z\s-]/g, '');
+    // Format the value as user types
+    const formattedValue = formatIdNumber(cleanValue);
+    
+    setFormData({
+      ...formData,
+      idNumber: formattedValue
     });
   };
 
@@ -206,13 +268,17 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     if (activeStep === 0) {
       setFormSubmitted(true);
       
+      // Validate Zimbabwean ID
+      const idValidation = validateZimbabweanID(formData.idNumber);
+      
       // Check required fields
       if (
         !formData.firstName ||
         !formData.lastName ||
         !formData.email ||
         !validateEmail(formData.email) ||
-        !formData.idNumber
+        !formData.idNumber ||
+        !idValidation.isValid
       ) {
         return; // Don't proceed if validation fails
       }
@@ -546,12 +612,22 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   fullWidth
                   label="ID Number"
                   value={formData.idNumber}
-                  onChange={handleChange('idNumber')}
-                  placeholder="Enter ID number"
-                  error={formSubmitted && !formData.idNumber}
-                  helperText={formSubmitted && !formData.idNumber ? 'ID Number is required' : ''}
+                  onChange={handleIdNumberChange}
+                  placeholder="67-657432-D45"
+                  error={formSubmitted && (!formData.idNumber || !validateZimbabweanID(formData.idNumber).isValid)}
+                  helperText={
+                    formSubmitted && !formData.idNumber
+                      ? 'ID Number is required'
+                      : formSubmitted && !validateZimbabweanID(formData.idNumber).isValid
+                      ? validateZimbabweanID(formData.idNumber).error
+                      : 'Format: XX-XXXXXX-LXX (Registration District-Serial Number-Check Letter+Origin District)'
+                  }
                   margin="normal"
                   sx={textFieldStyle}
+                  inputProps={{
+                    maxLength: 13, // Allow for formatted input with dashes
+                    style: { textTransform: 'uppercase' }
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>

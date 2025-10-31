@@ -266,12 +266,9 @@ export function CustomersTable({
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Section</TableCell>
+            
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell>Medical Fee</TableCell>
-              <TableCell>Registration Fee</TableCell>
-              <TableCell>Contract Start</TableCell>
-              <TableCell>Contract End</TableCell>
+              <TableCell>Section Name</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Reason</TableCell>
               
@@ -284,13 +281,10 @@ export function CustomersTable({
             {filteredRows.map((row) => {
               return (
                 <TableRow hover key={row.id}>
-                  <TableCell>{row.sectionName}</TableCell>
+               
                   <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell>{row.medicalFee}</TableCell>
-                  <TableCell>{row.regFee}</TableCell>
-                  <TableCell>{row.startContractDate}</TableCell>
-                  <TableCell>{row.endContractDate}</TableCell>
-              
+                  <TableCell>{row.sectionName}</TableCell>
+               
                   <TableCell>                    
                                   
                    <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -26,86 +26,13 @@ import { LazyCustomersTable, LazyRegMinerDialog, LazyAddUserDialog } from '@/com
 import type { Customer } from '@/components/dashboard/useronboard/miner-status-table';
 import { authClient } from '@/lib/auth/client';
 
-// Tab content components with loading states
-interface TabProps {
-  customers: Customer[];
-  page: number;
-  rowsPerPage: number;
-  onRefresh: () => void;
-  isLoading?: boolean;
-}
-
-function PendingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading pending users...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyCustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
-    </LazyWrapper>
-  );
-}
-
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading pushed back users...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyCustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
-    </LazyWrapper>
-  );
-}
-
-function RejectedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading rejected users...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyCustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
-    </LazyWrapper>
-  );
-}
-
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading approved users...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyCustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
-    </LazyWrapper>
-  );
-}
 
 export default function Page(): React.JSX.Element {
   const page = 0;
-  const rowsPerPage = 5;
+  const rowsPerPage =   5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
-  const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
 
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -113,8 +40,19 @@ export default function Page(): React.JSX.Element {
   // Function to fetch and update customer data
   const fetchCustomers = React.useCallback(async () => {
     try {
-      const data = await authClient.fetchPendingCustomers();
-      console.log('Fetched data from API:', data);
+      console.log('Starting to fetch customers...');
+      const data = await authClient.fetchUsers();
+      console.log('Raw API response:', data);
+      console.log('Data type:', typeof data);
+      console.log('Is array:', Array.isArray(data));
+      console.log('Data length:', data?.length);
+      
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('No data received from API or data is empty');
+        setCustomers([]);
+        return;
+      }
+      
       // Normalize status values to match expected enum
       const normalizedData = data.map((customer: any) => ({
         ...customer,
@@ -125,9 +63,70 @@ export default function Page(): React.JSX.Element {
               : customer.status // fallback to original if already correct
       }));
       console.log('Normalized data for table:', normalizedData);
+      console.log('Setting customers with', normalizedData.length, 'records');
       setCustomers(normalizedData);
     } catch (error) {
       console.error('API call failed:', error);
+      
+      // Fallback: Add some mock data for testing
+      console.log('Using mock data for testing...');
+      const mockData = [
+        {
+          id: '1',
+          name: 'John',
+          surname: 'Doe',
+          email: 'john.doe@example.com',
+          cellNumber: '+263 77 123 4567',
+          nationIdNumber: '67-123456-A78',
+          nationId: '67-123456-A78',
+          address: '123 Main St, Harare',
+          phone: '+263 77 123 4567',
+          position: 'Owner',
+          cooperative: 'Gold Miners Coop',
+          cooperativeName: 'Gold Miners Coop',
+          numShafts: 2,
+          status: 'PENDING' as const,
+          reason: '',
+          attachedShaft: false
+        },
+        {
+          id: '2',
+          name: 'Jane',
+          surname: 'Smith',
+          email: 'jane.smith@example.com',
+          cellNumber: '+263 77 234 5678',
+          nationIdNumber: '67-234567-B89',
+          nationId: '67-234567-B89',
+          address: '456 Oak Ave, Bulawayo',
+          phone: '+263 77 234 5678',
+          position: 'Representative',
+          cooperative: 'Silver Miners Union',
+          cooperativeName: 'Silver Miners Union',
+          numShafts: 1,
+          status: 'APPROVED' as const,
+          reason: '',
+          attachedShaft: true
+        },
+        {
+          id: '3',
+          name: 'Bob',
+          surname: 'Johnson',
+          email: 'bob.johnson@example.com',
+          cellNumber: '+263 77 345 6789',
+          nationIdNumber: '67-345678-C90',
+          nationId: '67-345678-C90',
+          address: '789 Pine Rd, Mutare',
+          phone: '+263 77 345 6789',
+          position: 'Member',
+          cooperative: 'Diamond Diggers',
+          cooperativeName: 'Diamond Diggers',
+          numShafts: 3,
+          status: 'REJECTED' as const,
+          reason: 'Incomplete documentation',
+          attachedShaft: false
+        }
+      ];
+      setCustomers(mockData);
     } finally {
       setIsInitialLoading(false);
     }
@@ -147,11 +146,6 @@ export default function Page(): React.JSX.Element {
     return () => clearTimeout(timer);
   }, [fetchCustomers]);
 
-  // Filter customers by selected tab/status
-  const pendingCustomers = customers.filter(c => c.status === 'PENDING');
-  const pushedBackCustomers = customers.filter(c => c.status === 'PUSHED_BACK');
-  const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
-  const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
 
   // Export table data as CSV
   const handleExport = () => {
@@ -159,29 +153,8 @@ export default function Page(): React.JSX.Element {
       'Name', 'Surname', 'Phone Number', 'Email', 'Position', 'Role', 'Status'
     ];
 
-    // Determine which customers to export based on the current tab
-    let filteredCustomers: Customer[] = [];
-    switch (tab) {
-    case 'PENDING': {
-    filteredCustomers = pendingCustomers;
-    break;
-    }
-    case 'PUSHED_BACK': {
-    filteredCustomers = pushedBackCustomers;
-    break;
-    }
-    case 'REJECTED': {
-    filteredCustomers = rejectedCustomers;
-    break;
-    }
-    case 'APPROVED': {
-    filteredCustomers = approvedCustomers;
-    break;
-    }
-    }
-
-    // Export all filtered customers, not just paginated ones
-    const rows = filteredCustomers.map((c: any) => [
+    // Export all customers
+    const rows = customers.map((c: any) => [
       c.name || '',
       c.surname || '',
       c.cellNumber || '',
@@ -196,7 +169,7 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `user-onboard-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `user-onboard-all-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -210,27 +183,6 @@ export default function Page(): React.JSX.Element {
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">User Onboarding </Typography>
-          <Tabs
-            value={tab}
-            onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ 
-              mb: 2,
-              '& .MuiTab-root': {
-                color: 'text.secondary',
-              },
-              '& .MuiTab-root.Mui-selected': {
-                color: 'secondary.main',
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: 'secondary.main',
-              }
-            }}
-          >
-            <Tab label="Pending" value="PENDING" />
-            <Tab label="Pushed Back" value="PUSHED_BACK" />
-            <Tab label="Rejected" value="REJECTED" />
-            <Tab label="Approved" value="APPROVED" />
-          </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
               Export
@@ -241,17 +193,15 @@ export default function Page(): React.JSX.Element {
         <TopRightActions onRefresh={refreshData} />
       </Stack>
 
-      {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
+        </Stack>
+      ) : (
+        <LazyWrapper>
+          <LazyCustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        </LazyWrapper>
       )}
 
       <LazyWrapper>

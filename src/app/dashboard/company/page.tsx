@@ -120,7 +120,16 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button 
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained" 
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: '#fff',
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
             Reg Company Miner 
           </Button>
         </div>

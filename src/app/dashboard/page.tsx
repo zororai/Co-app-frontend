@@ -4,6 +4,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
@@ -24,6 +25,7 @@ interface DashboardData {
 }
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
   const [dashboardData, setDashboardData] = React.useState<DashboardData | null>(null);
 
@@ -57,7 +59,7 @@ export default function Page(): React.JSX.Element {
   if (isInitialLoading) {
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 400 }}>
-        <CircularProgress size={60} />
+        <CircularProgress size={60} sx={{ color: theme.palette.secondary.main }} />
         <Typography variant="h6" sx={{ mt: 2 }}>Loading Dashboard...</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           Fetching latest data and metrics

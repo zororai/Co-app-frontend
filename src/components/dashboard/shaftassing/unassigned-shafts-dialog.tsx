@@ -303,23 +303,7 @@ export function UnassignedShaftsDialog({
                         </Typography>
                       }
                     />
-                    <ListItemSecondaryAction>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<AssignmentIcon />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAssignShaft(shaft.id);
-                        }}
-                        sx={{
-                          bgcolor: 'rgb(5, 5, 68)',
-                          '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
-                        }}
-                      >
-                        Assign
-                      </Button>
-                    </ListItemSecondaryAction>
+                  
                   </ListItem>
                   {index < unassignedShafts.length - 1 && <Divider />}
                 </React.Fragment>

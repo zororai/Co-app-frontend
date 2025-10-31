@@ -31,6 +31,7 @@ export interface GoldSalesLineChartProps {
 }
 
 export function GoldSalesLineChart({ sx }: GoldSalesLineChartProps): React.JSX.Element {
+  const theme = useTheme();
   const [chartSeries, setChartSeries] = React.useState<{ name: string; data: number[] }[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -83,7 +84,7 @@ export function GoldSalesLineChart({ sx }: GoldSalesLineChartProps): React.JSX.E
             color="inherit"
             onClick={handleRefresh}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
+            startIcon={loading ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
             size="small"
           >
             {loading ? 'Loading...' : 'Refresh'}
@@ -98,7 +99,7 @@ export function GoldSalesLineChart({ sx }: GoldSalesLineChartProps): React.JSX.E
           </Alert>
         ) : loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 350 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: theme.palette.secondary.main }} />
           </Box>
         ) : (
           <Chart height={350} options={chartOptions} series={chartSeries} type="line" width="100%" />
@@ -124,13 +125,13 @@ function useChartOptions(): ApexOptions {
       zoom: { enabled: false },
       width: '100%'
     },
-    colors: ['#FFD700', '#4CAF50'], // Gold color for weight, Green for price
+    colors: [theme.palette.secondary.main, theme.palette.secondary.dark], // Dark navy colors
     dataLabels: { enabled: false },
     fill: { 
       type: 'gradient',
       gradient: {
         shade: 'dark',
-        gradientToColors: ['rgba(255, 215, 0, 0.4)', 'rgba(76, 175, 80, 0.4)'], // Gold and Green with transparency
+        gradientToColors: [alpha(theme.palette.secondary.main, 0.4), alpha(theme.palette.secondary.dark, 0.4)],
         shadeIntensity: 1,
         type: 'vertical',
         opacityFrom: 0.8,
@@ -203,7 +204,7 @@ function useChartOptions(): ApexOptions {
     },
     markers: {
       size: 6,
-      colors: ['#FFD700', '#4CAF50'], // Gold and Green markers
+      colors: [theme.palette.secondary.main, theme.palette.secondary.dark],
       strokeColors: theme.palette.background.paper,
       strokeWidth: 2,
       hover: {
