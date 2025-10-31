@@ -287,13 +287,7 @@ export function CustomersTable({
                 </TableSortLabel>
               </TableCell>
               <TableCell sortDirection={sortField === 'shaftnumber' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'shaftnumber'}
-                  direction={sortField === 'shaftnumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('shaftnumber')}
-                >
-                  No. Of Shafts
-                </TableSortLabel>
+               
               </TableCell>
               <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
                 <TableSortLabel
