@@ -4224,8 +4224,7 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return null;
+      return { success: false, error: 'Authentication required' };
     }
     try {
       const response = await fetch(`/api/shaft-assignments/${id}/reject?reason=${encodeURIComponent(reason)}`, {
@@ -4262,8 +4261,7 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
-      return null;
+      return { success: false, error: 'Authentication required' };
     }
     try {
       const response = await fetch(`/api/shaft-assignments/${id}/pushback?reason=${encodeURIComponent(reason)}`, {
@@ -5929,7 +5927,7 @@ cooperativename: string;
         // Handle authentication errors by redirecting to sign-in
         if (response.status === 401 || response.status === 403) {
           console.log('Authentication failed, redirecting to sign-in');
-          globalThis.location.href = '/auth/sign-in';
+          // Removed redirect to /auth-sign-in per cleanup policy
           return { success: false, error: 'Authentication required. Redirecting to sign-in...' };
         }
         
