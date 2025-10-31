@@ -5885,7 +5885,7 @@ cooperativename: string;
     correctiveActions: string;
     esapMaterials: string;
     complianceStatus: string;
-    shaftNumbers: string[];
+    shaftNumbers: string;
     attachments: string[];
   }): Promise<{ success: boolean; error?: string; data?: any }> {
     const token = localStorage.getItem('custom-auth-token');

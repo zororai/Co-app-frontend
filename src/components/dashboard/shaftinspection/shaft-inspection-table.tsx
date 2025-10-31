@@ -64,7 +64,7 @@ export interface ShaftInspection {
   correctiveActions: string;
   esapMaterials: string;
   complianceStatus: string;
-  shaftNumbers: string[];
+  shaftNumbers: string[] | string;
   attachments: string[];
 }
 
@@ -548,13 +548,16 @@ export function ShaftInspectionTable({
             )}
             {!loading && dataToDisplay.map((row) => {
               const isSelected = selectedRows.has(row.id);
+              const shaftList: string[] = Array.isArray(row.shaftNumbers)
+                ? row.shaftNumbers
+                : row.shaftNumbers
+                  ? [String(row.shaftNumbers)]
+                  : [];
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>
                     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                      <Avatar sx={{ width: 32, height: 32 }}>
-                        {row.inspectorName.split(' ').map(n => n[0]).join('')}
-                      </Avatar>
+                     
                       <Typography variant="subtitle2">{row.inspectorName}</Typography>
                     </Stack>
                   </TableCell>
@@ -616,7 +619,7 @@ export function ShaftInspectionTable({
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {row.shaftNumbers.slice(0, 2).map((shaft, index) => (
+                      {shaftList.slice(0, 2).map((shaft, index) => (
                         <Chip
                           key={index}
                           label={shaft}
@@ -624,9 +627,9 @@ export function ShaftInspectionTable({
                           variant="outlined"
                         />
                       ))}
-                      {row.shaftNumbers.length > 2 && (
+                      {shaftList.length > 2 && (
                         <Chip
-                          label={`+${row.shaftNumbers.length - 2}`}
+                          label={`+${shaftList.length - 2}`}
                           size="small"
                           variant="outlined"
                           color="primary"

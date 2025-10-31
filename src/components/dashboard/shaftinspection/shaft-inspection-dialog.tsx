@@ -84,9 +84,9 @@ const complianceStatuses = [
 ];
 
 const statusOptions = [
-  'Suspend',
-  'Close',
-  'Approved'
+  'SUSPENDED',
+  'CLOSED',
+  'APPROVED'
 ];
 
 const sectionOptions = [
@@ -136,6 +136,42 @@ export function ShaftInspectionDialog({
   const [error, setError] = React.useState<string | null>(null);
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+
+  // Approved shafts for selection
+  interface ApprovedShaftOption {
+    sectionName: string;
+    shaftNumbers: string; // API seems to return single shaft number per item
+    [key: string]: any;
+  }
+  const [approvedShafts, setApprovedShafts] = React.useState<ApprovedShaftOption[]>([]);
+  const [approvedShaftsLoading, setApprovedShaftsLoading] = React.useState(false);
+  const [approvedShaftsError, setApprovedShaftsError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const loadApproved = async () => {
+      setApprovedShaftsLoading(true);
+      setApprovedShaftsError(null);
+      try {
+        const data = await authClient.fetchapprovedshaft();
+        if (!isMounted) return;
+        // Normalize items to expected shape
+        const normalized: ApprovedShaftOption[] = (Array.isArray(data) ? data : []).map((item: any) => ({
+          sectionName: item.sectionName ?? item.section ?? '',
+          shaftNumbers: item.shaftNumbers ?? item.shaftNumber ?? '',
+          ...item,
+        })).filter(opt => opt.shaftNumbers);
+        setApprovedShafts(normalized);
+      } catch (e: any) {
+        if (!isMounted) return;
+        setApprovedShaftsError(e?.message || 'Failed to load approved shafts');
+      } finally {
+        if (isMounted) setApprovedShaftsLoading(false);
+      }
+    };
+    loadApproved();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleClose = () => {
     if (!loading) {
@@ -224,6 +260,9 @@ export function ShaftInspectionDialog({
     if (!formData.complianceStatus) {
       errors.complianceStatus = 'Compliance status is required';
     }
+    if (!formData.shaftNumbers || formData.shaftNumbers.length === 0) {
+      errors.shaftNumbers = 'Select a shaft';
+    }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -285,7 +324,7 @@ export function ShaftInspectionDialog({
         correctiveActions: formData.correctiveActions,
         esapMaterials: formData.eapMaterial,
         complianceStatus: formData.complianceStatus,
-        shaftNumbers: formData.shaftNumbers,
+        shaftNumbers: formData.shaftNumbers[0] || '',
         attachments: attachments
       };
 
@@ -624,31 +663,33 @@ export function ShaftInspectionDialog({
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           
               
-              <TextField
-                fullWidth
-                label="Shaft Selection"
-                placeholder="Search and select shafts..."
-                size="small"
-                sx={textFieldStyle}
-                InputProps={{
-                  endAdornment: (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 200 }}>
-                      {formData.shaftNumbers.map((shaft, index) => (
-                        <Chip
-                          key={index}
-                          label={shaft}
-                          size="small"
-                          onDelete={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              shaftNumbers: prev.shaftNumbers.filter((_, i) => i !== index)
-                            }));
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  )
+              <Autocomplete
+                options={approvedShafts}
+                loading={approvedShaftsLoading}
+                value={approvedShafts.find(opt => formData.shaftNumbers[0] === opt.shaftNumbers) || null}
+                onChange={(_, newValue) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    shaftNumbers: newValue ? [newValue.shaftNumbers] : []
+                  }));
                 }}
+                getOptionLabel={(option) => {
+                  const sec = option.sectionName || '';
+                  const num = option.shaftNumbers || '';
+                  return sec && num ? `${sec} - ${num}` : num || sec;
+                }}
+                sx={textFieldStyle}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Shaft Selection"
+                    placeholder="Search and select shafts..."
+                    size="small"
+                    error={!!validationErrors.shaftNumbers}
+                    helperText={validationErrors.shaftNumbers}
+                  />
+                )}
+                noOptionsText={approvedShaftsError ? `Error: ${approvedShaftsError}` : 'No shafts found'}
               />
               
              
