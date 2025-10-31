@@ -5954,5 +5954,70 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
+
+  /**
+   * Fetch all shaft inspections
+   * GET /api/shaft-inspections
+   */
+  async fetchShaftInspections(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    
+    if (!token) {
+      console.error('No authentication token found');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      console.log('Fetching shaft inspections...');
+      const response = await fetch('/api/shaft-inspections', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch (textError) {
+          console.error('Failed to read error response:', textError);
+          errorText = `HTTP ${response.status} ${response.statusText}`;
+        }
+        
+        console.error(`GET /api/shaft-inspections failed with status ${response.status}:`, errorText);
+        
+        // Handle authentication errors
+        if (response.status === 401 || response.status === 403) {
+          console.log('Authentication failed');
+          return { success: false, error: 'Authentication required. Please sign in again.' };
+        }
+        
+        // Provide more specific error messages based on status code
+        let userFriendlyError = errorText;
+        if (response.status === 404) {
+          userFriendlyError = 'Shaft inspections endpoint not found. Please check if the API is running.';
+        } else if (response.status >= 500) {
+          userFriendlyError = 'Server error. Please try again later.';
+        } else if (!errorText) {
+          userFriendlyError = `Request failed with status ${response.status}`;
+        }
+        
+        return { success: false, error: userFriendlyError };
+      }
+      
+      const data = await response.json();
+      console.log('Shaft inspections fetched successfully:', data);
+      
+      // Ensure we return an array
+      const inspections = Array.isArray(data) ? data : [];
+      return { success: true, data: inspections };
+    } catch (error) {
+      console.error('Error fetching shaft inspections:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 }
 export const authClient = new AuthClient();

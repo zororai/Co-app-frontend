@@ -462,7 +462,7 @@ export function CustomersTable({
           ) : (
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
               {shaftAssignments.map((assignment, idx) => (
-                <IntegrationCard key={assignment.id || idx} integration={assignment} />
+                <IntegrationCard key={assignment.id || `assignment-${idx}`} integration={assignment} />
               ))}
             </Box>
           )}
