@@ -125,6 +125,42 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     ownerIdNumber: ''
   });
 
+  // Validate Zimbabwean ID number format
+  const validateZimbabweanID = (idNumber: string): string | null => {
+    // Remove any spaces or dashes for validation
+    const cleanId = idNumber.replace(/[\s-]/g, '');
+    
+    // Check if it's exactly 11 characters
+    if (cleanId.length !== 11) {
+      return 'ID number must be exactly 11 characters';
+    }
+    
+    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
+    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    if (!idPattern.test(cleanId)) {
+      return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
+    }
+    
+    return null; // Valid
+  };
+
+  // Format ID number with dashes
+  const formatIdNumber = (value: string): string => {
+    // Remove all non-alphanumeric characters
+    const clean = value.replace(/[^0-9A-Za-z]/g, '');
+    
+    // Apply formatting: XX-XXXXXXDXX
+    if (clean.length <= 2) {
+      return clean;
+    } else if (clean.length <= 8) {
+      return `${clean.slice(0, 2)}-${clean.slice(2)}`;
+    } else if (clean.length <= 10) {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8)}`;
+    } else {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
+    }
+  };
+
   // Validation function
 
   const validateForm = () => {
@@ -329,9 +365,31 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         });
         reader.readAsDataURL(file);
       } else {
+        let processedValue = value as string;
+        let fieldErrors = { ...errors };
+        
+        // Special handling for ID number
+        if (name === 'ownerIdNumber') {
+          processedValue = formatIdNumber(value as string);
+          
+          // Validate ID number if it's not empty
+          if (processedValue.trim()) {
+            const validationError = validateZimbabweanID(processedValue);
+            if (validationError) {
+              fieldErrors.ownerIdNumber = validationError;
+            } else {
+              fieldErrors.ownerIdNumber = '';
+            }
+          } else {
+            fieldErrors.ownerIdNumber = '';
+          }
+          
+          setErrors(fieldErrors);
+        }
+        
         setForm(prev => ({
           ...prev,
-          [name]: value,
+          [name]: processedValue,
         }));
       }
     }
@@ -400,7 +458,10 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 
   // Step validations similar to add-security-company-dialog
   const validateCompanyInfo = () => {
-    const valid = !!form.companyName && !!form.address && !!form.cellNumber && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
+    // Clean cell number for validation (remove spaces, dashes, etc.)
+    const cleanCellNumber = form.cellNumber.replace(/[\s\-\(\)\+]/g, '');
+    
+    const valid = !!form.companyName && !!form.address && !!form.cellNumber && /^\d{10,15}$/.test(cleanCellNumber) && !!form.registrationNumber && !!form.industry && !!form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email);
     if (!valid) {
       validateForm();
     }
@@ -414,7 +475,16 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     return valid;
   };
   const validateOwner = () => {
-    const valid = !!form.ownerName && !!form.ownerSurname && !!form.ownerAddress && !!form.ownerCellNumber && !!form.ownerIdNumber;
+    let valid = !!form.ownerName && !!form.ownerSurname && !!form.ownerAddress && !!form.ownerCellNumber && !!form.ownerIdNumber;
+    
+    // Additional validation for ID number format
+    if (form.ownerIdNumber) {
+      const idValidationError = validateZimbabweanID(form.ownerIdNumber);
+      if (idValidationError) {
+        valid = false;
+      }
+    }
+    
     if (!valid) {
       validateForm();
     }
@@ -430,6 +500,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       await handleSubmit(new Event('submit') as any);
       return;
     }
+    
     const newStep = activeStep + 1;
     setActiveStep(newStep);
     if (onStepChange) onStepChange(newStep);
@@ -516,6 +587,32 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
+            required
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+          <InputLabel>Registration Number</InputLabel>
+          <TextField
+            name="registrationNumber"
+            placeholder="Enter company registration number"
+            fullWidth
+            value={form.registrationNumber}
+            onChange={handleChange}
+            error={!!errors.registrationNumber}
+            helperText={errors.registrationNumber}
+            required
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
+          <InputLabel>Industry</InputLabel>
+          <TextField
+            name="industry"
+            placeholder="Enter industry type"
+            fullWidth
+            value={form.industry}
+            onChange={handleChange}
+            error={!!errors.industry}
+            helperText={errors.industry}
             required
           />
         </Box>
@@ -757,6 +854,14 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
                 required
               />
             </Box>
+            {/* 
+              Zimbabwean ID Format: XX-XXXXXXDXX (11 characters total)
+              - First 2 digits: District where ID was registered
+              - Next 6 digits: Serial number for that district  
+              - Next 1 character: Check letter for verification
+              - Last 2 digits: District of origin for applicant
+              Example: 67-657432D45
+            */}
             <Box sx={{ width: '100%', px: 1.5 }}>
               <TextField
                 name="ownerIdNumber"
@@ -765,7 +870,15 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
                 value={form.ownerIdNumber}
                 onChange={handleChange}
                 error={!!errors.ownerIdNumber}
-                helperText={errors.ownerIdNumber}
+                helperText={
+                  errors.ownerIdNumber || 
+                  "Format: XX-XXXXXXDXX (District-Serial+Check+Origin). Example: 67-657432D45"
+                }
+                placeholder="67-657432D45"
+                inputProps={{
+                  maxLength: 13, // XX-XXXXXXDXX = 13 characters with dashes
+                  style: { textTransform: 'uppercase' }
+                }}
                 required
               />
             </Box>
@@ -875,7 +988,7 @@ export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps
       {/* Fixed Stepper Section */}
       <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-          /// Register a new mining company with complete documentation and owner details
+          Register a new mining company with complete documentation and owner details
         </Typography>
         <Stepper 
           activeStep={activeStep} 

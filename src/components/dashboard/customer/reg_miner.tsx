@@ -47,71 +47,40 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     teamMembers: [''],
   });
 
-  // Validation function
-  const validateForm = () => {
-    const newErrors = {
-      name: '',
-      surname: '',
-      address: '',
-      cell: '',
-      nationId: '',
-      cooperative: '',
-      idPicture: '',
-      teamMembers: [''],
-    };
-    let isValid = true;
-
-    // Validate main form fields
-    if (!form.name.trim()) {
-      newErrors.name = 'Name is required';
-      isValid = false;
-    }
-    if (!form.surname.trim()) {
-      newErrors.surname = 'Surname is required';
-      isValid = false;
-    }
-    if (!form.address.trim()) {
-      newErrors.address = 'Address is required';
-      isValid = false;
-    }
-    if (!form.cell.trim()) {
-      newErrors.cell = 'Cell number is required';
-    } else if (!/^\d{10}$/.test(form.cell.trim())) {
-      newErrors.cell = 'Invalid cell number format';
-      isValid = false;
-    }
-    if (!form.nationId.trim()) {
-      newErrors.nationId = 'National ID is required';
-    } else if (!/^\d{2}-\d{6}[A-Z]\d{2}$/.test(form.nationId.trim())) {
-      newErrors.nationId = 'Invalid National ID format (should be like 59-187654D49)';
-      isValid = false;
-    }
-    if (!form.cooperative.trim()) {
-      newErrors.cooperative = 'Cooperative/Syndicate name is required';
-      isValid = false;
+  // Validate Zimbabwean ID number format
+  const validateZimbabweanID = (idNumber: string): string | null => {
+    // Remove any spaces or dashes for validation
+    const cleanId = idNumber.replace(/[\s-]/g, '');
+    
+    // Check if it's exactly 11 characters
+    if (cleanId.length !== 11) {
+      return 'ID number must be exactly 11 characters';
     }
     
-    if (!form.idPicture) {
-      newErrors.idPicture = 'ID Picture is required';
-      isValid = false;
+    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
+    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    if (!idPattern.test(cleanId)) {
+      return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
-
-    // Validate team members
-    const teamErrors = teamMembers.map(member => {
-      const memberErrors = [];
-      if (!member.name.trim()) memberErrors.push('Name is required');
-      if (!member.surname.trim()) memberErrors.push('Surname is required');
-
-      return memberErrors.join(', ');
-    });
     
-    if (teamErrors.some(error => error !== '')) {
-      newErrors.teamMembers = teamErrors;
-      isValid = false;
-    }
+    return null; // Valid
+  };
 
-    setErrors(newErrors);
-    return isValid;
+  // Format ID number with dashes
+  const formatIdNumber = (value: string): string => {
+    // Remove all non-alphanumeric characters
+    const clean = value.replace(/[^0-9A-Za-z]/g, '');
+    
+    // Apply formatting: XX-XXXXXXDXX
+    if (clean.length <= 2) {
+      return clean;
+    } else if (clean.length <= 8) {
+      return `${clean.slice(0, 2)}-${clean.slice(2)}`;
+    } else if (clean.length <= 10) {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8)}`;
+    } else {
+      return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
+    }
   };
 
   const handleChange = (
@@ -151,9 +120,31 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         });
         reader.readAsDataURL(file);
       } else {
+        let processedValue = value as string;
+        let fieldErrors = { ...errors };
+        
+        // Special handling for ID number
+        if (name === 'nationId') {
+          processedValue = formatIdNumber(value as string);
+          
+          // Validate ID number if it's not empty
+          if (processedValue.trim()) {
+            const validationError = validateZimbabweanID(processedValue);
+            if (validationError) {
+              fieldErrors.nationId = validationError;
+            } else {
+              fieldErrors.nationId = '';
+            }
+          } else {
+            fieldErrors.nationId = '';
+          }
+          
+          setErrors(fieldErrors);
+        }
+        
         setForm((prev) => ({
           ...prev,
-          [name as string]: value,
+          [name as string]: processedValue,
         }));
       }
     } else if ('name' in e && 'value' in e) {
@@ -195,8 +186,16 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     if (!form.address.trim()) { updatedErrors.address = 'Address is required'; isValid = false; }
     if (!form.cell.trim()) { updatedErrors.cell = 'Cell number is required'; isValid = false; }
     else if (!/^\d{10}$/.test(form.cell.trim())) { updatedErrors.cell = 'Invalid cell number format'; isValid = false; }
-    if (!form.nationId.trim()) { updatedErrors.nationId = 'National ID is required'; isValid = false; }
-    else if (!/^\d{2}-\d{6}[A-Z]\d{2}$/.test(form.nationId.trim())) { updatedErrors.nationId = 'Invalid National ID format (should be like 59-187654D49)'; isValid = false; }
+    if (!form.nationId.trim()) { 
+      updatedErrors.nationId = 'National ID is required'; 
+      isValid = false; 
+    } else {
+      const idValidationError = validateZimbabweanID(form.nationId);
+      if (idValidationError) {
+        updatedErrors.nationId = idValidationError;
+        isValid = false;
+      }
+    }
     if (!form.cooperative.trim()) { updatedErrors.cooperative = 'Cooperative/Syndicate name is required'; isValid = false; }
 
     setErrors((prev) => ({ ...prev, ...updatedErrors }));
@@ -224,6 +223,14 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       return false;
     }
     return true;
+  };
+
+  const validateForm = () => {
+    const personalInfoValid = validatePersonalInfo();
+    const idPictureValid = validateIdPicture();
+    const teamMembersValid = validateTeamMembers();
+    
+    return personalInfoValid && idPictureValid && teamMembersValid;
   };
 
   const handleNext = async () => {
@@ -377,16 +384,31 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
               required
             />
           </Box>
+          {/* 
+            Zimbabwean ID Format: XX-XXXXXXDXX (11 characters total)
+            - First 2 digits: District where ID was registered
+            - Next 6 digits: Serial number for that district  
+            - Next 1 character: Check letter for verification
+            - Last 2 digits: District of origin for applicant
+            Example: 67-657432D45
+          */}
           <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
             <InputLabel>National ID Number</InputLabel>
             <TextField
               name="nationId"
-              placeholder="Add your national ID (e.g., 59-187654D49)"
+              placeholder="67-657432D45"
               fullWidth
               value={form.nationId}
               onChange={handleChange}
               error={!!errors.nationId}
-              helperText={errors.nationId}
+              helperText={
+                errors.nationId || 
+                "Format: XX-XXXXXXDXX (District-Serial+Check+Origin). Example: 67-657432D45"
+              }
+              inputProps={{
+                maxLength: 13, // XX-XXXXXXDXX = 13 characters with dashes
+                style: { textTransform: 'uppercase' }
+              }}
               required
             />
           </Box>

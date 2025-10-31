@@ -27,11 +27,49 @@ export const allNavItems = [
     icon: 'buildings',
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
-      { key: 'penality', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
-      { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.penality, icon: 'id-card'},
-      { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.penality, icon: 'id-card'},
+     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
+     // { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.penality, icon: 'id-card'},
      
+    ],
+  },
+
+  {
+    key: 'financial-management',
+    title: 'Financial Management',
+    icon: 'buildings',
+    items: [
+      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
+      { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
+      { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+      
+    ],
+  },
+
+  {
+    key: 'she-management',
+    title: 'SHE Management',
+    icon: 'buildings',
+    items: [
+     { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
+      { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
+     { key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
+     { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'id-card' },
+     { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
+     { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
+    
+    ],
+  },
+  {
+    key: 'Report-management',
+    title: 'Report Management',
+    icon: 'buildings',
+    items: [
+      //{ key: 'penalityreport', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
+      //{ key: 'Incidentreport', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
+     // { key: 'issuepenaltyreport', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
+     // { key: 'Shaftreports', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
+      //{ key: 'Oreproductionreport', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
+
     ],
   },
   {
@@ -40,9 +78,7 @@ export const allNavItems = [
     icon: 'mountain',
     items: [
       { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
-      { key: 'ore-tax', title: 'Tax Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
-      { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
-      { key: 'ore-transport', title: 'Ore to Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+     { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
       { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
      
    
@@ -55,11 +91,8 @@ export const allNavItems = [
     icon: 'tools',
     items: [
 
-      { key: 'Incident Management', title: 'Incident Management', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
-      { key: 'issuepenalty', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-      { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
       
     ],
   },
@@ -80,8 +113,8 @@ export const allNavItems = [
 
       { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'mountain' },
       { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'mountain' },
-      { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
-      { key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
+     // { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
+      //{ key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
     ],
   },
   {

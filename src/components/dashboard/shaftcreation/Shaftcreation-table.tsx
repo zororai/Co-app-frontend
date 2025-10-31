@@ -56,7 +56,7 @@ export function CustomersTable({
   count = 0,
   rows = [],
   page = 0,
-  rowsPerPage = 5,
+  rowsPerPage = 25,
   onPageChange,
   onRowsPerPageChange
 }: CustomersTableProps): React.JSX.Element {

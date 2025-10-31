@@ -265,15 +265,7 @@ export function CompanyTable({
                   Company Address
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={sortField === 'cellNumber'}
-                  direction={sortField === 'cellNumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('cellNumber')}
-                >
-                  Contact Number
-                </TableSortLabel>
-              </TableCell>
+
               <TableCell>
                 <TableSortLabel
                   active={sortField === 'email'}
@@ -327,7 +319,7 @@ export function CompanyTable({
                     <TableCell>{row.registrationNumber}</TableCell>
                     <TableCell>{row.companyName}</TableCell>
                     <TableCell>{row.address}</TableCell>
-                    <TableCell>{row.cellNumber}</TableCell>
+                   
                     <TableCell>{row.email}</TableCell>
                     <TableCell>{row.shaftnumber}</TableCell>  
                     <TableCell>

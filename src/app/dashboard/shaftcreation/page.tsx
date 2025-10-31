@@ -25,8 +25,8 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(25);
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   
@@ -51,14 +51,12 @@ export default function Page(): React.JSX.Element {
     })();
   }, []);
 
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
-
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
       'ID', 'Section Name', 'Shaft Numbers', 'Operation Status', 'Status', 'Assignment Status'
     ];
-    const rows = paginatedCustomers.map(c => [
+    const rows = customers.map(c => [
       c.id,
       c.sectionName,
       c.shaftNumbers,
@@ -109,10 +107,15 @@ export default function Page(): React.JSX.Element {
 
       <LazyWrapper>
         <LazyShaftCreationTable
-          count={paginatedCustomers.length}
+          count={customers.length}
           page={page}
-          rows={paginatedCustomers}
+          rows={customers}
           rowsPerPage={rowsPerPage}
+          onPageChange={(event, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
         />
       </LazyWrapper>
 
@@ -127,8 +130,4 @@ export default function Page(): React.JSX.Element {
       </LazyWrapper>
     </Stack>
   );
-}
-
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
