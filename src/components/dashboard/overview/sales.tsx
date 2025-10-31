@@ -31,6 +31,7 @@ export interface SalesProps {
 }
 
 export function Sales({ sx }: SalesProps): React.JSX.Element {
+  const theme = useTheme();
   const [chartSeries, setChartSeries] = React.useState<{ name: string; data: number[] }[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -90,7 +91,7 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
             color="inherit"
             onClick={handleRefresh}
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
+            startIcon={loading ? <CircularProgress size={16} sx={{ color: 'inherit' }} /> : <ArrowClockwiseIcon fontSize="var(--icon-fontSize-md)" />}
             size="small"
           >
             {loading ? 'Loading...' : 'Refresh'}
@@ -105,7 +106,7 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
           </Alert>
         ) : loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 350 }}>
-            <CircularProgress />
+            <CircularProgress sx={{ color: theme.palette.secondary.main }} />
           </Box>
         ) : (
           <Chart height={350} options={chartOptions} series={chartSeries} type="bar" width="100%" />
@@ -126,7 +127,7 @@ function useChartOptions(): ApexOptions {
 
   return {
     chart: { background: 'transparent', stacked: false, toolbar: { show: false } },
-    colors: [theme.palette.primary.main, alpha(theme.palette.primary.main, 0.25), theme.palette.error.main],
+    colors: [theme.palette.secondary.main, alpha(theme.palette.secondary.main, 0.25), theme.palette.error.main],
     dataLabels: { enabled: false },
     fill: { opacity: 1, type: 'solid' },
     grid: {

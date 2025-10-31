@@ -17,6 +17,7 @@ import CardActions from '@mui/material/CardActions';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import { useTheme } from '@mui/material/styles';
 
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import UpdateIcon from '@mui/icons-material/Update';
@@ -25,7 +26,8 @@ import SendIcon from '@mui/icons-material/Send';
 import { Notifications } from '@/components/dashboard/settings/notifications';
 import { UpdatePasswordForm } from '@/components/dashboard/settings/update-password-form';
 
-export function SettingsLayout(): React.JSX.Element {
+export function SettingsForm(): React.JSX.Element {
+  const theme = useTheme();
   const [selected, setSelected] = React.useState<'shaftFee' | 'password' | 'notifications'>('shaftFee');
   const [regFee, setRegFee] = React.useState<string>('');
   const [medicalFee, setMedicalFee] = React.useState<string>('');
@@ -126,20 +128,39 @@ export function SettingsLayout(): React.JSX.Element {
                 </Stack>
               </CardContent>
               <Divider />
-              <CardActions sx={{ justifyContent: 'flex-end', gap: 1 }}>
+              <CardActions sx={{ justifyContent: 'flex-end', gap: 1, p: 2 }}>
                 <Button
                   type="button"
-                  variant="outlined"
+                  variant="contained"
                   color="error"
                   startIcon={<DeleteOutlineIcon />}
                   onClick={handleDelete}
                 >
                   Delete
                 </Button>
-                <Button type="button" variant="outlined" startIcon={<UpdateIcon />} onClick={handleUpdate}>
+                <Button 
+                  type="button" 
+                  variant="contained" 
+                  startIcon={<UpdateIcon />} 
+                  onClick={handleUpdate}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    color: '#fff',
+                    '&:hover': { bgcolor: theme.palette.secondary.dark }
+                  }}
+                >
                   Update
                 </Button>
-                <Button type="submit" variant="contained" startIcon={<SendIcon />}>
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  startIcon={<SendIcon />}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    color: '#fff',
+                    '&:hover': { bgcolor: theme.palette.secondary.dark }
+                  }}
+                >
                   Submit
                 </Button>
               </CardActions>

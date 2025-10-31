@@ -26,6 +26,7 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
+import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
@@ -34,11 +35,6 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
-import { IntegrationCard } from '@/components/dashboard/integrations/integrations-card';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import CircularProgress from '@mui/material/CircularProgress';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -111,31 +107,6 @@ export function CustomersTable({
     setSortField(field);
   };
 
-
-  // State for attached shaft dialog
-  const [shaftDialogOpen, setShaftDialogOpen] = React.useState(false);
-  const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
-  const [shaftLoading, setShaftLoading] = React.useState(false);
-  const [shaftError, setShaftError] = React.useState<string | null>(null);
-  const [shaftCustomerId, setShaftCustomerId] = React.useState<string | null>(null);
-
-  // Handler to open dialog and fetch shaft assignments
-  const handleViewAttachedShaft = async (customerId: string) => {
-    setShaftDialogOpen(true);
-    setShaftLoading(true);
-    setShaftError(null);
-    setShaftAssignments([]);
-    setShaftCustomerId(customerId);
-    try {
-      const data = await authClient.fetchShaftAssignmentsByMiner(customerId);
-      setShaftAssignments(Array.isArray(data) ? data : [data]);
-    } catch (error: any) {
-      setShaftError(error.message || 'Failed to fetch shaft assignments');
-    } finally {
-      setShaftLoading(false);
-    }
-  };
-
   // Sort then filter the rows based on search and filters
   const sortedRows = React.useMemo(() => sortNewestFirst(rows), [rows]);
   const filteredRows = React.useMemo(() => {
@@ -188,18 +159,24 @@ export function CustomersTable({
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
+  const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
+  const [loadingCustomerId, setLoadingCustomerId] = React.useState<string | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
+    setLoadingCustomerId(customerId);
     try {
       const customerDetails = await authClient.fetchCustomerDetails(customerId);
       if (customerDetails) {
         setSelectedCustomer(customerDetails);
+        setSelectedCustomerId(customerId);
         setIsViewDialogOpen(true);
       }
     } catch (error) {
       console.error('Error fetching customer details:', error);
       alert('Failed to load customer details');
+    } finally {
+      setLoadingCustomerId(null);
     }
   };
 
@@ -395,25 +372,22 @@ export function CustomersTable({
                       <Tooltip title="View Application Details">
                         <IconButton 
                           onClick={() => handleViewCustomer(row.id)}
+                          disabled={loadingCustomerId === row.id}
                           size="small"
                           sx={{
                             color: theme.palette.secondary.main,
-                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' },
+                            '&.Mui-disabled': {
+                              color: theme.palette.secondary.main,
+                              opacity: 0.6
+                            }
                           }}
                         >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="View Attached Shaft">
-                        <IconButton 
-                          onClick={() => handleViewAttachedShaft(row.id)}
-                          size="small"
-                          sx={{
-                            color: theme.palette.secondary.main,
-                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
-                          }}
-                        >
-                          <VisibilityIcon fontSize="small" />
+                          {loadingCustomerId === row.id ? (
+                            <CircularProgress size={20} sx={{ color: theme.palette.secondary.main }} />
+                          ) : (
+                            <VisibilityIcon fontSize="small" />
+                          )}
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -443,31 +417,11 @@ export function CustomersTable({
         onClose={() => {
           setIsViewDialogOpen(false);
           setSelectedCustomer(null);
+          setSelectedCustomerId(null);
         }}
         customer={selectedCustomer}
+        customerId={selectedCustomerId}
       />
-
-      {/* Shaft Assignments Dialog */}
-      <Dialog open={shaftDialogOpen} onClose={() => setShaftDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Attached Shaft Assignments</DialogTitle>
-        <DialogContent>
-          {shaftLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
-              <CircularProgress />
-            </Box>
-          ) : shaftError ? (
-            <Typography color="error">{shaftError}</Typography>
-          ) : shaftAssignments.length === 0 ? (
-            <Typography>No shaft assignments found for this customer.</Typography>
-          ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-              {shaftAssignments.map((assignment, idx) => (
-                <IntegrationCard key={assignment.id || idx} integration={assignment} />
-              ))}
-            </Box>
-          )}
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

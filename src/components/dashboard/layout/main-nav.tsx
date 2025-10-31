@@ -11,8 +11,10 @@ import { BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
+import { useTheme } from '@mui/material/styles';
 
 import { usePopover } from '@/hooks/use-popover';
+import { useUser } from '@/hooks/use-user';
 
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
@@ -20,11 +22,19 @@ import { NotificationsDialog } from './notifications-dialog';
 import { authClient } from '@/lib/auth/client';
 
 export function MainNav(): React.JSX.Element {
+  const theme = useTheme();
+  const { user } = useUser();
   const [openNav, setOpenNav] = React.useState<boolean>(false);
   const [notificationsOpen, setNotificationsOpen] = React.useState<boolean>(false);
   const [notificationCount, setNotificationCount] = React.useState<number>(0);
 
   const userPopover = usePopover<HTMLDivElement>();
+
+  // Function to get initial from user email
+  const getInitials = (email?: string): string => {
+    if (!email) return 'U';
+    return email.charAt(0).toUpperCase();
+  };
 
   // Fetch notification count
   const fetchNotificationCount = React.useCallback(async () => {
@@ -88,9 +98,18 @@ export function MainNav(): React.JSX.Element {
             <Avatar
               onClick={userPopover.handleOpen}
               ref={userPopover.anchorRef}
-              src="/assets/avatar.png"
-              sx={{ cursor: 'pointer' }}
-            />
+              sx={{ 
+                cursor: 'pointer',
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                fontWeight: 600,
+                '&:hover': {
+                  bgcolor: theme.palette.secondary.dark,
+                }
+              }}
+            >
+              {getInitials(user?.email)}
+            </Avatar>
           </Stack>
         </Stack>
       </Box>

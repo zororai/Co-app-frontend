@@ -25,6 +25,7 @@ import {
   TextField, 
   Typography 
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -98,6 +99,7 @@ interface PersonDetail {
 }
 
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -948,8 +950,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               variant="contained"
               onClick={handleClose}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                '&:hover': { bgcolor: theme.palette.secondary.dark } 
               }}
             >
               Close
@@ -961,7 +964,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               variant="outlined"
               onClick={handleBack}
               disabled={activeStep === 0}
-              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+              sx={{ 
+                borderColor: theme.palette.secondary.main, 
+                color: theme.palette.secondary.main, 
+                '&:hover': { 
+                  borderColor: theme.palette.secondary.dark, 
+                  bgcolor: 'rgba(50, 56, 62, 0.04)' 
+                } 
+              }}
             >
               Back
             </Button>
@@ -971,8 +981,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
               disabled={isSubmitting}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: '#fff',
+                '&:hover': { bgcolor: theme.palette.secondary.dark } 
               }}
             >
               {activeStep === steps.length - 2 ? (isSubmitting ? 'Submitting...' : 'Submit') : 'Next'}

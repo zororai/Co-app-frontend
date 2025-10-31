@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Card from '@mui/material/Card';
@@ -7,6 +5,7 @@ import CardContent from '@mui/material/CardContent';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import type { SxProps } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ReceiptIcon } from '@phosphor-icons/react/dist/ssr/Receipt';
 
@@ -17,6 +16,7 @@ export interface TotalProfitProps {
 }
 
 export function TotalProfit({ sx }: TotalProfitProps): React.JSX.Element {
+  const theme = useTheme();
   const [count, setCount] = React.useState<number>(0);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -58,7 +58,7 @@ export function TotalProfit({ sx }: TotalProfitProps): React.JSX.Element {
             </Typography>
             <Typography variant="h4">
               {loading ? (
-                <CircularProgress size={24} />
+                <CircularProgress size={24} sx={{ color: theme.palette.secondary.main }} />
               ) : error ? (
                 <Typography color="error" variant="body2">Error</Typography>
               ) : (
@@ -66,7 +66,11 @@ export function TotalProfit({ sx }: TotalProfitProps): React.JSX.Element {
               )}
             </Typography>
           </Stack>
-          <Avatar sx={{ backgroundColor: 'var(--mui-palette-primary-main)', height: '56px', width: '56px' }}>
+          <Avatar sx={{ 
+            backgroundColor: theme.palette.secondary.main,
+            height: '56px', 
+            width: '56px' 
+          }}>
             <ReceiptIcon fontSize="var(--icon-fontSize-lg)" />
           </Avatar>
         </Stack>
