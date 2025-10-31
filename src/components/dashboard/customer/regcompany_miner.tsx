@@ -135,8 +135,8 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       return 'ID number must be exactly 11 characters';
     }
     
-    // Check format: 2 digits + 6 digits + 1 letter + 2 digits (e.g., 67-657432D45)
-    const idPattern = /^\d{8}[A-Za-z]\d{2}$/;
+    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
+    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
     if (!idPattern.test(cleanId)) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
@@ -371,8 +371,6 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
         // Special handling for ID number
         if (name === 'ownerIdNumber') {
           processedValue = formatIdNumber(value as string);
-          // Ensure letter portion is uppercase for consistency
-          processedValue = processedValue.toUpperCase();
           
           // Validate ID number if it's not empty
           if (processedValue.trim()) {

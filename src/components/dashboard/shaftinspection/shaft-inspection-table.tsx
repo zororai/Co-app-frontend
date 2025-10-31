@@ -285,18 +285,11 @@ export function ShaftInspectionTable({
   };
 
   // Helper function to format time object to string
-  const formatTime = (timeObj: { hour?: number; minute?: number; second?: number; nano?: number } | string): string => {
+  const formatTime = (timeObj: { hour: number; minute: number; second: number; nano: number } | string): string => {
     if (typeof timeObj === 'string') {
       return timeObj;
     }
-    
-    // Handle undefined or null timeObj
-    if (!timeObj) {
-      return '--:--';
-    }
-    
-    const hour = timeObj.hour ?? 0;
-    const minute = timeObj.minute ?? 0;
+    const { hour, minute } = timeObj;
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${displayHour}:${minute.toString().padStart(2, '0')} ${period}`;

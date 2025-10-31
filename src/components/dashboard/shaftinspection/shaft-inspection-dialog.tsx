@@ -32,6 +32,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs from 'dayjs';
 import { authClient } from '@/lib/auth/client';
 
@@ -41,10 +42,11 @@ interface ShaftInspectionDialogProps {
   onRefresh?: () => void;
 }
 
-interface ShaftInspectionFormData {
+interface FormData {
   inspectorName: string;
   location: string;
   inspectionDate: dayjs.Dayjs | null;
+  inspectionTime: dayjs.Dayjs | null;
   inspectionType: string[];
   hazardControlProgram: string;
   observations: string;
@@ -52,10 +54,10 @@ interface ShaftInspectionFormData {
   correctiveActions: string;
   eapMaterial: string;
   complianceStatus: string;
-  shaftNumbers: string[];
-  attachments: File[];
   status: string;
+  shaftNumbers: string[];
   sectionName: string;
+  attachments: File[];
 }
 
 const inspectionTypes = [
@@ -106,15 +108,17 @@ const mockShaftNumbers = [
   'SHAFT-004',
   'SHAFT-005'
 ];
+
 export function ShaftInspectionDialog({
   open,
   onClose,
   onRefresh
 }: ShaftInspectionDialogProps): React.JSX.Element {
-  const [formData, setFormData] = React.useState<ShaftInspectionFormData>({
+  const [formData, setFormData] = React.useState<FormData>({
     inspectorName: '',
     location: '',
     inspectionDate: null,
+    inspectionTime: null,
     inspectionType: [],
     hazardControlProgram: '',
     observations: '',
@@ -122,10 +126,10 @@ export function ShaftInspectionDialog({
     correctiveActions: '',
     eapMaterial: '',
     complianceStatus: '',
+    status: '',
     shaftNumbers: [],
-    attachments: [],
-    status: 'Pending',
-    sectionName: ''
+    sectionName: '',
+    attachments: []
   });
 
   const [loading, setLoading] = React.useState(false);
@@ -135,11 +139,13 @@ export function ShaftInspectionDialog({
 
   const handleClose = () => {
     if (!loading) {
+      onClose();
       // Reset form
       setFormData({
         inspectorName: '',
         location: '',
         inspectionDate: null,
+        inspectionTime: null,
         inspectionType: [],
         hazardControlProgram: '',
         observations: '',
@@ -147,10 +153,10 @@ export function ShaftInspectionDialog({
         correctiveActions: '',
         eapMaterial: '',
         complianceStatus: '',
+        status: '',
         shaftNumbers: [],
-        attachments: [],
-        status: 'Pending',
-        sectionName: ''
+        sectionName: '',
+        attachments: []
       });
       setError(null);
       setValidationErrors({});
@@ -158,7 +164,7 @@ export function ShaftInspectionDialog({
     }
   };
 
-  const handleChange = (field: keyof ShaftInspectionFormData) => (event: any) => {
+  const handleChange = (field: keyof FormData) => (event: any) => {
     const value = event.target.value;
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -204,6 +210,9 @@ export function ShaftInspectionDialog({
     if (!formData.inspectionDate) {
       errors.inspectionDate = 'Inspection date is required';
     }
+    if (!formData.inspectionTime) {
+      errors.inspectionTime = 'Inspection time is required';
+    }
     if (formData.inspectionType.length === 0) {
       errors.inspectionType = 'At least one inspection type is required';
     }
@@ -248,9 +257,9 @@ export function ShaftInspectionDialog({
         location: formData.location,
         inspectionDate: formData.inspectionDate?.format('YYYY-MM-DD') || '',
         inspectionTime: {
-          hour: new Date().getHours(),
-          minute: new Date().getMinutes(),
-          second: 0,
+          hour: formData.inspectionTime?.hour() || 0,
+          minute: formData.inspectionTime?.minute() || 0,
+          second: formData.inspectionTime?.second() || 0,
           nano: 0
         },
         status: formData.status,
@@ -400,6 +409,20 @@ export function ShaftInspectionDialog({
                       sx: textFieldStyle,
                       error: !!validationErrors.inspectionDate,
                       helperText: validationErrors.inspectionDate
+                    }
+                  }}
+                />
+                <TimePicker
+                  label="Inspection Time"
+                  value={formData.inspectionTime}
+                  onChange={(newValue) => setFormData(prev => ({ ...prev, inspectionTime: newValue }))}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      size: 'small',
+                      sx: textFieldStyle,
+                      error: !!validationErrors.inspectionTime,
+                      helperText: validationErrors.inspectionTime
                     }
                   }}
                 />
@@ -603,7 +626,14 @@ export function ShaftInspectionDialog({
                 onChange={handleChange('sectionName')}
                 label="Section Name"
               >
-               
+                <MenuItem value="">
+                  <em>Select section</em>
+                </MenuItem>
+                {sectionOptions.map((section) => (
+                  <MenuItem key={section} value={section}>
+                    {section}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
               
