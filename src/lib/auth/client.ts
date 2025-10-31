@@ -612,7 +612,7 @@ class AuthClient {
           credentials: 'include',
         });
       if (!response.ok) {
-        globalThis.location.href = '/auth-sign-in';
+        console.error('Failed to fetch shaft assignments:', response.status, response.statusText);
         return [];
       }
         const data = await response.json();
@@ -1496,7 +1496,7 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch security companies:', response.status, response.statusText);
                 return [];
             }
             const data = await response.json();
@@ -1548,8 +1548,8 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
-          return { success: false, error: 'Authentication required' };
+          console.error('Failed to reject transport cost:', response.status, response.statusText);
+          return { success: false, error: 'Request failed' };
         }
         return { success: true };
       } catch (error) {
@@ -1574,8 +1574,8 @@ class AuthClient {
           credentials: 'include',
         });
         if (!response.ok) {
-          globalThis.location.href = '/auth/sign-in';
-          return { success: false, error: 'Authentication required' };
+          console.error('Failed to pushback transport cost:', response.status, response.statusText);
+          return { success: false, error: 'Request failed' };
         }
         return { success: true };
       } catch (error) {
@@ -1600,7 +1600,7 @@ class AuthClient {
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch ore transport data:', response.status, response.statusText);
               return [];
           }
           const data = await response.json();
@@ -1629,7 +1629,7 @@ class AuthClient {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch refined ore data:', response.status, response.statusText);
                 return [];
             }
             const data = await response.json();
@@ -1742,7 +1742,7 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
+            console.error('Failed to fetch tax data:', response.status, response.statusText);
             return [];
         }
         const data = await response.json();
@@ -1766,7 +1766,7 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
+            console.error('Failed to fetch transport cost data:', response.status, response.statusText);
             return [];
         }
         const data = await response.json();
@@ -1793,7 +1793,7 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
+            console.error('Failed to fetch transport cost details:', response.status, response.statusText);
             return null;
         }
         const data = await response.json();
@@ -1815,7 +1815,6 @@ async fetchOreRecieved(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
         console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
         return { success: false, error: 'Authentication required' };
     }
 
@@ -1832,8 +1831,8 @@ async fetchOreRecieved(): Promise<any[]> {
         });
 
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
+            console.error('Failed to create transport cost:', response.status, response.statusText);
+            return { success: false, error: 'Request failed' };
         }
 
         const data = await response.json();
@@ -1864,7 +1863,7 @@ async fetchOreRecieved(): Promise<any[]> {
             credentials: 'include',
         });
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
+            console.error('Failed to fetch approved tax directions:', response.status, response.statusText);
             return [];
         }
         const data = await response.json();
@@ -1884,7 +1883,6 @@ async fetchOreRecieved(): Promise<any[]> {
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
         console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
         return { success: false, error: 'Authentication required' };
     }
 
@@ -1901,8 +1899,8 @@ async fetchOreRecieved(): Promise<any[]> {
         });
 
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
-            return { success: false, error: 'Authentication required' };
+            console.error('Failed to create tax:', response.status, response.statusText);
+            return { success: false, error: 'Request failed' };
         }
 
         const data = await response.json();
@@ -1955,7 +1953,7 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch production loan details:', response.status, response.statusText);
               return null;
           }
           const data = await response.json();
@@ -1982,7 +1980,7 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch production loan data:', response.status, response.statusText);
               return [];
           }
           const data = await response.json();
@@ -2013,8 +2011,8 @@ async fetchOreRecieved(): Promise<any[]> {
           const data = await response.json();
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
+              console.error('Failed to create production loan:', response.status, response.statusText);
+              return { success: false, error: 'Request failed' };
           }
           
           return { success: true, data };
@@ -2043,8 +2041,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
+              console.error('Failed to approve production loan:', response.status, response.statusText);
+              return { success: false, error: 'Request failed' };
           }
           
           return { success: true };
@@ -2077,8 +2075,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
+              console.error('Failed to reject production loan:', response.status, response.statusText);
+              return { success: false, error: 'Request failed' };
           }
           
           return { success: true };
@@ -2111,8 +2109,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
+              console.error('Failed to push back production loan:', response.status, response.statusText);
+              return { success: false, error: 'Request failed' };
           }
           
           return { success: true };
@@ -2143,8 +2141,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
-                return { success: false, error: 'Authentication required' };
+                console.error('Failed to approve user:', response.status, response.statusText);
+                return { success: false, error: 'Request failed' };
             }
             
             return { success: true };
@@ -2170,8 +2168,8 @@ async fetchOreRecieved(): Promise<any[]> {
           });
           
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
-              return { success: false, error: 'Authentication required' };
+              console.error('Failed to approve tax direction:', response.status, response.statusText);
+              return { success: false, error: 'Request failed' };
           }
           
           return { success: true };
@@ -2201,7 +2199,7 @@ async fetchOreRecieved(): Promise<any[]> {
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch activated mills:', response.status, response.statusText);
               return [];
           }
           const data = await response.json();
@@ -2228,8 +2226,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
-                return { success: false, error: 'Authentication required' };
+                console.error('Failed to reject user:', response.status, response.statusText);
+                return { success: false, error: 'Request failed' };
             }
             
             return { success: true };
@@ -2316,8 +2314,8 @@ async fetchOreRecieved(): Promise<any[]> {
             });
             
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
-                return { success: false, error: 'Authentication required' };
+                console.error('Failed to pushback user:', response.status, response.statusText);
+                return { success: false, error: 'Request failed' };
             }
             
             return { success: true };
@@ -2348,7 +2346,6 @@ async fetchOreRecieved(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return { success: false, error: 'Authentication required' };
         }
 
@@ -2410,7 +2407,7 @@ async fetchOreRecieved(): Promise<any[]> {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch sections:', response.status, response.statusText);
                 return [];
             }
             const data = await response.json();
@@ -2433,7 +2430,7 @@ async fetchOreRecieved(): Promise<any[]> {
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch miners:', response.status, response.statusText);
                 return [];
             }
             const data = await response.json();
@@ -2460,7 +2457,7 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
+        console.error('Failed to fetch approved shaft assignments:', response.status, response.statusText);
         return [];
       }
       const data = await response.json();
@@ -2484,7 +2481,7 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
+        console.error('Failed to fetch drivers:', response.status, response.statusText);
         return [];
       }
       const data = await response.json();
@@ -2507,7 +2504,7 @@ async fetchOreRecieved(): Promise<any[]> {
         credentials: 'include',
       });
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
+        console.error('Failed to fetch mills:', response.status, response.statusText);
         return [];
       }
       const data = await response.json();
@@ -2536,8 +2533,8 @@ async fetchOreRecieved(): Promise<any[]> {
     });
     
     if (!response.ok) {
-      globalThis.location.href = '/auth/sign-in';
-      return { success: false, error: 'Authentication required' };
+      console.error('Failed to approve driver:', response.status, response.statusText);
+      return { success: false, error: 'Request failed' };
     }
     
     return { success: true };
@@ -2559,7 +2556,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   const token = localStorage.getItem('custom-auth-token');
   if (!token) {
     console.error('No token found in localStorage');
-    globalThis.location.href = '/auth/sign-in';
     return { success: false, error: 'Authentication required' };
   }
   try {
@@ -2574,8 +2570,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     });
 
     if (!response.ok) {
-      globalThis.location.href = '/auth/sign-in';
-      return { success: false, error: 'Authentication required' };
+      console.error('Failed to apply tax:', response.status, response.statusText);
+      return { success: false, error: 'Request failed' };
     }
 
     const data = await response.json();
@@ -2603,7 +2599,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return { success: false, error: 'Authentication required' };
     }
     try {
@@ -2618,8 +2613,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       });
       
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
-        return { success: false, error: 'Authentication required' };
+        console.error('Failed to reject driver:', response.status, response.statusText);
+        return { success: false, error: 'Request failed' };
       }
       
       return { success: true };
@@ -2646,7 +2641,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return { success: false, error: 'Authentication required' };
     }
     try {
@@ -2661,8 +2655,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       });
       
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
-        return { success: false, error: 'Authentication required' };
+        console.error('Failed to pushback driver:', response.status, response.statusText);
+        return { success: false, error: 'Request failed' };
       }
       
       return { success: true };
@@ -2685,7 +2679,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2698,7 +2691,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch company by ID:', response.status, response.statusText);
                 return null;
             }
             return await response.json();
@@ -2717,7 +2710,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2731,7 +2723,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set miner for approval:', response.status, response.statusText);
                 return null;
             }
             return await response.json();
@@ -2745,7 +2737,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2759,7 +2750,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set company miner for approval:', response.status, response.statusText);
                 return null;
             }
             const text = await response.text();
@@ -2784,7 +2775,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2799,7 +2789,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set miner for rejection:', response.status, response.statusText);
                 return null;
             }
             return await response.text();
@@ -2812,7 +2802,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2827,7 +2816,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set company miner for rejection:', response.status, response.statusText);
                 return null;
             }
             return await response.text();
@@ -2847,7 +2836,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2862,7 +2850,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set miner for pushback:', response.status, response.statusText);
                 return null;
             }
             return await response.text();
@@ -2876,7 +2864,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -2891,7 +2878,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to set company miner for pushback:', response.status, response.statusText);
                 return null;
             }
             return await response.text();
@@ -2908,7 +2895,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth-sign-in';
             return [];
         }
         try {
@@ -2940,7 +2926,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -2978,7 +2963,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -3064,8 +3048,8 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             }
 
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
-                return { success: false, error: 'Authentication required' };
+                console.error('Failed to register company:', response.status, response.statusText);
+                return { success: false, error: 'Request failed' };
             }
 
             return { 
@@ -3153,7 +3137,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return [];
         }
         try {
@@ -3193,7 +3176,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3219,7 +3201,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
           return null;
       }
       try {
@@ -3245,7 +3226,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
           return null;
       }
       try {
@@ -3276,7 +3256,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
           return null;
       }
       try {
@@ -3290,7 +3269,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch approved shaft assignments:', response.status, response.statusText);
               return null;
           }
           return await response.json();
@@ -3304,7 +3283,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
         console.error('No token found in localStorage');
-        globalThis.location.href = '/auth/signin';
         return null;
     }
     try {
@@ -3318,7 +3296,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             credentials: 'include',
         });
         if (!response.ok) {
-            globalThis.location.href = '/auth/sign-in';
+            console.error('Failed to fetch security details:', response.status, response.statusText);
             return null;
         }
         return await response.json();
@@ -3332,7 +3310,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin';
           return null;
       }
       try {
@@ -3346,7 +3323,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
               credentials: 'include',
           });
           if (!response.ok) {
-              globalThis.location.href = '/auth/sign-in';
+              console.error('Failed to fetch tax details:', response.status, response.statusText);
               return null;
           }
           return await response.json();
@@ -3360,7 +3337,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return null;
         }
         try {
@@ -3374,7 +3350,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 credentials: 'include',
             });
             if (!response.ok) {
-                globalThis.location.href = '/auth/sign-in';
+                console.error('Failed to fetch customer details:', response.status, response.statusText);
                 return null;
             }
             return await response.json();
@@ -3388,7 +3364,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3416,7 +3391,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3448,7 +3422,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3476,7 +3449,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3504,7 +3476,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
           console.error('No token found in localStorage');
-          globalThis.location.href = '/auth/signin'; // Redirect to sign-in page
           return [];
       }
       try {
@@ -3533,7 +3504,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3582,7 +3552,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in';
             return { success: false, message: 'Not authenticated' };
         }
 
@@ -3614,12 +3583,10 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
         }
     }
-
      async fetchApprovedminer(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3648,7 +3615,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3679,12 +3645,10 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return [];
         }
     }
-
        async fetchAllCompany(): Promise<Customer[]> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
             console.error('No token found in localStorage');
-            globalThis.location.href = '/auth/sign-in'; // Redirect to sign-in page
             return [];
         }
         try {
@@ -3930,7 +3894,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -3970,7 +3933,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4007,7 +3969,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return [];
     }
     try {
@@ -4021,7 +3982,7 @@ cooperativename: string;
         credentials: 'include',
       });
       if (!response.ok) {
-        globalThis.location.href = '/auth/sign-in';
+        console.error('Failed to fetch penalties:', response.status, response.statusText);
         return [];
       }
       const data = await response.json();
@@ -4041,7 +4002,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4074,7 +4034,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4105,7 +4064,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4137,7 +4095,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4169,7 +4126,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4208,7 +4164,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -4239,7 +4194,6 @@ cooperativename: string;
     const token = localStorage.getItem('custom-auth-token');
     if (!token) {
       console.error('No token found in localStorage');
-      globalThis.location.href = '/auth/signin';
       return null;
     }
     try {
@@ -5913,6 +5867,92 @@ cooperativename: string;
       return { success: true, data };
     } catch (error) {
       console.error('Error creating training:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Create a new shaft inspection
+   * POST /api/shaft-inspections
+   */
+  async createShaftInspection(inspectionData: {
+    inspectorName: string;
+    location: string;
+    inspectionDate: string;
+    inspectionTime: {
+      hour: number;
+      minute: number;
+      second: number;
+      nano: number;
+    };
+    status: string;
+    inspectionType: string;
+    hazardControlProgram: string;
+    observations: string;
+    pollutionStatus: string;
+    correctiveActions: string;
+    esapMaterials: string;
+    complianceStatus: string;
+    shaftNumbers: string[];
+    attachments: string[];
+  }): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      console.log('Creating shaft inspection with data:', inspectionData);
+      const response = await fetch('/api/shaft-inspections', {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(inspectionData),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch (textError) {
+          console.error('Failed to read error response:', textError);
+          errorText = `HTTP ${response.status} ${response.statusText}`;
+        }
+        
+        console.error(`POST /api/shaft-inspections failed with status ${response.status}:`, errorText);
+        
+        // Handle authentication errors by redirecting to sign-in
+        if (response.status === 401 || response.status === 403) {
+          console.log('Authentication failed, redirecting to sign-in');
+          globalThis.location.href = '/auth/sign-in';
+          return { success: false, error: 'Authentication required. Redirecting to sign-in...' };
+        }
+        
+        // Provide more specific error messages based on status code
+        let userFriendlyError = errorText;
+        if (response.status === 404) {
+          userFriendlyError = 'Shaft inspection endpoint not found. Please check if the API is running.';
+        } else if (response.status === 400) {
+          userFriendlyError = 'Invalid data provided. Please check your input.';
+        } else if (response.status >= 500) {
+          userFriendlyError = 'Server error. Please try again later.';
+        } else if (!errorText) {
+          userFriendlyError = `Request failed with status ${response.status}`;
+        }
+        
+        return { success: false, error: userFriendlyError };
+      }
+      
+      const data = await response.json().catch(() => null);
+      console.log('Shaft inspection created successfully:', data);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error creating shaft inspection:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }

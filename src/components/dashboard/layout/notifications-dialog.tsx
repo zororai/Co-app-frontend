@@ -105,7 +105,7 @@ export function NotificationsDialog({ open, onClose }: NotificationsDialogProps)
         sx: { minHeight: '400px' }
       }}
     >
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' , backgroundColor: 'black' }}>
         {selectedNotification ? 'Notification Details' : 'Notifications'}
         <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
           <CloseIcon />
