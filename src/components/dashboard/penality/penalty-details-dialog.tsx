@@ -16,6 +16,7 @@ import {
   Alert,
   Chip,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { X as CloseIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { authClient } from '@/lib/auth/client';
 
@@ -40,6 +41,7 @@ interface PenaltyDetails {
 }
 
 export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [penaltyDetails, setPenaltyDetails] = React.useState<PenaltyDetails | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -226,8 +228,9 @@ export function PenaltyDetailsDialog({ open, onClose, penaltyId }: PenaltyDetail
           onClick={handleClose}
           variant="contained"
           sx={{ 
-            bgcolor: 'rgb(5, 5, 68)',
-            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            '&:hover': { bgcolor: theme.palette.secondary.dark } 
           }}
         >
           Close

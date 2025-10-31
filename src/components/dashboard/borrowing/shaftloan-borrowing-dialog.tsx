@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -22,6 +23,7 @@ interface ShaftBorrowingDialogProps {
 }
 
 export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }: ShaftBorrowingDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [form, setForm] = React.useState({
     loanName: '',
     paymentMethod: '',
@@ -212,9 +214,27 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={submitting}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
-          {submitting ? <CircularProgress size={22} /> : 'Submit'}
+        <Button 
+          onClick={onClose} 
+          disabled={submitting}
+          variant="contained"
+          sx={{
+            bgcolor: 'secondary.main',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained" 
+          disabled={submitting}
+          sx={{
+            bgcolor: 'secondary.main',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          {submitting ? <CircularProgress size={22} sx={{ color: 'white' }} /> : 'Submit'}
         </Button>
       </DialogActions>
     </Dialog>

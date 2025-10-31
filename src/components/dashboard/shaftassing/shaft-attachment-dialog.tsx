@@ -15,6 +15,7 @@ import {
   IconButton,
   CircularProgress,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import MapIcon from '@mui/icons-material/Map';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -48,6 +49,7 @@ export function ShaftAttachmentDialog({
   onClose,
   customerId,
 }: ShaftAttachmentDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [formData, setFormData] = React.useState<ShaftAssignmentData>({
     sectionName: '',
     shaftNumbers: '',
@@ -678,7 +680,12 @@ export function ShaftAttachmentDialog({
           <Button 
             onClick={handleClose} 
             disabled={loading}
-            sx={{ mr: 1 }}
+            variant="contained"
+            sx={{ 
+              mr: 1,
+              bgcolor: theme.palette.secondary.main,
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
           >
             Cancel
           </Button>
@@ -687,9 +694,9 @@ export function ShaftAttachmentDialog({
             variant="contained"
             disabled={loading}
             sx={{
-              bgcolor: '#6366f1',
+              bgcolor: theme.palette.secondary.main,
               '&:hover': {
-                bgcolor: '#5048e5',
+                bgcolor: theme.palette.secondary.dark,
               },
               px: 4,
             }}

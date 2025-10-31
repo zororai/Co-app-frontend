@@ -13,6 +13,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
+import { useTheme } from '@mui/material/styles';
 
 import dayjs from 'dayjs';
 
@@ -34,6 +35,7 @@ import { AddDriverDialog } from '@/components/dashboard/driveronboarding/add-dri
 
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
@@ -141,7 +143,18 @@ export default function Page(): React.JSX.Element {
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: 'secondary.main',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              }
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />

@@ -11,6 +11,7 @@ import {
   Typography,
   IconButton,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import LinkIcon from '@mui/icons-material/Link';
@@ -30,6 +31,7 @@ export function ShaftActionDialog({
   onCreateNew,
   customerId,
 }: ShaftActionDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const handleAttachExisting = () => {
     if (customerId) {
       onAttachExisting(customerId);
@@ -61,7 +63,7 @@ export function ShaftActionDialog({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg, rgb(5, 5, 68) 0%, rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -82,18 +84,17 @@ export function ShaftActionDialog({
         
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Button
-            variant="outlined"
+            variant="contained"
             size="large"
             startIcon={<LinkIcon />}
             onClick={handleAttachExisting}
             sx={{
               py: 2,
               px: 3,
-              borderColor: 'rgb(5, 5, 68)',
-              color: 'rgb(5, 5, 68)',
+              bgcolor: theme.palette.secondary.main,
+              color: 'white',
               '&:hover': {
-                borderColor: 'rgb(5, 5, 68)',
-                backgroundColor: 'rgba(5, 5, 68, 0.04)',
+                bgcolor: theme.palette.secondary.dark,
               },
               justifyContent: 'flex-start',
               textAlign: 'left',
@@ -103,7 +104,7 @@ export function ShaftActionDialog({
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 Attach Existing Shaft
               </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mt: 0.5 }}>
                 Link this customer to an already existing shaft
               </Typography>
             </Box>
@@ -117,9 +118,9 @@ export function ShaftActionDialog({
             sx={{
               py: 2,
               px: 3,
-              bgcolor: 'rgb(5, 5, 68)',
+              bgcolor: theme.palette.secondary.main,
               '&:hover': {
-                bgcolor: 'rgba(5, 5, 68, 0.9)',
+                bgcolor: theme.palette.secondary.dark,
               },
               justifyContent: 'flex-start',
               textAlign: 'left',
@@ -140,10 +141,11 @@ export function ShaftActionDialog({
       <DialogActions sx={{ px: 3, py: 2, justifyContent: 'flex-end' }}>
         <Button 
           onClick={onClose}
+          variant="contained"
           sx={{ 
-            color: 'text.secondary',
+            bgcolor: theme.palette.secondary.main,
             '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              bgcolor: theme.palette.secondary.dark,
             }
           }}
         >
