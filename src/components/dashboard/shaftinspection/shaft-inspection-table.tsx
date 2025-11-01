@@ -44,6 +44,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { authClient } from '@/lib/auth/client';
+import { ShaftInspectionDetailsDialog } from './shaft-inspection-details-dialog';
 
 export interface ShaftInspection {
   id: string;
@@ -224,6 +225,10 @@ export function ShaftInspectionTable({
     setSelectedInspectionId(null);
   };
 
+  const handleRowClick = (inspectionId: string) => {
+    handleViewInspection(inspectionId);
+  };
+
   const handleEditInspection = (inspectionId: string) => {
     setSelectedInspectionId(inspectionId);
     setEditDialogOpen(true);
@@ -284,17 +289,44 @@ export function ShaftInspectionTable({
     setSnackbarOpen(false);
   };
 
+  // Helper function to convert date array to Date object
+  const convertDateArray = (dateArray: number[] | string): Date | null => {
+    if (!dateArray) return null;
+    if (typeof dateArray === 'string') return new Date(dateArray);
+    if (!Array.isArray(dateArray) || dateArray.length < 3) return null;
+    
+    const [year, month, day, hour = 0, minute = 0, second = 0] = dateArray;
+    // Note: JavaScript Date constructor expects month to be 0-indexed, but API sends 1-indexed
+    return new Date(year, month - 1, day, hour, minute, second);
+  };
+
   // Helper function to format time object to string (robust against missing fields)
   const formatTime = (
-    timeObj?: { hour?: number; minute?: number; second?: number; nano?: number } | string | null
+    timeObj?: { hour?: number; minute?: number; second?: number; nano?: number } | string | null | number[]
   ): string => {
     if (!timeObj) return '';
     if (typeof timeObj === 'string') return timeObj;
-    const hourNum = Number(timeObj.hour ?? 0);
-    const minuteNum = Number(timeObj.minute ?? 0);
-    const period = hourNum >= 12 ? 'PM' : 'AM';
-    const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-    return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
+    
+    // Handle array format (extract time from date array)
+    if (Array.isArray(timeObj) && timeObj.length >= 6) {
+      const [, , , hour = 0, minute = 0] = timeObj;
+      const hourNum = Number(hour);
+      const minuteNum = Number(minute);
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    // Handle object format
+    if (typeof timeObj === 'object' && timeObj !== null && !Array.isArray(timeObj)) {
+      const hourNum = Number(timeObj.hour ?? 0);
+      const minuteNum = Number(timeObj.minute ?? 0);
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    return '';
   };
 
   const dataToDisplay = filteredRows;
@@ -466,15 +498,8 @@ export function ShaftInspectionTable({
                   Inspector
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortField === 'location' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'location'}
-                  direction={sortField === 'location' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('location')}
-                >
-                  Location
-                </TableSortLabel>
-              </TableCell>
+             
+              <TableCell>Shaft Numbers</TableCell>
               <TableCell sortDirection={sortField === 'inspectionDate' ? sortDirection : false}>
                 <TableSortLabel
                   active={sortField === 'inspectionDate'}
@@ -511,7 +536,6 @@ export function ShaftInspectionTable({
                   Compliance
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Shaft Numbers</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -554,18 +578,44 @@ export function ShaftInspectionTable({
                   ? [String(row.shaftNumbers)]
                   : [];
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow 
+                  hover 
+                  key={row.id} 
+                  selected={isSelected}
+                  onClick={() => handleRowClick(row.id)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>
                     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                      
                       <Typography variant="subtitle2">{row.inspectorName}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
+                  
+                  <TableCell>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {shaftList.slice(0, 2).map((shaft, index) => (
+                        <Chip
+                          key={index}
+                          label={shaft}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
+                      {shaftList.length > 2 && (
+                        <Chip
+                          label={`+${shaftList.length - 2}`}
+                          size="small"
+                          variant="outlined"
+                          color="primary"
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
                   <TableCell>
                     <Box>
-                      <Typography variant="body2">{new Date(row.inspectionDate).toLocaleDateString()}</Typography>
-                      <Typography variant="caption" color="text.secondary">{formatTime(row.inspectionTime)}</Typography>
+                      <Typography variant="body2">{convertDateArray(row.inspectionDate)?.toLocaleDateString() || 'Invalid Date'}</Typography>
+                      <Typography variant="caption" color="text.secondary">{formatTime(row.inspectionTime || row.inspectionDate)}</Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -618,30 +668,13 @@ export function ShaftInspectionTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {shaftList.slice(0, 2).map((shaft, index) => (
-                        <Chip
-                          key={index}
-                          label={shaft}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                      {shaftList.length > 2 && (
-                        <Chip
-                          label={`+${shaftList.length - 2}`}
-                          size="small"
-                          variant="outlined"
-                          color="primary"
-                        />
-                      )}
-                    </Box>
-                  </TableCell>
-                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Tooltip title="View Details">
                         <IconButton 
-                          onClick={() => handleViewInspection(row.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewInspection(row.id);
+                          }}
                           size="small"
                           sx={{
                             color: 'secondary.main',
@@ -655,7 +688,10 @@ export function ShaftInspectionTable({
                       </Tooltip>
                       <Tooltip title="Edit Inspection">
                         <IconButton 
-                          onClick={() => handleEditInspection(row.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditInspection(row.id);
+                          }}
                           size="small"
                           sx={{
                             color: 'secondary.main',
@@ -665,20 +701,6 @@ export function ShaftInspectionTable({
                           }}
                         >
                           <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Inspection">
-                        <IconButton 
-                          onClick={() => handleDeleteInspection(row.id, row.inspectorName)}
-                          size="small"
-                          sx={{
-                            color: 'error.main',
-                            '&:hover': {
-                              bgcolor: 'rgba(211, 47, 47, 0.08)'
-                            }
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -700,7 +722,14 @@ export function ShaftInspectionTable({
         rowsPerPageOptions={[5, 10, 25, 50, 100]}
       />
 
-      {/* TODO: Add Inspection Details Dialog */}
+      {/* Inspection Details Dialog */}
+      <ShaftInspectionDetailsDialog
+        open={viewDialogOpen}
+        onClose={handleCloseViewDialog}
+        inspectionId={selectedInspectionId}
+        onRefresh={onRefresh}
+      />
+      
       {/* TODO: Add Edit Inspection Dialog */}
 
       {/* Delete Confirmation Dialog */}

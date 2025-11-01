@@ -6013,5 +6013,105 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
+
+  /**
+   * Fetch shaft inspection details by ID
+   * GET /api/shaft-inspections/{id}
+   */
+  async fetchShaftInspectionById(inspectionId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    
+    if (!token) {
+      console.error('No authentication token found');
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      console.log('Fetching shaft inspection details for ID:', inspectionId);
+      const response = await fetch(`/api/shaft-inspections/${inspectionId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch (textError) {
+          console.error('Failed to read error response:', textError);
+          errorText = `HTTP ${response.status} ${response.statusText}`;
+        }
+        
+        console.error(`GET /api/shaft-inspections/${inspectionId} failed with status ${response.status}:`, errorText);
+        
+        // Handle authentication errors
+        if (response.status === 401 || response.status === 403) {
+          console.log('Authentication failed');
+          return { success: false, error: 'Authentication required. Please sign in again.' };
+        }
+        
+        // Provide more specific error messages based on status code
+        let userFriendlyError = errorText;
+        if (response.status === 404) {
+          userFriendlyError = 'Shaft inspection not found.';
+        } else if (response.status >= 500) {
+          userFriendlyError = 'Server error. Please try again later.';
+        } else if (!errorText) {
+          userFriendlyError = `Request failed with status ${response.status}`;
+        }
+        
+        return { success: false, error: userFriendlyError };
+      }
+      
+      const data = await response.json();
+      console.log('Shaft inspection details fetched successfully:', data);
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching shaft inspection details:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Suspend a shaft assignment for SHE with a given status
+   * PUT /api/shaft-assignments/{id}/suspend-for-she?status={status}
+   */
+  async suspendShaftForSHE(
+    shaftAssignmentId: string | number,
+    status: string
+  ): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    try {
+      const safeId = encodeURIComponent(String(shaftAssignmentId));
+      const safeStatus = encodeURIComponent(status);
+      const response = await fetch(`/api/shaft-assignments/${safeId}/suspend-for-she?status=${safeStatus}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to update shaft assignment status' };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error suspending shaft for SHE:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
 }
 export const authClient = new AuthClient();

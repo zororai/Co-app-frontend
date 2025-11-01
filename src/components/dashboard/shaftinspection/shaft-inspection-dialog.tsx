@@ -146,6 +146,7 @@ export function ShaftInspectionDialog({
   const [approvedShafts, setApprovedShafts] = React.useState<ApprovedShaftOption[]>([]);
   const [approvedShaftsLoading, setApprovedShaftsLoading] = React.useState(false);
   const [approvedShaftsError, setApprovedShaftsError] = React.useState<string | null>(null);
+  const [selectedShaftAssignmentId, setSelectedShaftAssignmentId] = React.useState<string | number | null>(null);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -159,6 +160,7 @@ export function ShaftInspectionDialog({
         const normalized: ApprovedShaftOption[] = (Array.isArray(data) ? data : []).map((item: any) => ({
           sectionName: item.sectionName ?? item.section ?? '',
           shaftNumbers: item.shaftNumbers ?? item.shaftNumber ?? '',
+          id: item.id ?? item.assignmentId ?? item.shaftId ?? item.shaftAssignmentId,
           ...item,
         })).filter(opt => opt.shaftNumbers);
         setApprovedShafts(normalized);
@@ -333,6 +335,18 @@ export function ShaftInspectionDialog({
       const result = await authClient.createShaftInspection(inspectionData);
       
       if (result.success) {
+        // After creating inspection, update the selected shaft assignment status via SHE endpoint
+        if (selectedShaftAssignmentId && formData.status) {
+          try {
+            const suspendRes = await authClient.suspendShaftForSHE(selectedShaftAssignmentId, formData.status);
+            if (!suspendRes.success) {
+              setError(suspendRes.error || 'Failed to update shaft status for SHE.');
+            }
+          } catch (e:any) {
+            setError(e?.message || 'Failed to update shaft status for SHE.');
+          }
+        }
+
         setSuccessMessage('Shaft inspection submitted successfully!');
         // Refresh the table if callback is provided
         if (onRefresh) {
@@ -672,12 +686,14 @@ export function ShaftInspectionDialog({
                     ...prev,
                     shaftNumbers: newValue ? [newValue.shaftNumbers] : []
                   }));
+                  setSelectedShaftAssignmentId(newValue ? (newValue as any).id ?? null : null);
                 }}
                 getOptionLabel={(option) => {
                   const sec = option.sectionName || '';
                   const num = option.shaftNumbers || '';
                   return sec && num ? `${sec} - ${num}` : num || sec;
                 }}
+                isOptionEqualToValue={(a, b) => a.shaftNumbers === b.shaftNumbers}
                 sx={textFieldStyle}
                 renderInput={(params) => (
                   <TextField
