@@ -57,6 +57,10 @@ interface GuiltyAdmissionFormData {
   sheManagerSigned: string;
   inspectorAccepted: string;
   acceptedDate: string;
+  
+  // Additional fields for API
+  status?: string;
+  remarks?: string;
 }
 
 export function GuiltyAdmissionForm(): React.JSX.Element {
@@ -90,6 +94,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     sheManagerSigned: '',
     inspectorAccepted: '',
     acceptedDate: '',
+    status: 'Submitted',
+    remarks: '',
   });
 
   const [loading, setLoading] = React.useState(false);
@@ -458,35 +464,49 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     try {
       // Prepare data for API submission
       const contraventionData = {
-        contraventionOf: formData.contraventions.filter(c => c.trim() !== ''),
-        raisedby: formData.raisedBy,
-        idOrNrNumber: formData.idOrNrNumber,
-        address: formData.address,
-        occupation: formData.occupation,
-        holderOf: formData.holderOf,
-        number: formData.holderNumber,
-        issuedAt: formData.issuedAt,
-        issuedTime: formData.time,
-        admitof: formData.admitGuilty,
-        descriptionOfOffence: formData.descriptionOfOffence,
-        place: formData.place,
-        offenceDate: formData.date,
-        offenceTime: formData.signatureTime,
-        signatureOfOffender: formData.offenderSignature,
-        dateCharged: formData.dateCharged,
-        mineNumber: formData.mineNumber,
-        inspectorOfMines: formData.inspectorAccepted,
-        acceptedDate: formData.acceptedDate,
+        contraventionOf: formData.contraventions?.filter(c => c?.trim() !== '') || [],
+        raisedby: formData.raisedBy || '',
+        idOrNrNumber: formData.idOrNrNumber || '',
+        address: formData.address || '',
+        occupation: formData.occupation || '',
+        holderOf: formData.holderOf || '',
+        number: formData.holderNumber || '',
+        issuedAt: formData.issuedAt || '',
+        issuedTime: formData.time || '',
+        admitof: formData.admitGuilty || '',
+        descriptionOfOffence: formData.descriptionOfOffence || '',
+        place: formData.place || '',
+        offenceDate: formData.date || '',
+        offenceTime: formData.signatureTime || '',
+        signatureOfOffender: formData.offenderSignature || '',
+        dateCharged: formData.dateCharged || '',
+        mineNumber: formData.mineNumber || '',
+        inspectorOfMines: formData.inspectorAccepted || '',
+        acceptedDate: formData.acceptedDate || '',
         status: 'Submitted',
         remarks: '',
         fineAmount: parseFloat(formData.totalAmount) || 0,
-        Accountamount1: formData.firstAccountAmount,
-        Accountamount2: formData.secondAccountAmount,
-        Accountamount3: formData.thirdAccountAmount,
-        signed: formData.officialSigned,
-        shemanager: formData.sheManagerSigned,
-        inspeptorofminers: formData.inspectorAccepted,
+        Accountamount1: formData.firstAccountAmount || '',
+        Accountamount2: formData.secondAccountAmount || '',
+        Accountamount3: formData.thirdAccountAmount || '',
+        signed: formData.officialSigned || '',
+        shemanager: formData.sheManagerSigned || '',
+        inspeptorofminers: formData.inspectorAccepted || '',
       };
+
+      // Debug: Log the data being sent
+      console.log('Form data before submission:', formData);
+      console.log('Contravention data being sent:', contraventionData);
+      
+      // Test JSON serialization
+      try {
+        const jsonString = JSON.stringify(contraventionData);
+        console.log('JSON stringified data:', jsonString);
+      } catch (jsonError) {
+        console.error('JSON serialization error:', jsonError);
+        setErrors({ submit: 'Invalid data format. Please check all fields.' });
+        return;
+      }
 
       // Submit to API
       const result = await authClient.createContravention(contraventionData);
