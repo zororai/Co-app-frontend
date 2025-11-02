@@ -45,6 +45,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { authClient } from '@/lib/auth/client';
 import { ShaftInspectionDetailsDialog } from './shaft-inspection-details-dialog';
+import { ShaftInspectionDialog } from './shaft-inspection-dialog';
 
 export interface ShaftInspection {
   id: string;
@@ -748,7 +749,17 @@ export function ShaftInspectionTable({
         onRefresh={onRefresh}
       />
       
-      {/* TODO: Add Edit Inspection Dialog */}
+      {/* Edit Inspection Dialog */}
+      <ShaftInspectionDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedInspectionId(null);
+        }}
+        onRefresh={fetchInspections}
+        inspectionId={selectedInspectionId}
+        mode="edit"
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog

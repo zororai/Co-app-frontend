@@ -900,6 +900,56 @@ class AuthClient {
     }
 
     /**
+     * Update shaft inspection by ID
+     * PUT /api/shaft-inspections/{id}
+     */
+    async updateShaftInspection(inspectionId: string | number, inspectionData: {
+        inspectorName: string;
+        inspectionDate: string;
+        status: string;
+        inspectionType: string;
+        hazardControlProgram: string;
+        observations: string;
+        pollutionStatus: string;
+        correctiveActions: string;
+        esapMaterials: string;
+        complianceStatus: string;
+        shaftNumbers: string;
+        attachments: string[];
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            console.log('Updating shaft inspection:', inspectionId, JSON.stringify(inspectionData));
+            const response = await fetch(`/api/shaft-inspections/${inspectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                body: JSON.stringify(inspectionData),
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Request failed');
+                console.error('Shaft inspection update failed:', errorText);
+                return { success: false, error: errorText || 'Failed to update shaft inspection' };
+            }
+
+            const data = await response.json();
+            console.log('Shaft inspection updated successfully:', data);
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error updating shaft inspection:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
+    /**
      * Create a new ore transport record
      */
     async createOre(oreData: {
