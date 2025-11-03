@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { config } from '@/config';
-import { SettingsLayout } from '@/components/dashboard/settings/settings-layout';
+import { SettingsForm as SettingsLayout } from '@/components/dashboard/settings/settings-layout';
 
 export const metadata = { title: `Settings | Dashboard | ${config.site.name}` } satisfies Metadata;
 

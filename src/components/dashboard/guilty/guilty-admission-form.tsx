@@ -17,6 +17,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Autocomplete,
 } from '@mui/material';
 import { SxProps, Theme } from '@mui/material/styles';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
@@ -94,6 +95,27 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [success, setSuccess] = React.useState(false);
+  
+  // Shaft assignments state
+  const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
+  const [selectedShaft, setSelectedShaft] = React.useState<any>(null);
+  const [selectedShaftData, setSelectedShaftData] = React.useState<{id: string, minerId: string} | null>(null);
+
+  // Fetch shaft assignments on component mount
+  React.useEffect(() => {
+    const fetchShaftAssignments = async () => {
+      try {
+        const data = await authClient.fetchApprovedShaftAssignments();
+        if (data && Array.isArray(data)) {
+          setShaftAssignments(data);
+        }
+      } catch (error) {
+        console.error('Error fetching shaft assignments:', error);
+      }
+    };
+
+    fetchShaftAssignments();
+  }, []);
 
   const handlePrint = () => {
     // Create a new window for printing
@@ -777,14 +799,49 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Stack spacing={3}>
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                   <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="Shaft Number"
-                      value={formData.shaftNumber}
-                      onChange={handleInputChange('shaftNumber')}
+                    <Autocomplete
+                      options={shaftAssignments}
+                      getOptionLabel={(option) => `${option.sectionName} - ${option.shaftNumbers}`}
+                      value={selectedShaft}
+                      onChange={(event, newValue) => {
+                        setSelectedShaft(newValue);
+                        if (newValue) {
+                          setSelectedShaftData({
+                            id: newValue.id,
+                            minerId: newValue.minerId
+                          });
+                          setFormData(prev => ({
+                            ...prev,
+                            shaftNumber: newValue.shaftNumbers
+                          }));
+                          // You can access the selected data here:
+                          console.log('Selected Shaft ID:', newValue.id);
+                          console.log('Selected Miner ID:', newValue.minerId);
+                        } else {
+                          setSelectedShaftData(null);
+                          setFormData(prev => ({
+                            ...prev,
+                            shaftNumber: ''
+                          }));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Shaft Number"
+                          error={!!errors.shaftNumber}
+                          helperText={errors.shaftNumber}
+                          sx={textFieldStyle}
+                        />
+                      )}
                       disabled={loading}
                       fullWidth
-                      error={!!errors.shaftNumber}
-                      helperText={errors.shaftNumber}
+                      filterOptions={(options, { inputValue }) => {
+                        return options.filter(option =>
+                          option.sectionName.toLowerCase().includes(inputValue.toLowerCase()) ||
+                          option.shaftNumbers.toLowerCase().includes(inputValue.toLowerCase())
+                        );
+                      }}
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': { borderColor: '#d1d5db' },
@@ -792,7 +849,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                           '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
                         },
                         '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
-                        '& .MuiInputBase-input': { color: 'rgb(5, 5, 68)' },
                       }}
                     />
                   </Box>
