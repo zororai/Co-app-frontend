@@ -6301,6 +6301,92 @@ cooperativename: string;
     }
   }
 
+
+
+  /**
+   * Decrement miner shaft number
+   * PUT /api/miners/{minerId}/decrement-shaftnumber
+   */
+  async decrementMinerShaftNumber(minerId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeMinerId = encodeURIComponent(String(minerId));
+      const response = await fetch(`/api/miners/${safeMinerId}/decrement-shaftnumber`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Miner not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to decrement miner shaft number' };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true, data: { message: 'Miner shaft number decremented successfully' } };
+    } catch (error) {
+      console.error('Error decrementing miner shaft number:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Decrement company shaft number
+   * PUT /api/companies/{companyId}/decrement-shaftnumber
+   */
+  async decrementCompanyShaftNumber(companyId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeCompanyId = encodeURIComponent(String(companyId));
+      const response = await fetch(`/api/companies/${safeCompanyId}/decrement-shaftnumber`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Company not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to decrement company shaft number' };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true, data: { message: 'Company shaft number decremented successfully' } };
+    } catch (error) {
+      console.error('Error decrementing company shaft number:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
   /**
    * Fetch miner details by ID
    * GET /api/miners/{id}

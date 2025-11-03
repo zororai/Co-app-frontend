@@ -126,6 +126,9 @@ export function ShaftTransferPage(): React.JSX.Element {
   const [ownerLoading, setOwnerLoading] = React.useState(false);
   const [shaftOwners, setShaftOwners] = React.useState<ShaftOwner[]>([]);
   const [ownersLoading, setOwnersLoading] = React.useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = React.useState(false);
+  const [transferError, setTransferError] = React.useState<string>('');
+  const [transferLoading, setTransferLoading] = React.useState(false);
 
   // Fetch shaft assignments on component mount
   React.useEffect(() => {
@@ -146,58 +149,6 @@ export function ShaftTransferPage(): React.JSX.Element {
 
   // Fetch shaft owners (companies and miners) on component mount
   React.useEffect(() => {
-    const fetchShaftOwners = async () => {
-      setOwnersLoading(true);
-      try {
-        const [companiesData, minersData] = await Promise.all([
-          authClient.fetchAllCompanies(),
-          authClient.fetchAllMinersForDropdown()
-        ]);
-
-        const owners: ShaftOwner[] = [];
-
-        // Process companies
-        companiesData.forEach((company: any) => {
-          owners.push({
-            id: company.id || company.registrationNumber,
-            name: company.companyName,
-            type: 'company',
-            companyName: company.companyName,
-            registrationNumber: company.registrationNumber,
-            ownerName: company.ownerName,
-            ownerSurname: company.ownerSurname,
-            address: company.address,
-            cellNumber: company.cellNumber,
-            email: company.email,
-            shaftsCount: company.shaftnumber || 0
-          });
-        });
-
-        // Process miners
-        minersData.forEach((miner: any) => {
-          owners.push({
-            id: miner.registrationNumber || miner.nationIdNumber,
-            name: miner.cooperativeDetails?.cooperativeName || miner.cooperativename || `${miner.name} ${miner.surname}`,
-            type: 'miner',
-            surname: miner.surname,
-            nationIdNumber: miner.nationIdNumber,
-            cooperativename: miner.cooperativeDetails?.cooperativeName || miner.cooperativename,
-            position: miner.position,
-            address: miner.address,
-            cellNumber: miner.cellNumber,
-            email: miner.email,
-            status: miner.status
-          });
-        });
-
-        setShaftOwners(owners);
-      } catch (error) {
-        console.error('Error fetching shaft owners:', error);
-      } finally {
-        setOwnersLoading(false);
-      }
-    };
-
     fetchShaftOwners();
   }, []);
 
@@ -230,15 +181,115 @@ export function ShaftTransferPage(): React.JSX.Element {
     setShowResults(true);
   };
 
-  const handleRefresh = async () => {
-    setLoading(true);
+  const handleTransfer = async () => {
+    // Validation: Check if both shaft and owner are selected
+    if (!selectedShaft || !selectedOwner) {
+      setTransferError(
+        !selectedShaft && !selectedOwner 
+          ? 'Please select both a shaft and an owner before transferring.'
+          : !selectedShaft 
+          ? 'Please select a shaft to transfer.'
+          : 'Please select an owner to transfer to.'
+      );
+      setTransferDialogOpen(true);
+      return;
+    }
+
+    setTransferLoading(true);
     try {
-      const data = await authClient.fetchAllShaftAssignments();
-      setShaftAssignments(data);
+      // Step 1: Update shaft assignment with new miner ID
+      const updateResult = await authClient.updateShaftMinerId(selectedShaft.id, selectedOwner.id);
+      if (!updateResult.success) {
+        throw new Error(updateResult.error || 'Failed to update shaft assignment');
+      }
+
+      // Step 2: Try to decrement miner shaft number first
+      const minerDecrementResult = await authClient.decrementMinerShaftNumber(selectedOwner.id);
+      
+      // If miner decrement fails, try company decrement
+      if (!minerDecrementResult.success) {
+        const companyDecrementResult = await authClient.decrementCompanyShaftNumber(selectedOwner.id);
+        if (!companyDecrementResult.success) {
+          console.warn('Failed to decrement shaft number for both miner and company:', {
+            minerError: minerDecrementResult.error,
+            companyError: companyDecrementResult.error
+          });
+          // Don't throw error here as the main transfer was successful
+        }
+      }
+
+      // Success - refresh data and clear selections
+      await Promise.all([
+        authClient.fetchAllShaftAssignments().then(data => setShaftAssignments(data)),
+        fetchShaftOwners() // Refresh owners to update shaft counts
+      ]);
+      
+      setSelectedShaft(null);
+      setSelectedOwner(null);
+      setShowResults(false);
+      
+      // Show success message
+      setTransferError('');
+      setTransferDialogOpen(true);
+      
     } catch (error) {
-      console.error('Error refreshing shaft assignments:', error);
+      console.error('Error during shaft transfer:', error);
+      setTransferError(error instanceof Error ? error.message : 'An unexpected error occurred during transfer');
+      setTransferDialogOpen(true);
     } finally {
-      setLoading(false);
+      setTransferLoading(false);
+    }
+  };
+
+  const fetchShaftOwners = async () => {
+    setOwnersLoading(true);
+    try {
+      const [companiesData, minersData] = await Promise.all([
+        authClient.fetchAllCompanies(),
+        authClient.fetchAllMinersForDropdown()
+      ]);
+
+      const owners: ShaftOwner[] = [];
+
+      // Process companies
+      companiesData.forEach((company: any) => {
+        owners.push({
+          id: company.id || company.registrationNumber,
+          name: company.companyName,
+          type: 'company',
+          companyName: company.companyName,
+          registrationNumber: company.registrationNumber,
+          ownerName: company.ownerName,
+          ownerSurname: company.ownerSurname,
+          address: company.address,
+          cellNumber: company.cellNumber,
+          email: company.email,
+          shaftsCount: company.shaftnumber || 0
+        });
+      });
+
+      // Process miners
+      minersData.forEach((miner: any) => {
+        owners.push({
+          id: miner.registrationNumber || miner.nationIdNumber,
+          name: miner.cooperativeDetails?.cooperativeName || miner.cooperativename || `${miner.name} ${miner.surname}`,
+          type: 'miner',
+          surname: miner.surname,
+          nationIdNumber: miner.nationIdNumber,
+          cooperativename: miner.cooperativeDetails?.cooperativeName || miner.cooperativename,
+          position: miner.position,
+          address: miner.address,
+          cellNumber: miner.cellNumber,
+          email: miner.email,
+          status: miner.status
+        });
+      });
+
+      setShaftOwners(owners);
+    } catch (error) {
+      console.error('Error fetching shaft owners:', error);
+    } finally {
+      setOwnersLoading(false);
     }
   };
 
@@ -284,6 +335,11 @@ export function ShaftTransferPage(): React.JSX.Element {
   const handleCloseOwnerDialog = () => {
     setOwnerDialogOpen(false);
     setOwnerDetails({ type: null, data: null });
+  };
+
+  const handleCloseTransferDialog = () => {
+    setTransferDialogOpen(false);
+    setTransferError('');
   };
 
   return (
@@ -428,9 +484,9 @@ export function ShaftTransferPage(): React.JSX.Element {
                   />
                 </Box>
 
-                {/* Refresh Button */}
+                {/* Transfer Button */}
                 <Box
-                  onClick={handleRefresh}
+                  onClick={(!selectedShaft || !selectedOwner || transferLoading) ? undefined : handleTransfer}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
@@ -438,17 +494,44 @@ export function ShaftTransferPage(): React.JSX.Element {
                     width: 48,
                     height: 48,
                     borderRadius: '50%',
-                    bgcolor: alpha('#635bff', 0.1),
-                    color: '#635bff',
-                    cursor: 'pointer',
+                    bgcolor: (!selectedShaft || !selectedOwner) 
+                      ? alpha('#7f7f87ff', 0.05) 
+                      : transferLoading 
+                      ? alpha('#f59e0b', 0.1)
+                      : alpha('#22c55e', 0.1),
+                    color: (!selectedShaft || !selectedOwner) 
+                      ? alpha('#7f7f87ff', 0.5) 
+                      : transferLoading 
+                      ? '#f59e0b'
+                      : '#22c55e',
+                    cursor: (!selectedShaft || !selectedOwner || transferLoading) ? 'not-allowed' : 'pointer',
+                    opacity: (!selectedShaft || !selectedOwner) ? 0.5 : 1,
                     transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      bgcolor: alpha('#635bff', 0.2),
+                    '&:hover': (!selectedShaft || !selectedOwner || transferLoading) ? {} : {
+                      bgcolor: alpha('#22c55e', 0.2),
                       transform: 'rotate(90deg)',
                     },
                   }}
                 >
-                  <RefreshIcon size={20} />
+                  {transferLoading ? (
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        border: '2px solid',
+                        borderColor: 'currentColor',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        '@keyframes spin': {
+                          '0%': { transform: 'rotate(0deg)' },
+                          '100%': { transform: 'rotate(360deg)' },
+                        },
+                      }}
+                    />
+                  ) : (
+                    <RefreshIcon size={20} />
+                  )}
                 </Box>
 
                 {/* Shaft Owner Search Field */}
@@ -1118,6 +1201,68 @@ export function ShaftTransferPage(): React.JSX.Element {
             sx={{ px: 4 }}
           >
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Transfer Status Dialog */}
+      <Dialog
+        open={transferDialogOpen}
+        onClose={handleCloseTransferDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          pb: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          bgcolor: transferError && !transferError.includes('Please') ? '#ef4444' : 
+                   transferError ? '#f59e0b' : '#22c55e',
+          color: 'white',
+          fontWeight: 600
+        }}>
+          {transferError && !transferError.includes('Please') ? 'Transfer Failed' :
+           transferError ? 'Validation Error' : 'Transfer Successful'}
+        </DialogTitle>
+        
+        <DialogContent sx={{ pt: 3 }}>
+          {transferError ? (
+            <Box sx={{ textAlign: 'center', py: 2 }}>
+              <Typography variant="body1" color="text.primary" gutterBottom>
+                {transferError}
+              </Typography>
+              {transferError.includes('Please') && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  Make sure to select both a shaft and an owner before attempting to transfer ownership.
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 2 }}>
+              <Typography variant="body1" color="text.primary" gutterBottom>
+                Shaft ownership has been successfully transferred!
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                The shaft has been assigned to the selected owner and the data has been updated.
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={handleCloseTransferDialog} 
+            variant="contained"
+            sx={{ px: 4 }}
+          >
+            OK
           </Button>
         </DialogActions>
       </Dialog>
