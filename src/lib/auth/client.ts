@@ -804,6 +804,7 @@ class AuthClient {
      * POST /api/contraventions
      */
     async createContravention(contraventionData: {
+        mineid: string;
         contraventionOf: string[];
         raisedby: string;
         idOrNrNumber: string;
@@ -813,19 +814,21 @@ class AuthClient {
         number: string;
         admitof: string;
         descriptionOfOffence: string;
-        place: string;
+        shaftnumber: string;
         offenceDate: string;
         signatureOfOffender: string;
         dateCharged: string;
-        mineNumber: string;
+        shaftStatus: string;
         inspectorOfMines: string;
         acceptedDate: string;
         status: string;
         remarks: string;
         fineAmount: number;
+        finePaid: boolean;
         signed: string;
-        shemanager: string;
-        inspeptorofminers: string;
+        sheManager: string;
+        inspectorOfMiners: string;
+        shaftid: string;
     }): Promise<{ success: boolean; data?: any; error?: string }> {
         const token = localStorage.getItem('custom-auth-token');
         try {
@@ -892,6 +895,7 @@ class AuthClient {
             };
         }
     }
+
 
     /**
      * Update shaft inspection by ID

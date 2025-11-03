@@ -18,6 +18,10 @@ import {
   FormControl,
   InputLabel,
   Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { SxProps, Theme } from '@mui/material/styles';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
@@ -95,6 +99,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [success, setSuccess] = React.useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false);
+  const [suspensionLoading, setSuspensionLoading] = React.useState(false);
   
   // Shaft assignments state
   const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
@@ -397,16 +403,16 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     }
   };
 
-  // Validate Zimbabwean ID number format
-  const validateZimbabweanId = (idNumber: string): boolean => {
+  // Validate ID number format (flexible for different ID types)
+  const validateIdNumber = (idNumber: string): boolean => {
     // Remove any spaces or dashes
     const cleanId = idNumber.replace(/[\s-]/g, '');
     
-    // Check if it's exactly 11 characters
-    if (cleanId.length !== 11) return false;
+    // Must be at least 5 characters and contain alphanumeric characters
+    if (cleanId.length < 5) return false;
     
-    // Check if first 10 characters are digits and last character is a letter
-    const pattern = /^\d{10}[A-Za-z]$/;
+    // Check if it contains only alphanumeric characters
+    const pattern = /^[A-Za-z0-9]+$/;
     return pattern.test(cleanId);
   };
 
@@ -419,8 +425,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     }
     if (!formData.idOrNrNumber.trim()) {
       newErrors.idOrNrNumber = 'Please fill out this field';
-    } else if (!validateZimbabweanId(formData.idOrNrNumber)) {
-      newErrors.idOrNrNumber = 'Invalid Zimbabwean ID format. Must be 11 characters: 2 digits (district), 6 digits (serial), 2 digits (origin district), 1 check letter';
+    } else if (!validateIdNumber(formData.idOrNrNumber)) {
+      newErrors.idOrNrNumber = 'Invalid ID format. Must be at least 5 alphanumeric characters';
     }
     if (!formData.address.trim()) {
       newErrors.address = 'Please fill out this field';
@@ -470,6 +476,7 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     try {
       // Prepare data for API submission
       const contraventionData = {
+        mineid: selectedShaftData?.minerId || '',
         contraventionOf: formData.contraventions?.filter(c => c?.trim() !== '') || [],
         raisedby: formData.raisedBy || '',
         idOrNrNumber: formData.idOrNrNumber || '',
@@ -479,19 +486,21 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
         number: formData.holderNumber || '',
         admitof: formData.admitGuilty || '',
         descriptionOfOffence: formData.descriptionOfOffence || '',
-        place: formData.shaftNumber || '',
-        offenceDate: formData.date || '',
+        shaftnumber: formData.shaftNumber || '',
+        offenceDate: formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
         signatureOfOffender: formData.offenderSignature || '',
-        dateCharged: formData.dateCharged || '',
-        mineNumber: formData.shaftStatus || '',
+        dateCharged: formData.dateCharged ? new Date(formData.dateCharged).toISOString() : new Date().toISOString(),
+        shaftStatus: formData.shaftStatus || '',
         inspectorOfMines: formData.inspectorAccepted || '',
-        acceptedDate: formData.acceptedDate || '',
+        acceptedDate: formData.acceptedDate ? new Date(formData.acceptedDate).toISOString() : new Date().toISOString(),
         status: 'Submitted',
         remarks: '',
         fineAmount: parseFloat(formData.totalAmount) || 0,
+        finePaid: false,
         signed: formData.officialSigned || '',
-        shemanager: formData.sheManagerSigned || '',
-        inspeptorofminers: formData.inspectorAccepted || '',
+        sheManager: formData.sheManagerSigned || '',
+        inspectorOfMiners: formData.inspectorAccepted || '',
+        shaftid: selectedShaftData?.id || '',
       };
 
       // Debug: Log the data being sent
@@ -518,41 +527,78 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
       
       setSuccess(true);
       
-      // Reset form after successful submission
-      setTimeout(() => {
-        setFormData({
-          contraventions: [
-            'MINING (MANAGEMENT AND SAFETY) REGULATIONS, 1990 SI 109 OF 1990',
-            'EXPLOSIVES REGULATIONS,1989 S.L 72 OF 1989'
-          ],
-          raisedBy: '',
-          idOrNrNumber: '',
-          address: '',
-          occupation: '',
-          holderOf: '',
-          holderNumber: '',
-          issuedDate: '',
-          admitGuilty: '',
-          descriptionOfOffence: '',
-          shaftNumber: '',
-          date: '',
-          offenderSignature: '',
-          dateCharged: '',
-          shaftStatus: '',
-          totalAmount: '',
-          officialSigned: '',
-          sheManagerSigned: '',
-          inspectorAccepted: '',
-          acceptedDate: '',
-        });
-        setSuccess(false);
-      }, 3000);
+      // After successful contravention submission, suspend the shaft for SHE
+      if (selectedShaftData?.id && formData.shaftStatus) {
+        setSuspensionLoading(true);
+        try {
+          const suspensionResult = await authClient.suspendShaftForSHE(
+            selectedShaftData.id,
+            formData.shaftStatus
+          );
+          
+          if (suspensionResult.success) {
+            console.log('Shaft suspended successfully for SHE');
+            setShowSuccessDialog(true);
+          } else {
+            console.error('Failed to suspend shaft:', suspensionResult.error);
+            setErrors({ submit: `Contravention submitted but failed to suspend shaft: ${suspensionResult.error}` });
+          }
+        } catch (suspensionError) {
+          console.error('Error during shaft suspension:', suspensionError);
+          setErrors({ submit: 'Contravention submitted but shaft suspension failed' });
+        } finally {
+          setSuspensionLoading(false);
+        }
+      } else {
+        // If no shaft selected or status, just show success
+        setShowSuccessDialog(true);
+      }
     } catch (error_) {
       console.error('Error submitting contravention:', error_);
       setErrors({ submit: error_ instanceof Error ? error_.message : 'Failed to submit admission of guilt' });
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle success dialog close and form reset
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false);
+    setSuccess(false);
+    
+    // Reset form
+    setFormData({
+      contraventions: [
+        'MINING (MANAGEMENT AND SAFETY) REGULATIONS, 1990 SI 109 OF 1990',
+        'EXPLOSIVES REGULATIONS,1989 S.L 72 OF 1989'
+      ],
+      raisedBy: '',
+      idOrNrNumber: '',
+      address: '',
+      occupation: '',
+      holderOf: '',
+      holderNumber: '',
+      issuedDate: '',
+      admitGuilty: '',
+      descriptionOfOffence: '',
+      shaftNumber: '',
+      date: '',
+      offenderSignature: '',
+      dateCharged: '',
+      shaftStatus: '',
+      totalAmount: '',
+      officialSigned: '',
+      sheManagerSigned: '',
+      inspectorAccepted: '',
+      acceptedDate: '',
+      status: 'Submitted',
+      remarks: '',
+    });
+    
+    // Reset shaft selection
+    setSelectedShaft(null);
+    setSelectedShaftData(null);
+    setErrors({});
   };
 
   // Get today's date for validation
@@ -569,6 +615,7 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   };
 
   return (
+    <>
     <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
       <CardContent sx={{ p: 4 }}>
         <form onSubmit={handleSubmit} noValidate>
@@ -680,7 +727,7 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                       fullWidth
                       placeholder="e.g., 12345678901A"
                       error={!!errors.idOrNrNumber}
-                      helperText={errors.idOrNrNumber || "Format: 11 characters (2 digits district + 6 digits serial + 2 digits origin + 1 check letter)"}
+                      helperText={errors.idOrNrNumber || "Enter a valid ID or NR number (e.g., National ID, Passport, etc.)"}
                       sx={textFieldStyle}
                     />
                   </Box>
@@ -1042,8 +1089,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={loading || success}
-                startIcon={loading ? <CircularProgress size={16} /> : null}
+                disabled={loading || success || suspensionLoading}
+                startIcon={(loading || suspensionLoading) ? <CircularProgress size={16} /> : null}
                 sx={{ 
                   bgcolor: 'rgb(5, 5, 68)',
                   '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
@@ -1051,12 +1098,58 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                   py: 1.5
                 }}
               >
-                {loading ? 'Submitting...' : 'Submit Admission of Guilt'}
+                {loading ? 'Submitting...' : suspensionLoading ? 'Suspending Shaft...' : 'Submit Admission of Guilt'}
               </Button>
             </Box>
           </Stack>
         </form>
       </CardContent>
     </Card>
+
+    {/* Success Dialog */}
+    <Dialog
+      open={showSuccessDialog}
+      onClose={handleSuccessDialogClose}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle sx={{ 
+        bgcolor: 'success.main', 
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }}>
+        ✅ Success!
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3, pb: 2 }}>
+        <Stack spacing={2} alignItems="center">
+          <Typography variant="h6" sx={{ textAlign: 'center', color: 'success.main' }}>
+            Admission of Guilt Submitted Successfully
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: 'center' }}>
+            Your admission of guilt has been submitted and processed.
+          </Typography>
+          {selectedShaftData?.id && formData.shaftStatus && (
+            <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
+              Shaft {formData.shaftNumber} has been suspended with status: <strong>{formData.shaftStatus}</strong>
+            </Typography>
+          )}
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+        <Button
+          onClick={handleSuccessDialogClose}
+          variant="contained"
+          sx={{ 
+            bgcolor: 'rgb(5, 5, 68)',
+            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
+            px: 4
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }
