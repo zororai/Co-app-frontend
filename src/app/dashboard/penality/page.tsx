@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
+import { useTheme } from '@mui/material/styles';
 
 import dayjs from 'dayjs';
 import Papa from 'papaparse';
@@ -22,6 +23,7 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
@@ -162,7 +164,16 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button 
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+            variant="contained" 
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: 'secondary.main',
+              color: '#fff',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
             issue Penality
           </Button>
         </div>

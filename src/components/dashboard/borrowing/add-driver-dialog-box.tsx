@@ -21,6 +21,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/material/styles';
 // Grid import removed as it's no longer used
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -78,6 +79,7 @@ const licenseClasses = [
 ];
 
 export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDriverDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -777,21 +779,29 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           }
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, pb: 0 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-            Add New Driver
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Register a new driver in the transport management system
-          </Typography>
+        <DialogTitle sx={{ 
+          bgcolor: theme.palette.secondary.main,
+          color: 'white',
+          p: 2.5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Box>
+            <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
+              Add New Driver
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 0.5, color: 'rgba(255, 255, 255, 0.8)' }}>
+              Register a new driver in the transport management system
+            </Typography>
+          </Box>
           <IconButton
             aria-label="close"
             onClick={handleClose}
+            size="small"
             sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
             }}
           >
             <CloseIcon />
@@ -823,16 +833,24 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
             <Button
               variant="contained"
               onClick={handleClose}
-              sx={{ ml: 'auto' }}
+              sx={{ 
+                ml: 'auto',
+                bgcolor: 'secondary.main',
+                '&:hover': { bgcolor: 'secondary.dark' }
+              }}
             >
               Close
             </Button>
           ) : (
             <Fragment>
               <Button
-                color="inherit"
+                variant="contained"
                 disabled={activeStep === 0 || loading}
                 onClick={handleBack}
+                sx={{
+                  bgcolor: 'secondary.main',
+                  '&:hover': { bgcolor: 'secondary.dark' }
+                }}
               >
                 Previous
               </Button>
@@ -842,10 +860,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 onClick={handleStepNext}
                 disabled={loading}
                 sx={{
-                  bgcolor: activeStep === steps.length - 2 ? '#4caf50' : undefined,
-                  '&:hover': {
-                    bgcolor: activeStep === steps.length - 2 ? '#388e3c' : undefined
-                  }
+                  bgcolor: 'secondary.main',
+                  '&:hover': { bgcolor: 'secondary.dark' }
                 }}
               >
                 {activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}

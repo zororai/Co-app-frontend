@@ -21,7 +21,10 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -99,6 +102,7 @@ export function CustomersTable({
 
   // Initialize selection handling
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
+  const theme = useTheme();
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
@@ -209,21 +213,18 @@ export function CustomersTable({
                                     </Box>
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleViewPenaltyDetails(row.id)}
-                    sx={{
-                      borderColor: 'rgb(5, 5, 68)',
-                      color: 'rgb(5, 5, 68)',
-                      '&:hover': {
-                        borderColor: 'rgb(5, 5, 68)',
-                        backgroundColor: 'rgba(5, 5, 68, 0.04)'
-                      }
-                    }}
-                  >
-                    View Details
-                  </Button>
+                  <Tooltip title="View Details">
+                    <IconButton
+                      size="small"
+                      onClick={() => handleViewPenaltyDetails(row.id)}
+                      sx={{
+                        color: theme.palette.secondary.main,
+                        '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                      }}
+                    >
+                      <VisibilityIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

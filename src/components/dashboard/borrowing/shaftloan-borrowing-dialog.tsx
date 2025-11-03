@@ -8,6 +8,10 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
+import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -22,6 +26,7 @@ interface ShaftBorrowingDialogProps {
 }
 
 export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }: ShaftBorrowingDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [form, setForm] = React.useState({
     loanName: '',
     paymentMethod: '',
@@ -150,7 +155,28 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Shaft Borrowing</DialogTitle>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        bgcolor: theme.palette.secondary.main,
+        color: 'white',
+        p: 2.5
+      }}>
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+          Shaft Borrowing
+        </Typography>
+        <IconButton 
+          onClick={onClose}
+          size="small"
+          sx={{ 
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
@@ -212,9 +238,27 @@ export function ShaftBorrowingDialog({ open, onClose, assignmentId, onSuccess }:
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={submitting}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={submitting}>
-          {submitting ? <CircularProgress size={22} /> : 'Submit'}
+        <Button 
+          onClick={onClose} 
+          disabled={submitting}
+          variant="contained"
+          sx={{
+            bgcolor: 'secondary.main',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSubmit} 
+          variant="contained" 
+          disabled={submitting}
+          sx={{
+            bgcolor: 'secondary.main',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          {submitting ? <CircularProgress size={22} sx={{ color: 'white' }} /> : 'Submit'}
         </Button>
       </DialogActions>
     </Dialog>

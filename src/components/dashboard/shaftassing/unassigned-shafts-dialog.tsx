@@ -23,6 +23,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -57,6 +58,7 @@ export function UnassignedShaftsDialog({
   const [selectedShaft, setSelectedShaft] = React.useState<string | null>(null);
   const [selectedShaftData, setSelectedShaftData] = React.useState<UnassignedShaft | null>(null);
   const [isAssigning, setIsAssigning] = React.useState(false);
+  const theme = useTheme();
 
   // Fetch sections when dialog opens
   React.useEffect(() => {
@@ -197,11 +199,9 @@ export function UnassignedShaftsDialog({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg, rgb(5, 5, 68) 0%, rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
-        py: 2.5,
-        px: 3,
-        m: 0
+        p: 2.5
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
           Attach Existing Shaft

@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Autocomplete,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { X as CloseIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { authClient } from '@/lib/auth/client';
 import type { Customer } from './penality-table';
@@ -36,6 +37,7 @@ interface PenaltyFormData {
 }
 
 export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }: SectionDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [formData, setFormData] = React.useState<PenaltyFormData>({
     shaftNumber: '',
     section: '',
@@ -218,11 +220,9 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
-        py: 2.5,
-        px: 3,
-        m: 0
+        p: 2.5
       }}>
         Issue A Penality
         <IconButton
@@ -369,8 +369,16 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
         <Button
           onClick={handleClose}
           disabled={loading}
-          variant="outlined"
-          sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+          variant="contained"
+          sx={{ 
+            borderColor: theme.palette.secondary.main,
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            '&:hover': { 
+              borderColor: theme.palette.secondary.dark,
+              bgcolor: theme.palette.secondary.dark
+            } 
+          }}
         >
           Cancel
         </Button>
@@ -378,10 +386,10 @@ export function SectionDialog({ open, onClose, onSuccess, customer, onRefresh }:
           onClick={handleSubmit}
           disabled={loading || success}
           variant="contained"
-          startIcon={loading ? <CircularProgress size={16} /> : null}
+          startIcon={loading ? <CircularProgress size={16} sx={{ color: 'white' }} /> : null}
           sx={{ 
-            bgcolor: 'rgb(5, 5, 68)',
-            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+            bgcolor: theme.palette.secondary.main,
+            '&:hover': { bgcolor: theme.palette.secondary.dark } 
           }}
         >
           {loading ? 'Issuing Penalty...' : 'Issue Penalty'}

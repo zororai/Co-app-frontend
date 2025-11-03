@@ -22,6 +22,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -102,6 +106,7 @@ export function CustomersTable({
 
   // Initialize selection handling
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
+  const theme = useTheme();
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < filteredRows.length;
   const selectedAll = filteredRows.length > 0 && selected?.size === filteredRows.length;
@@ -338,26 +343,23 @@ export function CustomersTable({
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
-                        onClick={() => {
-                          const minerId = (row as any).minerId || row.id;
-                          setSelectedAssignmentRow(row);
-                          setSelectedDriverId(minerId);
-                          setIsDriverDetailsDialogOpen(true);
-                        }}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
-                        }}
-                      >
-                        View Details
-                      </Button>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          onClick={() => {
+                            const minerId = (row as any).minerId || row.id;
+                            setSelectedAssignmentRow(row);
+                            setSelectedDriverId(minerId);
+                            setIsDriverDetailsDialogOpen(true);
+                          }}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
 
