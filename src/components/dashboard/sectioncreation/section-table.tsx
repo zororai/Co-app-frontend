@@ -60,6 +60,8 @@ export interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   onRefresh?: () => void; // Optional callback to refresh data from parent
+  onPageChange?: (newPage: number) => void;
+  onRowsPerPageChange?: (newRowsPerPage: number) => void;
 }
 
 export function CustomersTable({
@@ -68,6 +70,8 @@ export function CustomersTable({
   page = 0,
   rowsPerPage = 0,
   onRefresh,
+  onPageChange,
+  onRowsPerPageChange,
 }: CustomersTableProps): React.JSX.Element {
   const [filters, setFilters] = React.useState({
     search: '',
@@ -90,6 +94,13 @@ export function CustomersTable({
     });
     return sortNewestFirst(filtered);
   }, [rows, filters]);
+
+  // Apply pagination after filtering
+  const paginatedRows = React.useMemo(() => {
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredRows.slice(startIndex, endIndex);
+  }, [filteredRows, page, rowsPerPage]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -135,51 +146,100 @@ export function CustomersTable({
 
   return (
     <Card>
-      {/* Action Buttons */}
-     
-      <Divider />
       {/* Filters Section */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          size="small"
-          label="Search"
-          variant="outlined"
-          value={filters.search}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          sx={{ minWidth: 200 }}
-          placeholder="Search by any field..."
-        />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filters.status}
-            label="Status"
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          >
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="PENDING">Pending</MenuItem>
-            <MenuItem value="REJECTED">Rejected</MenuItem>
-            <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
-            <MenuItem value="APPROVED">Approved</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Position</InputLabel>
-          <Select
-            value={filters.position}
-            label="Position"
-            onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
-          >
-            <MenuItem value="all">All Positions</MenuItem>
-            <MenuItem value="Representatives">Representatives</MenuItem>
-            <MenuItem value="Owner">Owner</MenuItem>
-            <MenuItem value="Member">Member</MenuItem>
-          </Select>
-        </FormControl>
+      <Box sx={{ 
+        p: 2, 
+        mb: 2,
+        borderRadius: 1,
+        bgcolor: '#fff',
+        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          {/* Search input with custom styling */}
+          <Box sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            border: '1px solid #e0e0e0',
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+            minWidth: 220
+          }}>
+            <Box component="span" sx={{ color: '#9e9e9e', mr: 1 }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </Box>
+            <input
+              type="text"
+              placeholder="Search sections..."
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              style={{
+                border: 'none',
+                outline: 'none',
+                width: '100%',
+                background: 'transparent',
+                fontSize: '14px'
+              }}
+            />
+          </Box>
+          
+          {/* Dropdown filters */}
+          <FormControl sx={{ minWidth: 150 }}>
+            <Select
+              value={filters.status}
+              displayEmpty
+              size="small"
+              sx={{ 
+                '& .MuiSelect-select': { 
+                  py: 1,
+                  fontSize: '14px'
+                }
+              }}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            >
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="PENDING">Pending</MenuItem>
+              <MenuItem value="REJECTED">Rejected</MenuItem>
+              <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
+              <MenuItem value="APPROVED">Approved</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <FormControl sx={{ minWidth: 150 }}>
+            <Select
+              value={filters.position}
+              displayEmpty
+              size="small"
+              sx={{ 
+                '& .MuiSelect-select': { 
+                  py: 1,
+                  fontSize: '14px'
+                }
+              }}
+              onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
+            >
+              <MenuItem value="all">All Positions</MenuItem>
+              <MenuItem value="Representatives">Representatives</MenuItem>
+              <MenuItem value="Owner">Owner</MenuItem>
+              <MenuItem value="Member">Member</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <Typography variant="body2" sx={{ ml: 'auto', color: 'text.secondary', fontWeight: 500 }}>
+            Showing {filteredRows.length} record{filteredRows.length !== 1 ? 's' : ''}
+          </Typography>
+        </Box>
       </Box>
       <Divider />
       <Box sx={{ overflowX: 'auto' }}>
-        <Table sx={{ minWidth: '400px' }}>
+        <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
               <TableCell>Section Name</TableCell>
@@ -189,26 +249,39 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows.map((row) => (
+            {/* Empty state */}
+            {filteredRows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No sections found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+            
+            {/* Data rows */}
+            {paginatedRows.map((row) => (
               <TableRow hover key={row.id}>
-                
                 <TableCell>{row.sectionName}</TableCell>
                 <TableCell>{row.numberOfShaft}</TableCell>
-                <TableCell>                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                      <Box
-                                        sx={{
-                                          px: 1.5,
-                                          py: 0.5,
-                                          borderRadius: 2,
-                                          bgcolor: row.status === 'APPROVED' ? '#d0f5e8' : '#ffebee', // vivid green or light red
-                                          color: row.status === 'APPROVED' ? '#1b5e20' : '#c62828',   // deep green or deep red
-                                          fontWeight: 500,
-                                          fontSize: 13,
-                                        }}
-                                      >
-                                        {row.status}
-                                      </Box>
-                                    </Box>
+                <TableCell>
+                  <Box sx={{
+                    display: 'inline-block',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    bgcolor: row.status === 'PENDING' ? '#FFF9C4' : 
+                             row.status === 'REJECTED' ? '#FFCDD2' : 
+                             row.status === 'PUSHED_BACK' ? '#FFE0B2' : '#C8E6C9',
+                    color: row.status === 'PENDING' ? '#F57F17' : 
+                           row.status === 'REJECTED' ? '#B71C1C' : 
+                           row.status === 'PUSHED_BACK' ? '#E65100' : '#1B5E20',
+                    fontWeight: 'medium',
+                    fontSize: '0.875rem'
+                  }}>
+                    {row.status}
+                  </Box>
                 </TableCell>
                 <TableCell>{row.reason}</TableCell>
               </TableRow>
@@ -220,8 +293,8 @@ export function CustomersTable({
       <TablePagination
         component="div"
         count={filteredRows.length}
-        onPageChange={noop}
-        onRowsPerPageChange={noop}
+        onPageChange={(event, newPage) => onPageChange?.(newPage)}
+        onRowsPerPageChange={(event) => onRowsPerPageChange?.(parseInt(event.target.value, 10))}
         page={page}
         rowsPerPage={rowsPerPage}
         rowsPerPageOptions={[5, 10, 25, 50, 100]}

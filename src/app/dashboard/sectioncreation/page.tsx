@@ -21,8 +21,8 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   
@@ -49,10 +49,6 @@ export default function Page(): React.JSX.Element {
   React.useEffect(() => {
     fetchSection();
   }, [fetchSection]);
-
-  // Memoized pagination to prevent unnecessary recalculation
-  const paginatedCustomers = React.useMemo(() => 
-    applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
   // Export function
   const handleExport = () => {
@@ -140,28 +136,43 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
+      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Section Creation</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} 
+              onClick={handleExport}
+            >
               Export
             </Button>
           </Stack>
         </Stack>
-        <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
-            Create Section
-          </Button>
-        </div>
+        <Button 
+          startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+          variant="contained" 
+          onClick={() => setOpen(true)}
+          sx={{
+            bgcolor: 'secondary.main',
+            color: '#fff',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          Create Section
+        </Button>
       </Stack>
 
       <CustomersTable
-        count={paginatedCustomers.length}
+        count={customers.length}
         page={page}
-        rows={paginatedCustomers}
+        rows={customers}
         rowsPerPage={rowsPerPage}
+        onPageChange={(newPage) => setPage(newPage)}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage);
+          setPage(0);
+        }}
       />
 
       <SectionDialog 
@@ -173,8 +184,4 @@ export default function Page(): React.JSX.Element {
       />
     </Stack>
   );
-}
-
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }

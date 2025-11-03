@@ -22,8 +22,8 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
 
@@ -44,14 +44,12 @@ export default function Page(): React.JSX.Element {
     fetchSection();
   }, [fetchSection]);
 
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
-
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
-      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Reason', 'Attached Shaft'
+      'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
-    const rows = paginatedCustomers.map(c => [
+    const rows = customers.map((c: Customer) => [
       c.id,
       c.name,
       c.surname,
@@ -65,7 +63,7 @@ export default function Page(): React.JSX.Element {
       c.reason,
       c.attachedShaft ? 'Yes' : 'No'
     ]);
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
+    const csvContent = [headers, ...rows].map(r => r.map(String).map((x: string) => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -135,24 +133,31 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
+      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Section Site Mapping </Typography>
+          <Typography variant="h4">Section Site Mapping</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} 
+              onClick={handleExport}
+            >
               Export
             </Button>
           </Stack>
         </Stack>
-   
       </Stack>
 
       <CustomersTable
-        count={paginatedCustomers.length}
+        count={customers.length}
         page={page}
-        rows={paginatedCustomers}
+        rows={customers}
         rowsPerPage={rowsPerPage}
+        onPageChange={(newPage) => setPage(newPage)}
+        onRowsPerPageChange={(newRowsPerPage) => {
+          setRowsPerPage(newRowsPerPage);
+          setPage(0);
+        }}
       />
 
       <SectionDialog 
@@ -164,8 +169,4 @@ export default function Page(): React.JSX.Element {
       />
     </Stack>
   );
-}
-
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
