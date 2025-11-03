@@ -6160,6 +6160,46 @@ cooperativename: string;
   }
 
   /**
+   * Mark a contravention fine as paid
+   * PUT /api/contraventions/{id}/mark-fine-paid?amount={amount}
+   */
+  async markFinePaid(
+    contraventionId: string,
+    amount: number
+  ): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      return { success: false, error: 'Authentication required. Please sign in first.' };
+    }
+    
+    try {
+      const safeId = encodeURIComponent(contraventionId);
+      const safeAmount = encodeURIComponent(amount.toString());
+      
+      const response = await fetch(`/api/contraventions/${safeId}/mark-fine-paid?amount=${safeAmount}`, {
+        method: 'PUT',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to mark fine as paid' };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      console.log('Fine marked as paid successfully:', data);
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error marking fine as paid:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Suspend a shaft assignment for SHE with a given status
    * PUT /api/shaft-assignments/{id}/suspend-for-she?status={status}
    */

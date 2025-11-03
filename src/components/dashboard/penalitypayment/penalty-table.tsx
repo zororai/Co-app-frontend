@@ -41,8 +41,10 @@ import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { authClient } from '@/lib/auth/client';
 import { ContraventionDetailsDialog } from './contravention-details-dialog';
+import { PaymentDialog } from './payment-dialog';
 
 export interface Penalty {
   id: string;
@@ -67,6 +69,43 @@ export interface Penalty {
 function noop(): void {
   // This is intentional
 }
+
+// Helper function to safely format dates
+const formatDate = (dateValue: string | number[] | null | undefined): string => {
+  if (!dateValue) return 'N/A';
+  
+  try {
+    // Handle array format (e.g., [2024, 11, 3])
+    if (Array.isArray(dateValue) && dateValue.length >= 3) {
+      const [year, month, day] = dateValue;
+      const date = new Date(year, month - 1, day); // month is 0-indexed in JS Date
+      return date.toLocaleDateString();
+    }
+    
+    // Handle string format
+    if (typeof dateValue === 'string') {
+      if (dateValue.trim() === '') return 'N/A';
+      
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        // Try parsing different formats
+        const isoMatch = dateValue.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if (isoMatch) {
+          const [, year, month, day] = isoMatch;
+          const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          return parsedDate.toLocaleDateString();
+        }
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString();
+    }
+    
+    return 'N/A';
+  } catch (error) {
+    console.error('Error formatting date:', error, dateValue);
+    return 'Invalid Date';
+  }
+};
 
 interface PenaltyTableProps {
   count?: number;
@@ -113,6 +152,15 @@ export function PenaltyTable({
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [selectedPenaltyId, setSelectedPenaltyId] = React.useState<string | null>(null);
   
+  // Payment dialog states
+  const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
+  const [selectedPaymentData, setSelectedPaymentData] = React.useState<{
+    id: string;
+    shaftnumber: string;
+    fineAmount: number;
+    shaftId?: string;
+  } | null>(null);
+  
   // Delete dialog states
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [penaltyToDelete, setPenaltyToDelete] = React.useState<{ id: string; name: string } | null>(null);
@@ -132,22 +180,23 @@ export function PenaltyTable({
       const result = await authClient.fetchContraventions();
       
       if (result.success && result.data) {
+        console.log('Raw API data sample:', result.data[0]); // Debug log
         // Transform API data to match our interface
         const transformedData: Penalty[] = result.data.map((item: any) => ({
           id: item.id || Math.random().toString(36).substr(2, 9),
           shaftnumber: item.shaftnumber || '',
           shaftStatus: item.shaftStatus || '',
-          issuedAt: item.issuedAt || '',
+          issuedAt: item.issuedAt || item.offenceDate || '',
           fineAmount: item.fineAmount || 0,
-          status: item.status || 'Pending',
+          status: item.finePaid ? 'Paid' : 'Pending',
           // Map to legacy fields for display compatibility
           employeeName: item.shaftnumber || 'Unknown',
           employeeId: item.mineNumber || '',
           violationType: 'Contravention',
           description: item.descriptionOfOffence || '',
           penaltyAmount: item.fineAmount || 0,
-          issueDate: item.issuedAt || '',
-          dueDate: item.issuedAt || '',
+          issueDate: item.issuedAt || item.offenceDate || '',
+          dueDate: item.dateCharged || item.issuedAt || '',
           issuedBy: item.raisedby || '',
           department: 'Mining',
           location: item.place || ''
@@ -203,9 +252,20 @@ export function PenaltyTable({
       let aValue: any = a[sortField as keyof Penalty];
       let bValue: any = b[sortField as keyof Penalty];
       
-      if (sortField === 'issueDate' || sortField === 'dueDate') {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
+      if (sortField === 'issueDate' || sortField === 'dueDate' || sortField === 'issuedAt') {
+        // Handle array dates and string dates safely
+        const getDateValue = (val: any): number => {
+          if (Array.isArray(val) && val.length >= 3) {
+            return new Date(val[0], val[1] - 1, val[2]).getTime();
+          }
+          if (typeof val === 'string' && val.trim() !== '') {
+            const date = new Date(val);
+            return isNaN(date.getTime()) ? 0 : date.getTime();
+          }
+          return 0;
+        };
+        aValue = getDateValue(aValue);
+        bValue = getDateValue(bValue);
       } else if (sortField === 'penaltyAmount') {
         aValue = Number(aValue);
         bValue = Number(bValue);
@@ -328,6 +388,34 @@ export function PenaltyTable({
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
+  };
+
+  // Payment dialog handlers
+  const handlePaymentClick = (penalty: Penalty) => {
+    setSelectedPaymentData({
+      id: penalty.id,
+      shaftnumber: penalty.shaftnumber,
+      fineAmount: penalty.fineAmount || penalty.penaltyAmount || 0,
+      shaftId: penalty.shaftnumber, // Using shaft number as shaft ID for the suspend endpoint
+    });
+    setPaymentDialogOpen(true);
+  };
+
+  const handleClosePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+    setSelectedPaymentData(null);
+  };
+
+  const handlePaymentSuccess = () => {
+    setSnackbarMessage('Payment processed successfully');
+    setSnackbarSeverity('success');
+    setSnackbarOpen(true);
+    
+    // Refresh the table
+    fetchContraventions();
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
   const getStatusColor = (status: Penalty['status']) => {
@@ -569,7 +657,7 @@ export function PenaltyTable({
                       ${(row.fineAmount || row.penaltyAmount || 0).toLocaleString()}
                     </Typography>
                   </TableCell>
-                  <TableCell>{new Date(row.issuedAt || row.issueDate || '').toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(row.issuedAt || row.issueDate)}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -579,12 +667,12 @@ export function PenaltyTable({
                       bgcolor: 
                         row.status === 'Pending' ? '#FFF9C4' : 
                         row.status === 'Overdue' ? '#FFCDD2' : 
-                        row.status === 'Cancelled' ? '#F3E5F5' : 
+                        row.status === 'Cancelled' ? '#FFCDD2' : 
                         '#C8E6C9',
                       color: 
                         row.status === 'Pending' ? '#F57F17' : 
                         row.status === 'Overdue' ? '#B71C1C' : 
-                        row.status === 'Cancelled' ? '#4A148C' : 
+                        row.status === 'Cancelled' ? '#B71C1C' : 
                         '#1B5E20',
                       fontWeight: 'medium',
                       fontSize: '0.875rem'
@@ -599,19 +687,15 @@ export function PenaltyTable({
                       py: 0.5,
                       borderRadius: 1,
                       bgcolor: 
-                        row.shaftStatus === 'SUSPENDED' ? '#FFE0B2' :  // Orange background for SUSPENDED
-                        row.shaftStatus === 'CLOSED' ? '#FFCDD2' :  // Red background for Shaft closed
-                        row.status === 'Pending' ? '#FFF9C4' : 
-                        row.status === 'Overdue' ? '#FFCDD2' : 
-                        row.status === 'Cancelled' ? '#F3E5F5' : 
-                        '#C8E6C9',
+                        row.shaftStatus === 'SUSPENDED' ? '#FFE0B2' :  // Orange background for SUSPENDED (matches training In Progress)
+                        row.shaftStatus === 'CLOSED' ? '#FFCDD2' :  // Red background for Shaft closed (matches training Cancelled)
+                        row.shaftStatus === 'ACTIVE' ? '#C8E6C9' :  // Green background for ACTIVE (matches training Completed)
+                        '#FFF9C4',  // Yellow background for others (matches training Scheduled)
                       color: 
-                        row.shaftStatus === 'SUSPENDED' ? '#E65100' :  // Dark orange text for SUSPENDED
-                        row.shaftStatus === 'Shaft closed' ? '#B71C1C' :  // Dark red text for Shaft closed
-                        row.status === 'Pending' ? '#F57F17' : 
-                        row.status === 'Overdue' ? '#B71C1C' : 
-                        row.status === 'Cancelled' ? '#4A148C' : 
-                        '#1B5E20',
+                        row.shaftStatus === 'SUSPENDED' ? '#E65100' :  // Dark orange text for SUSPENDED (matches training In Progress)
+                        row.shaftStatus === 'CLOSED' ? '#B71C1C' :  // Dark red text for Shaft closed (matches training Cancelled)
+                        row.shaftStatus === 'ACTIVE' ? '#1B5E20' :  // Dark green text for ACTIVE (matches training Completed)
+                        '#F57F17',  // Dark yellow text for others (matches training Scheduled)
                       fontWeight: 'medium',
                       fontSize: '0.875rem'
                     }}>
@@ -634,6 +718,24 @@ export function PenaltyTable({
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
+                      
+                      {/* Payment Icon - Only show if payment is not completed */}
+                      {row.status !== 'Paid' && (
+                        <Tooltip title="Process Payment">
+                          <IconButton 
+                            onClick={() => handlePaymentClick(row)}
+                            size="small"
+                            sx={{
+                              color: 'success.main',
+                              '&:hover': {
+                                bgcolor: 'rgba(76, 175, 80, 0.08)'
+                              }
+                            }}
+                          >
+                            <PaymentIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -708,6 +810,14 @@ export function PenaltyTable({
         open={viewDialogOpen}
         onClose={handleCloseViewDialog}
         contraventionData={contraventionDetails}
+      />
+
+      {/* Payment Dialog */}
+      <PaymentDialog
+        open={paymentDialogOpen}
+        onClose={handleClosePaymentDialog}
+        onSuccess={handlePaymentSuccess}
+        contraventionData={selectedPaymentData}
       />
     </Card>
   );
