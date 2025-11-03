@@ -6235,5 +6235,40 @@ cooperativename: string;
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }
+
+  /**
+   * Fetch miner details by ID
+   * GET /api/miners/{id}
+   */
+  async fetchMinerById(minerId: string | number): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId));
+      const response = await fetch(`/api/miners/${safeId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Miner not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch miner details' };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching miner details:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+
 }
 export const authClient = new AuthClient();

@@ -277,6 +277,15 @@ export function CustomersTable({
                   Surname
                 </TableSortLabel>
               </TableCell>
+               <TableCell sortDirection={sortField === 'surname' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'shaftNumber'}
+                  direction={sortField === 'shaftNumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('shaftNumber')}
+                >
+                  Shaft Number
+                </TableSortLabel>
+              </TableCell>
               <TableCell sortDirection={sortField === 'nationIdNumber' ? sortDirection : false}>
                 <TableSortLabel
                   active={sortField === 'nationIdNumber'}
@@ -339,6 +348,7 @@ export function CustomersTable({
                     {/* <TableCell>{row.cooperativename}</TableCell> */}
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
+                   <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>
                   
                 
