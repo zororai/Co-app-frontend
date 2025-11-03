@@ -811,13 +811,10 @@ class AuthClient {
         occupation: string;
         holderOf: string;
         number: string;
-        issuedAt: string;
-        issuedTime: string;
         admitof: string;
         descriptionOfOffence: string;
         place: string;
         offenceDate: string;
-        offenceTime: string;
         signatureOfOffender: string;
         dateCharged: string;
         mineNumber: string;
@@ -826,9 +823,6 @@ class AuthClient {
         status: string;
         remarks: string;
         fineAmount: number;
-        Accountamount1: string;
-        Accountamount2: string;
-        Accountamount3: string;
         signed: string;
         shemanager: string;
         inspeptorofminers: string;
