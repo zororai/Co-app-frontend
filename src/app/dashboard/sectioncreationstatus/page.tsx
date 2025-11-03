@@ -27,40 +27,80 @@ interface TabProps {
   rowsPerPage: number;
   onRefresh: () => void;
   isLoading?: boolean;
+  onPageChange: (newPage: number) => void;
+  onRowsPerPageChange: (newRowsPerPage: number) => void;
 }
 
-function PendingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+function PendingTab({ customers, page, rowsPerPage, onRefresh, isLoading, onPageChange, onRowsPerPageChange }: TabProps) {
   if (isLoading) {
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: 'secondary.main' }} />
         <Typography variant="body2" sx={{ mt: 2 }}>Loading pending section creation...</Typography>
       </Stack>
     );
   }
-  const paginated = applyPagination(customers, page, rowsPerPage);
-  return <CustomersTable count={paginated.length} page={page} rows={paginated} rowsPerPage={rowsPerPage} onRefresh={onRefresh} />;
+  return (
+    <CustomersTable 
+      count={customers.length} 
+      page={page} 
+      rows={customers} 
+      rowsPerPage={rowsPerPage} 
+      onRefresh={onRefresh}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
+    />
+  );
 }
 
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
+function PushedBackTab({ customers, page, rowsPerPage, onRefresh, isLoading, onPageChange, onRowsPerPageChange }: TabProps) {
   if (isLoading) {
     return (
       <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
+        <CircularProgress sx={{ color: 'secondary.main' }} />
         <Typography variant="body2" sx={{ mt: 2 }}>Loading pushed back section creation...</Typography>
       </Stack>
     );
   }
-  const paginated = applyPagination(customers, page, rowsPerPage);
-  return <CustomersTable count={paginated.length} page={page} rows={paginated} rowsPerPage={rowsPerPage} onRefresh={onRefresh} />;
+  return (
+    <CustomersTable 
+      count={customers.length} 
+      page={page} 
+      rows={customers} 
+      rowsPerPage={rowsPerPage} 
+      onRefresh={onRefresh}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
+    />
+  );
 }
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  const paginated = applyPagination(customers, page, rowsPerPage);
-  return <CustomersTable count={paginated.length} page={page} rows={paginated} rowsPerPage={rowsPerPage} onRefresh={onRefresh} />;
+
+function RejectedTab({ customers, page, rowsPerPage, onRefresh, onPageChange, onRowsPerPageChange }: TabProps) {
+  return (
+    <CustomersTable 
+      count={customers.length} 
+      page={page} 
+      rows={customers} 
+      rowsPerPage={rowsPerPage} 
+      onRefresh={onRefresh}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
+    />
+  );
 }
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
-  const paginated = applyPagination(customers, page, rowsPerPage);
-  return <CustomersTable count={paginated.length} page={page} rows={paginated} rowsPerPage={rowsPerPage} onRefresh={onRefresh} />;
+
+function ApprovedTab({ customers, page, rowsPerPage, onRefresh, onPageChange, onRowsPerPageChange }: TabProps) {
+  return (
+    <CustomersTable 
+      count={customers.length} 
+      page={page} 
+      rows={customers} 
+      rowsPerPage={rowsPerPage} 
+      onRefresh={onRefresh}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
+    />
+  );
 }
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -72,8 +112,8 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
@@ -173,13 +213,24 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
+      <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Section Creation Status</Typography>
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: 'secondary.main',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              }
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />
@@ -187,8 +238,11 @@ export default function Page(): React.JSX.Element {
             <Tab label="Approved" value="APPROVED" />
           </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} 
+              onClick={handleExport}
+            >
               Export
             </Button>
           </Stack>
@@ -196,23 +250,59 @@ export default function Page(): React.JSX.Element {
       </Stack>
 
       {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PendingTab 
+          customers={pendingCustomers} 
+          page={page} 
+          rowsPerPage={rowsPerPage} 
+          onRefresh={refreshData}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage);
+            setPage(0);
+          }}
+        />
       )}
       {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PushedBackTab 
+          customers={pushedBackCustomers} 
+          page={page} 
+          rowsPerPage={rowsPerPage} 
+          onRefresh={refreshData}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage);
+            setPage(0);
+          }}
+        />
       )}
       {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <RejectedTab 
+          customers={rejectedCustomers} 
+          page={page} 
+          rowsPerPage={rowsPerPage} 
+          onRefresh={refreshData}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage);
+            setPage(0);
+          }}
+        />
       )}
       {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <ApprovedTab 
+          customers={approvedCustomers} 
+          page={page} 
+          rowsPerPage={rowsPerPage} 
+          onRefresh={refreshData}
+          onPageChange={(newPage) => setPage(newPage)}
+          onRowsPerPageChange={(newRowsPerPage) => {
+            setRowsPerPage(newRowsPerPage);
+            setPage(0);
+          }}
+        />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />
     </Stack>
   );
-}
-
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
