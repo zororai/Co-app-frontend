@@ -26,19 +26,27 @@ import { User as UserIcon } from '@phosphor-icons/react';
 import { ArrowsClockwise as RefreshIcon } from '@phosphor-icons/react';
 import { authClient } from '@/lib/auth/client';
 
-// Mock data for shaft owners
-const SHAFT_OWNERS = [
-  { id: '1', name: 'Owner 1', shaftsCount: 5 },
-  { id: '2', name: 'Owner 2', shaftsCount: 3 },
-  { id: '3', name: 'Owner 3', shaftsCount: 8 },
-  { id: '4', name: 'Owner 4', shaftsCount: 2 },
-  { id: '5', name: 'Owner 5', shaftsCount: 6 },
-];
+// Remove mock data - will fetch from API
 
 interface ShaftOwner {
   id: string;
   name: string;
-  shaftsCount: number;
+  shaftsCount?: number;
+  type: 'company' | 'miner';
+  // Company specific fields
+  companyName?: string;
+  registrationNumber?: string;
+  ownerName?: string;
+  ownerSurname?: string;
+  address?: string;
+  cellNumber?: string;
+  email?: string;
+  // Miner specific fields
+  surname?: string;
+  nationIdNumber?: string;
+  cooperativename?: string;
+  position?: string;
+  status?: string;
 }
 
 interface ShaftAssignment {
@@ -116,6 +124,8 @@ export function ShaftTransferPage(): React.JSX.Element {
     data: Miner | Company | null;
   }>({ type: null, data: null });
   const [ownerLoading, setOwnerLoading] = React.useState(false);
+  const [shaftOwners, setShaftOwners] = React.useState<ShaftOwner[]>([]);
+  const [ownersLoading, setOwnersLoading] = React.useState(false);
 
   // Fetch shaft assignments on component mount
   React.useEffect(() => {
@@ -132,6 +142,63 @@ export function ShaftTransferPage(): React.JSX.Element {
     };
 
     fetchShaftAssignments();
+  }, []);
+
+  // Fetch shaft owners (companies and miners) on component mount
+  React.useEffect(() => {
+    const fetchShaftOwners = async () => {
+      setOwnersLoading(true);
+      try {
+        const [companiesData, minersData] = await Promise.all([
+          authClient.fetchAllCompanies(),
+          authClient.fetchAllMinersForDropdown()
+        ]);
+
+        const owners: ShaftOwner[] = [];
+
+        // Process companies
+        companiesData.forEach((company: any) => {
+          owners.push({
+            id: company.id || company.registrationNumber,
+            name: company.companyName,
+            type: 'company',
+            companyName: company.companyName,
+            registrationNumber: company.registrationNumber,
+            ownerName: company.ownerName,
+            ownerSurname: company.ownerSurname,
+            address: company.address,
+            cellNumber: company.cellNumber,
+            email: company.email,
+            shaftsCount: company.shaftnumber || 0
+          });
+        });
+
+        // Process miners
+        minersData.forEach((miner: any) => {
+          owners.push({
+            id: miner.registrationNumber || miner.nationIdNumber,
+            name: miner.cooperativeDetails?.cooperativeName || miner.cooperativename || `${miner.name} ${miner.surname}`,
+            type: 'miner',
+            surname: miner.surname,
+            nationIdNumber: miner.nationIdNumber,
+            cooperativename: miner.cooperativeDetails?.cooperativeName || miner.cooperativename,
+            position: miner.position,
+            address: miner.address,
+            cellNumber: miner.cellNumber,
+            email: miner.email,
+            status: miner.status
+          });
+        });
+
+        setShaftOwners(owners);
+      } catch (error) {
+        console.error('Error fetching shaft owners:', error);
+      } finally {
+        setOwnersLoading(false);
+      }
+    };
+
+    fetchShaftOwners();
   }, []);
 
   // Filter shafts based on search input
@@ -198,7 +265,7 @@ export function ShaftTransferPage(): React.JSX.Element {
 
       // If miner not found, try company
       const companyResult = await authClient.fetchCompanyById(minerId);
-      if (companyResult && companyResult.companyName) {
+      if (companyResult && typeof companyResult === 'object' && companyResult.companyName) {
         setOwnerDetails({ type: 'company', data: companyResult });
         setOwnerLoading(false);
         return;
@@ -387,10 +454,20 @@ export function ShaftTransferPage(): React.JSX.Element {
                 {/* Shaft Owner Search Field */}
                 <Box sx={{ flex: 1, maxWidth: 300 }}>
                   <Autocomplete
-                    options={SHAFT_OWNERS}
+                    options={shaftOwners}
                     getOptionLabel={(option) => option.name}
                     value={selectedOwner}
                     onChange={handleOwnerChange}
+                    loading={ownersLoading}
+                    filterOptions={(options, { inputValue }) => {
+                      const filtered = options.filter((option) =>
+                        option.name.toLowerCase().includes(inputValue.toLowerCase()) ||
+                        (option.companyName && option.companyName.toLowerCase().includes(inputValue.toLowerCase())) ||
+                        (option.cooperativename && option.cooperativename.toLowerCase().includes(inputValue.toLowerCase())) ||
+                        (option.registrationNumber && option.registrationNumber.toLowerCase().includes(inputValue.toLowerCase()))
+                      );
+                      return filtered;
+                    }}
                     renderInput={(params) => (
                       <TextField
                         {...params}
@@ -427,218 +504,326 @@ export function ShaftTransferPage(): React.JSX.Element {
                         }}
                       />
                     )}
-                    renderOption={(props, option) => (
-                      <Box
-                        component="li"
-                        {...props}
-                        sx={{
-                          py: 1.5,
-                          px: 2,
-                          '&:hover': {
-                            bgcolor: alpha('#635bff', 0.08),
-                          },
-                        }}
-                      >
-                        <Stack direction="row" alignItems="center" spacing={2} width="100%">
-                          <Box
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: '50%',
-                              bgcolor: alpha('#635bff', 0.1),
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <UserIcon size={16} color="#635bff" />
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" fontWeight={500}>
-                              {option.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {option.shaftsCount} shafts
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </Box>
-                    )}
+                    renderOption={(props, option) => {
+                      const { key, ...otherProps } = props;
+                      return (
+                        <Box
+                          key={key}
+                          component="li"
+                          {...otherProps}
+                          sx={{
+                            py: 1.5,
+                            px: 2,
+                            '&:hover': {
+                              bgcolor: alpha('#635bff', 0.08),
+                            },
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" spacing={2} width="100%">
+                            <Box
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                bgcolor: option.type === 'company' ? alpha('#3b82f6', 0.1) : alpha('#22c55e', 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <UserIcon size={16} color={option.type === 'company' ? '#3b82f6' : '#22c55e'} />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="body2" fontWeight={500}>
+                                {option.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {option.type === 'company' ? 'Company' : 'Miner'} | 
+                                {option.registrationNumber || option.nationIdNumber}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                      );
+                    }}
+                    noOptionsText={ownersLoading ? "Loading owners..." : "No shaft owners found"}
                   />
                 </Box>
               </Box>
 
               {/* Results Section */}
-              {showResults && selectedShaft && (
+              {showResults && (selectedShaft || selectedOwner) && (
                 <>
                   <Divider sx={{ my: 3 }} />
                   <Box sx={{ py: 3 }}>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
-                      Shaft Transfer Details
+                      {selectedShaft && selectedOwner 
+                        ? 'Shaft Transfer Details' 
+                        : selectedShaft 
+                        ? 'Shaft Details' 
+                        : 'Owner Details'}
                     </Typography>
                     
                     {/* Two Column Layout */}
                     <Box sx={{ display: 'flex', gap: 3, mt: 3 }}>
-                      {/* Left Column - Shaft Transfer Details Card */}
-                      <Card
-                        sx={{
-                          flex: 1,
-                          p: 3,
-                          border: `1px solid ${alpha('#22c55e', 0.3)}`,
-                          borderRadius: 3,
-                          bgcolor: '#22c55e',
-                          color: 'white',
-                          position: 'relative',
-                          minHeight: 200,
-                        }}
-                      >
-
-                        
-                        {/* Well Icon */}
-                        <Box
+                      {/* Left Column - Shaft Details (if shaft selected) */}
+                      {selectedShaft && (
+                        <Card
                           sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            mb: 2,
+                            flex: 1,
+                            p: 3,
+                            border: `1px solid ${alpha('#22c55e', 0.3)}`,
+                            borderRadius: 3,
+                            bgcolor: '#22c55e',
+                            color: 'white',
+                            position: 'relative',
+                            minHeight: 200,
+                          }}
+                        >
+                          {/* Well Icon */}
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 2,
+                              mb: 2,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '50%',
+                                bgcolor: 'rgba(255,255,255,0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 2h12v2H6V2zm0 18h12v2H6v-2zM8 6h8v2H8V6zm0 10h8v2H8v-2zM4 9h2v6H4V9zm14 0h2v6h-2V9zM9 10h6v4H9v-4z"/>
+                              </svg>
+                            </Box>
+                            <Typography variant="h6" fontWeight={600}>
+                              Shaft Details
+                            </Typography>
+                          </Box>
+                          
+                          <Stack spacing={1.5}>
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                                Section: {selectedShaft.sectionName}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                                Shaft Number: {selectedShaft.shaftNumbers}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Status: {selectedShaft.status}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Assignment: {selectedShaft.assignStatus}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Operation: {selectedShaft.operationStatus ? 'Active' : 'Inactive'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Registration Fee: ${selectedShaft.regFee}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Medical Fee: ${selectedShaft.medicalFee}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Contract Start: {selectedShaft.startContractDate.length >= 3 
+                                  ? `${selectedShaft.startContractDate[0]}-${String(selectedShaft.startContractDate[1]).padStart(2, '0')}-${String(selectedShaft.startContractDate[2]).padStart(2, '0')}`
+                                  : 'N/A'}
+                              </Typography>
+                            </Box>
+                            
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                Location: {selectedShaft.latitude.toFixed(6)}, {selectedShaft.longitude.toFixed(6)}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Card>
+                      )}
+
+                      {/* Owner Details Card (if owner selected) */}
+                      {selectedOwner && (
+                        <Card
+                          sx={{
+                            flex: 1,
+                            p: 3,
+                            border: `1px solid ${alpha(selectedOwner.type === 'company' ? '#3b82f6' : '#22c55e', 0.3)}`,
+                            borderRadius: 3,
+                            bgcolor: selectedOwner.type === 'company' ? '#3b82f6' : '#22c55e',
+                            color: 'white',
+                            position: 'relative',
+                            minHeight: 200,
                           }}
                         >
                           <Box
                             sx={{
-                              width: 48,
-                              height: 48,
-                              borderRadius: '50%',
-                              bgcolor: 'rgba(255,255,255,0.2)',
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
+                              gap: 2,
+                              mb: 2,
                             }}
                           >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M6 2h12v2H6V2zm0 18h12v2H6v-2zM8 6h8v2H8V6zm0 10h8v2H8v-2zM4 9h2v6H4V9zm14 0h2v6h-2V9zM9 10h6v4H9v-4z"/>
-                            </svg>
-                          </Box>
-                          <Typography variant="h6" fontWeight={600}>
-                            Shaft Transfer Details
-                          </Typography>
-                        </Box>
-                        
-                        <Stack spacing={1.5}>
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                              Section: {selectedShaft.sectionName}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                              Shaft Number: {selectedShaft.shaftNumbers}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Status: {selectedShaft.status}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Assignment: {selectedShaft.assignStatus}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Operation: {selectedShaft.operationStatus ? 'Active' : 'Inactive'}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Registration Fee: ${selectedShaft.regFee}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Medical Fee: ${selectedShaft.medicalFee}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Contract Start: {selectedShaft.startContractDate.length >= 3 
-                                ? `${selectedShaft.startContractDate[0]}-${String(selectedShaft.startContractDate[1]).padStart(2, '0')}-${String(selectedShaft.startContractDate[2]).padStart(2, '0')}`
-                                : 'N/A'}
-                            </Typography>
-                          </Box>
-                          
-                          <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                              Location: {selectedShaft.latitude.toFixed(6)}, {selectedShaft.longitude.toFixed(6)}
-                            </Typography>
-                          </Box>
-                          
-
-                        </Stack>
-                      </Card>
-
-                      {/* Right Column - Owner Information Card */}
-                      <Card
-                        sx={{
-                          flex: 1,
-                          p: 3,
-                          border: `1px solid ${alpha('#3b82f6', 0.3)}`,
-                          borderRadius: 3,
-                          bgcolor: '#3b82f6',
-                          color: 'white',
-                          position: 'relative',
-                          minHeight: 200,
-                        }}
-                      >
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                          Shaft Owner Management
-                        </Typography>
-                        
-                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-                          <Box
-                            component="button"
-                            onClick={handleViewShaftOwner}
-                            sx={{
-                              px: 4,
-                              py: 2,
-                              borderRadius: 2,
-                              border: '2px solid rgba(255,255,255,0.3)',
-                              bgcolor: 'rgba(255,255,255,0.1)',
-                              color: 'white',
-                              fontSize: '1rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease-in-out',
-                              '&:hover': {
+                            <Box
+                              sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: '50%',
                                 bgcolor: 'rgba(255,255,255,0.2)',
-                                border: '2px solid rgba(255,255,255,0.5)',
-                                transform: 'translateY(-2px)',
-                              },
-                              '&:disabled': {
-                                opacity: 0.6,
-                                cursor: 'not-allowed',
-                                transform: 'none',
-                              },
-                            }}
-                            disabled={ownerLoading}
-                          >
-                            {ownerLoading ? 'Loading...' : 'View Shaft Owner'}
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <UserIcon size={24} />
+                            </Box>
+                            <Typography variant="h6" fontWeight={600}>
+                              {selectedOwner.type === 'company' ? 'Company Details' : 'Miner Details'}
+                            </Typography>
                           </Box>
-                        </Box>
-                      </Card>
+                          
+                          <Stack spacing={1.5}>
+                            <Box>
+                              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                                Name: {selectedOwner.name}
+                              </Typography>
+                            </Box>
+                            
+                            {selectedOwner.type === 'company' && (
+                              <>
+                                <Box>
+                                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    Registration: {selectedOwner.registrationNumber}
+                                  </Typography>
+                                </Box>
+                                <Box>
+                                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    Owner: {selectedOwner.ownerName} {selectedOwner.ownerSurname}
+                                  </Typography>
+                                </Box>
+                              </>
+                            )}
+                            
+                            {selectedOwner.type === 'miner' && (
+                              <>
+                                <Box>
+                                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                    Position: {selectedOwner.position}
+                                  </Typography>
+                                </Box>
+                                {selectedOwner.cooperativename && (
+                                  <Box>
+                                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                      Cooperative: {selectedOwner.cooperativename}
+                                    </Typography>
+                                  </Box>
+                                )}
+                              </>
+                            )}
+                            
+                            {selectedOwner.address && (
+                              <Box>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  Address: {selectedOwner.address}
+                                </Typography>
+                              </Box>
+                            )}
+                            
+                            {selectedOwner.cellNumber && (
+                              <Box>
+                                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                  Phone: {selectedOwner.cellNumber}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Stack>
+                        </Card>
+                      )}
+
+                      {/* Right Column - Owner Management Actions (if shaft selected but no owner) */}
+                      {selectedShaft && !selectedOwner && (
+                        <Card
+                          sx={{
+                            flex: 1,
+                            p: 3,
+                            border: `1px solid ${alpha('#3b82f6', 0.3)}`,
+                            borderRadius: 3,
+                            bgcolor: '#3b82f6',
+                            color: 'white',
+                            position: 'relative',
+                            minHeight: 200,
+                          }}
+                        >
+                          <Typography variant="h6" fontWeight={600} gutterBottom>
+                            Shaft Owner Management
+                          </Typography>
+                          
+                          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                            <Box
+                              component="button"
+                              onClick={handleViewShaftOwner}
+                              sx={{
+                                px: 4,
+                                py: 2,
+                                borderRadius: 2,
+                                border: '2px solid rgba(255,255,255,0.3)',
+                                bgcolor: 'rgba(255,255,255,0.1)',
+                                color: 'white',
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease-in-out',
+                                '&:hover': {
+                                  bgcolor: 'rgba(255,255,255,0.2)',
+                                  border: '2px solid rgba(255,255,255,0.5)',
+                                  transform: 'translateY(-2px)',
+                                },
+                                '&:disabled': {
+                                  opacity: 0.6,
+                                  cursor: 'not-allowed',
+                                  transform: 'none',
+                                },
+                              }}
+                              disabled={ownerLoading}
+                            >
+                              {ownerLoading ? 'Loading...' : 'View Shaft Owner'}
+                            </Box>
+                          </Box>
+                        </Card>
+                      )}
                     </Box>
                   </Box>
                 </>
               )}
               
-              {showResults && !selectedShaft && searchValue && !loading && (
+              {showResults && !selectedShaft && !selectedOwner && (searchValue || !loading) && (
                 <>
                   <Divider sx={{ my: 3 }} />
                   <Box
@@ -649,13 +834,11 @@ export function ShaftTransferPage(): React.JSX.Element {
                     }}
                   >
                     <Typography variant="body1">
-                      {filteredShafts.length === 0 && searchValue
+                      {searchValue && filteredShafts.length === 0
                         ? `No shafts found for "${searchValue}"`
-                        : selectedOwner && !selectedShaft
-                        ? `Showing shafts owned by ${selectedOwner.name}`
-                        : searchValue && !selectedShaft
-                        ? 'Select a shaft from the dropdown to view details'
-                        : 'Enter search terms to view results'}
+                        : !searchValue && shaftOwners.length === 0 && !ownersLoading
+                        ? 'No shaft owners available'
+                        : 'Select a shaft or owner to view details'}
                     </Typography>
                   </Box>
                 </>
@@ -683,15 +866,16 @@ export function ShaftTransferPage(): React.JSX.Element {
           display: 'flex', 
           alignItems: 'center', 
           gap: 2,
-          bgcolor: ownerDetails.type === 'miner' ? '#22c55e' : ownerDetails.type === 'company' ? '#3b82f6' : '#f3f4f6',
-          color: ownerDetails.type ? 'white' : 'black'
+          bgcolor: ownerDetails.type === 'miner' ? '#22c55e' : 
+                   ownerDetails.type === 'company' ? '#3b82f6' : 
+                   `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+          color: 'white',
+          fontWeight: 600
         }}>
-          <Typography variant="h6" fontWeight={600}>
-            {ownerLoading ? 'Loading Owner Details...' : 
-             ownerDetails.type === 'miner' ? 'Miner Details' :
-             ownerDetails.type === 'company' ? 'Company Details' :
-             'Owner Not Found'}
-          </Typography>
+          {ownerLoading ? 'Loading Owner Details...' : 
+           ownerDetails.type === 'miner' ? 'Miner Details' :
+           ownerDetails.type === 'company' ? 'Company Details' :
+           'Owner Not Found'}
         </DialogTitle>
         
         <DialogContent sx={{ pt: 3 }}>

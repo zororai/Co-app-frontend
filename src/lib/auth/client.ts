@@ -2754,9 +2754,6 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     /**
      * Fetch a company by its ID
      */
-    /**
-     * Fetch a company by its ID
-     */
     async fetchCompanyById(id: string): Promise<any> {
         const token = localStorage.getItem('custom-auth-token');
         if (!token) {
@@ -2764,7 +2761,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
             return null;
         }
         try {
-            const response = await fetch(`http://localhost:1000/api/companies/${id}`, {
+            const response = await fetch(`/api/companies/${id}`, {
                 method: 'GET',
                 headers: {
                     'Accept': '*/*',
@@ -2776,7 +2773,17 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
                 console.error('Failed to fetch company by ID:', response.status, response.statusText);
                 return null;
             }
-            return await response.json();
+            
+            // Check if response has content before parsing JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const text = await response.text();
+                if (text.trim()) {
+                    return JSON.parse(text);
+                }
+            }
+            
+            return null;
         } catch (error) {
             console.error('Error fetching company details:', error);
             return null;
@@ -6237,6 +6244,64 @@ cooperativename: string;
   }
 
   /**
+   * Fetch all companies for dropdown
+   * GET /api/companies
+   */
+  async fetchAllCompanies(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const response = await fetch('/api/companies', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch companies:', response.status, response.statusText);
+        return [];
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch all miners for dropdown
+   * GET /api/miners
+   */
+  async fetchAllMinersForDropdown(): Promise<any[]> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const response = await fetch('/api/miners', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch miners:', response.status, response.statusText);
+        return [];
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching miners:', error);
+      return [];
+    }
+  }
+
+  /**
    * Fetch miner details by ID
    * GET /api/miners/{id}
    */
@@ -6261,8 +6326,17 @@ cooperativename: string;
         return { success: false, error: errorText || 'Failed to fetch miner details' };
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: false, error: 'Empty or invalid response' };
     } catch (error) {
       console.error('Error fetching miner details:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
