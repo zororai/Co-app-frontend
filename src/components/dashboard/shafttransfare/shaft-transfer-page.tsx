@@ -17,6 +17,7 @@ import {
 import { MagnifyingGlass as SearchIcon } from '@phosphor-icons/react';
 import { User as UserIcon } from '@phosphor-icons/react';
 import { ArrowsClockwise as RefreshIcon } from '@phosphor-icons/react';
+import { authClient } from '@/lib/auth/client';
 
 // Mock data for shaft owners
 const SHAFT_OWNERS = [
@@ -33,14 +34,68 @@ interface ShaftOwner {
   shaftsCount: number;
 }
 
+interface ShaftAssignment {
+  id: string;
+  sectionName: string;
+  shaftNumbers: string;
+  operationStatus: boolean;
+  startContractDate: number[];
+  status: string;
+  assignStatus: string;
+  regFee: number;
+  medicalFee: number;
+  latitude: number;
+  longitude: number;
+}
+
 export function ShaftTransferPage(): React.JSX.Element {
   const theme = useTheme();
   const [searchValue, setSearchValue] = React.useState('');
   const [selectedOwner, setSelectedOwner] = React.useState<ShaftOwner | null>(null);
   const [showResults, setShowResults] = React.useState(false);
+  const [shaftAssignments, setShaftAssignments] = React.useState<ShaftAssignment[]>([]);
+  const [filteredShafts, setFilteredShafts] = React.useState<ShaftAssignment[]>([]);
+  const [selectedShaft, setSelectedShaft] = React.useState<ShaftAssignment | null>(null);
+  const [loading, setLoading] = React.useState(false);
+
+  // Fetch shaft assignments on component mount
+  React.useEffect(() => {
+    const fetchShaftAssignments = async () => {
+      setLoading(true);
+      try {
+        const data = await authClient.fetchAllShaftAssignments();
+        setShaftAssignments(data);
+      } catch (error) {
+        console.error('Error fetching shaft assignments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchShaftAssignments();
+  }, []);
+
+  // Filter shafts based on search input
+  React.useEffect(() => {
+    if (!searchValue.trim()) {
+      setFilteredShafts([]);
+      return;
+    }
+
+    const filtered = shaftAssignments.filter((shaft) =>
+      shaft.sectionName.toLowerCase().includes(searchValue.toLowerCase()) ||
+      shaft.shaftNumbers.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilteredShafts(filtered);
+  }, [searchValue, shaftAssignments]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value);
+    setShowResults(true);
+  };
+
+  const handleShaftSelect = (event: React.SyntheticEvent, newValue: ShaftAssignment | null) => {
+    setSelectedShaft(newValue);
     setShowResults(true);
   };
 
@@ -49,8 +104,16 @@ export function ShaftTransferPage(): React.JSX.Element {
     setShowResults(true);
   };
 
-  const handleRefresh = () => {
-    console.log('Refreshing data...');
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      const data = await authClient.fetchAllShaftAssignments();
+      setShaftAssignments(data);
+    } catch (error) {
+      console.error('Error refreshing shaft assignments:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -116,42 +179,78 @@ export function ShaftTransferPage(): React.JSX.Element {
                   py: 3,
                 }}
               >
-                {/* General Search Field */}
+                {/* Shaft Search Dropdown */}
                 <Box sx={{ flex: 1, maxWidth: 300 }}>
-                  <TextField
-                    fullWidth
-                    placeholder="Search"
-                    value={searchValue}
-                    onChange={handleSearchChange}
-                    variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <SearchIcon 
-                          size={20} 
-                          color={theme.palette.text.secondary}
-                          style={{ marginRight: 8 }}
-                        />
-                      ),
-                      sx: {
-                        borderRadius: 3,
-                        bgcolor: 'background.paper',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: alpha('#E5E5E5', 0.8),
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: alpha('#635bff', 0.5),
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#635bff',
-                        },
-                      }
+                  <Autocomplete
+                    options={filteredShafts}
+                    getOptionLabel={(option) => `${option.sectionName} - ${option.shaftNumbers}`}
+                    value={selectedShaft}
+                    onChange={handleShaftSelect}
+                    inputValue={searchValue}
+                    onInputChange={(event, newInputValue) => {
+                      setSearchValue(newInputValue);
+                      setShowResults(true);
                     }}
-                    sx={{
-                      '& .MuiInputBase-input': {
-                        py: 1.5,
-                        fontSize: '0.95rem',
-                      },
-                    }}
+                    loading={loading}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Search Shaft to be transferred"
+                        variant="outlined"
+                        InputProps={{
+                          ...params.InputProps,
+                          startAdornment: (
+                            <SearchIcon 
+                              size={20} 
+                              color={theme.palette.text.secondary}
+                              style={{ marginRight: 8 }}
+                            />
+                          ),
+                          sx: {
+                            borderRadius: 3,
+                            bgcolor: 'background.paper',
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              borderColor: alpha('#E5E5E5', 0.8),
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: alpha('#635bff', 0.5),
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: '#635bff',
+                            },
+                          }
+                        }}
+                        sx={{
+                          '& .MuiInputBase-input': {
+                            py: 1.5,
+                            fontSize: '0.95rem',
+                          },
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => (
+                      <Box
+                        component="li"
+                        {...props}
+                        sx={{
+                          py: 1.5,
+                          px: 2,
+                          '&:hover': {
+                            bgcolor: alpha('#635bff', 0.08),
+                          },
+                        }}
+                      >
+                        <Stack direction="column" spacing={0.5} width="100%">
+                          <Typography variant="body2" fontWeight={500}>
+                            {option.sectionName} - {option.shaftNumbers}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Status: {option.status} | Assign: {option.assignStatus}
+                          </Typography>
+                        </Stack>
+                      </Box>
+                    )}
+                    noOptionsText={searchValue ? "No shafts found" : "Type to search shafts"}
                   />
                 </Box>
 
@@ -263,7 +362,100 @@ export function ShaftTransferPage(): React.JSX.Element {
               </Box>
 
               {/* Results Section */}
-              {showResults && (searchValue || selectedOwner) && (
+              {showResults && selectedShaft && (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <Box sx={{ py: 3 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      Shaft Transfer Details
+                    </Typography>
+                    <Stack spacing={3}>
+                      {/* Shaft Information Card */}
+                      <Card
+                        sx={{
+                          p: 3,
+                          border: `1px solid ${alpha('#635bff', 0.2)}`,
+                          borderRadius: 2,
+                          bgcolor: alpha('#635bff', 0.02),
+                        }}
+                      >
+                        <Typography variant="h6" fontWeight={600} color="#635bff" gutterBottom>
+                          {selectedShaft.sectionName} - {selectedShaft.shaftNumbers}
+                        </Typography>
+                        
+                        <Stack direction="row" spacing={4} flexWrap="wrap">
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Status
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {selectedShaft.status}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Assignment Status
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {selectedShaft.assignStatus}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Operation Status
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {selectedShaft.operationStatus ? 'Active' : 'Inactive'}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Registration Fee
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              ${selectedShaft.regFee}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Medical Fee
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              ${selectedShaft.medicalFee}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Start Contract Date
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {selectedShaft.startContractDate.length >= 3 
+                                ? `${selectedShaft.startContractDate[0]}-${String(selectedShaft.startContractDate[1]).padStart(2, '0')}-${String(selectedShaft.startContractDate[2]).padStart(2, '0')}`
+                                : 'N/A'}
+                            </Typography>
+                          </Box>
+                          
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Location
+                            </Typography>
+                            <Typography variant="body2" fontWeight={500}>
+                              {selectedShaft.latitude.toFixed(6)}, {selectedShaft.longitude.toFixed(6)}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Card>
+                    </Stack>
+                  </Box>
+                </>
+              )}
+              
+              {showResults && !selectedShaft && searchValue && !loading && (
                 <>
                   <Divider sx={{ my: 3 }} />
                   <Box
@@ -274,16 +466,13 @@ export function ShaftTransferPage(): React.JSX.Element {
                     }}
                   >
                     <Typography variant="body1">
-                      {searchValue && selectedOwner
-                        ? `Searching for "${searchValue}" in ${selectedOwner.name}'s shafts`
-                        : searchValue
-                        ? `Searching for "${searchValue}"`
-                        : selectedOwner
+                      {filteredShafts.length === 0 && searchValue
+                        ? `No shafts found for "${searchValue}"`
+                        : selectedOwner && !selectedShaft
                         ? `Showing shafts owned by ${selectedOwner.name}`
+                        : searchValue && !selectedShaft
+                        ? 'Select a shaft from the dropdown to view details'
                         : 'Enter search terms to view results'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Search results will appear here
                     </Typography>
                   </Box>
                 </>
