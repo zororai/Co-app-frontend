@@ -896,6 +896,40 @@ class AuthClient {
         }
     }
 
+    /**
+     * Fetch contravention details by ID
+     * GET /api/contraventions/{id}
+     */
+    async fetchContraventionById(id: string): Promise<{ success: boolean; data?: any; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            const response = await fetch(`/api/contraventions/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                credentials: 'include',
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Request failed');
+                console.error('Failed to fetch contravention details:', errorText);
+                return { success: false, error: errorText || 'Failed to fetch contravention details' };
+            }
+
+            const data = await response.json();
+            console.log('Contravention details fetched successfully:', data);
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error fetching contravention details:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred' 
+            };
+        }
+    }
+
 
     /**
      * Update shaft inspection by ID
