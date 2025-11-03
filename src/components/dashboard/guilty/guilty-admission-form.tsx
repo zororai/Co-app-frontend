@@ -92,7 +92,7 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     sheManagerSigned: '',
     inspectorAccepted: '',
     acceptedDate: '',
-    status: 'Submitted',
+    status: 'No paid',
     remarks: '',
   });
 

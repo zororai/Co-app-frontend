@@ -45,9 +45,10 @@ import { authClient } from '@/lib/auth/client';
 
 export interface Penalty {
   id: string;
-  mineNumber: string;
+  shaftnumber: string;
   issuedAt: string;
   fineAmount: number;
+  shaftStatus: string;
   status: string;
   // Legacy fields for backward compatibility
   employeeName?: string;
@@ -98,8 +99,8 @@ export function PenaltyTable({
     violationType: 'all'
   });
   
-  // Sorting state
-  const [sortField, setSortField] = React.useState<string>('issueDate');
+  // Sorting state - default to newest first by issuedAt/issueDate
+  const [sortField, setSortField] = React.useState<string>('issuedAt');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc');
   
   const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set());
@@ -133,12 +134,13 @@ export function PenaltyTable({
         // Transform API data to match our interface
         const transformedData: Penalty[] = result.data.map((item: any) => ({
           id: item.id || Math.random().toString(36).substr(2, 9),
-          mineNumber: item.mineNumber || '',
+          shaftnumber: item.shaftnumber || '',
+          shaftStatus: item.shaftStatus || '',
           issuedAt: item.issuedAt || '',
           fineAmount: item.fineAmount || 0,
           status: item.status || 'Pending',
           // Map to legacy fields for display compatibility
-          employeeName: item.mineNumber || 'Unknown',
+          employeeName: item.shaftnumber || 'Unknown',
           employeeId: item.mineNumber || '',
           violationType: 'Contravention',
           description: item.descriptionOfOffence || '',
@@ -187,7 +189,7 @@ export function PenaltyTable({
         (row.employeeId || '').toLowerCase().includes(filters.search.toLowerCase()) ||
         (row.violationType || '').toLowerCase().includes(filters.search.toLowerCase()) ||
         (row.description || '').toLowerCase().includes(filters.search.toLowerCase()) ||
-        row.mineNumber.toLowerCase().includes(filters.search.toLowerCase());
+        row.shaftnumber.toLowerCase().includes(filters.search.toLowerCase());
       
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
       const matchesViolationType = filters.violationType === 'all' || (row.violationType || '') === filters.violationType;
@@ -456,7 +458,7 @@ export function PenaltyTable({
                   direction={sortField === 'employeeName' ? sortDirection : 'asc'}
                   onClick={() => handleSort('employeeName')}
                 >
-                     Miner Number
+                     Shaft Number
                 </TableSortLabel>
               </TableCell>
             
@@ -478,13 +480,14 @@ export function PenaltyTable({
                   Issue Date
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortField === 'dueDate' ? sortDirection : false}>
+           
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
                 <TableSortLabel
-                  active={sortField === 'dueDate'}
-                  direction={sortField === 'dueDate' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('dueDate')}
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
                 >
-                  Due Date
+                 Payment Status
                 </TableSortLabel>
               </TableCell>
               <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
@@ -493,7 +496,7 @@ export function PenaltyTable({
                   direction={sortField === 'status' ? sortDirection : 'asc'}
                   onClick={() => handleSort('status')}
                 >
-                  Status
+                 Shaft Status
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
@@ -538,7 +541,7 @@ export function PenaltyTable({
 
                       <Box>
                        <Typography variant="body2" color="text.secondary">
-                         {row.mineNumber}
+                         {row.shaftnumber}
                         </Typography>
                       </Box>
                     </Stack>
@@ -550,7 +553,6 @@ export function PenaltyTable({
                     </Typography>
                   </TableCell>
                   <TableCell>{new Date(row.issuedAt || row.issueDate || '').toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(row.dueDate || row.issuedAt || '').toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
@@ -571,6 +573,32 @@ export function PenaltyTable({
                       fontSize: '0.875rem'
                     }}>
                       {row.status}
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: 
+                        row.shaftStatus === 'SUSPENDED' ? '#FFE0B2' :  // Orange background for SUSPENDED
+                        row.shaftStatus === 'CLOSED' ? '#FFCDD2' :  // Red background for Shaft closed
+                        row.status === 'Pending' ? '#FFF9C4' : 
+                        row.status === 'Overdue' ? '#FFCDD2' : 
+                        row.status === 'Cancelled' ? '#F3E5F5' : 
+                        '#C8E6C9',
+                      color: 
+                        row.shaftStatus === 'SUSPENDED' ? '#E65100' :  // Dark orange text for SUSPENDED
+                        row.shaftStatus === 'Shaft closed' ? '#B71C1C' :  // Dark red text for Shaft closed
+                        row.status === 'Pending' ? '#F57F17' : 
+                        row.status === 'Overdue' ? '#B71C1C' : 
+                        row.status === 'Cancelled' ? '#4A148C' : 
+                        '#1B5E20',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.shaftStatus}
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -605,7 +633,7 @@ export function PenaltyTable({
                       </Tooltip>
                       <Tooltip title="Delete Penalty">
                         <IconButton 
-                          onClick={() => handleDeletePenalty(row.id, row.employeeName || row.mineNumber)}
+                          onClick={() => handleDeletePenalty(row.id, row.employeeName || row.shaftnumber)}
                           size="small"
                           sx={{
                             color: 'error.main',
