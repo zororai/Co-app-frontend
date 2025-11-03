@@ -251,7 +251,7 @@ export default function SHESummaryDashboard(): React.JSX.Element {
   };
 
   React.useEffect(() => {
-    // Add print-specific styles
+    // Add print-specific styles to fit everything on one A4 page
     const printStyles = `
       @media print {
         @page {
@@ -259,77 +259,85 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           margin: 0.3in;
         }
         
-        body {
-          -webkit-print-color-adjust: exact;
-          color-adjust: exact;
-          print-color-adjust: exact;
-          font-size: 12px !important;
-        }
-        
         * {
-          page-break-inside: avoid;
+          -webkit-print-color-adjust: exact !important;
+          color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
         
-        .print-container {
-          transform: scale(0.85);
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        
+        /* Main container scaling to fit one page */
+        body > div {
+          transform: scale(0.75);
           transform-origin: top left;
-          width: 117.6% !important;
-          height: auto !important;
-          overflow: visible !important;
+          width: 133.33%;
         }
         
+        /* Hide navigation and other UI elements */
+        nav, header, footer, .no-print {
+          display: none !important;
+        }
+        
+        /* Ensure content fits on one page */
+        .MuiBox-root {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+        
+        /* Card styling for print */
         .MuiCard-root {
           box-shadow: none !important;
           border: 1px solid #ddd !important;
           page-break-inside: avoid;
-        }
-        
-        .MuiCardContent-root {
-          padding: 8px !important;
-        }
-        
-        .MuiTypography-h4 {
-          font-size: 18px !important;
+          break-inside: avoid;
           margin-bottom: 8px !important;
         }
         
-        .MuiTypography-h6 {
-          font-size: 14px !important;
-          margin-bottom: 4px !important;
+        .MuiCardContent-root {
+          padding: 12px !important;
         }
         
-        .MuiTypography-body2 {
-          font-size: 11px !important;
-        }
-        
+        /* Chart sizing for print */
         .apexcharts-canvas {
           max-width: 100% !important;
           height: auto !important;
         }
         
-        .apexcharts-svg {
-          height: auto !important;
-          max-height: 200px !important;
-        }
-        
-        .metric-cards-row {
+        /* Typography adjustments */
+        h4 {
+          font-size: 18px !important;
           margin-bottom: 8px !important;
         }
         
-        .charts-row {
-          margin-bottom: 8px !important;
+        h6 {
+          font-size: 12px !important;
+          margin-bottom: 4px !important;
         }
         
-        .chart-card {
-          height: 250px !important;
+        /* Reduce spacing for print */
+        .MuiStack-root {
+          gap: 8px !important;
         }
         
-        .chart-card-small {
-          height: 220px !important;
+        /* Chip sizing */
+        .MuiChip-root {
+          font-size: 9px !important;
+          height: 20px !important;
         }
         
-        .no-print {
-          display: none !important;
+        /* Ensure no page breaks */
+        body {
+          overflow: hidden;
+        }
+        
+        /* Force single page */
+        html, body {
+          height: 100%;
+          overflow: hidden;
         }
       }
     `;
@@ -354,11 +362,13 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           variant="contained"
           startIcon={<PrintIcon />}
           onClick={handlePrintReport}
-          className="no-print"
           sx={{
             bgcolor: '#2196F3',
             '&:hover': {
               bgcolor: '#1976D2',
+            },
+            '@media print': {
+              display: 'none',
             },
           }}
         >
@@ -366,10 +376,8 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         </Button>
       </Box>
 
-      <Box className="print-container">
-
-        {/* Top Metrics Row */}
-        <Box className="metric-cards-row" sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+      {/* Top Metrics Row */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
         <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
           <MetricCard
             icon={<CheckCircleIcon />}
@@ -404,11 +412,11 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         </Box>
       </Box>
 
-        {/* Charts Row */}
-        <Box className="charts-row" sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-          {/* Incident Summary Line Chart */}
-          <Box sx={{ flex: '1 1 500px', minWidth: '400px' }}>
-            <Card className="chart-card" sx={{ height: 400, borderRadius: 2, boxShadow: 2 }}>
+      {/* Charts Row */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+        {/* Incident Summary Line Chart */}
+        <Box sx={{ flex: '1 1 500px', minWidth: '400px' }}>
+          <Card sx={{ height: 400, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Incident Summary
@@ -425,9 +433,9 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           </Card>
         </Box>
 
-          {/* Incident Pie Chart */}
-          <Box sx={{ flex: '1 1 500px', minWidth: '400px' }}>
-            <Card className="chart-card" sx={{ height: 400, borderRadius: 2, boxShadow: 2 }}>
+        {/* Incident Pie Chart */}
+        <Box sx={{ flex: '1 1 500px', minWidth: '400px' }}>
+          <Card sx={{ height: 400, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Incident Distribution
@@ -458,11 +466,11 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         </Box>
       </Box>
 
-        {/* Second Charts Row */}
-        <Box className="charts-row" sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-          {/* Safety Performance */}
-          <Box sx={{ flex: '2 1 600px', minWidth: '400px' }}>
-            <Card className="chart-card-small" sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
+      {/* Second Charts Row */}
+      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+        {/* Safety Performance */}
+        <Box sx={{ flex: '2 1 600px', minWidth: '400px' }}>
+          <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Safety Performance
@@ -479,9 +487,9 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           </Card>
         </Box>
 
-          {/* Health Metrics */}
-          <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-            <Card className="chart-card-small" sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
+        {/* Health Metrics */}
+        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
+          <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Health Metrics
@@ -502,9 +510,9 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           </Card>
         </Box>
 
-          {/* Environmental Metrics */}
-          <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-            <Card className="chart-card-small" sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
+        {/* Environmental Metrics */}
+        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
+          <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Environmental Metrics
@@ -520,7 +528,6 @@ export default function SHESummaryDashboard(): React.JSX.Element {
             </CardContent>
           </Card>
         </Box>
-      </Box>
       </Box>
     </Box>
   );
