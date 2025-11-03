@@ -28,7 +28,7 @@ export const allNavItems = [
     items: [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
      { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
-     // { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.penality, icon: 'id-card'},
+     { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'id-card'},
      
     ],
   },
@@ -41,6 +41,7 @@ export const allNavItems = [
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
+      { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
       
     ],
   },
@@ -56,6 +57,7 @@ export const allNavItems = [
      { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'id-card' },
      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
      { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
+     { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
     
     ],
   },

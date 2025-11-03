@@ -128,8 +128,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       return 'ID number must be exactly 11 characters';
     }
     
-    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
-    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    // Check format: 2 digits + 6 digits + 1 letter + 2 digits (e.g., 67-657432D45)
+    const idPattern = /^\d{8}[A-Za-z]\d{2}$/;
     if (!idPattern.test(cleanId)) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
@@ -164,6 +164,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     // Special handling for ID number
     if (name === 'idNumber') {
       processedValue = formatIdNumber(value);
+      // Uppercase the letter for consistent display
+      processedValue = processedValue.toUpperCase();
       
       // Validate ID number if it's not empty
       if (processedValue.trim()) {
@@ -247,7 +249,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   };
 
   const validateIdNumber = (id: string): boolean => {
-    return id.length >= 11;
+    return validateZimbabweanID(id) === null;
   };
 
   const validateCurrentStep = (): boolean => {
@@ -259,7 +261,10 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
         if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
         if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
-        else if (!validateIdNumber(formData.idNumber)) newErrors.idNumber = 'ID number must be at least 11 characters';
+        else {
+          const idErr = validateZimbabweanID(formData.idNumber);
+          if (idErr) newErrors.idNumber = idErr;
+        }
         if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
         break;
       }
@@ -311,8 +316,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     }
     
     // ID number validation
-    if (formData.idNumber && !validateIdNumber(formData.idNumber)) {
-      newErrors.idNumber = 'ID number must be at least 11 characters';
+    if (formData.idNumber) {
+      const idErr = validateZimbabweanID(formData.idNumber);
+      if (idErr) newErrors.idNumber = idErr;
     }
     
     // Required documents
@@ -756,6 +762,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   <Typography variant="body2">
                     <strong>ID Number:</strong> {formData.idNumber}
                   </Typography>
+
+                  
                   <Typography variant="body2">
                     <strong>Date of Birth:</strong> {formData.dateOfBirth?.format('DD/MM/YYYY') || 'Not provided'}
                   </Typography>

@@ -343,7 +343,7 @@ export function TrainingDetailsDialog({ open, onClose, trainingId, onRefresh }: 
                           <Typography sx={{ fontSize: '0.9rem' }}>
                             <strong>Position:</strong> {trainee.position || 'N/A'}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.9rem' }}>
+                          <Typography component="div" sx={{ fontSize: '0.9rem' }}>
                             <strong>Attended:</strong> 
                             <Chip 
                               label={trainee.attended ? 'Yes' : 'No'}

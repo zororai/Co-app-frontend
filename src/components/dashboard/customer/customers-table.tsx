@@ -287,13 +287,7 @@ export function CustomersTable({
                 </TableSortLabel>
               </TableCell>
               <TableCell sortDirection={sortField === 'shaftnumber' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'shaftnumber'}
-                  direction={sortField === 'shaftnumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('shaftnumber')}
-                >
-                  No. Of Shafts
-                </TableSortLabel>
+               
               </TableCell>
               <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
                 <TableSortLabel
@@ -335,10 +329,11 @@ export function CustomersTable({
               </TableRow>
             )}
             
-            {!loading && paginatedRows.map((row) => {
+            {!loading && paginatedRows.map((row, index) => {
               const isSelected = selected?.has(row.id);
+              const uniqueKey = row.id || `customer-${index}`;
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow hover key={uniqueKey} selected={isSelected}>
 
                    <TableCell>{row.registrationNumber}</TableCell>
                     {/* <TableCell>{row.cooperativename}</TableCell> */}

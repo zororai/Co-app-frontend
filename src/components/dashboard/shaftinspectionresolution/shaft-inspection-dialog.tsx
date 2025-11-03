@@ -40,6 +40,8 @@ interface ShaftInspectionDialogProps {
   open: boolean;
   onClose: () => void;
   onRefresh?: () => void;
+  inspectionId?: string | number | null;
+  mode?: 'create' | 'edit';
 }
 
 interface FormData {
@@ -112,7 +114,9 @@ const mockShaftNumbers = [
 export function ShaftInspectionDialog({
   open,
   onClose,
-  onRefresh
+  onRefresh,
+  inspectionId = null,
+  mode = 'create'
 }: ShaftInspectionDialogProps): React.JSX.Element {
   const [formData, setFormData] = React.useState<FormData>({
     inspectorName: '',
@@ -136,6 +140,7 @@ export function ShaftInspectionDialog({
   const [error, setError] = React.useState<string | null>(null);
   const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [loadingData, setLoadingData] = React.useState(false);
 
   // Approved shafts for selection
   interface ApprovedShaftOption {
@@ -148,6 +153,7 @@ export function ShaftInspectionDialog({
   const [approvedShaftsError, setApprovedShaftsError] = React.useState<string | null>(null);
   const [selectedShaftAssignmentId, setSelectedShaftAssignmentId] = React.useState<string | number | null>(null);
 
+  // Load approved shafts
   React.useEffect(() => {
     let isMounted = true;
     const loadApproved = async () => {
@@ -174,6 +180,52 @@ export function ShaftInspectionDialog({
     loadApproved();
     return () => { isMounted = false; };
   }, []);
+
+  // Load existing inspection data for edit mode
+  React.useEffect(() => {
+    let isMounted = true;
+    const loadInspectionData = async () => {
+      if (mode === 'edit' && inspectionId && open) {
+        setLoadingData(true);
+        setError(null);
+        try {
+          const result = await authClient.fetchShaftInspectionById(String(inspectionId));
+          if (!isMounted) return;
+          
+          if (result.success && result.data) {
+            const data = result.data;
+            // Convert the data to match form structure
+            setFormData({
+              inspectorName: data.inspectorName || '',
+              location: data.location || '',
+              inspectionDate: data.inspectionDate ? dayjs(data.inspectionDate) : null,
+              inspectionTime: data.inspectionDate ? dayjs(data.inspectionDate) : null,
+              inspectionType: data.inspectionType ? [data.inspectionType] : [],
+              hazardControlProgram: data.hazardControlProgram || '',
+              observations: data.observations || '',
+              pollutionStatus: data.pollutionStatus || '',
+              correctiveActions: data.correctiveActions || '',
+              eapMaterial: data.esapMaterials || '',
+              complianceStatus: data.complianceStatus || '',
+              status: data.status || '',
+              shaftNumbers: data.shaftNumbers ? [data.shaftNumbers] : [],
+              sectionName: '',
+              attachments: [] // Attachments will be handled separately
+            });
+          } else {
+            setError(result.error || 'Failed to load inspection data');
+          }
+        } catch (err: any) {
+          if (!isMounted) return;
+          setError(err?.message || 'Failed to load inspection data');
+        } finally {
+          if (isMounted) setLoadingData(false);
+        }
+      }
+    };
+    loadInspectionData();
+    return () => { isMounted = false; };
+  }, [mode, inspectionId, open]);
 
   const handleClose = () => {
     if (!loading) {
@@ -332,7 +384,13 @@ export function ShaftInspectionDialog({
 
       console.log('Submitting shaft inspection data:', inspectionData);
       console.log('Form data before transformation:', formData);
-      const result = await authClient.createShaftInspection(inspectionData);
+      
+      let result;
+      if (mode === 'edit' && inspectionId) {
+        result = await authClient.updateShaftInspection(inspectionId, inspectionData);
+      } else {
+        result = await authClient.createShaftInspection(inspectionData);
+      }
       
       if (result.success) {
         // After creating inspection, update the selected shaft assignment status via SHE endpoint
@@ -347,7 +405,7 @@ export function ShaftInspectionDialog({
           }
         }
 
-        setSuccessMessage('Shaft inspection submitted successfully!');
+        setSuccessMessage(mode === 'edit' ? 'Shaft inspection updated successfully!' : 'Shaft inspection submitted successfully!');
         // Refresh the table if callback is provided
         if (onRefresh) {
           onRefresh();
@@ -398,7 +456,7 @@ export function ShaftInspectionDialog({
           m: 0
         }}>
           <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-            Shaft Inspection Form
+            {mode === 'edit' ? 'Edit Shaft Inspection' : 'Shaft Inspection Form'}
           </Typography>
           <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{ color: 'white' }}>
             <CloseIcon />
@@ -418,6 +476,14 @@ export function ShaftInspectionDialog({
           maxHeight: '70vh', 
           overflowY: 'auto' 
         }}>
+          
+          {/* Loading Data Indicator */}
+          {loadingData && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 4 }}>
+              <CircularProgress size={32} sx={{ color: 'rgb(5, 5, 68)' }} />
+              <Typography variant="body2" sx={{ ml: 2 }}>Loading inspection data...</Typography>
+            </Box>
+          )}
           
           {/* Error Message */}
           {error && (
@@ -460,6 +526,7 @@ export function ShaftInspectionDialog({
                   label="Inspection Date"
                   value={formData.inspectionDate}
                   onChange={(newValue) => setFormData(prev => ({ ...prev, inspectionDate: newValue }))}
+                  disabled={true}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -474,6 +541,7 @@ export function ShaftInspectionDialog({
                   label="Inspection Time"
                   value={formData.inspectionTime}
                   onChange={(newValue) => setFormData(prev => ({ ...prev, inspectionTime: newValue }))}
+                  disabled={true}
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -534,9 +602,10 @@ export function ShaftInspectionDialog({
               sx={textFieldStyle}
               error={!!validationErrors.observations}
               helperText={validationErrors.observations}
+              disabled={true}
               InputProps={{
                 endAdornment: (
-                  <IconButton size="small" sx={{ position: 'absolute', top: 8, right: 8 }}>
+                  <IconButton size="small" sx={{ position: 'absolute', top: 8, right: 8 }} disabled>
                     <EditIcon fontSize="small" />
                   </IconButton>
                 )
@@ -792,7 +861,7 @@ export function ShaftInspectionDialog({
               px: 3
             }}
           >
-            {loading ? 'Submitting...' : 'Submit Report'}
+            {loading ? (mode === 'edit' ? 'Updating...' : 'Submitting...') : (mode === 'edit' ? 'Update Report' : 'Submit Report')}
           </Button>
         </DialogActions>
       </Dialog>

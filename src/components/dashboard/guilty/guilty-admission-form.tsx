@@ -13,7 +13,17 @@ import {
   Alert,
   CircularProgress,
   IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Autocomplete,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+import { SxProps, Theme } from '@mui/material/styles';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import { PrinterIcon } from '@phosphor-icons/react/dist/ssr/Printer';
@@ -30,33 +40,31 @@ interface GuiltyAdmissionFormData {
   occupation: string;
   holderOf: string;
   holderNumber: string;
-  issuedAt: string;
   issuedDate: string;
-  time: string;
   
   // Admission details
   admitGuilty: string;
   descriptionOfOffence: string;
   
   // Location and signature details
-  place: string;
+  shaftNumber: string;
   date: string;
-  signatureTime: string;
   offenderSignature: string;
   dateCharged: string;
-  mineNumber: string;
+  shaftStatus: string;
   
   // Payment details
   totalAmount: string;
-  firstAccountAmount: string;
-  secondAccountAmount: string;
-  thirdAccountAmount: string;
   
   // Official signatures
   officialSigned: string;
   sheManagerSigned: string;
   inspectorAccepted: string;
   acceptedDate: string;
+  
+  // Additional fields for API
+  status?: string;
+  remarks?: string;
 }
 
 export function GuiltyAdmissionForm(): React.JSX.Element {
@@ -71,30 +79,49 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     occupation: '',
     holderOf: '',
     holderNumber: '',
-    issuedAt: '',
     issuedDate: '',
-    time: '',
     admitGuilty: '',
     descriptionOfOffence: '',
-    place: '',
+    shaftNumber: '',
     date: '',
-    signatureTime: '',
     offenderSignature: '',
     dateCharged: '',
-    mineNumber: '',
+    shaftStatus: '',
     totalAmount: '',
-    firstAccountAmount: '',
-    secondAccountAmount: '',
-    thirdAccountAmount: '',
     officialSigned: '',
     sheManagerSigned: '',
     inspectorAccepted: '',
     acceptedDate: '',
+    status: 'No paid',
+    remarks: '',
   });
 
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [success, setSuccess] = React.useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = React.useState(false);
+  const [suspensionLoading, setSuspensionLoading] = React.useState(false);
+  
+  // Shaft assignments state
+  const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
+  const [selectedShaft, setSelectedShaft] = React.useState<any>(null);
+  const [selectedShaftData, setSelectedShaftData] = React.useState<{id: string, minerId: string} | null>(null);
+
+  // Fetch shaft assignments on component mount
+  React.useEffect(() => {
+    const fetchShaftAssignments = async () => {
+      try {
+        const data = await authClient.fetchApprovedShaftAssignments();
+        if (data && Array.isArray(data)) {
+          setShaftAssignments(data);
+        }
+      } catch (error) {
+        console.error('Error fetching shaft assignments:', error);
+      }
+    };
+
+    fetchShaftAssignments();
+  }, []);
 
   const handlePrint = () => {
     // Create a new window for printing
@@ -241,16 +268,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
           <div class="field-value">${formData.holderNumber || '___________________________'}</div>
         </div>
         <div class="field">
-          <div class="field-label">Issued At:</div>
-          <div class="field-value">${formData.issuedAt || '___________________________'}</div>
-        </div>
-        <div class="field">
           <div class="field-label">Date:</div>
           <div class="field-value">${formData.issuedDate || '___________________________'}</div>
-        </div>
-        <div class="field">
-          <div class="field-label">Time:</div>
-          <div class="field-value">${formData.time || '___________________________'}</div>
         </div>
       </div>
 
@@ -274,16 +293,12 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
 
       <div class="section">
         <div class="field">
-          <div class="field-label">Place:</div>
-          <div class="field-value">${formData.place || '___________________________'}</div>
+          <div class="field-label">Shaft Number:</div>
+          <div class="field-value">${formData.shaftNumber || '___________________________'}</div>
         </div>
         <div class="field">
           <div class="field-label">Date:</div>
           <div class="field-value">${formData.date || '___________________________'}</div>
-        </div>
-        <div class="field">
-          <div class="field-label">Time:</div>
-          <div class="field-value">${formData.signatureTime || '___________________________'}</div>
         </div>
         <div class="field">
           <div class="field-label">Signature (Of Offender):</div>
@@ -294,8 +309,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
           <div class="field-value">${formData.dateCharged || '___________________________'}</div>
         </div>
         <div class="field">
-          <div class="field-label">Mine Number:</div>
-          <div class="field-value">${formData.mineNumber || '___________________________'}</div>
+          <div class="field-label">Shaft Status:</div>
+          <div class="field-value">${formData.shaftStatus || '___________________________'}</div>
         </div>
       </div>
 
@@ -304,18 +319,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
         <div class="field">
           <div class="field-label">Total Amount:</div>
           <div class="field-value">${formData.totalAmount || '___________________________'}</div>
-        </div>
-        <div class="field">
-          <div class="field-label">1st Account Amount:</div>
-          <div class="field-value">${formData.firstAccountAmount || '___________________________'}</div>
-        </div>
-        <div class="field">
-          <div class="field-label">2nd Account Amount:</div>
-          <div class="field-value">${formData.secondAccountAmount || '___________________________'}</div>
-        </div>
-        <div class="field">
-          <div class="field-label">3rd Account Amount:</div>
-          <div class="field-value">${formData.thirdAccountAmount || '___________________________'}</div>
         </div>
       </div>
 
@@ -400,6 +403,19 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     }
   };
 
+  // Validate ID number format (flexible for different ID types)
+  const validateIdNumber = (idNumber: string): boolean => {
+    // Remove any spaces or dashes
+    const cleanId = idNumber.replace(/[\s-]/g, '');
+    
+    // Must be at least 5 characters and contain alphanumeric characters
+    if (cleanId.length < 5) return false;
+    
+    // Check if it contains only alphanumeric characters
+    const pattern = /^[A-Za-z0-9]+$/;
+    return pattern.test(cleanId);
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
@@ -409,6 +425,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     }
     if (!formData.idOrNrNumber.trim()) {
       newErrors.idOrNrNumber = 'Please fill out this field';
+    } else if (!validateIdNumber(formData.idOrNrNumber)) {
+      newErrors.idOrNrNumber = 'Invalid ID format. Must be at least 5 alphanumeric characters';
     }
     if (!formData.address.trim()) {
       newErrors.address = 'Please fill out this field';
@@ -458,35 +476,46 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
     try {
       // Prepare data for API submission
       const contraventionData = {
-        contraventionOf: formData.contraventions.filter(c => c.trim() !== ''),
-        raisedby: formData.raisedBy,
-        idOrNrNumber: formData.idOrNrNumber,
-        address: formData.address,
-        occupation: formData.occupation,
-        holderOf: formData.holderOf,
-        number: formData.holderNumber,
-        issuedAt: formData.issuedAt,
-        issuedTime: formData.time,
-        admitof: formData.admitGuilty,
-        descriptionOfOffence: formData.descriptionOfOffence,
-        place: formData.place,
-        offenceDate: formData.date,
-        offenceTime: formData.signatureTime,
-        signatureOfOffender: formData.offenderSignature,
-        dateCharged: formData.dateCharged,
-        mineNumber: formData.mineNumber,
-        inspectorOfMines: formData.inspectorAccepted,
-        acceptedDate: formData.acceptedDate,
+        mineid: selectedShaftData?.minerId || '',
+        contraventionOf: formData.contraventions?.filter(c => c?.trim() !== '') || [],
+        raisedby: formData.raisedBy || '',
+        idOrNrNumber: formData.idOrNrNumber || '',
+        address: formData.address || '',
+        occupation: formData.occupation || '',
+        holderOf: formData.holderOf || '',
+        number: formData.holderNumber || '',
+        admitof: formData.admitGuilty || '',
+        descriptionOfOffence: formData.descriptionOfOffence || '',
+        shaftnumber: formData.shaftNumber || '',
+        offenceDate: formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
+        signatureOfOffender: formData.offenderSignature || '',
+        dateCharged: formData.dateCharged ? new Date(formData.dateCharged).toISOString() : new Date().toISOString(),
+        shaftStatus: formData.shaftStatus || '',
+        inspectorOfMines: formData.inspectorAccepted || '',
+        acceptedDate: formData.acceptedDate ? new Date(formData.acceptedDate).toISOString() : new Date().toISOString(),
         status: 'Submitted',
         remarks: '',
         fineAmount: parseFloat(formData.totalAmount) || 0,
-        Accountamount1: formData.firstAccountAmount,
-        Accountamount2: formData.secondAccountAmount,
-        Accountamount3: formData.thirdAccountAmount,
-        signed: formData.officialSigned,
-        shemanager: formData.sheManagerSigned,
-        inspeptorofminers: formData.inspectorAccepted,
+        finePaid: false,
+        signed: formData.officialSigned || '',
+        sheManager: formData.sheManagerSigned || '',
+        inspectorOfMiners: formData.inspectorAccepted || '',
+        shaftid: selectedShaftData?.id || '',
       };
+
+      // Debug: Log the data being sent
+      console.log('Form data before submission:', formData);
+      console.log('Contravention data being sent:', contraventionData);
+      
+      // Test JSON serialization
+      try {
+        const jsonString = JSON.stringify(contraventionData);
+        console.log('JSON stringified data:', jsonString);
+      } catch (jsonError) {
+        console.error('JSON serialization error:', jsonError);
+        setErrors({ submit: 'Invalid data format. Please check all fields.' });
+        return;
+      }
 
       // Submit to API
       const result = await authClient.createContravention(contraventionData);
@@ -498,47 +527,78 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
       
       setSuccess(true);
       
-      // Reset form after successful submission
-      setTimeout(() => {
-        setFormData({
-          contraventions: [
-            'MINING (MANAGEMENT AND SAFETY) REGULATIONS, 1990 SI 109 OF 1990',
-            'EXPLOSIVES REGULATIONS,1989 S.L 72 OF 1989'
-          ],
-          raisedBy: '',
-          idOrNrNumber: '',
-          address: '',
-          occupation: '',
-          holderOf: '',
-          holderNumber: '',
-          issuedAt: '',
-          issuedDate: '',
-          time: '',
-          admitGuilty: '',
-          descriptionOfOffence: '',
-          place: '',
-          date: '',
-          signatureTime: '',
-          offenderSignature: '',
-          dateCharged: '',
-          mineNumber: '',
-          totalAmount: '',
-          firstAccountAmount: '',
-          secondAccountAmount: '',
-          thirdAccountAmount: '',
-          officialSigned: '',
-          sheManagerSigned: '',
-          inspectorAccepted: '',
-          acceptedDate: '',
-        });
-        setSuccess(false);
-      }, 3000);
+      // After successful contravention submission, suspend the shaft for SHE
+      if (selectedShaftData?.id && formData.shaftStatus) {
+        setSuspensionLoading(true);
+        try {
+          const suspensionResult = await authClient.suspendShaftForSHE(
+            selectedShaftData.id,
+            formData.shaftStatus
+          );
+          
+          if (suspensionResult.success) {
+            console.log('Shaft suspended successfully for SHE');
+            setShowSuccessDialog(true);
+          } else {
+            console.error('Failed to suspend shaft:', suspensionResult.error);
+            setErrors({ submit: `Contravention submitted but failed to suspend shaft: ${suspensionResult.error}` });
+          }
+        } catch (suspensionError) {
+          console.error('Error during shaft suspension:', suspensionError);
+          setErrors({ submit: 'Contravention submitted but shaft suspension failed' });
+        } finally {
+          setSuspensionLoading(false);
+        }
+      } else {
+        // If no shaft selected or status, just show success
+        setShowSuccessDialog(true);
+      }
     } catch (error_) {
       console.error('Error submitting contravention:', error_);
       setErrors({ submit: error_ instanceof Error ? error_.message : 'Failed to submit admission of guilt' });
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle success dialog close and form reset
+  const handleSuccessDialogClose = () => {
+    setShowSuccessDialog(false);
+    setSuccess(false);
+    
+    // Reset form
+    setFormData({
+      contraventions: [
+        'MINING (MANAGEMENT AND SAFETY) REGULATIONS, 1990 SI 109 OF 1990',
+        'EXPLOSIVES REGULATIONS,1989 S.L 72 OF 1989'
+      ],
+      raisedBy: '',
+      idOrNrNumber: '',
+      address: '',
+      occupation: '',
+      holderOf: '',
+      holderNumber: '',
+      issuedDate: '',
+      admitGuilty: '',
+      descriptionOfOffence: '',
+      shaftNumber: '',
+      date: '',
+      offenderSignature: '',
+      dateCharged: '',
+      shaftStatus: '',
+      totalAmount: '',
+      officialSigned: '',
+      sheManagerSigned: '',
+      inspectorAccepted: '',
+      acceptedDate: '',
+      status: 'Submitted',
+      remarks: '',
+    });
+    
+    // Reset shaft selection
+    setSelectedShaft(null);
+    setSelectedShaftData(null);
+    setErrors({});
   };
 
   // Get today's date for validation
@@ -555,6 +615,7 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
   };
 
   return (
+    <>
     <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
       <CardContent sx={{ p: 4 }}>
         <form onSubmit={handleSubmit} noValidate>
@@ -664,8 +725,9 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                       onChange={handleInputChange('idOrNrNumber')}
                       disabled={loading}
                       fullWidth
+                      placeholder="e.g., 12345678901A"
                       error={!!errors.idOrNrNumber}
-                      helperText={errors.idOrNrNumber}
+                      helperText={errors.idOrNrNumber || "Enter a valid ID or NR number (e.g., National ID, Passport, etc.)"}
                       sx={textFieldStyle}
                     />
                   </Box>
@@ -728,18 +790,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                   <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
                     <TextField
-                      label="Issued At"
-                      value={formData.issuedAt}
-                      onChange={handleInputChange('issuedAt')}
-                      disabled={loading}
-                      fullWidth
-                      error={!!errors.issuedAt}
-                      helperText={errors.issuedAt}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <TextField
                       label="Date"
                       value={formData.issuedDate}
                       onChange={handleInputChange('issuedDate')}
@@ -749,20 +799,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                       InputLabelProps={{ shrink: true }}
                       error={!!errors.issuedDate}
                       helperText={errors.issuedDate}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 200px', minWidth: '200px' }}>
-                    <TextField
-                      label="Time"
-                      value={formData.time}
-                      onChange={handleInputChange('time')}
-                      disabled={loading}
-                      fullWidth
-                      type="time"
-                      InputLabelProps={{ shrink: true }}
-                      error={!!errors.time}
-                      helperText={errors.time}
                       sx={textFieldStyle}
                     />
                   </Box>
@@ -810,15 +846,57 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Stack spacing={3}>
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
                   <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="Place"
-                      value={formData.place}
-                      onChange={handleInputChange('place')}
+                    <Autocomplete
+                      options={shaftAssignments}
+                      getOptionLabel={(option) => `${option.sectionName} - ${option.shaftNumbers}`}
+                      value={selectedShaft}
+                      onChange={(event, newValue) => {
+                        setSelectedShaft(newValue);
+                        if (newValue) {
+                          setSelectedShaftData({
+                            id: newValue.id,
+                            minerId: newValue.minerId
+                          });
+                          setFormData(prev => ({
+                            ...prev,
+                            shaftNumber: newValue.shaftNumbers
+                          }));
+                          // You can access the selected data here:
+                          console.log('Selected Shaft ID:', newValue.id);
+                          console.log('Selected Miner ID:', newValue.minerId);
+                        } else {
+                          setSelectedShaftData(null);
+                          setFormData(prev => ({
+                            ...prev,
+                            shaftNumber: ''
+                          }));
+                        }
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Shaft Number"
+                          error={!!errors.shaftNumber}
+                          helperText={errors.shaftNumber}
+                          sx={textFieldStyle}
+                        />
+                      )}
                       disabled={loading}
                       fullWidth
-                      error={!!errors.place}
-                      helperText={errors.place}
-                      sx={textFieldStyle}
+                      filterOptions={(options, { inputValue }) => {
+                        return options.filter(option =>
+                          option.sectionName.toLowerCase().includes(inputValue.toLowerCase()) ||
+                          option.shaftNumbers.toLowerCase().includes(inputValue.toLowerCase())
+                        );
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { borderColor: '#d1d5db' },
+                          '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
+                          '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+                        },
+                        '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+                      }}
                     />
                   </Box>
                   <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
@@ -838,20 +916,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                 </Box>
                 
                 <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="Time"
-                      value={formData.signatureTime}
-                      onChange={handleInputChange('signatureTime')}
-                      disabled={loading}
-                      fullWidth
-                      type="time"
-                      InputLabelProps={{ shrink: true }}
-                      error={!!errors.signatureTime}
-                      helperText={errors.signatureTime}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
                   <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
                     <TextField
                       label="Signature (Of Offender)"
@@ -882,16 +946,23 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                     />
                   </Box>
                   <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="Mine Number"
-                      value={formData.mineNumber}
-                      onChange={handleInputChange('mineNumber')}
-                      disabled={loading}
-                      fullWidth
-                      error={!!errors.mineNumber}
-                      helperText={errors.mineNumber}
-                      sx={textFieldStyle}
-                    />
+                    <FormControl fullWidth error={!!errors.shaftStatus} sx={textFieldStyle}>
+                      <InputLabel>Shaft Status</InputLabel>
+                      <Select
+                        value={formData.shaftStatus}
+                        onChange={(e) => setFormData(prev => ({ ...prev, shaftStatus: e.target.value }))}
+                        disabled={loading}
+                        label="Shaft Status"
+                      >
+                        <MenuItem value="SUSPENDED">SUSPENDED</MenuItem>
+                        <MenuItem value="CLOSED">CLOSED</MenuItem>
+                      </Select>
+                      {errors.shaftStatus && (
+                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                          {errors.shaftStatus}
+                        </Typography>
+                      )}
+                    </FormControl>
                   </Box>
                 </Box>
               </Stack>
@@ -916,48 +987,6 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                       type="number"
                       error={!!errors.totalAmount}
                       helperText={errors.totalAmount}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="1st Account Amount"
-                      value={formData.firstAccountAmount}
-                      onChange={handleInputChange('firstAccountAmount')}
-                      disabled={loading}
-                      fullWidth
-                      type="number"
-                      error={!!errors.firstAccountAmount}
-                      helperText={errors.firstAccountAmount}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
-                </Box>
-                
-                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="2nd Account Amount"
-                      value={formData.secondAccountAmount}
-                      onChange={handleInputChange('secondAccountAmount')}
-                      disabled={loading}
-                      fullWidth
-                      type="number"
-                      error={!!errors.secondAccountAmount}
-                      helperText={errors.secondAccountAmount}
-                      sx={textFieldStyle}
-                    />
-                  </Box>
-                  <Box sx={{ flex: '1 1 300px', minWidth: '300px' }}>
-                    <TextField
-                      label="3rd Account Amount"
-                      value={formData.thirdAccountAmount}
-                      onChange={handleInputChange('thirdAccountAmount')}
-                      disabled={loading}
-                      fullWidth
-                      type="number"
-                      error={!!errors.thirdAccountAmount}
-                      helperText={errors.thirdAccountAmount}
                       sx={textFieldStyle}
                     />
                   </Box>
@@ -1060,8 +1089,8 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={loading || success}
-                startIcon={loading ? <CircularProgress size={16} /> : null}
+                disabled={loading || success || suspensionLoading}
+                startIcon={(loading || suspensionLoading) ? <CircularProgress size={16} /> : null}
                 sx={{ 
                   bgcolor: 'rgb(5, 5, 68)',
                   '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
@@ -1069,12 +1098,58 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                   py: 1.5
                 }}
               >
-                {loading ? 'Submitting...' : 'Submit Admission of Guilt'}
+                {loading ? 'Submitting...' : suspensionLoading ? 'Suspending Shaft...' : 'Submit Admission of Guilt'}
               </Button>
             </Box>
           </Stack>
         </form>
       </CardContent>
     </Card>
+
+    {/* Success Dialog */}
+    <Dialog
+      open={showSuccessDialog}
+      onClose={handleSuccessDialogClose}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle sx={{ 
+        bgcolor: 'success.main', 
+        color: 'white',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }}>
+        ✅ Success!
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3, pb: 2 }}>
+        <Stack spacing={2} alignItems="center">
+          <Typography variant="h6" sx={{ textAlign: 'center', color: 'success.main' }}>
+            Admission of Guilt Submitted Successfully
+          </Typography>
+          <Typography variant="body1" sx={{ textAlign: 'center' }}>
+            Your admission of guilt has been submitted and processed.
+          </Typography>
+          {selectedShaftData?.id && formData.shaftStatus && (
+            <Typography variant="body2" sx={{ textAlign: 'center', color: 'text.secondary' }}>
+              Shaft {formData.shaftNumber} has been suspended with status: <strong>{formData.shaftStatus}</strong>
+            </Typography>
+          )}
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+        <Button
+          onClick={handleSuccessDialogClose}
+          variant="contained"
+          sx={{ 
+            bgcolor: 'rgb(5, 5, 68)',
+            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
+            px: 4
+          }}
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+    </>
   );
 }

@@ -45,6 +45,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { authClient } from '@/lib/auth/client';
 import { ShaftInspectionDetailsDialog } from './shaft-inspection-details-dialog';
+import { ShaftInspectionDialog } from './shaft-inspection-dialog';
 
 export interface ShaftInspection {
   id: string;
@@ -500,15 +501,15 @@ export function ShaftInspectionTable({
               </TableCell>
              
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell sortDirection={sortField === 'inspectionDate' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'inspectionDate'}
-                  direction={sortField === 'inspectionDate' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('inspectionDate')}
-                >
-                  Date & Time
-                </TableSortLabel>
-              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+  <TableSortLabel
+    active={sortField === 'status'}
+    direction={sortField === 'status' ? sortDirection : 'asc'}
+    onClick={() => handleSort('status')}
+  >
+    Shaft Status
+  </TableSortLabel>
+</TableCell>
               <TableCell sortDirection={sortField === 'inspectionType' ? sortDirection : false}>
                 <TableSortLabel
                   active={sortField === 'inspectionType'}
@@ -613,11 +614,29 @@ export function ShaftInspectionTable({
                     </Box>
                   </TableCell>
                   <TableCell>
-                    <Box>
-                      <Typography variant="body2">{convertDateArray(row.inspectionDate)?.toLocaleDateString() || 'Invalid Date'}</Typography>
-                      <Typography variant="caption" color="text.secondary">{formatTime(row.inspectionTime || row.inspectionDate)}</Typography>
-                    </Box>
-                  </TableCell>
+                  <Box sx={{
+                    display: 'inline-block',
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    bgcolor:
+                      row.status === 'APPROVED' ? '#C8E6C9' :
+                      row.status === 'SUSPENDED' ? '#FFCDD2' :
+                      row.status === 'CLOSED' ? '#B3E5FC' :
+                      '#F5F5F5',
+                    color:
+                      row.status === 'APPROVED' ? '#1B5E20' :
+                      row.status === 'SUSPENDED' ? '#B71C1C' :
+                      row.status === 'CLOSED' ? '#01579B' :
+                      '#424242',
+                    fontWeight: 'medium',
+                    fontSize: '0.875rem',
+                    textTransform: 'uppercase',
+                    maxWidth: 120,
+                  }}>
+                    {row.status}
+                  </Box>
+                </TableCell>
                   <TableCell>
                     <Typography variant="body2" sx={{ maxWidth: 150 }}>
                       {row.inspectionType}
@@ -730,7 +749,17 @@ export function ShaftInspectionTable({
         onRefresh={onRefresh}
       />
       
-      {/* TODO: Add Edit Inspection Dialog */}
+      {/* Edit Inspection Dialog */}
+      <ShaftInspectionDialog
+        open={editDialogOpen}
+        onClose={() => {
+          setEditDialogOpen(false);
+          setSelectedInspectionId(null);
+        }}
+        onRefresh={fetchInspections}
+        inspectionId={selectedInspectionId}
+        mode="edit"
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
