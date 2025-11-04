@@ -105,7 +105,7 @@ export async function GET() {
           { lat: 40.7505, lng: -73.9934 },
           { lat: 40.7128, lng: -74.0060 },
         ],
-        area: 1000000,
+        area: 100,
         createdAt: '2024-01-01T00:00:00Z',
       },
     ];

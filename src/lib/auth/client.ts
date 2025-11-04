@@ -162,6 +162,58 @@ class AuthClient {
     }
 
     /**
+     * Fetch incident count by period
+     * GET http://localhost:1000/api/incident-management/count?period={period}&value={value}&year={year}
+     */
+    async fetchIncidentCount(period: string, value: number, year: number): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const response = await fetch(`/api/incident-management/count?period=${period}&value=${value}&year=${year}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          return { success: false, error: 'Failed to fetch incident count' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching incident count:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Fetch incident count by severity
+     * GET http://localhost:1000/api/incident-management/count-by-severity?period={period}
+     */
+    async fetchIncidentCountBySeverity(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const response = await fetch(`/api/incident-management/count-by-severity?period=${period}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          return { success: false, error: 'Failed to fetch incident count by severity' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching incident count by severity:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Send a notification alert
      * POST /api/notifications
      */
@@ -777,7 +829,7 @@ class AuthClient {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
+                    'Accept': '*/*',
                     'Authorization': `Bearer ${token || ''}`,
                 },
                 credentials: 'include',

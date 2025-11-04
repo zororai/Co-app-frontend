@@ -327,6 +327,7 @@ export function ShaftInspectionDialog({
         esapMaterials: formData.eapMaterial,
         complianceStatus: formData.complianceStatus,
         shaftNumbers: formData.shaftNumbers[0] || '',
+        sectionName: formData.sectionName,
         attachments: attachments
       };
 
@@ -675,7 +676,8 @@ export function ShaftInspectionDialog({
             </Typography>
             
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          
+              
+            
               
               <Autocomplete
                 options={approvedShafts}
@@ -684,7 +686,8 @@ export function ShaftInspectionDialog({
                 onChange={(_, newValue) => {
                   setFormData(prev => ({
                     ...prev,
-                    shaftNumbers: newValue ? [newValue.shaftNumbers] : []
+                    shaftNumbers: newValue ? [newValue.shaftNumbers] : [],
+                    sectionName: newValue ? newValue.sectionName || '' : ''
                   }));
                   setSelectedShaftAssignmentId(newValue ? (newValue as any).id ?? null : null);
                 }}
@@ -707,7 +710,15 @@ export function ShaftInspectionDialog({
                 )}
                 noOptionsText={approvedShaftsError ? `Error: ${approvedShaftsError}` : 'No shafts found'}
               />
-              
+                <TextField
+                fullWidth
+                label="Section"
+                value={formData.sectionName}
+                onChange={handleChange('sectionName')}
+                placeholder="Enter section name"
+                size="small"
+                sx={textFieldStyle}
+              />
              
             </Box>
           </Box>

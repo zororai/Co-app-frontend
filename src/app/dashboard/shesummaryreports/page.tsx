@@ -9,6 +9,12 @@ import {
   Stack,
   Chip,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -18,6 +24,7 @@ import {
   Print as PrintIcon,
 } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
+import { authClient } from '@/lib/auth/client';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
@@ -46,6 +53,8 @@ const getIncidentLineChartOptions = () => ({
     title: {
       text: 'Incidents',
     },
+    min: 100,
+    max: 600,
   },
   grid: {
     strokeDashArray: 3,
@@ -68,13 +77,42 @@ const incidentLineData = [
   },
 ];
 
+// Helper to generate series and categories based on period selection
+function generateIncidentSeriesAndCategories(
+  periodType: 'week' | 'month' | 'year',
+  periodNumber: number,
+  year: number
+) {
+  if (periodType === 'week') {
+    const categories = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    // deterministic pseudo-random values based on inputs (range: 100-600)
+    const base = 150 + ((periodNumber % 10) * 30) + ((year % 5) * 20);
+    const data = categories.map((_, i) => Math.round(base + Math.sin(i + periodNumber) * 80 + (i * 15)));
+    return { series: [{ name: 'Incidents', data }], categories };
+  }
+
+  if (periodType === 'month') {
+    // display by weeks in the selected month (4-5 weeks)
+    const categories = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'];
+    const base = 200 + ((periodNumber % 12) * 25);
+    const data = categories.map((_, i) => Math.round(base + (i * 40) + Math.sin(i) * 50));
+    return { series: [{ name: 'Incidents', data }], categories };
+  }
+
+  // year -> show months
+  const categories = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const base = 180 + ((year % 5) * 40);
+  const data = categories.map((_, i) => Math.round(base + (i * 20) + Math.cos(i) * 60));
+  return { series: [{ name: 'Incidents', data }], categories };
+}
+
 const getIncidentPieChartOptions = () => ({
   chart: {
     type: 'donut' as const,
     height: 300,
   },
   colors: ['#4FC3F7', '#26C6DA', '#FF7043', '#FFB74D'],
-  labels: ['Near Misses', 'Minor', 'Major', 'Fatal'],
+  labels: ['Low', 'Medium', 'High', 'Critical'],
   legend: {
     show: false,
   },
@@ -91,44 +129,42 @@ const getIncidentPieChartOptions = () => ({
 });
 
 const incidentPieData = [40, 35, 15, 10];
-const pieLabels = ['Near Misses', 'Minor', 'Major', 'Fatal'];
+const pieLabels = ['Low', 'Medium', 'High', 'Critical'];
 const pieColors = ['#4FC3F7', '#26C6DA', '#FF7043', '#FFB74D'];
 
-const getSafetyPerformanceChartOptions = () => ({
+const getSafetyPerformanceChartOptions = (categories: string[]) => ({
   chart: {
-    type: 'bar' as const,
+    type: 'line' as const,
     height: 280,
     toolbar: { show: false },
   },
   colors: ['#2196F3', '#4CAF50'],
-  plotOptions: {
-    bar: {
-      horizontal: false,
-      columnWidth: '60%',
-      endingShape: 'rounded' as const,
-    },
+  stroke: {
+    curve: 'smooth' as const,
+    width: 3,
+  },
+  markers: {
+    size: 6,
+    colors: ['#2196F3', '#4CAF50'],
+    strokeColors: '#fff',
+    strokeWidth: 2,
   },
   dataLabels: {
     enabled: false,
   },
-  stroke: {
-    show: true,
-    width: 2,
-    colors: ['transparent'],
-  },
   xaxis: {
-    categories: ['LTIFR', 'TRIFR'],
+    categories: categories,
   },
   yaxis: {
     title: {
-      text: 'Rate',
+      text: 'Section',
     },
-  },
-  fill: {
-    opacity: 1,
   },
   legend: {
     position: 'bottom' as const,
+  },
+  grid: {
+    strokeDashArray: 3,
   },
 });
 
@@ -249,6 +285,142 @@ export default function SHESummaryDashboard(): React.JSX.Element {
   const handlePrintReport = () => {
     window.print();
   };
+
+  // Timeframe controls state - initialize with explicit values to prevent undefined
+  const currentYear = new Date().getFullYear();
+  const [periodType, setPeriodType] = React.useState<'week' | 'month' | 'year'>('week');
+  const [periodNumber, setPeriodNumber] = React.useState<number>(1);
+  const [year, setYear] = React.useState<number>(currentYear);
+  
+  // API data state
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [apiData, setApiData] = React.useState<any>(null);
+  
+  // Severity chart state - initialize with explicit default value to prevent undefined
+  const [severityPeriod, setSeverityPeriod] = React.useState<'week' | 'month' | 'year'>('week');
+  const [severityData, setSeverityData] = React.useState<any>(null);
+  const [severityLoading, setSeverityLoading] = React.useState<boolean>(false);
+  
+  // Section names state for Safety Performance chart
+  const [sectionNames, setSectionNames] = React.useState<string[]>(['LTIFR', 'TRIFR']);
+  const [sectionsLoading, setSectionsLoading] = React.useState<boolean>(false);
+
+  // Handler for Apply button
+  const handleApplyTimeframe = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await authClient.fetchIncidentCount(periodType, periodNumber, year);
+      
+      if (result.success && result.data) {
+        setApiData(result.data);
+      } else {
+        setError(result.error || 'Failed to fetch incident data');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error('Error fetching incident count:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handler for severity period change
+  const handleSeverityPeriodChange = async (newPeriod: 'week' | 'month' | 'year') => {
+    setSeverityPeriod(newPeriod);
+    setSeverityLoading(true);
+    
+    try {
+      const result = await authClient.fetchIncidentCountBySeverity(newPeriod);
+      
+      if (result.success && result.data) {
+        setSeverityData(result.data);
+      } else {
+        console.error('Failed to fetch severity data:', result.error);
+      }
+    } catch (err) {
+      console.error('Error fetching severity data:', err);
+    } finally {
+      setSeverityLoading(false);
+    }
+  };
+
+  // Fetch initial severity data on mount
+  React.useEffect(() => {
+    const fetchInitialData = async () => {
+      setSeverityLoading(true);
+      try {
+        const result = await authClient.fetchIncidentCountBySeverity('week');
+        if (result.success && result.data) {
+          setSeverityData(result.data);
+        }
+      } catch (err) {
+        console.error('Error fetching initial severity data:', err);
+      } finally {
+        setSeverityLoading(false);
+      }
+    };
+    
+    fetchInitialData();
+  }, []); // Only run on mount
+  
+  // Fetch approved sections for Safety Performance chart
+  React.useEffect(() => {
+    const fetchSections = async () => {
+      setSectionsLoading(true);
+      try {
+        const sections = await authClient.fetchSectionsApproved();
+        if (sections && sections.length > 0) {
+          // Extract section names from the response
+          const names = sections.map((section: any) => section.sectionName || section.name).filter(Boolean);
+          if (names.length > 0) {
+            setSectionNames(names);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching approved sections:', err);
+      } finally {
+        setSectionsLoading(false);
+      }
+    };
+    
+    fetchSections();
+  }, []);
+
+  // Derived incident data based on selection
+  const { series: incidentSeries, categories: incidentCategories } = React.useMemo(() => {
+    // If we have API data, use it; otherwise use mock data
+    if (apiData) {
+      // Assuming API returns data in format: { categories: string[], data: number[] }
+      // Adjust this based on your actual API response structure
+      return {
+        series: [{ name: 'Incidents', data: apiData.data || [] }],
+        categories: apiData.categories || [],
+      };
+    }
+    return generateIncidentSeriesAndCategories(periodType, periodNumber, year);
+  }, [periodType, periodNumber, year, apiData]);
+
+  // Derived severity data based on API response
+  const severityChartData = React.useMemo(() => {
+    if (severityData && severityData.severityCounts) {
+      const counts = severityData.severityCounts;
+      return [
+        counts.Low || 0,
+        counts.Medium || 0,
+        counts.High || 0,
+        counts.Critical || 0,
+      ];
+    }
+    return incidentPieData; // fallback to mock data
+  }, [severityData]);
+
+  const incidentOptions = React.useMemo(() => ({
+    ...getIncidentLineChartOptions(),
+    xaxis: { categories: incidentCategories },
+  }), [incidentCategories]);
 
   React.useEffect(() => {
     // Add print-specific styles to fit everything on one A4 page
@@ -421,12 +593,87 @@ export default function SHESummaryDashboard(): React.JSX.Element {
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
                 Incident Summary
               </Typography>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">Select timeframe</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <FormControl size="small" disabled={loading}>
+                    <InputLabel id="period-type-label">Period</InputLabel>
+                    <Select
+                      labelId="period-type-label"
+                      value={periodType}
+                      label="Period"
+                      onChange={(e) => setPeriodType(e.target.value as 'week' | 'month' | 'year')}
+                      sx={{ minWidth: 100 }}
+                    >
+                      <MenuItem value="week">Week</MenuItem>
+                      <MenuItem value="month">Month</MenuItem>
+                      <MenuItem value="year">Year</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl size="small" disabled={loading}>
+                    <InputLabel id="period-number-label">#</InputLabel>
+                    <Select
+                      labelId="period-number-label"
+                      value={periodNumber}
+                      label="#"
+                      onChange={(e) => setPeriodNumber(Number(e.target.value))}
+                      sx={{ minWidth: 80 }}
+                    >
+                      {[...Array(53)].map((_, i) => (
+                        <MenuItem key={i + 1} value={i + 1}>{i + 1}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {periodType === 'week' && (
+                    <FormControl size="small" disabled={loading}>
+                      <InputLabel id="year-label">Year</InputLabel>
+                      <Select
+                        labelId="year-label"
+                        value={year}
+                        label="Year"
+                        onChange={(e) => setYear(Number(e.target.value))}
+                        sx={{ minWidth: 110 }}
+                      >
+                        {Array.from({ length: 21 }).map((_, idx) => {
+                          const y = currentYear - idx;
+                          return <MenuItem key={y} value={y}>{y}</MenuItem>;
+                        })}
+                      </Select>
+                    </FormControl>
+                  )}
+
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleApplyTimeframe}
+                    disabled={loading}
+                    sx={{
+                      bgcolor: '#4CAF50',
+                      '&:hover': {
+                        bgcolor: '#45a049',
+                      },
+                      minWidth: '80px',
+                    }}
+                  >
+                    {loading ? <CircularProgress size={20} color="inherit" /> : 'Apply'}
+                  </Button>
+                </Stack>
+              </Stack>
+              
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
+
               <Box sx={{ height: 300 }}>
                 <Chart
-                  options={getIncidentLineChartOptions()}
-                  series={incidentLineData}
+                  options={incidentOptions}
+                  series={incidentSeries}
                   type="line"
-                  height={300}
+                  height={250}
                 />
               </Box>
             </CardContent>
@@ -437,13 +684,40 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         <Box sx={{ flex: '1 1 500px', minWidth: '400px' }}>
           <Card sx={{ height: 400, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Incident Distribution
-              </Typography>
-              <Box sx={{ height: 250 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Incident Severity Level
+                </Typography>
+                <FormControl size="small" disabled={severityLoading}>
+                  <InputLabel id="severity-period-label">Period</InputLabel>
+                  <Select
+                    labelId="severity-period-label"
+                    value={severityPeriod}
+                    label="Period"
+                    onChange={(e) => handleSeverityPeriodChange(e.target.value as 'week' | 'month' | 'year')}
+                    sx={{ minWidth: 100 }}
+                  >
+                    <MenuItem value="week">Week</MenuItem>
+                    <MenuItem value="month">Month</MenuItem>
+                    <MenuItem value="year">Year</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+              <Box sx={{ height: 250, position: 'relative' }}>
+                {severityLoading && (
+                  <Box sx={{ 
+                    position: 'absolute', 
+                    top: '50%', 
+                    left: '50%', 
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1
+                  }}>
+                    <CircularProgress size={40} />
+                  </Box>
+                )}
                 <Chart
                   options={getIncidentPieChartOptions()}
-                  series={incidentPieData}
+                  series={severityChartData}
                   type="donut"
                   height={250}
                 />
@@ -452,7 +726,7 @@ export default function SHESummaryDashboard(): React.JSX.Element {
                 {pieLabels.map((label, index) => (
                   <Chip
                     key={index}
-                    label={label}
+                    label={`${label}: ${severityChartData[index]}`}
                     sx={{
                       bgcolor: pieColors[index],
                       color: 'white',
@@ -473,16 +747,31 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Safety Performance
+                Shaft Inspection Performance
               </Typography>
-              <Box sx={{ height: 280 }}>
-                <Chart
-                  options={getSafetyPerformanceChartOptions()}
-                  series={safetyPerformanceData}
-                  type="bar"
-                  height={280}
-                />
-              </Box>
+              {sectionsLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 280 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Box sx={{ height: 280 }}>
+                  <Chart
+                    options={getSafetyPerformanceChartOptions(sectionNames)}
+                    series={[
+                      {
+                        name: 'Current',
+                        data: sectionNames.map(() => Math.random() * 2),
+                      },
+                      {
+                        name: 'Previous',
+                        data: sectionNames.map(() => Math.random() * 2.5),
+                      },
+                    ]}
+                    type="line"
+                    height={280}
+                  />
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Box>
