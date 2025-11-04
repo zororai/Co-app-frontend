@@ -207,13 +207,13 @@ const healthMetricsData = [
   },
 ];
 
-const getEnvironmentalMetricsChartOptions = () => ({
+const getEnvironmentalMetricsChartOptions = (categories: string[]) => ({
   chart: {
     type: 'bar' as const,
     height: 250,
     toolbar: { show: false },
   },
-  colors: ['#2196F3', '#4CAF50'],
+  colors: ['#2196F3'],
   plotOptions: {
     bar: {
       horizontal: false,
@@ -224,7 +224,12 @@ const getEnvironmentalMetricsChartOptions = () => ({
     enabled: false,
   },
   xaxis: {
-    categories: ['Air Quality', 'Waste Management'],
+    categories: categories,
+  },
+  yaxis: {
+    title: {
+      text: 'Total Inspections',
+    },
   },
 });
 
@@ -311,6 +316,11 @@ export default function SHESummaryDashboard(): React.JSX.Element {
   const [inspectionData, setInspectionData] = React.useState<any[]>([]);
   const [inspectionLoading, setInspectionLoading] = React.useState<boolean>(false);
 
+  // Environmental metrics state
+  const [environmentalPeriod, setEnvironmentalPeriod] = React.useState<'week' | 'month' | 'year'>('year');
+  const [environmentalData, setEnvironmentalData] = React.useState<any[]>([]);
+  const [environmentalLoading, setEnvironmentalLoading] = React.useState<boolean>(false);
+
   // Handler for Apply button
   const handleApplyTimeframe = async () => {
     setLoading(true);
@@ -369,6 +379,26 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       console.error('Error fetching inspection data:', err);
     } finally {
       setInspectionLoading(false);
+    }
+  };
+
+  // Handler for environmental period change
+  const handleEnvironmentalPeriodChange = async (newPeriod: 'week' | 'month' | 'year') => {
+    setEnvironmentalPeriod(newPeriod);
+    setEnvironmentalLoading(true);
+    
+    try {
+      const result = await authClient.fetchShaftInspectionCountsByType(newPeriod);
+      
+      if (result.success && result.data) {
+        setEnvironmentalData(Array.isArray(result.data) ? result.data : []);
+      } else {
+        console.error('Failed to fetch environmental data:', result.error);
+      }
+    } catch (err) {
+      console.error('Error fetching environmental data:', err);
+    } finally {
+      setEnvironmentalLoading(false);
     }
   };
 
@@ -433,6 +463,25 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     fetchInspectionData();
   }, []);
 
+  // Fetch initial environmental data
+  React.useEffect(() => {
+    const fetchEnvironmentalData = async () => {
+      setEnvironmentalLoading(true);
+      try {
+        const result = await authClient.fetchShaftInspectionCountsByType('year');
+        if (result.success && result.data) {
+          setEnvironmentalData(Array.isArray(result.data) ? result.data : []);
+        }
+      } catch (err) {
+        console.error('Error fetching initial environmental data:', err);
+      } finally {
+        setEnvironmentalLoading(false);
+      }
+    };
+    
+    fetchEnvironmentalData();
+  }, []);
+
   // Derived incident data based on selection
   const { series: incidentSeries, categories: incidentCategories } = React.useMemo(() => {
     // If we have API data, use it; otherwise use mock data
@@ -494,6 +543,29 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       completionPercentages: [0],
     };
   }, [inspectionData]);
+
+  // Prepare environmental chart data
+  const environmentalChartData = React.useMemo(() => {
+    if (environmentalData && environmentalData.length > 0) {
+      const inspectionTypes = environmentalData.map((item: any) => item.inspectionType);
+      const totalInspections = environmentalData.map((item: any) => item.totalInspections || 0);
+      
+      return {
+        categories: inspectionTypes,
+        series: [
+          { name: 'Total Inspections', data: totalInspections },
+        ],
+        percentages: environmentalData.map((item: any) => item.percentageOfTotal || 0),
+      };
+    }
+    return {
+      categories: ['No Data'],
+      series: [
+        { name: 'Total Inspections', data: [0] },
+      ],
+      percentages: [0],
+    };
+  }, [environmentalData]);
 
   React.useEffect(() => {
     // Add print-specific styles to fit everything on one A4 page
@@ -878,10 +950,10 @@ export default function SHESummaryDashboard(): React.JSX.Element {
 
         {/* Health Metrics */}
         <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-          <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
+          <Card sx={{ height: 450, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Health Metrics
+                Penality Performance
               </Typography>
               <Box sx={{ height: 250 }}>
                 <Chart
@@ -903,17 +975,39 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
           <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Environmental Metrics
-              </Typography>
-              <Box sx={{ height: 250 }}>
-                <Chart
-                  options={getEnvironmentalMetricsChartOptions()}
-                  series={environmentalMetricsData}
-                  type="bar"
-                  height={250}
-                />
-              </Box>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Environmental Metrics
+                </Typography>
+                <FormControl size="small" disabled={environmentalLoading}>
+                  <InputLabel id="environmental-period-label">Period</InputLabel>
+                  <Select
+                    labelId="environmental-period-label"
+                    value={environmentalPeriod}
+                    label="Period"
+                    onChange={(e) => handleEnvironmentalPeriodChange(e.target.value as 'week' | 'month' | 'year')}
+                    sx={{ minWidth: 100 }}
+                  >
+                    <MenuItem value="week">Week</MenuItem>
+                    <MenuItem value="month">Month</MenuItem>
+                    <MenuItem value="year">Year</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+              {environmentalLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 250 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Box sx={{ height: 250 }}>
+                  <Chart
+                    options={getEnvironmentalMetricsChartOptions(environmentalChartData.categories)}
+                    series={environmentalChartData.series}
+                    type="bar"
+                    height={250}
+                  />
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Box>

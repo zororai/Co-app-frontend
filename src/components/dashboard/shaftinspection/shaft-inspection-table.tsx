@@ -161,6 +161,46 @@ export function ShaftInspectionTable({
   }, [onRefresh, fetchInspections]);
 
 
+  // Helper function to convert date array to Date object
+  const convertDateArray = React.useCallback((dateArray: number[] | string): Date | null => {
+    if (!dateArray) return null;
+    if (typeof dateArray === 'string') return new Date(dateArray);
+    if (!Array.isArray(dateArray) || dateArray.length < 3) return null;
+    
+    const [year, month, day, hour = 0, minute = 0, second = 0] = dateArray;
+    // Note: JavaScript Date constructor expects month to be 0-indexed, but API sends 1-indexed
+    return new Date(year, month - 1, day, hour, minute, second);
+  }, []);
+
+  // Helper function to format time object to string (robust against missing fields)
+  const formatTime = React.useCallback((
+    timeObj?: { hour?: number; minute?: number; second?: number; nano?: number } | string | null | number[]
+  ): string => {
+    if (!timeObj) return '';
+    if (typeof timeObj === 'string') return timeObj;
+    
+    // Handle array format (extract time from date array)
+    if (Array.isArray(timeObj) && timeObj.length >= 6) {
+      const [, , , hour = 0, minute = 0] = timeObj;
+      const hourNum = Number(hour);
+      const minuteNum = Number(minute);
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    // Handle object format
+    if (typeof timeObj === 'object' && timeObj !== null && !Array.isArray(timeObj)) {
+      const hourNum = Number(timeObj.hour ?? 0);
+      const minuteNum = Number(timeObj.minute ?? 0);
+      const period = hourNum >= 12 ? 'PM' : 'AM';
+      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    return '';
+  }, []);
+
   // Sorting function
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -194,6 +234,22 @@ export function ShaftInspectionTable({
       let aValue = a[sortField as keyof ShaftInspection];
       let bValue = b[sortField as keyof ShaftInspection];
       
+      // Special handling for date fields
+      if (sortField === 'inspectionDate') {
+        const aDate = convertDateArray(aValue as any);
+        const bDate = convertDateArray(bValue as any);
+        
+        if (!aDate && !bDate) return 0;
+        if (!aDate) return 1;
+        if (!bDate) return -1;
+        
+        const aTime = aDate.getTime();
+        const bTime = bDate.getTime();
+        
+        return sortDirection === 'asc' ? aTime - bTime : bTime - aTime;
+      }
+      
+      // String comparison for other fields
       if (typeof aValue === 'string') aValue = aValue.toLowerCase();
       if (typeof bValue === 'string') bValue = bValue.toLowerCase();
       
@@ -203,7 +259,7 @@ export function ShaftInspectionTable({
     });
 
     return filtered;
-  }, [apiData, rows, filters, sortField, sortDirection]);
+  }, [apiData, rows, filters, sortField, sortDirection, convertDateArray]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, inspectionId: string) => {
     setAnchorEl(event.currentTarget);
@@ -287,46 +343,6 @@ export function ShaftInspectionTable({
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
-  };
-
-  // Helper function to convert date array to Date object
-  const convertDateArray = (dateArray: number[] | string): Date | null => {
-    if (!dateArray) return null;
-    if (typeof dateArray === 'string') return new Date(dateArray);
-    if (!Array.isArray(dateArray) || dateArray.length < 3) return null;
-    
-    const [year, month, day, hour = 0, minute = 0, second = 0] = dateArray;
-    // Note: JavaScript Date constructor expects month to be 0-indexed, but API sends 1-indexed
-    return new Date(year, month - 1, day, hour, minute, second);
-  };
-
-  // Helper function to format time object to string (robust against missing fields)
-  const formatTime = (
-    timeObj?: { hour?: number; minute?: number; second?: number; nano?: number } | string | null | number[]
-  ): string => {
-    if (!timeObj) return '';
-    if (typeof timeObj === 'string') return timeObj;
-    
-    // Handle array format (extract time from date array)
-    if (Array.isArray(timeObj) && timeObj.length >= 6) {
-      const [, , , hour = 0, minute = 0] = timeObj;
-      const hourNum = Number(hour);
-      const minuteNum = Number(minute);
-      const period = hourNum >= 12 ? 'PM' : 'AM';
-      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
-    }
-    
-    // Handle object format
-    if (typeof timeObj === 'object' && timeObj !== null && !Array.isArray(timeObj)) {
-      const hourNum = Number(timeObj.hour ?? 0);
-      const minuteNum = Number(timeObj.minute ?? 0);
-      const period = hourNum >= 12 ? 'PM' : 'AM';
-      const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-      return `${displayHour}:${minuteNum.toString().padStart(2, '0')} ${period}`;
-    }
-    
-    return '';
   };
 
   const dataToDisplay = filteredRows;
