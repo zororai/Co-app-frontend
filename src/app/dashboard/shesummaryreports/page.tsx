@@ -192,7 +192,7 @@ const getHealthMetricsChartOptions = () => ({
     height: 250,
     toolbar: { show: false },
   },
-  colors: ['#2196F3', '#26C6DA'],
+  colors: ['#F44336', '#4CAF50'],
   plotOptions: {
     bar: {
       horizontal: true,
@@ -203,7 +203,12 @@ const getHealthMetricsChartOptions = () => ({
     enabled: false,
   },
   xaxis: {
-    categories: ['Medical Cases', 'Absenteeism Rate'],
+    categories: ['Pending Contraventions', 'Resolved Contraventions'],
+  },
+  yaxis: {
+    title: {
+      text: 'Count',
+    },
   },
 });
 
@@ -314,6 +319,7 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     setSeverityPeriod(printTimeframe);
     setInspectionPeriod(printTimeframe);
     setEnvironmentalPeriod(printTimeframe);
+    setPenaltyPeriod(printTimeframe);
 
     // Close dialog
     setPrintDialogOpen(false);
@@ -350,9 +356,14 @@ export default function SHESummaryDashboard(): React.JSX.Element {
   const [inspectionLoading, setInspectionLoading] = React.useState<boolean>(false);
 
   // Environmental metrics state
-  const [environmentalPeriod, setEnvironmentalPeriod] = React.useState<'week' | 'month' | 'year'>('year');
+  const [environmentalPeriod, setEnvironmentalPeriod] = React.useState<'week' | 'month' | 'year'>('week');
   const [environmentalData, setEnvironmentalData] = React.useState<any[]>([]);
   const [environmentalLoading, setEnvironmentalLoading] = React.useState<boolean>(false);
+
+  // Penalty/Contraventions metrics state
+  const [penaltyPeriod, setPenaltyPeriod] = React.useState<'week' | 'month' | 'year'>('week');
+  const [penaltyData, setPenaltyData] = React.useState<any>(null);
+  const [penaltyLoading, setPenaltyLoading] = React.useState<boolean>(false);
 
   // Handler for Apply button
   const handleApplyTimeframe = async () => {
@@ -435,6 +446,49 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     }
   };
 
+  // Handler for penalty period change
+  const handlePenaltyPeriodChange = async (newPeriod: 'week' | 'month' | 'year') => {
+    setPenaltyPeriod(newPeriod);
+    setPenaltyLoading(true);
+    
+    try {
+      const result = await authClient.fetchContraventionsStatsByStatus(newPeriod);
+      
+      if (result.success && result.data) {
+        setPenaltyData(result.data);
+      } else {
+        console.error('Failed to fetch penalty data:', result.error);
+      }
+    } catch (err) {
+      console.error('Error fetching penalty data:', err);
+    } finally {
+      setPenaltyLoading(false);
+    }
+  };
+
+  // Fetch initial incident summary data on mount
+  React.useEffect(() => {
+    const fetchInitialIncidentData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await authClient.fetchIncidentCount('week', 1, currentYear);
+        if (result.success && result.data) {
+          setApiData(result.data);
+        } else {
+          setError(result.error || 'Failed to fetch incident data');
+        }
+      } catch (err) {
+        setError('An unexpected error occurred');
+        console.error('Error fetching initial incident data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchInitialIncidentData();
+  }, []); // Only run on mount
+
   // Fetch initial severity data on mount
   React.useEffect(() => {
     const fetchInitialData = async () => {
@@ -501,7 +555,7 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     const fetchEnvironmentalData = async () => {
       setEnvironmentalLoading(true);
       try {
-        const result = await authClient.fetchShaftInspectionCountsByType('year');
+        const result = await authClient.fetchShaftInspectionCountsByType('week');
         if (result.success && result.data) {
           setEnvironmentalData(Array.isArray(result.data) ? result.data : []);
         }
@@ -513,6 +567,25 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     };
     
     fetchEnvironmentalData();
+  }, []);
+
+  // Fetch initial penalty/contraventions data
+  React.useEffect(() => {
+    const fetchPenaltyData = async () => {
+      setPenaltyLoading(true);
+      try {
+        const result = await authClient.fetchContraventionsStatsByStatus('week');
+        if (result.success && result.data) {
+          setPenaltyData(result.data);
+        }
+      } catch (err) {
+        console.error('Error fetching initial penalty data:', err);
+      } finally {
+        setPenaltyLoading(false);
+      }
+    };
+    
+    fetchPenaltyData();
   }, []);
 
   // Derived incident data based on selection
@@ -599,6 +672,34 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       percentages: [0],
     };
   }, [environmentalData]);
+
+  // Prepare penalty chart data
+  const penaltyChartData = React.useMemo(() => {
+    if (penaltyData) {
+      return {
+        series: [
+          {
+            name: 'Contraventions',
+            data: [penaltyData.pendingCount || 0, penaltyData.resolvedCount || 0],
+          },
+        ],
+        totalContraventions: penaltyData.totalContraventions || 0,
+        pendingPercentage: penaltyData.pendingPercentage || 0,
+        resolvedPercentage: penaltyData.resolvedPercentage || 0,
+      };
+    }
+    return {
+      series: [
+        {
+          name: 'Contraventions',
+          data: [0, 0],
+        },
+      ],
+      totalContraventions: 0,
+      pendingPercentage: 0,
+      resolvedPercentage: 0,
+    };
+  }, [penaltyData]);
 
   React.useEffect(() => {
     // Add print-specific styles to fit everything on one A4 page
@@ -947,25 +1048,59 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           </Card>
         </Box>
 
-        {/* Health Metrics */}
+        {/* Penalty Performance */}
         <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
           <Card sx={{ height: 450, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Penality Performance
-              </Typography>
-              <Box sx={{ height: 250 }}>
-                <Chart
-                  options={getHealthMetricsChartOptions()}
-                  series={healthMetricsData}
-                  type="bar"
-                  height={250}
-                />
-              </Box>
-              <Stack spacing={1} sx={{ mt: 2 }}>
-                <Chip label="Medical Cases" sx={{ bgcolor: '#2196F3', color: 'white' }} />
-                <Chip label="Absenteeism Rate" sx={{ bgcolor: '#26C6DA', color: 'white' }} />
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Penalty Performance
+                </Typography>
+                <FormControl size="small" disabled={penaltyLoading}>
+                  <InputLabel id="penalty-period-label">Period</InputLabel>
+                  <Select
+                    labelId="penalty-period-label"
+                    value={penaltyPeriod}
+                    label="Period"
+                    onChange={(e) => handlePenaltyPeriodChange(e.target.value as 'week' | 'month' | 'year')}
+                    sx={{ minWidth: 100 }}
+                  >
+                    <MenuItem value="week">Week</MenuItem>
+                    <MenuItem value="month">Month</MenuItem>
+                    <MenuItem value="year">Year</MenuItem>
+                  </Select>
+                </FormControl>
               </Stack>
+              {penaltyLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 250 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <>
+                  <Box sx={{ height: 250 }}>
+                    <Chart
+                      options={getHealthMetricsChartOptions()}
+                      series={penaltyChartData.series}
+                      type="bar"
+                      height={250}
+                    />
+                  </Box>
+                  <Stack spacing={1} sx={{ mt: 2 }}>
+                    <Chip 
+                      label={`Pending: ${penaltyData?.pendingCount || 0} (${penaltyChartData.pendingPercentage.toFixed(1)}%)`} 
+                      sx={{ bgcolor: '#F44336', color: 'white' }} 
+                    />
+                    <Chip 
+                      label={`Resolved: ${penaltyData?.resolvedCount || 0} (${penaltyChartData.resolvedPercentage.toFixed(1)}%)`} 
+                      sx={{ bgcolor: '#4CAF50', color: 'white' }} 
+                    />
+                    <Chip 
+                      label={`Total: ${penaltyChartData.totalContraventions}`} 
+                      sx={{ bgcolor: '#757575', color: 'white' }} 
+                    />
+                  </Stack>
+                </>
+              )}
             </CardContent>
           </Card>
         </Box>
@@ -998,12 +1133,12 @@ export default function SHESummaryDashboard(): React.JSX.Element {
                   <CircularProgress />
                 </Box>
               ) : (
-                <Box sx={{ height: 250 }}>
+                <Box sx={{ height: 200 }}>
                   <Chart
                     options={getEnvironmentalMetricsChartOptions(environmentalChartData.categories)}
                     series={environmentalChartData.series}
                     type="bar"
-                    height={250}
+                    height={200}
                   />
                 </Box>
               )}

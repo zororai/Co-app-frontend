@@ -69,7 +69,8 @@ export const allNavItems = [
     items: [
      
    { key: 'she-summary-reports', title: 'SHE Summary Report', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
-      
+  { key: 'she-summary-reports', title: '', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
+       
       // Legacy commented items
     ],
   },

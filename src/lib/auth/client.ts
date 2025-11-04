@@ -266,6 +266,32 @@ class AuthClient {
     }
 
     /**
+     * Fetch contraventions statistics by status
+     * GET http://localhost:1000/api/contraventions/stats/status?period={period}
+     */
+    async fetchContraventionsStatsByStatus(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const response = await fetch(`/api/contraventions/stats/status?period=${period}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          return { success: false, error: 'Failed to fetch contraventions stats' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching contraventions stats:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Send a notification alert
      * POST /api/notifications
      */
