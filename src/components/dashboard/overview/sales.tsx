@@ -60,11 +60,21 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
           return Math.round(difference / 1000 * 100) / 100;
         });
         
-        setChartSeries([
+        // Check if totalNewWeightData has any non-zero values
+        const hasAsmData = totalNewWeightData.some(value => value > 0);
+        
+        // Build chart series conditionally
+        const series = [
           { name: 'Total Extracted Ore Weight (tonnes)', data: totalWeightData },
-          { name: 'Total ASM Processed  Ore Weight (tonnes)', data: totalNewWeightData },
-          { name: 'Total Dedicted Ore  Weight  (tonnes)', data: differenceData }
-        ]);
+          { name: 'Total ASM Processed  Ore Weight (tonnes)', data: totalNewWeightData }
+        ];
+        
+        // Only add the deducted ore weight series if ASM data exists
+        if (hasAsmData) {
+          series.push({ name: 'Total Dedicted Ore  Weight  (tonnes)', data: differenceData });
+        }
+        
+        setChartSeries(series);
       } else {
         setError(result.error || 'Failed to fetch ore transport data');
       }
