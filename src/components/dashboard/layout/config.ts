@@ -67,15 +67,10 @@ export const allNavItems = [
     title: 'Report Management',
     icon: 'chart-pie',
     items: [
-      // SHE Management Reports
+     
    { key: 'she-summary-reports', title: 'SHE Summary Dashboard', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
       
       // Legacy commented items
-      //{ key: 'penalityreport', title: 'Issue Penality', href:  paths.dashboard.penality, icon: 'id-card'},
-      //{ key: 'Incidentreport', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
-     // { key: 'issuepenaltyreport', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
-     // { key: 'Shaftreports', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
-      //{ key: 'Oreproductionreport', title: 'Issue Penality ', href:  paths.dashboard.penality, icon: 'id-card'},
     ],
   },
   {
