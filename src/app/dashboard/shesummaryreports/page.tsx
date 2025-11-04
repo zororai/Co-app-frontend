@@ -15,6 +15,11 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -22,7 +27,9 @@ import {
   Search as SearchIcon,
   Recycling as RecyclingIcon,
   Print as PrintIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import dynamic from 'next/dynamic';
 import { authClient } from '@/lib/auth/client';
 
@@ -287,8 +294,34 @@ const MetricCard: React.FC<MetricCardProps> = ({ icon, title, value, subtitle, c
 };
 
 export default function SHESummaryDashboard(): React.JSX.Element {
+  const theme = useTheme();
+  
+  // Print dialog state
+  const [printDialogOpen, setPrintDialogOpen] = React.useState<boolean>(false);
+  const [printTimeframe, setPrintTimeframe] = React.useState<'week' | 'month' | 'year'>('week');
+
   const handlePrintReport = () => {
-    window.print();
+    setPrintDialogOpen(true);
+  };
+
+  const handleClosePrintDialog = () => {
+    setPrintDialogOpen(false);
+  };
+
+  const handleConfirmPrint = async () => {
+    // Update all timeframes to match the selected print timeframe
+    setPeriodType(printTimeframe);
+    setSeverityPeriod(printTimeframe);
+    setInspectionPeriod(printTimeframe);
+    setEnvironmentalPeriod(printTimeframe);
+
+    // Close dialog
+    setPrintDialogOpen(false);
+
+    // Wait for state updates and re-renders to complete
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
 
   // Timeframe controls state - initialize with explicit values to prevent undefined
@@ -673,16 +706,18 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold', flex: 1, textAlign: 'center' }}>
-          SHE Summary Dashboard
+          SHE Summary Report
         </Typography>
         <Button
           variant="contained"
           startIcon={<PrintIcon />}
           onClick={handlePrintReport}
           sx={{
-            bgcolor: '#2196F3',
+            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+            color: 'white',
+            fontWeight: 600,
             '&:hover': {
-              bgcolor: '#1976D2',
+              background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
             },
             '@media print': {
               display: 'none',
@@ -691,42 +726,6 @@ export default function SHESummaryDashboard(): React.JSX.Element {
         >
           Print Report
         </Button>
-      </Box>
-
-      {/* Top Metrics Row */}
-      <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-          <MetricCard
-            icon={<CheckCircleIcon />}
-            title="100 Days"
-            value="Incident-Free"
-            color="#4CAF50"
-          />
-        </Box>
-        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-          <MetricCard
-            icon={<TrendingDownIcon />}
-            title="LTIFR: 0.8"
-            value=""
-            color="#2196F3"
-          />
-        </Box>
-        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-          <MetricCard
-            icon={<SearchIcon />}
-            title="Inspections:"
-            value="92% Completed"
-            color="#FF9800"
-          />
-        </Box>
-        <Box sx={{ flex: '1 1 300px', minWidth: '250px' }}>
-          <MetricCard
-            icon={<RecyclingIcon />}
-            title="Waste Recycled:"
-            value="74%"
-            color="#4CAF50"
-          />
-        </Box>
       </Box>
 
       {/* Charts Row */}
@@ -1012,6 +1011,80 @@ export default function SHESummaryDashboard(): React.JSX.Element {
           </Card>
         </Box>
       </Box>
+
+      {/* Print Report Dialog */}
+      <Dialog
+        open={printDialogOpen}
+        onClose={handleClosePrintDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { 
+            borderRadius: 3,
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0,
+          fontWeight: 600
+        }}>
+          Print Report Time Frame
+          <IconButton
+            onClick={handleClosePrintDialog}
+            size="small"
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="print-timeframe-label">Select Time Frame</InputLabel>
+              <Select
+                labelId="print-timeframe-label"
+                value={printTimeframe}
+                label="Select Time Frame"
+                onChange={(e) => setPrintTimeframe(e.target.value as 'week' | 'month' | 'year')}
+              >
+                <MenuItem value="week">Week</MenuItem>
+                <MenuItem value="month">Month</MenuItem>
+                <MenuItem value="year">Year</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              All charts will be updated to show data for the selected time frame before printing.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 1 }}>
+          <Button onClick={handleClosePrintDialog} color="inherit">
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleConfirmPrint}
+            startIcon={<PrintIcon />}
+            sx={{
+              background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+              },
+            }}
+          >
+            Print Report
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
