@@ -214,6 +214,32 @@ class AuthClient {
     }
 
     /**
+     * Fetch shaft inspection counts by section
+     * GET http://localhost:1000/api/shaft-inspections/counts-by-section?period={period}
+     */
+    async fetchShaftInspectionCountsBySection(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const response = await fetch(`/api/shaft-inspections/counts-by-section?period=${period}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          return { success: false, error: 'Failed to fetch shaft inspection counts by section' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error('Error fetching shaft inspection counts by section:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Send a notification alert
      * POST /api/notifications
      */

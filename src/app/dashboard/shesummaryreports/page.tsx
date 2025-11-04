@@ -138,14 +138,14 @@ const getSafetyPerformanceChartOptions = (categories: string[]) => ({
     height: 280,
     toolbar: { show: false },
   },
-  colors: ['#2196F3', '#4CAF50'],
+  colors: ['#4CAF50', '#F44336', '#FFC107'], // Green, Red, Yellow
   stroke: {
     curve: 'smooth' as const,
     width: 3,
   },
   markers: {
     size: 6,
-    colors: ['#2196F3', '#4CAF50'],
+    colors: ['#4CAF50', '#F44336', '#FFC107'],
     strokeColors: '#fff',
     strokeWidth: 2,
   },
@@ -157,7 +157,7 @@ const getSafetyPerformanceChartOptions = (categories: string[]) => ({
   },
   yaxis: {
     title: {
-      text: 'Section',
+      text: 'Count',
     },
   },
   legend: {
@@ -305,6 +305,11 @@ export default function SHESummaryDashboard(): React.JSX.Element {
   // Section names state for Safety Performance chart
   const [sectionNames, setSectionNames] = React.useState<string[]>(['LTIFR', 'TRIFR']);
   const [sectionsLoading, setSectionsLoading] = React.useState<boolean>(false);
+  
+  // Shaft inspection performance state
+  const [inspectionPeriod, setInspectionPeriod] = React.useState<'week' | 'month' | 'year'>('week');
+  const [inspectionData, setInspectionData] = React.useState<any[]>([]);
+  const [inspectionLoading, setInspectionLoading] = React.useState<boolean>(false);
 
   // Handler for Apply button
   const handleApplyTimeframe = async () => {
@@ -344,6 +349,26 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       console.error('Error fetching severity data:', err);
     } finally {
       setSeverityLoading(false);
+    }
+  };
+
+  // Handler for inspection period change
+  const handleInspectionPeriodChange = async (newPeriod: 'week' | 'month' | 'year') => {
+    setInspectionPeriod(newPeriod);
+    setInspectionLoading(true);
+    
+    try {
+      const result = await authClient.fetchShaftInspectionCountsBySection(newPeriod);
+      
+      if (result.success && result.data) {
+        setInspectionData(Array.isArray(result.data) ? result.data : []);
+      } else {
+        console.error('Failed to fetch inspection data:', result.error);
+      }
+    } catch (err) {
+      console.error('Error fetching inspection data:', err);
+    } finally {
+      setInspectionLoading(false);
     }
   };
 
@@ -388,6 +413,25 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     
     fetchSections();
   }, []);
+  
+  // Fetch initial shaft inspection data
+  React.useEffect(() => {
+    const fetchInspectionData = async () => {
+      setInspectionLoading(true);
+      try {
+        const result = await authClient.fetchShaftInspectionCountsBySection('week');
+        if (result.success && result.data) {
+          setInspectionData(Array.isArray(result.data) ? result.data : []);
+        }
+      } catch (err) {
+        console.error('Error fetching initial inspection data:', err);
+      } finally {
+        setInspectionLoading(false);
+      }
+    };
+    
+    fetchInspectionData();
+  }, []);
 
   // Derived incident data based on selection
   const { series: incidentSeries, categories: incidentCategories } = React.useMemo(() => {
@@ -421,6 +465,35 @@ export default function SHESummaryDashboard(): React.JSX.Element {
     ...getIncidentLineChartOptions(),
     xaxis: { categories: incidentCategories },
   }), [incidentCategories]);
+  
+  // Prepare inspection chart data
+  const inspectionChartData = React.useMemo(() => {
+    if (inspectionData && inspectionData.length > 0) {
+      const sectionNames = inspectionData.map((item: any) => item.sectionName);
+      const totalInspections = inspectionData.map((item: any) => item.totalInspections || 0);
+      const remainingInspections = inspectionData.map((item: any) => item.remainingInspections || 0);
+      const numberOfShafts = inspectionData.map((item: any) => item.numberOfShafts || 0);
+      
+      return {
+        categories: sectionNames,
+        series: [
+          { name: 'Total Inspections', data: totalInspections },
+          { name: 'Remaining Inspections', data: remainingInspections },
+          { name: 'Number of Shafts', data: numberOfShafts },
+        ],
+        completionPercentages: inspectionData.map((item: any) => item.completionPercentage || 0),
+      };
+    }
+    return {
+      categories: ['No Data'],
+      series: [
+        { name: 'Total Inspections', data: [0] },
+        { name: 'Remaining Inspections', data: [0] },
+        { name: 'Number of Shafts', data: [0] },
+      ],
+      completionPercentages: [0],
+    };
+  }, [inspectionData]);
 
   React.useEffect(() => {
     // Add print-specific styles to fit everything on one A4 page
@@ -744,33 +817,60 @@ export default function SHESummaryDashboard(): React.JSX.Element {
       <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
         {/* Safety Performance */}
         <Box sx={{ flex: '2 1 600px', minWidth: '400px' }}>
-          <Card sx={{ height: 350, borderRadius: 2, boxShadow: 2 }}>
+          <Card sx={{ height: 450, borderRadius: 2, boxShadow: 2 }}>
             <CardContent sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Shaft Inspection Performance
-              </Typography>
-              {sectionsLoading ? (
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  Shaft Inspection Performance
+                </Typography>
+                <FormControl size="small" disabled={inspectionLoading}>
+                  <InputLabel id="inspection-period-label">Period</InputLabel>
+                  <Select
+                    labelId="inspection-period-label"
+                    value={inspectionPeriod}
+                    label="Period"
+                    onChange={(e) => handleInspectionPeriodChange(e.target.value as 'week' | 'month' | 'year')}
+                    sx={{ minWidth: 100 }}
+                  >
+                    <MenuItem value="week">Week</MenuItem>
+                    <MenuItem value="month">Month</MenuItem>
+                    <MenuItem value="year">Year</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
+              {inspectionLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 280 }}>
                   <CircularProgress />
                 </Box>
               ) : (
-                <Box sx={{ height: 280 }}>
-                  <Chart
-                    options={getSafetyPerformanceChartOptions(sectionNames)}
-                    series={[
-                      {
-                        name: 'Current',
-                        data: sectionNames.map(() => Math.random() * 2),
-                      },
-                      {
-                        name: 'Previous',
-                        data: sectionNames.map(() => Math.random() * 2.5),
-                      },
-                    ]}
-                    type="line"
-                    height={280}
-                  />
-                </Box>
+                <>
+                  <Box sx={{ height: 280 }}>
+                    <Chart
+                      options={getSafetyPerformanceChartOptions(inspectionChartData.categories)}
+                      series={inspectionChartData.series}
+                      type="line"
+                      height={280}
+                    />
+                  </Box>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+                      Completion Percentages:
+                    </Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {inspectionChartData.categories.map((sectionName: string, index: number) => (
+                        <Chip
+                          key={index}
+                          label={`${sectionName}: ${inspectionChartData.completionPercentages[index]?.toFixed(1) || 0}%`}
+                          sx={{
+                            bgcolor: '#2196F3',
+                            color: 'white',
+                            fontSize: '0.75rem',
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                </>
               )}
             </CardContent>
           </Card>
