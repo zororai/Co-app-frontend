@@ -10,27 +10,51 @@ import InputAdornment from '@mui/material/InputAdornment';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
+import { authClient } from '@/lib/auth/client';
 
 interface FiltersSidebarProps {
   onSearchChange?: (search: string) => void;
+  onSearchResult?: (data: any) => void;
 }
 
-export function FiltersSidebar({ onSearchChange }: FiltersSidebarProps): React.JSX.Element {
+export function FiltersSidebar({ onSearchChange, onSearchResult }: FiltersSidebarProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearch(value);
   };
 
-  const handleSearchClick = () => {
-    onSearchChange?.(search);
+  const handleSearchClick = async () => {
+    if (!search.trim()) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await authClient.fetchShaftAssignmentByShaftNumber(search);
+      
+      if (result.success && result.data) {
+        onSearchResult?.(result.data);
+        onSearchChange?.(search);
+      } else {
+        console.error('Error fetching shaft assignment:', result.error);
+        onSearchResult?.(null);
+      }
+    } catch (error) {
+      console.error('Error searching shaft:', error);
+      onSearchResult?.(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      onSearchChange?.(search);
+      handleSearchClick();
     }
   };
 
@@ -54,7 +78,7 @@ export function FiltersSidebar({ onSearchChange }: FiltersSidebarProps): React.J
               value={search}
               onChange={handleSearchChange}
               onKeyPress={handleKeyPress}
-              placeholder="Search reports..."
+              placeholder="Search Shaft..."
               startAdornment={
                 <InputAdornment position="start">
                   <MagnifyingGlassIcon fontSize="var(--icon-fontSize-md)" />
@@ -70,9 +94,10 @@ export function FiltersSidebar({ onSearchChange }: FiltersSidebarProps): React.J
           <Button
             variant="contained"
             onClick={handleSearchClick}
-            sx={{ minWidth: '100px' , color: 'nevy blue' }}
+            disabled={isLoading || !search.trim()}
+            sx={{ minWidth: '100px' }}
           >
-            Search
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
           </Button>
         </Stack>
       </Stack>

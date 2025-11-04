@@ -754,6 +754,35 @@ class AuthClient {
     }
 
     /**
+     * Fetch shaft assignment by shaft number
+     * GET /api/shaft-assignments/by-shaft-number/{shaftNumber}
+     */
+    async fetchShaftAssignmentByShaftNumber(shaftNumber: string): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const encodedShaftNumber = encodeURIComponent(shaftNumber);
+        const response = await fetch(`/api/shaft-assignments/by-shaft-number/${encodedShaftNumber}`, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch shaft assignment for shaft number ${shaftNumber}:`, errorText);
+          return { success: false, error: errorText || 'Failed to fetch shaft assignment' };
+        }
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching shaft assignment for shaft number ${shaftNumber}:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */

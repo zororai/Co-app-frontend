@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { FiltersSidebar } from './filters-sidebar';
 import { ReportCard, type ReportCard as ReportCardType } from './report-card';
+import { ShaftDetail } from './shaft-detail';
 
 // Sample data - replace with actual API data
 const sampleReports: ReportCardType[] = [
@@ -43,10 +44,12 @@ const sampleReports: ReportCardType[] = [
 export function ShaftHistoryReportsView(): React.JSX.Element {
   const [filteredReports, setFilteredReports] = React.useState<ReportCardType[]>(sampleReports);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [shaftData, setShaftData] = React.useState<any>(null);
 
   const handleSearchChange = (search: string) => {
     if (!search) {
       setFilteredReports(sampleReports);
+      setShaftData(null);
       return;
     }
 
@@ -55,6 +58,10 @@ export function ShaftHistoryReportsView(): React.JSX.Element {
       report.description.toLowerCase().includes(search.toLowerCase())
     );
     setFilteredReports(filtered);
+  };
+
+  const handleSearchResult = (data: any) => {
+    setShaftData(data);
   };
 
   return (
@@ -74,68 +81,76 @@ export function ShaftHistoryReportsView(): React.JSX.Element {
             md: 3,
           }}
         >
-          <FiltersSidebar onSearchChange={handleSearchChange} />
+          <FiltersSidebar 
+            onSearchChange={handleSearchChange}
+            onSearchResult={handleSearchResult}
+          />
         </Grid>
 
-        {/* Right Content - Report Cards Grid */}
+        {/* Right Content - Shaft Detail or Report Cards Grid */}
         <Grid
           size={{
             xs: 12,
             md: 9,
           }}
         >
-          <Box>
-            <Grid container spacing={3}>
-              {isLoading ? (
-                // Loading state
-                Array.from({ length: 4 }).map((_, index) => (
-                  <Grid
-                    size={{
-                      xs: 12,
-                      sm: 6,
-                    }}
-                    key={index}
-                  >
-                    <ReportCard
-                      report={{
-                        id: `loading-${index}`,
-                        title: '',
-                        description: '',
+          {shaftData ? (
+            // Show shaft details when search result is available
+            <ShaftDetail data={shaftData} />
+          ) : (
+            <Box>
+              <Grid container spacing={3}>
+                {isLoading ? (
+                  // Loading state
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <Grid
+                      size={{
+                        xs: 12,
+                        sm: 6,
                       }}
-                      loading
-                    />
+                      key={index}
+                    >
+                      <ReportCard
+                        report={{
+                          id: `loading-${index}`,
+                          title: '',
+                          description: '',
+                        }}
+                        loading
+                      />
+                    </Grid>
+                  ))
+                ) : filteredReports.length > 0 ? (
+                  // Reports display
+                  filteredReports.map((report) => (
+                    <Grid
+                      size={{
+                        xs: 12,
+                        sm: 6,
+                      }}
+                      key={report.id}
+                    >
+                      <ReportCard report={report} />
+                    </Grid>
+                  ))
+                ) : (
+                  // No results
+                  <Grid size={{ xs: 12 }}>
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        py: 8,
+                      }}
+                    >
+                      <Typography color="text.secondary">
+                        No reports found matching your search
+                      </Typography>
+                    </Box>
                   </Grid>
-                ))
-              ) : filteredReports.length > 0 ? (
-                // Reports display
-                filteredReports.map((report) => (
-                  <Grid
-                    size={{
-                      xs: 12,
-                      sm: 6,
-                    }}
-                    key={report.id}
-                  >
-                    <ReportCard report={report} />
-                  </Grid>
-                ))
-              ) : (
-                // No results
-                <Grid size={{ xs: 12 }}>
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      py: 8,
-                    }}
-                  >
-                    <Typography color="text.secondary">
-                      No reports found matching your search
-                    </Typography>
-                  </Box>
-                </Grid>
-              )}
-            </Grid>
-          </Box>
+                )}
+              </Grid>
+            </Box>
+          )}
         </Grid>
       </Grid>
     </Stack>
