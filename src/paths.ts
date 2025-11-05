@@ -3,6 +3,7 @@ export const paths = {
   auth: { signIn: '/auth/sign-in', signUp: '/auth/sign-up', resetPassword: '/auth/reset-password' },
    dashboard: {
     overview: '/dashboard',
+    Ore_reports: '/dashboard/ore_reports',
     shaftinspectionresolution: '/dashboard/shaftinspectionresolution',
     shaftcreation: '/dashboard/shaftcreation',
     shafttransfare: '/dashboard/shafttransfare',
