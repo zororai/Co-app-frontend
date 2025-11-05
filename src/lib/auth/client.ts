@@ -6648,6 +6648,46 @@ cooperativename: string;
     }
   }
 
+  /**
+   * Fetch total mining area
+   * GET /api/sectionmapping/area-total
+   */
+  async fetchTotalMiningArea(): Promise<{ success: boolean; data?: { totalArea: string; names: string[]; recordCount: number }; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const response = await fetch('/api/sectionmapping/area-total', {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Total mining area not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch total mining area' };
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: false, error: 'Empty or invalid response' };
+    } catch (error) {
+      console.error('Error fetching total mining area:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
 
 }
 export const authClient = new AuthClient();
