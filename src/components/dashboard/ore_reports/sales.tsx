@@ -3,17 +3,14 @@
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import type { SxProps } from '@mui/material/styles';
 import { ArrowClockwiseIcon } from '@phosphor-icons/react/dist/ssr/ArrowClockwise';
-import { ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import type { ApexOptions } from 'apexcharts';
 
 import { Chart } from '@/components/core/chart';
@@ -122,12 +119,6 @@ export function Sales({ sx }: SalesProps): React.JSX.Element {
           <Chart height={350} options={chartOptions} series={chartSeries} type="bar" width="100%" />
         )}
       </CardContent>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button color="inherit" endIcon={<ArrowRightIcon fontSize="var(--icon-fontSize-md)" />} size="small">
-          Overview
-        </Button>
-      </CardActions>
     </Card>
   );
 }

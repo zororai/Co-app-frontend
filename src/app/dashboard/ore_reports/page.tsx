@@ -2,10 +2,12 @@
 import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
+import { Printer as PrinterIcon } from '@phosphor-icons/react/dist/ssr/Printer';
 
 import { GoldSalesLineChart } from '@/components/dashboard/ore_reports/gold-sales-line-chart';
 import { Sales } from '@/components/dashboard/ore_reports/sales';
@@ -61,16 +63,32 @@ export default function Page(): React.JSX.Element {
     );
   }
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <Grid container spacing={3}>
-      <Grid
-        size={{
-          lg: 12,
-          xs: 12,
-        }}
-      >
-        <Sales sx={{ height: '100%' }} />
-      </Grid>
+    <Stack spacing={3}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography variant="h4">Ore Reports</Typography>
+        <Button
+          variant="contained"
+          startIcon={<PrinterIcon fontSize="var(--icon-fontSize-md)" />}
+          onClick={handlePrint}
+        >
+          Print
+        </Button>
+      </Stack>
+      
+      <Grid container spacing={3}>
+        <Grid
+          size={{
+            lg: 12,
+            xs: 12,
+          }}
+        >
+          <Sales sx={{ height: '100%' }} />
+        </Grid>
       <Grid
         size={{
           lg: 12,
@@ -81,5 +99,6 @@ export default function Page(): React.JSX.Element {
         <GoldSalesLineChart sx={{ height: '100%' }} />
       </Grid>
     </Grid>
+    </Stack>
   );
 }
