@@ -215,20 +215,31 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       [field]: value,
     };
     
+    const newErrors = { ...errors };
+    
     // Validate age if this is the date of birth field
     if (field === 'dateOfBirth' && value) {
       const age = dayjs().diff(value, 'year');
-      const newErrors = { ...errors };
       
       if (age < 18) {
         newErrors.dateOfBirth = 'Driver must be at least 18 years old';
       } else {
         delete newErrors.dateOfBirth;
       }
-      
-      setErrors(newErrors);
     }
     
+    // Validate license expiry date
+    if (field === 'licenseExpiryDate' && value) {
+      const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+      
+      if (value.isBefore(startOfNextMonth)) {
+        newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+      } else {
+        delete newErrors.licenseExpiryDate;
+      }
+    }
+    
+    setErrors(newErrors);
     setFormData(newFormData);
   };
   
@@ -306,7 +317,14 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       case 1: { // License Details
         if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
         if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
-        if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+        if (!formData.licenseExpiryDate) {
+          newErrors.licenseExpiryDate = 'License expiry date is required';
+        } else {
+          const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+          if (formData.licenseExpiryDate.isBefore(startOfNextMonth)) {
+            newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+          }
+        }
         if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
           newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
         }
@@ -346,7 +364,14 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     }
     if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
     if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
-    if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+    if (!formData.licenseExpiryDate) {
+      newErrors.licenseExpiryDate = 'License expiry date is required';
+    } else {
+      const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+      if (formData.licenseExpiryDate.isBefore(startOfNextMonth)) {
+        newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+      }
+    }
     if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
       newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
     }
@@ -597,12 +622,13 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     label="License Expiry Date *"
                     value={formData.licenseExpiryDate}
                     onChange={handleDateChange('licenseExpiryDate')}
+                    minDate={dayjs().add(1, 'month').startOf('month')}
                     slotProps={{
                       textField: {
                         fullWidth: true,
                         required: true,
                         error: formSubmitted && !!errors.licenseExpiryDate,
-                        helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : '',
+                        helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : 'Must be at least next month',
                         sx: textFieldStyle,
                       },
                     }}
