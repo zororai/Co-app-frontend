@@ -22,9 +22,10 @@ interface FiltersSidebarProps {
   onSearchChange?: (search: string) => void;
   onSearchResult?: (data: any) => void;
   onProductionReportResult?: (data: any) => void;
+  onMinerCompanyResult?: (minerData: any, companyData: any) => void;
 }
 
-export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionReportResult }: FiltersSidebarProps): React.JSX.Element {
+export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionReportResult, onMinerCompanyResult }: FiltersSidebarProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [period, setPeriod] = React.useState<'week' | 'month' | 'year'>('month');
@@ -48,10 +49,67 @@ export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionRep
       const shaftResult = await authClient.fetchShaftAssignmentByShaftNumber(search);
       
       if (shaftResult.success && shaftResult.data) {
+        console.log('Shaft assignment data:', shaftResult.data);
         onSearchResult?.(shaftResult.data);
         onSearchChange?.(search);
 
-        // Second API call: Fetch production statistics (only if first call succeeds)
+        const minerId = shaftResult.data.minerId || shaftResult.data.minerid;
+        console.log('Extracted minerId:', minerId);
+
+        // Fetch miner and company data in parallel (try both endpoints)
+        let minerData = null;
+        let companyData = null;
+
+        if (minerId) {
+          const [minerResult, companyResult] = await Promise.allSettled([
+            authClient.fetchMinerById(minerId),
+            authClient.fetchCompanyById(minerId),
+          ]);
+
+          console.log('Miner result:', minerResult);
+          console.log('Company result:', companyResult);
+
+          // Check miner result
+          if (minerResult.status === 'fulfilled') {
+            console.log('Miner result value:', minerResult.value);
+            console.log('Miner result success:', minerResult.value.success);
+            console.log('Miner result data:', minerResult.value.data);
+            if (minerResult.value.success && minerResult.value.data) {
+              minerData = minerResult.value.data;
+              console.log('✅ Miner data found:', minerData);
+            } else {
+              console.log('❌ Miner API failed:', minerResult.value.error);
+            }
+          } else {
+            console.log('❌ Miner result rejected:', minerResult);
+          }
+
+          // Check company result
+          // Note: fetchCompanyById returns data directly (not wrapped in {success, data})
+          if (companyResult.status === 'fulfilled') {
+            console.log('Company result value:', companyResult.value);
+            // Company API returns data directly or null
+            if (companyResult.value && companyResult.value !== null) {
+              companyData = companyResult.value;
+              console.log('✅ Company data found:', companyData);
+            } else {
+              console.log('❌ Company API failed: returned null');
+            }
+          } else {
+            console.log('❌ Company result rejected:', companyResult);
+          }
+
+          // Pass both results (one might be null)
+          // Also pass the minerId so the component can show that we tried
+          console.log('📤 Passing to onMinerCompanyResult - miner:', minerData, 'company:', companyData);
+          console.log('Has minerData?', !!minerData, 'Has companyData?', !!companyData);
+          onMinerCompanyResult?.(minerData, companyData);
+        } else {
+          console.warn('No minerId found in shaft assignment data');
+          onMinerCompanyResult?.(null, null);
+        }
+
+        // Fetch production statistics
         const statsParams: any = {
           shaftNumber: search,
           period,
@@ -77,11 +135,13 @@ export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionRep
         console.error('Error fetching shaft assignment:', shaftResult.error);
         onSearchResult?.(null);
         onProductionReportResult?.(null);
+        onMinerCompanyResult?.(null, null);
       }
     } catch (error) {
       console.error('Error searching shaft:', error);
       onSearchResult?.(null);
       onProductionReportResult?.(null);
+      onMinerCompanyResult?.(null, null);
     } finally {
       setIsLoading(false);
     }
