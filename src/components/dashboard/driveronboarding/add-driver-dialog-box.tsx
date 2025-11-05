@@ -182,6 +182,17 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       setErrors(fieldErrors);
     }
     
+    // Special handling for years of experience
+    if (name === 'yearsOfExperience') {
+      const years = parseFloat(value);
+      if (value && years < 2) {
+        fieldErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+      } else {
+        delete fieldErrors.yearsOfExperience;
+      }
+      setErrors(fieldErrors);
+    }
+    
     setFormData({
       ...formData,
       [name]: processedValue,
@@ -296,6 +307,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
         if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
         if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+        if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
+          newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+        }
         if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
         if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
         break;
@@ -333,6 +347,9 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
     if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
     if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+    if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
+      newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+    }
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
     
     // Email validation if provided
@@ -536,7 +553,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 <TextField
                   required
                   fullWidth
-                  label="License Number *"
+                  label="License Number "
                   name="licenseNumber"
                   value={formData.licenseNumber}
                   onChange={handleChange}
@@ -601,6 +618,16 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   onChange={handleChange}
                   placeholder="Enter years of experience"
                   type="number"
+                  error={formSubmitted && !!errors.yearsOfExperience}
+                  helperText={
+                    formSubmitted && errors.yearsOfExperience 
+                      ? errors.yearsOfExperience 
+                      : 'Minimum 2 years required'
+                  }
+                  inputProps={{
+                    min: 2,
+                    step: 0.5,
+                  }}
                   sx={textFieldStyle}
                 />
               </Box>
