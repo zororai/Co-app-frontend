@@ -783,6 +783,66 @@ class AuthClient {
     }
 
     /**
+     * Fetch ore transport statistics by shaft number
+     * GET /api/ore-transports/statistics/by-shaft-number/{shaftNumber}
+     * @param shaftNumber - The shaft number to search for
+     * @param period - Time period: 'week', 'month', or 'year'
+     * @param year - Year to filter (e.g., 2024)
+     * @param month - Optional: Month (1-12) for monthly filtering
+     * @param weekOfYear - Optional: Week of year (1-53) for weekly filtering
+     */
+    async fetchOreTransportStatistics(params: {
+      shaftNumber: string;
+      period: 'week' | 'month' | 'year';
+      year: number;
+      month?: number;
+      weekOfYear?: number;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { shaftNumber, period, year, month, weekOfYear } = params;
+        const encodedShaftNumber = encodeURIComponent(shaftNumber);
+        
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+          period,
+          year: year.toString(),
+        });
+        
+        if (month !== undefined && period === 'month') {
+          queryParams.append('month', month.toString());
+        }
+        
+        if (weekOfYear !== undefined && period === 'week') {
+          queryParams.append('weekOfYear', weekOfYear.toString());
+        }
+        
+        const url = `/api/ore-transports/statistics/by-shaft-number/${encodedShaftNumber}?${queryParams.toString()}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch ore transport statistics for shaft ${shaftNumber}:`, errorText);
+          return { success: false, error: errorText || 'Failed to fetch ore transport statistics' };
+        }
+        
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching ore transport statistics:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */
