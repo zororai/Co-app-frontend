@@ -563,7 +563,7 @@ export function CustomersTable({
               <TableCell>Shaft Numbers</TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Number of Bags </TableCell>
-              <TableCell sx={{ backgroundColor: '#ffffcc' }}>Free Gold Weight</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffffcc' }}>Free Gold Weight(gs)</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Price</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Buyer</TableCell>
               <TableCell>Milling Progress Status</TableCell>
