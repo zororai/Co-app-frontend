@@ -44,37 +44,6 @@ const PendingTab = React.memo(({ customers, page, rowsPerPage, onRefresh, isLoad
   );
 });
 
-const RejectedTab = React.memo(({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) => {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading rejected drivers...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
-    </LazyWrapper>
-  );
-});
-
-const ApprovedTab = React.memo(({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) => {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading approved drivers...</Typography>
-      </Stack>
-    );
-  }
-  return (
-    <LazyWrapper>
-      <LazyDriverOnboardingTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
-    </LazyWrapper>
-  );
-});
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -90,7 +59,6 @@ export default function Page(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
-  const [tab, setTab] = React.useState<'PENDING' | 'REJECTED' | 'APPROVED'>('PENDING');
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -132,10 +100,8 @@ export default function Page(): React.JSX.Element {
     return () => clearTimeout(timer);
   }, [fetchDrivers]);
 
-  // Filter customers by selected tab/status
+  // Filter customers by PENDING status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
-  const rejectedCustomers = customers.filter(c => c.status === 'REJECTED');
-  const approvedCustomers = customers.filter(c => c.status === 'APPROVED');
 
   // Export table data as CSV
   const handleExport = () => {
@@ -143,25 +109,8 @@ export default function Page(): React.JSX.Element {
       'ID', 'Name', 'Surname', 'Nation ID', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason', 'Attached Shaft'
     ];
 
-    // Determine which customers to export based on the current tab
-    let filteredCustomers: Customer[] = [];
-    switch (tab) {
-    case 'PENDING': {
-    filteredCustomers = pendingCustomers;
-    break;
-    }
-    case 'REJECTED': {
-    filteredCustomers = rejectedCustomers;
-    break;
-    }
-    case 'APPROVED': {
-    filteredCustomers = approvedCustomers;
-    break;
-    }
-    }
-
-    // Export all filtered customers, not just paginated ones
-    const rows = filteredCustomers.map((c: any) => [
+    // Export all pending customers
+    const rows = pendingCustomers.map((c: any) => [
       c.id,
       c.name,
       c.surname,
@@ -180,7 +129,7 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `driver-onboarding-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `driver-onboarding-pending-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();

@@ -199,10 +199,26 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   };
 
   const handleDateChange = (field: keyof DriverFormData) => (value: dayjs.Dayjs | null) => {
-    setFormData({
+    const newFormData = {
       ...formData,
       [field]: value,
-    });
+    };
+    
+    // Validate age if this is the date of birth field
+    if (field === 'dateOfBirth' && value) {
+      const age = dayjs().diff(value, 'year');
+      const newErrors = { ...errors };
+      
+      if (age < 18) {
+        newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+      } else {
+        delete newErrors.dateOfBirth;
+      }
+      
+      setErrors(newErrors);
+    }
+    
+    setFormData(newFormData);
   };
   
   // Handle stepper navigation
@@ -265,7 +281,14 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           const idErr = validateZimbabweanID(formData.idNumber);
           if (idErr) newErrors.idNumber = idErr;
         }
-        if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+        if (!formData.dateOfBirth) {
+          newErrors.dateOfBirth = 'Date of birth is required';
+        } else {
+          const age = dayjs().diff(formData.dateOfBirth, 'year');
+          if (age < 18) {
+            newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+          }
+        }
         break;
       }
       
@@ -299,7 +322,14 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const age = dayjs().diff(formData.dateOfBirth, 'year');
+      if (age < 18) {
+        newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+      }
+    }
     if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
     if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
     if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
@@ -477,12 +507,13 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     label="Date of Birth *"
                     value={formData.dateOfBirth}
                     onChange={handleDateChange('dateOfBirth')}
+                    maxDate={dayjs().subtract(18, 'year')}
                     slotProps={{
                       textField: {
                         fullWidth: true,
                         required: true,
                         error: formSubmitted && !!errors.dateOfBirth,
-                        helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : '',
+                        helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : 'Driver must be at least 18 years old',
                         sx: textFieldStyle,
                       },
                     }}

@@ -43,7 +43,7 @@ import { sortNewestFirst } from '@/utils/sort';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { DriverDetailsDialog } from '@/components/dashboard/driveronboarding/driver-details-dialog';
+import { DriverDetailsDialog } from '@/components/dashboard/drivermanagement/driver-details-dialog';
 
 
 function noop(): void {
@@ -395,11 +395,12 @@ export function CustomersTable({
               <TableCell>Driver Name</TableCell>
               <TableCell>License Number</TableCell>
               <TableCell>License Class</TableCell>
-              <TableCell>License Expiry</TableCell>
+           
               <TableCell>Contact</TableCell>
-              <TableCell>Experience (Years)</TableCell>
+            
               <TableCell>Status</TableCell>
               <TableCell>View Details</TableCell>
+              <TableCell>Change Driver Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -437,9 +438,9 @@ export function CustomersTable({
                   <TableCell>{`${row.firstName || ''} ${row.lastName || ''}`}</TableCell>
                   <TableCell>{row.licenseNumber || 'N/A'}</TableCell>
                   <TableCell>{row.licenseClass || 'N/A'}</TableCell>
-                  <TableCell>{row.licenseExpiryDate || 'N/A'}</TableCell>
+               
                   <TableCell>{row.phoneNumber || row.emailAddress || 'N/A'}</TableCell>
-                  <TableCell>{row.yearsOfExperience || '0'}</TableCell>
+
                   <TableCell>
                     <Box sx={{
                       display: 'inline-block',
