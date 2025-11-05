@@ -75,8 +75,13 @@ export default function Page(): React.JSX.Element {
           variant="contained"
           startIcon={<PrinterIcon fontSize="var(--icon-fontSize-md)" />}
           onClick={handlePrint}
-        >
-          Print
+          sx={{
+            bgcolor: 'secondary.main',
+            color: '#fff',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        > 
+          Print Report
         </Button>
       </Stack>
       
