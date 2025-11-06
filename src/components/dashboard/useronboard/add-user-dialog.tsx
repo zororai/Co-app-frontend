@@ -34,6 +34,14 @@ import Divider from '@mui/material/Divider';
 import { CheckCircle } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import { Snackbar } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import QRCode from 'qrcode';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -48,6 +56,7 @@ const steps = [
   'Permissions',
   'Additional Details',
   'Review',
+  'Generate User ID',
   'Confirmation'
 ];
 
@@ -127,7 +136,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     notes: '',
     startDate: null as dayjs.Dayjs | null,
     emergencyContactName: '',
-    emergencyContactPhone: ''
+    emergencyContactPhone: '',
+    picture: '',
+    qrcode: ''
   });
 
   const validateEmail = (email: string): boolean => {
@@ -262,6 +273,122 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setPermissions(updatedPermissions);
   };
 
+  // Generate QR Code from user data
+  const generateQRCode = async () => {
+    try {
+      const qrData = JSON.stringify({
+        id: formData.idNumber,
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        role: formData.role,
+        position: formData.position
+      });
+      
+      const qrCodeDataURL = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      setFormData({
+        ...formData,
+        qrcode: qrCodeDataURL
+      });
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
+
+  // Handle file upload for passport photo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+      
+      // Validate image dimensions (35mm x 45mm at 300 DPI = 413px x 531px)
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.addEventListener('load', () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          img.src = result;
+          
+          img.addEventListener('load', () => {
+            const expectedWidth = 413; // 35mm at 300 DPI
+            const expectedHeight = 531; // 45mm at 300 DPI
+            const tolerance = 50; // Allow some tolerance
+            
+            if (
+              Math.abs(img.width - expectedWidth) > tolerance ||
+              Math.abs(img.height - expectedHeight) > tolerance
+            ) {
+              setError(`Photo dimensions should be approximately 35mm x 45mm (${expectedWidth}px x ${expectedHeight}px). Current: ${img.width}px x ${img.height}px`);
+            } else {
+              setError(null);
+              
+              // Store the base64 string in the form data
+              setFormData({
+                ...formData,
+                picture: result,
+              });
+            }
+          });
+        }
+      });
+      
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Download User ID Card as PDF
+  const downloadUserIDCard = async () => {
+    try {
+      const cardElement = document.getElementById('user-id-card');
+      if (!cardElement) return;
+      
+      // Capture the ID card as canvas
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions to fit the card in PDF
+      const imgWidth = pdfWidth - 20; // 10mm margin on each side
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const x = 10; // 10mm left margin
+      const y = (pdfHeight - imgHeight) / 2; // Center vertically
+      
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      pdf.save(`UserID_${formData.firstName}_${formData.lastName}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF');
+    }
+  };
+
   // Handle next step
   const handleNext = () => {
     // For the first step, validate required fields
@@ -278,7 +405,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         !formData.email ||
         !validateEmail(formData.email) ||
         !formData.idNumber ||
-        !idValidation.isValid
+        !idValidation.isValid ||
+        !formData.picture
       ) {
         return; // Don't proceed if validation fails
       }
@@ -379,6 +507,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
 
   // Handle dialog close
   const handleClose = () => {
+    // Check if the submission was successful before resetting
+    const wasSuccessful = success;
+    
     // Reset form state
     setActiveStep(0);
     setFormData({
@@ -395,7 +526,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       notes: '',
       startDate: null,
       emergencyContactName: '',
-      emergencyContactPhone: ''
+      emergencyContactPhone: '',
+      picture: '',
+      qrcode: ''
     });
     setValidationErrors({});
     setError(null);
@@ -408,6 +541,11 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     
     // Call parent onClose
     onClose();
+    
+    // Refresh the table after closing if submission was successful
+    if (wasSuccessful && onRefresh) {
+      onRefresh();
+    }
   };
 
   const copyToClipboard = () => {
@@ -658,6 +796,60 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     }}
                   />
                 </LocalizationProvider>
+              </Grid>
+              
+              {/* Passport Photo Upload */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
+                  Passport Photo *
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Upload a passport-sized photo (35mm x 45mm or approximately 413px x 531px)
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{
+                    borderColor: 'rgb(5, 5, 68)',
+                    color: 'rgb(5, 5, 68)',
+                    '&:hover': {
+                      borderColor: 'rgb(5, 5, 68)',
+                      backgroundColor: 'rgba(5, 5, 68, 0.04)'
+                    }
+                  }}
+                >
+                  Choose Photo
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+                
+                {formData.picture && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ mb: 1 }}>Preview:</Typography>
+                    <Box
+                      component="img"
+                      src={formData.picture}
+                      alt="Passport photo preview"
+                      sx={{
+                        width: 150,
+                        height: 193,
+                        objectFit: 'cover',
+                        border: '2px solid #e0e0e0',
+                        borderRadius: 1
+                      }}
+                    />
+                  </Box>
+                )}
+                
+                {formSubmitted && !formData.picture && (
+                  <FormHelperText error>Passport photo is required</FormHelperText>
+                )}
               </Grid>
             </Grid>
           </Box>
@@ -1054,8 +1246,188 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
           </Box>
         )}
 
-        {/* Step 6: Confirmation */}
+        {/* Step 6: Generate User ID */}
         {activeStep === 5 && (
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
+              User Identification Card
+            </Typography>
+            
+            {/* Generate QR Code button if not already generated */}
+            {!formData.qrcode && (
+              <Box sx={{ textAlign: 'center', mb: 3 }}>
+                <Button
+                  variant="contained"
+                  onClick={generateQRCode}
+                  sx={{
+                    bgcolor: 'rgb(5, 5, 68)',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' }
+                  }}
+                >
+                  Generate QR Code
+                </Button>
+              </Box>
+            )}
+            
+            {/* User ID Card */}
+            {formData.qrcode && (
+              <Box>
+                <Card
+                  id="user-id-card"
+                  sx={{
+                    maxWidth: 800,
+                    mx: 'auto',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: 2,
+                    overflow: 'hidden'
+                  }}
+                >
+                  {/* Gold Header */}
+                  <Box
+                    sx={{
+                      bgcolor: '#DAA520',
+                      color: 'white',
+                      py: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
+                      USER IDENTIFICATION CARD
+                    </Typography>
+                  </Box>
+                  
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'flex-start' }}>
+                      {/* Photo Section */}
+                      <Box sx={{ flex: '0 0 auto' }}>
+                        {formData.picture ? (
+                          <Box
+                            component="img"
+                            src={formData.picture}
+                            alt="User photo"
+                            sx={{
+                              width: 150,
+                              height: 193,
+                              objectFit: 'cover',
+                              border: '3px solid #DAA520',
+                              borderRadius: 1
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 150,
+                              height: 193,
+                              bgcolor: '#f5f5f5',
+                              border: '3px solid #DAA520',
+                              borderRadius: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              No Photo
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      
+                      {/* User Details Section */}
+                      <Box sx={{ flex: 1 }}>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            NAME
+                          </Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                            {formData.firstName} {formData.lastName}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            ID NUMBER
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {formData.idNumber}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            ROLE
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500, textTransform: 'uppercase' }}>
+                            {formData.role}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            POSITION
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {formData.position}
+                          </Typography>
+                        </Box>
+                        
+                        {formData.startDate && (
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              START DATE
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {formData.startDate.format('DD/MM/YYYY')}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      
+                      {/* QR Code Section */}
+                      <Box sx={{ flex: '0 0 auto', textAlign: 'center' }}>
+                        <Box
+                          component="img"
+                          src={formData.qrcode}
+                          alt="QR Code"
+                          sx={{
+                            width: 150,
+                            height: 150,
+                            border: '2px solid #e0e0e0',
+                            borderRadius: 1,
+                            p: 1,
+                            bgcolor: 'white'
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                          Scan for Details
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+                
+                {/* Download Button */}
+                <Box sx={{ textAlign: 'center', mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    onClick={downloadUserIDCard}
+                    sx={{
+                      bgcolor: '#DAA520',
+                      color: 'white',
+                      '&:hover': { bgcolor: '#B8860B' }
+                    }}
+                  >
+                    Download User ID Card
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* Step 7: Confirmation */}
+        {activeStep === 6 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
@@ -1191,6 +1563,22 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         )}
         
         {activeStep === 5 && (
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            sx={{ 
+              bgcolor: 'rgb(5, 5, 68)', 
+              color: 'white',
+              '&:hover': { 
+                bgcolor: 'rgba(5, 5, 68, 0.8)' 
+              } 
+            }}
+          >
+            {formData.qrcode ? 'Continue to Confirmation' : 'Generate ID First'}
+          </Button>
+        )}
+        
+        {activeStep === 6 && (
           <Button
             variant="contained"
             onClick={handleClose}
