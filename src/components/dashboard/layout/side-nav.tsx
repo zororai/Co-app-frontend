@@ -9,6 +9,7 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinearProgress from '@mui/material/LinearProgress';
+import Skeleton from '@mui/material/Skeleton';
 import { ArrowSquareUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareUpRight';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
 import { MagnifyingGlass as SearchIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
@@ -23,6 +24,144 @@ import { authClient } from '@/lib/auth/client';
 import { navItems, allNavItems, getNavItemsForUser } from './config';
 import { navIcons } from './nav-icons';
 // No need to import height from @mui/system
+
+// Empty state component when no menu items are available
+function EmptyNavState({ searchQuery }: { searchQuery: string }): React.JSX.Element {
+  const isSearchResult = searchQuery.trim().length > 0;
+  
+  return (
+    <Box sx={{ p: 3, textAlign: 'center' }}>
+      <Box sx={{ mb: 2 }}>
+        {isSearchResult ? (
+          <SearchIcon 
+            fontSize={32}
+            style={{ color: 'rgba(255, 255, 255, 0.4)' }}
+          />
+        ) : (
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto',
+              mb: 1
+            }}
+          >
+            <Typography sx={{ fontSize: '24px', color: 'rgba(255, 255, 255, 0.4)' }}>
+              🔒
+            </Typography>
+          </Box>
+        )}
+      </Box>
+      
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          color: 'rgba(255, 255, 255, 0.7)',
+          mb: 1,
+          fontWeight: 500
+        }}
+      >
+        {isSearchResult ? 'No matching menu items' : 'No permissions assigned'}
+      </Typography>
+      
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          color: 'rgba(255, 255, 255, 0.5)',
+          display: 'block',
+          lineHeight: 1.4
+        }}
+      >
+        {isSearchResult 
+          ? `No menu items match "${searchQuery}". Try a different search term.`
+          : 'You don\'t have any permissions assigned to your account. Please contact your administrator to request access.'
+        }
+      </Typography>
+    </Box>
+  );
+}
+
+// Menu skeleton component for loading state
+function MenuSkeleton(): React.JSX.Element {
+  return (
+    <Stack spacing={1} sx={{ p: 2 }}>
+      {/* Simulate 6-8 menu items */}
+      {[...Array(7)].map((_, index) => (
+        <Box
+          key={index}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            p: '6px 16px',
+            borderRadius: 1,
+          }}
+        >
+          {/* Icon skeleton */}
+          <Skeleton 
+            variant="circular" 
+            width={20} 
+            height={20}
+            sx={{ 
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              flexShrink: 0
+            }}
+          />
+          {/* Text skeleton */}
+          <Skeleton 
+            variant="text" 
+            width={`${60 + Math.random() * 40}%`}
+            height={20}
+            sx={{ 
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              fontSize: '0.875rem'
+            }}
+          />
+        </Box>
+      ))}
+      
+      {/* Add some sub-menu items */}
+      <Box sx={{ pl: 3 }}>
+        {[...Array(3)].map((_, index) => (
+          <Box
+            key={`sub-${index}`}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              p: '6px 16px',
+              borderRadius: 1,
+            }}
+          >
+            <Skeleton 
+              variant="circular" 
+              width={16} 
+              height={16}
+              sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.08)',
+                flexShrink: 0
+              }}
+            />
+            <Skeleton 
+              variant="text" 
+              width={`${50 + Math.random() * 30}%`}
+              height={18}
+              sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.08)',
+                fontSize: '0.8rem'
+              }}
+            />
+          </Box>
+        ))}
+      </Box>
+    </Stack>
+  );
+}
 
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
@@ -240,17 +379,11 @@ export function SideNav(): React.JSX.Element {
         
         {/* Loading indicator below Co-App text */}
         {(permissionsLoading || loading) && (
-          <LinearProgress 
-            sx={{ 
-              width: '100%',
-              mx: -3,
-              mt: -1,
-              '& .MuiLinearProgress-bar': {
-                bgcolor: 'rgba(255, 255, 255, 0.9)'
-              },
-              bgcolor: 'rgba(255, 255, 255, 0.2)'
-            }} 
-          />
+          <Box sx={{ px: 0 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 1 }}>
+              Loading menu...
+            </Typography>
+          </Box>
         )}
       </Stack>
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
@@ -274,9 +407,15 @@ export function SideNav(): React.JSX.Element {
           },
         }}
       >
-        <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {renderNavItems({ pathname, items: searchFilteredNavItems, onNavigateStart: () => setLoading(true) })}
-        </Stack>
+        {(permissionsLoading || loading) ? (
+          <MenuSkeleton />
+        ) : searchFilteredNavItems.length === 0 ? (
+          <EmptyNavState searchQuery={searchQuery} />
+        ) : (
+          <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+            {renderNavItems({ pathname, items: searchFilteredNavItems, onNavigateStart: () => setLoading(true) })}
+          </Stack>
+        )}
       </Box>
       <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.2)' }} />
       
