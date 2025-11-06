@@ -17,7 +17,7 @@ import dayjs from 'dayjs';
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
 import { LazyDriverOnboardingTable } from '@/components/lazy/LazyComponents';
-import type { Customer } from '@/components/dashboard/drivermanagement/driver-onboading-table';
+import type { Customer } from '@/components/dashboard/drivermanagement/driver-mana-table';
 
 // Tab content components with loading states
 interface TabProps {
