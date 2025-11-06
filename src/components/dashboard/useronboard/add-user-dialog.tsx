@@ -36,7 +36,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import Grid from '@mui/material/Grid';
 import { Snackbar } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import QRCode from 'qrcode';
@@ -487,16 +486,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       setReferenceNumber(`USR-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`);
       setSuccess(true);
       
-      // Move to success step
-      setActiveStep(steps.length - 1);
-      
-      // Refresh parent component if callback provided
-      if (onRefresh) {
-        onRefresh();
-      }
-
-      // Revalidate and refresh the current route so lists reflect the new user
-      router.refresh();
+      // Move to Generate User ID step (step 5)
+      setActiveStep(5);
     } catch (error_) {
       console.error('Error creating user:', error_);
       setError(error_ instanceof Error ? error_.message : 'Failed to create user');
