@@ -953,6 +953,58 @@ class AuthClient {
     }
 
     /**
+     * Fetch section report data
+     * GET /api/all-reports/returnOneSection (with query params)
+     * @param name - Section name
+     * @param startDate - Start date in ISO format
+     * @param endDate - End date in ISO format
+     */
+    async fetchSectionReport(params: {
+      name: string;
+      startDate: string;
+      endDate: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { name, startDate, endDate } = params;
+        
+        // Build query parameters
+        const queryParams = new URLSearchParams();
+        queryParams.append('name', name);
+        queryParams.append('startDate', startDate);
+        queryParams.append('endDate', endDate);
+        
+        const url = `/api/all-reports/returnOneSection?${queryParams.toString()}`;
+        
+        console.log('Fetching section report with params:', { name, startDate, endDate });
+        console.log('URL:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch section report:`, errorText);
+          console.error('Response status:', response.status);
+          return { success: false, error: errorText || 'Failed to fetch section report' };
+        }
+        
+        const data = await response.json();
+        console.log('Section report data received:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching section report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */
