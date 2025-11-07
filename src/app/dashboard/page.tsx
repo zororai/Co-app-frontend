@@ -107,7 +107,6 @@ export default function Page(): React.JSX.Element {
       </Grid>
       <Grid
         size={{
-          lg: 8,
           xs: 12,
         }}
       >
@@ -115,17 +114,6 @@ export default function Page(): React.JSX.Element {
       </Grid>
       <Grid
         size={{
-          lg: 4,
-          md: 6,
-          xs: 12,
-        }}
-      >
-      
-      </Grid>
-      <Grid
-        size={{
-          lg: 8,
-          md: 12,
           xs: 12,
         }}
       >
