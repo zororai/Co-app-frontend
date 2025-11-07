@@ -6,12 +6,6 @@ import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
-import ScaleIcon from '@mui/icons-material/Scale';
 
 interface SectionReportStatsProps {
   data: {
@@ -78,7 +72,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Active Shafts"
           value={data.activeShafts}
-          icon={<CheckCircleIcon fontSize="large" />}
           color="#2e7d32"
           subtitle={`${totalShafts} total shafts`}
         />
@@ -88,7 +81,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Deactivated Shafts"
           value={data.deactivatedShafts}
-          icon={<CancelIcon fontSize="large" />}
           color="#c62828"
           subtitle={`${totalShafts} total shafts`}
         />
@@ -98,7 +90,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Active Sections"
           value={data.activeSections}
-          icon={<CheckCircleIcon fontSize="large" />}
           color="#1565c0"
           subtitle="Currently operational"
         />
@@ -109,7 +100,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Total Ore Collected"
           value={`${data.oreCollected.toLocaleString()} kg`}
-          icon={<ScaleIcon fontSize="large" />}
           color="#e65100"
           subtitle="Total collection"
         />
@@ -119,7 +109,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Total Ore Processed"
           value={`${data.oreProcessed.toLocaleString()} kg`}
-          icon={<TrendingUpIcon fontSize="large" />}
           color="#1565c0"
           subtitle="Processing complete"
         />
@@ -129,7 +118,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Total Gold Produced"
           value={`${data.goldProduced.toLocaleString()} kg`}
-          icon={<TrendingUpIcon fontSize="large" />}
           color="#f57c00"
           subtitle="Gold output"
         />
@@ -140,7 +128,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Total Money Paid Out"
           value={`USD/ZWG ${data.totalMoneyPaidOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={<MonetizationOnIcon fontSize="large" />}
           color="#6a1b9a"
           subtitle="Total payments"
         />
@@ -150,7 +137,6 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
         <StatCard
           title="Total Dump Weight"
           value={`${data.totalDumpWeight.toLocaleString()} kg`}
-          icon={<ScaleIcon fontSize="large" />}
           color="#00838f"
           subtitle="Total weight"
         />
