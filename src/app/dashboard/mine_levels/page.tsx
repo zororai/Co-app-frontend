@@ -39,11 +39,15 @@ export default function Page(): React.JSX.Element {
   const [data, setData] = React.useState<MineLevelData | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [searchParams, setSearchParams] = React.useState<{ startDate: string; endDate: string } | null>(null);
   const printableRef = React.useRef<HTMLDivElement>(null);
 
   const handleSearch = React.useCallback(async (startDate: string, endDate: string) => {
     setIsLoading(true);
     setError(null);
+    
+    // Store search parameters for display
+    setSearchParams({ startDate, endDate });
     
     try {
       const result = await authClient.fetchMineLevelReport({ startDate, endDate });
@@ -73,11 +77,16 @@ export default function Page(): React.JSX.Element {
     if (!printWindow) return;
 
     const content = printableRef.current.innerHTML;
-    const startDateFormatted = data.startDate && dayjs(data.startDate).isValid()
-      ? dayjs(data.startDate).format('YYYY-MM-DD HH:mm')
+    
+    // Use searchParams if available, otherwise fall back to data dates
+    const startDateToUse = searchParams?.startDate || data.startDate;
+    const endDateToUse = searchParams?.endDate || data.endDate;
+    
+    const startDateFormatted = startDateToUse && dayjs(startDateToUse).isValid()
+      ? dayjs(startDateToUse).format('YYYY-MM-DD HH:mm')
       : 'Not specified';
-    const endDateFormatted = data.endDate && dayjs(data.endDate).isValid()
-      ? dayjs(data.endDate).format('YYYY-MM-DD HH:mm')
+    const endDateFormatted = endDateToUse && dayjs(endDateToUse).isValid()
+      ? dayjs(endDateToUse).format('YYYY-MM-DD HH:mm')
       : 'Not specified';
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
@@ -211,14 +220,18 @@ export default function Page(): React.JSX.Element {
                     Report Period
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    <strong>From:</strong> {data.startDate && dayjs(data.startDate).isValid() 
-                      ? dayjs(data.startDate).format('MMMM D, YYYY HH:mm')
-                      : 'Not specified'}
+                    <strong>From:</strong> {searchParams?.startDate && dayjs(searchParams.startDate).isValid() 
+                      ? dayjs(searchParams.startDate).format('MMMM D, YYYY HH:mm')
+                      : (data.startDate && dayjs(data.startDate).isValid() 
+                        ? dayjs(data.startDate).format('MMMM D, YYYY HH:mm')
+                        : 'Not specified')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    <strong>To:</strong> {data.endDate && dayjs(data.endDate).isValid()
-                      ? dayjs(data.endDate).format('MMMM D, YYYY HH:mm')
-                      : 'Not specified'}
+                    <strong>To:</strong> {searchParams?.endDate && dayjs(searchParams.endDate).isValid()
+                      ? dayjs(searchParams.endDate).format('MMMM D, YYYY HH:mm')
+                      : (data.endDate && dayjs(data.endDate).isValid()
+                        ? dayjs(data.endDate).format('MMMM D, YYYY HH:mm')
+                        : 'Not specified')}
                   </Typography>
                 </CardContent>
               </Card>
