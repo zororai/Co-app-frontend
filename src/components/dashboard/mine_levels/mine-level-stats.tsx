@@ -41,8 +41,14 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
     <Card 
       sx={{ 
         height: '100%',
-        background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-        border: `1px solid ${color}30`,
+        background: '#fff',
+        border: '1px solid',
+        borderColor: 'divider',
+        '&:hover': {
+          boxShadow: 2,
+          borderColor: `${color}40`,
+        },
+        transition: 'all 0.3s ease',
       }}
     >
       <CardContent>
@@ -51,11 +57,21 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
             <Typography variant="body2" color="text.secondary" fontWeight="medium">
               {title}
             </Typography>
-            <Box sx={{ color, opacity: 0.8 }}>
+            <Box 
+              sx={{ 
+                color: '#fff',
+                bgcolor: color,
+                borderRadius: 1,
+                p: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               {icon}
             </Box>
           </Stack>
-          <Typography variant="h3" fontWeight="bold" sx={{ color }}>
+          <Typography variant="h3" fontWeight="bold" sx={{ color: 'text.primary' }}>
             {value}
           </Typography>
           {subtitle && (
@@ -79,7 +95,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Active Shafts"
           value={data.activeShafts}
           icon={<CheckCircleIcon fontSize="large" />}
-          color="#4caf50"
+          color="#2e7d32"
           subtitle={`${totalShafts} total shafts`}
         />
       </Grid>
@@ -89,7 +105,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Deactivated Shafts"
           value={data.deactivatedShafts}
           icon={<CancelIcon fontSize="large" />}
-          color="#f44336"
+          color="#c62828"
           subtitle={`${totalShafts} total shafts`}
         />
       </Grid>
@@ -100,7 +116,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Active Sections"
           value={data.activeSections}
           icon={<CheckCircleIcon fontSize="large" />}
-          color="#2196f3"
+          color="#1565c0"
           subtitle={`${totalSections} total sections`}
         />
       </Grid>
@@ -110,7 +126,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Deactivated Sections"
           value={data.deactivatedSections}
           icon={<CancelIcon fontSize="large" />}
-          color="#ff9800"
+          color="#e65100"
           subtitle={`${totalSections} total sections`}
         />
       </Grid>
@@ -121,7 +137,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Total Money Paid Out"
           value={`USD/ZWG ${data.totalMoneyPaidOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={<MonetizationOnIcon fontSize="large" />}
-          color="#9c27b0"
+          color="#6a1b9a"
           subtitle="Total payments made"
         />
       </Grid>
@@ -131,7 +147,7 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
           title="Total Dump Weight"
           value={`${data.totalDumpWeight.toLocaleString()} kg`}
           icon={<TrendingUpIcon fontSize="large" />}
-          color="#00bcd4"
+          color="#00838f"
           subtitle="Total weight processed"
         />
       </Grid>

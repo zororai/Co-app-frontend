@@ -45,7 +45,17 @@ export function DetailedMetrics({
     const total = entries.reduce((sum, [_, value]) => sum + (typeof value === 'number' ? value : 0), 0);
 
     return (
-      <Card>
+      <Card 
+        sx={{
+          border: '1px solid',
+          borderColor: 'divider',
+          '&:hover': {
+            boxShadow: 2,
+            borderColor: `${color}40`,
+          },
+          transition: 'all 0.3s ease',
+        }}
+      >
         <CardContent>
           <Stack spacing={2}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -54,8 +64,8 @@ export function DetailedMetrics({
               </Typography>
               <Box 
                 sx={{ 
-                  bgcolor: `${color}15`, 
-                  color: color,
+                  bgcolor: color,
+                  color: '#fff',
                   px: 2, 
                   py: 0.5, 
                   borderRadius: 1,
@@ -126,7 +136,7 @@ export function DetailedMetrics({
           title="Ore Collected"
           data={oreCollected}
           unit="kg"
-          color="#4caf50"
+          color="#2e7d32"
         />
       </Grid>
 
@@ -135,7 +145,7 @@ export function DetailedMetrics({
           title="Ore Processed"
           data={oreProcessed}
           unit="kg"
-          color="#2196f3"
+          color="#1565c0"
         />
       </Grid>
 
@@ -144,7 +154,7 @@ export function DetailedMetrics({
           title="Gold Produced"
           data={goldProduced}
           unit="kg"
-          color="#ffc107"
+          color="#f57c00"
         />
       </Grid>
 
@@ -153,7 +163,7 @@ export function DetailedMetrics({
           title="Reprocessed Ore"
           data={reprocessedOre}
           unit="kg"
-          color="#ff9800"
+          color="#6d4c41"
         />
       </Grid>
 
@@ -162,7 +172,7 @@ export function DetailedMetrics({
           title="Money Paid Out"
           data={moneyPaidOut}
           unit=""
-          color="#9c27b0"
+          color="#6a1b9a"
           isCurrency={true}
         />
       </Grid>

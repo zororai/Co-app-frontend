@@ -73,8 +73,12 @@ export default function Page(): React.JSX.Element {
     if (!printWindow) return;
 
     const content = printableRef.current.innerHTML;
-    const startDateFormatted = dayjs(data.startDate).format('YYYY-MM-DD HH:mm');
-    const endDateFormatted = dayjs(data.endDate).format('YYYY-MM-DD HH:mm');
+    const startDateFormatted = data.startDate && dayjs(data.startDate).isValid()
+      ? dayjs(data.startDate).format('YYYY-MM-DD HH:mm')
+      : 'Not specified';
+    const endDateFormatted = data.endDate && dayjs(data.endDate).isValid()
+      ? dayjs(data.endDate).format('YYYY-MM-DD HH:mm')
+      : 'Not specified';
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
 
@@ -99,6 +103,9 @@ export default function Page(): React.JSX.Element {
                 padding: 0;
               }
               .no-print {
+                display: none !important;
+              }
+              svg, .MuiSvgIcon-root {
                 display: none !important;
               }
             }
@@ -204,10 +211,14 @@ export default function Page(): React.JSX.Element {
                     Report Period
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    <strong>From:</strong> {dayjs(data.startDate).format('MMMM D, YYYY HH:mm')}
+                    <strong>From:</strong> {data.startDate && dayjs(data.startDate).isValid() 
+                      ? dayjs(data.startDate).format('MMMM D, YYYY HH:mm')
+                      : 'Not specified'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    <strong>To:</strong> {dayjs(data.endDate).format('MMMM D, YYYY HH:mm')}
+                    <strong>To:</strong> {data.endDate && dayjs(data.endDate).isValid()
+                      ? dayjs(data.endDate).format('MMMM D, YYYY HH:mm')
+                      : 'Not specified'}
                   </Typography>
                 </CardContent>
               </Card>
