@@ -903,6 +903,56 @@ class AuthClient {
     }
 
     /**
+     * Fetch mine level report data
+     * GET /api/all-reports/returnAtMineLevel (with query params)
+     * @param startDate - Start date in ISO format
+     * @param endDate - End date in ISO format
+     */
+    async fetchMineLevelReport(params: {
+      startDate: string;
+      endDate: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { startDate, endDate } = params;
+        
+        // Try GET with query parameters (as per curl example)
+        const queryParams = new URLSearchParams();
+        queryParams.append('startDate', startDate);
+        queryParams.append('endDate', endDate);
+        
+        const url = `/api/all-reports/returnAtMineLevel?${queryParams.toString()}`;
+        
+        console.log('Fetching mine level report with params:', { startDate, endDate });
+        console.log('URL:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch mine level report (GET):`, errorText);
+          console.error('Response status:', response.status);
+          return { success: false, error: errorText || 'Failed to fetch mine level report' };
+        }
+        
+        const data = await response.json();
+        console.log('Mine level report data received:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching mine level report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */

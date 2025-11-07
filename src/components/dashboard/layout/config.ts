@@ -72,6 +72,7 @@ export const allNavItems = [
   { key: 'shaft-history-reports', title: 'Shaft History Report', href: paths.dashboard.shafthistoryreports, icon: 'chart-pie' },
   { key: 'Ore-reports', title: 'Ore Report', href: paths.dashboard.Ore_reports, icon: 'chart-pie' },
   { key: 'Section-reports', title: 'Section Report', href: paths.dashboard.Section_reports, icon: 'chart-pie' },
+{ key: 'Mine-Level-reports', title: 'Mine Level Report', href: paths.dashboard.Mine_Levels, icon: 'chart-pie' },
 
       // Legacy commented items
     ],

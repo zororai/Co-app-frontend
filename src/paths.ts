@@ -11,6 +11,7 @@ export const paths = {
     safetycheck: '/dashboard/safetycheck',
     Section_reports: '/dashboard/section_reports',
 shafthistoryreports: '/dashboard/shafthistoryreports',
+Mine_Levels:'/dashboard/mine_levels',
     map: '/dashboard/map',
     Penality_Payment: '/dashboard/penalitypayment',
     shaftinspection: '/dashboard/shaftinspection',
