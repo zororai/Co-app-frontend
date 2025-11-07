@@ -22,10 +22,11 @@ interface FiltersSidebarProps {
   onSearchChange?: (search: string) => void;
   onSearchResult?: (data: any) => void;
   onProductionReportResult?: (data: any) => void;
+  onFinancialReportResult?: (data: any) => void;
   onMinerCompanyResult?: (minerData: any, companyData: any) => void;
 }
 
-export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionReportResult, onMinerCompanyResult }: FiltersSidebarProps): React.JSX.Element {
+export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionReportResult, onFinancialReportResult, onMinerCompanyResult }: FiltersSidebarProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [period, setPeriod] = React.useState<'week' | 'month' | 'year'>('month');
@@ -131,16 +132,41 @@ export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionRep
           console.error('Error fetching production statistics:', statsResult.error);
           onProductionReportResult?.(null);
         }
+
+        // Fetch financial report (contraventions)
+        const financialParams: any = {
+          shaftNumber: search,
+          period,
+          year,
+        };
+
+        // Add month or weekOfYear based on period
+        if (period === 'month') {
+          financialParams.month = month;
+        } else if (period === 'week') {
+          financialParams.weekOfYear = weekOfYear;
+        }
+
+        const financialResult = await authClient.fetchContraventionFinancialReport(financialParams);
+        
+        if (financialResult.success && financialResult.data) {
+          onFinancialReportResult?.(financialResult.data);
+        } else {
+          console.error('Error fetching financial report:', financialResult.error);
+          onFinancialReportResult?.(null);
+        }
       } else {
         console.error('Error fetching shaft assignment:', shaftResult.error);
         onSearchResult?.(null);
         onProductionReportResult?.(null);
+        onFinancialReportResult?.(null);
         onMinerCompanyResult?.(null, null);
       }
     } catch (error) {
       console.error('Error searching shaft:', error);
       onSearchResult?.(null);
       onProductionReportResult?.(null);
+      onFinancialReportResult?.(null);
       onMinerCompanyResult?.(null, null);
     } finally {
       setIsLoading(false);

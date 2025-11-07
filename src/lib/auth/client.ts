@@ -843,6 +843,66 @@ class AuthClient {
     }
 
     /**
+     * Fetch financial report for contraventions by shaft
+     * GET /api/contraventions/financial-report/shaft/{shaftNumber}
+     * @param shaftNumber - Shaft number to query
+     * @param period - Report period: 'week', 'month', or 'year'
+     * @param year - Year to filter (e.g., 2024)
+     * @param month - Optional: Month (1-12) for monthly filtering
+     * @param weekOfYear - Optional: Week of year (1-53) for weekly filtering
+     */
+    async fetchContraventionFinancialReport(params: {
+      shaftNumber: string;
+      period: 'week' | 'month' | 'year';
+      year: number;
+      month?: number;
+      weekOfYear?: number;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { shaftNumber, period, year, month, weekOfYear } = params;
+        const encodedShaftNumber = encodeURIComponent(shaftNumber);
+        
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+          period,
+          year: year.toString(),
+        });
+        
+        if (month !== undefined && period === 'month') {
+          queryParams.append('month', month.toString());
+        }
+        
+        if (weekOfYear !== undefined && period === 'week') {
+          queryParams.append('weekOfYear', weekOfYear.toString());
+        }
+        
+        const url = `/api/contraventions/financial-report/shaft/${encodedShaftNumber}?${queryParams.toString()}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch financial report for shaft ${shaftNumber}:`, errorText);
+          return { success: false, error: errorText || 'Failed to fetch financial report' };
+        }
+        
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching financial report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */
