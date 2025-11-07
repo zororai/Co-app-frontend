@@ -222,7 +222,12 @@ export function FiltersSidebar({ onSearchChange, onSearchResult, onProductionRep
             variant="contained"
             onClick={handleSearchClick}
             disabled={isLoading || !search.trim()}
-            sx={{ minWidth: '100px' }}
+            sx={{
+              minWidth: '100px',
+              bgcolor: 'secondary.main',
+              color: '#fff',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
           >
             {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Search'}
           </Button>

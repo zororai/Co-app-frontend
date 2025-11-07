@@ -84,21 +84,21 @@ export function ProductionReportCard({ data }: ProductionReportCardProps): React
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <InfoItem label="Total Weight" value={data.totalWeight.toLocaleString()} unit=" kg" />
+              <InfoItem label="Extracted Ore Weight" value={data.totalWeight.toLocaleString()} unit=" kg" />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <InfoItem label="Total New Weight" value={data.totalNewWeight.toLocaleString()} unit=" kg" />
+              <InfoItem label="Processed Ore Weight" value={data.totalNewWeight.toLocaleString()} unit=" Kg" />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <InfoItem label="Gold Sales Weight" value={data.totalGoldSalesWeight.toLocaleString()} unit=" kg" />
+              <InfoItem label="Gold Sales Weight" value={data.totalGoldSalesWeight.toLocaleString()} unit=" g" />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <InfoItem 
                 label="Gold Sales Price" 
-                value={`R ${data.totalGoldSalesPrice.toLocaleString()}`} 
+                value={`USD/ ZWG ${data.totalGoldSalesPrice.toLocaleString()}`} 
               />
             </Grid>
           </Grid>

@@ -66,7 +66,8 @@ export function FinancialReportCard({ data }: FinancialReportCardProps): React.J
   };
 
   const formatCurrency = (amount: number) => {
-    return `R ${amount.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const formattedAmount = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `USD ${formattedAmount} / ZWG ${formattedAmount}`;
   };
 
   return (

@@ -65,8 +65,8 @@ export function ShaftDetail({ data }: ShaftDetailProps): React.JSX.Element {
                   Operation Status
                 </Typography>
                 <Chip
-                  label={data.operationStatus ? 'Active' : 'Inactive'}
-                  color={data.operationStatus ? 'success' : 'default'}
+                  label={data.status === 'APPROVED' ? 'Active' : 'Inactive'}
+                  color={data.status === 'APPROVED' ? 'success' : 'default'}
                   size="small"
                 />
               </Stack>
@@ -81,11 +81,11 @@ export function ShaftDetail({ data }: ShaftDetailProps): React.JSX.Element {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <InfoItem label="Registration Fee" value={`R ${data.regFee?.toLocaleString() || 0}`} />
+              <InfoItem label="Registration Fee" value={`USD/ZWG ${data.regFee?.toLocaleString() || 0}`} />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <InfoItem label="Medical Fee" value={`R ${data.medicalFee?.toLocaleString() || 0}`} />
+              <InfoItem label="Medical Fee" value={`USD/ZWG ${data.medicalFee?.toLocaleString() || 0}`} />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 4 }}>

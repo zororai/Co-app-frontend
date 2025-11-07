@@ -197,9 +197,9 @@ export function ShaftHistoryReportsView(): React.JSX.Element {
             startIcon={<PrintIcon />}
             onClick={handlePrint}
             sx={{
-              bgcolor: 'primary.main',
+              bgcolor: 'secondary.main',
               color: '#fff',
-              '&:hover': { bgcolor: 'primary.dark' },
+              '&:hover': { bgcolor: 'secondary.dark' }
             }}
           >
             Print Report
