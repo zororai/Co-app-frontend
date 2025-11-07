@@ -28,6 +28,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -397,10 +398,10 @@ export function CustomersTable({
               <TableCell>License Class</TableCell>
            
               <TableCell>Contact</TableCell>
-            
+
               <TableCell>Status</TableCell>
               <TableCell>View Details</TableCell>
-              <TableCell>Change Driver Status</TableCell>
+           
             </TableRow>
           </TableHead>
           <TableBody>

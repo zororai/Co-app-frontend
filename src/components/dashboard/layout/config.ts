@@ -105,7 +105,7 @@ export const allNavItems = [
     title: 'Transport Management',
     icon: 'truck',
     items: [
-     { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehic, icon: 'mountain' },
+     { key: 'transport', title: 'Vehicles Management', href: paths.dashboard.approvedvehic, icon: 'mountain' },
       { key: 'drivermanagement', title: 'Driver Management ', href:  paths.dashboard.drivermanagement, icon: 'truck'},   
      { key: 'transport-add', title: 'Assign Ore To Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
