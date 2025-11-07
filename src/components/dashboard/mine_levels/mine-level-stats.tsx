@@ -6,12 +6,6 @@ import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 interface MineLevelStatsProps {
   data: {
@@ -28,13 +22,11 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
   const StatCard = ({ 
     title, 
     value, 
-    icon, 
     color,
     subtitle 
   }: { 
     title: string; 
     value: number | string; 
-    icon: React.ReactNode; 
     color: string;
     subtitle?: string;
   }) => (
@@ -53,24 +45,9 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
     >
       <CardContent>
         <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-            <Typography variant="body2" color="text.secondary" fontWeight="medium">
-              {title}
-            </Typography>
-            <Box 
-              sx={{ 
-                color: '#fff',
-                bgcolor: color,
-                borderRadius: 1,
-                p: 0.5,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {icon}
-            </Box>
-          </Stack>
+          <Typography variant="body2" color="text.secondary" fontWeight="medium">
+            {title}
+          </Typography>
           <Typography variant="h3" fontWeight="bold" sx={{ color: 'text.primary' }}>
             {value}
           </Typography>
@@ -94,7 +71,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Active Shafts"
           value={data.activeShafts}
-          icon={<CheckCircleIcon fontSize="large" />}
           color="#2e7d32"
           subtitle={`${totalShafts} total shafts`}
         />
@@ -104,7 +80,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Deactivated Shafts"
           value={data.deactivatedShafts}
-          icon={<CancelIcon fontSize="large" />}
           color="#c62828"
           subtitle={`${totalShafts} total shafts`}
         />
@@ -115,7 +90,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Active Sections"
           value={data.activeSections}
-          icon={<CheckCircleIcon fontSize="large" />}
           color="#1565c0"
           subtitle={`${totalSections} total sections`}
         />
@@ -125,7 +99,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Deactivated Sections"
           value={data.deactivatedSections}
-          icon={<CancelIcon fontSize="large" />}
           color="#e65100"
           subtitle={`${totalSections} total sections`}
         />
@@ -136,7 +109,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Total Money Paid Out"
           value={`USD/ZWG ${data.totalMoneyPaidOut.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          icon={<MonetizationOnIcon fontSize="large" />}
           color="#6a1b9a"
           subtitle="Total payments made"
         />
@@ -146,7 +118,6 @@ export function MineLevelStats({ data }: MineLevelStatsProps): React.JSX.Element
         <StatCard
           title="Total Dump Weight"
           value={`${data.totalDumpWeight.toLocaleString()} kg`}
-          icon={<TrendingUpIcon fontSize="large" />}
           color="#00838f"
           subtitle="Total weight processed"
         />

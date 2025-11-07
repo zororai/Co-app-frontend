@@ -39,7 +39,8 @@ export function SectionReportFilter({ onSearch, isLoading }: SectionReportFilter
         const result = await authClient.fetchApprovedSections();
         if (result.success && result.data) {
           // Handle both array response and object with array property
-          const sectionsData = Array.isArray(result.data) ? result.data : result.data.sections || [];
+          const data = result.data as any;
+          const sectionsData = Array.isArray(data) ? (data as Section[]) : (Array.isArray(data?.sections) ? (data.sections as Section[]) : []);
           setSections(sectionsData);
         } else {
           console.error('Failed to fetch sections:', result.error);
