@@ -8,22 +8,56 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
+import MenuItem from '@mui/material/MenuItem';
+import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
+import { authClient } from '@/lib/auth/client';
 
 interface SectionReportFilterProps {
   onSearch: (name: string, startDate: string, endDate: string) => void;
   isLoading: boolean;
 }
 
+interface Section {
+  id?: string;
+  sectionName: string;
+  [key: string]: any;
+}
+
 export function SectionReportFilter({ onSearch, isLoading }: SectionReportFilterProps): React.JSX.Element {
   const [sectionName, setSectionName] = React.useState('');
   const [startDate, setStartDate] = React.useState(dayjs().subtract(7, 'days').format('YYYY-MM-DD'));
   const [endDate, setEndDate] = React.useState(dayjs().format('YYYY-MM-DD'));
+  const [sections, setSections] = React.useState<Section[]>([]);
+  const [loadingSections, setLoadingSections] = React.useState(true);
+
+  // Fetch approved sections on component mount
+  React.useEffect(() => {
+    const fetchSections = async () => {
+      setLoadingSections(true);
+      try {
+        const result = await authClient.fetchApprovedSections();
+        if (result.success && result.data) {
+          // Handle both array response and object with array property
+          const sectionsData = Array.isArray(result.data) ? result.data : result.data.sections || [];
+          setSections(sectionsData);
+        } else {
+          console.error('Failed to fetch sections:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching sections:', error);
+      } finally {
+        setLoadingSections(false);
+      }
+    };
+
+    fetchSections();
+  }, []);
 
   // Convert dates to ISO format for API
   const handleGenerateReport = () => {
     if (!sectionName.trim()) {
-      alert('Please enter a section name');
+      alert('Please select a section');
       return;
     }
 
@@ -45,16 +79,33 @@ export function SectionReportFilter({ onSearch, isLoading }: SectionReportFilter
         <Stack spacing={3}>
           <Typography variant="h6">Section Filter</Typography>
 
-          {/* Section Name Input */}
+          {/* Section Name Dropdown */}
           <TextField
+            select
             label="Section Name"
-            placeholder="e.g., Section B"
             value={sectionName}
             onChange={(e) => setSectionName(e.target.value)}
             fullWidth
             required
-            helperText="Enter the name of the section to report on"
-          />
+            helperText={loadingSections ? "Loading sections..." : "Select a section to report on"}
+            disabled={loadingSections || sections.length === 0}
+            InputProps={{
+              startAdornment: loadingSections ? (
+                <CircularProgress size={20} sx={{ mr: 1 }} />
+              ) : null,
+            }}
+          >
+            {!loadingSections && sections.length === 0 && (
+              <MenuItem value="" disabled>
+                No sections available
+              </MenuItem>
+            )}
+            {sections.map((section) => (
+              <MenuItem key={section.id || section.sectionName} value={section.sectionName}>
+                {section.sectionName}
+              </MenuItem>
+            ))}
+          </TextField>
 
           {/* Date Range */}
           <Typography variant="subtitle2" color="text.secondary">

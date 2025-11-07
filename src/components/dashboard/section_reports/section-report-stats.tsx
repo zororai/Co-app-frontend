@@ -30,13 +30,11 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
   const StatCard = ({ 
     title, 
     value, 
-    icon, 
     color,
     subtitle 
   }: { 
     title: string; 
     value: number | string; 
-    icon: React.ReactNode; 
     color: string;
     subtitle?: string;
   }) => (
@@ -55,24 +53,9 @@ export function SectionReportStats({ data }: SectionReportStatsProps): React.JSX
     >
       <CardContent>
         <Stack spacing={2}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-            <Typography variant="body2" color="text.secondary" fontWeight="medium">
-              {title}
-            </Typography>
-            <Box 
-              sx={{ 
-                color: '#fff',
-                bgcolor: color,
-                borderRadius: 1,
-                p: 0.5,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {icon}
-            </Box>
-          </Stack>
+          <Typography variant="body2" color="text.secondary" fontWeight="medium">
+            {title}
+          </Typography>
           <Typography variant="h3" fontWeight="bold" sx={{ color: 'text.primary' }}>
             {value}
           </Typography>
