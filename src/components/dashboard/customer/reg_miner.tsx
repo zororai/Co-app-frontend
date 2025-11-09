@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { Box, Button, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography, Dialog, DialogTitle, DialogContent, Snackbar, Alert, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, Button, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography, Dialog, DialogTitle, DialogContent, Snackbar, Alert, Stepper, Step, StepLabel, Card, CardContent } from '@mui/material';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { authClient } from '@/lib/auth/client';
 import { useTheme } from '@mui/material/styles';
+import QRCode from 'qrcode';
 
 export interface RegMinerDialogProps {
   open: boolean;
@@ -20,9 +23,9 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
   // Success feedback (aligning with security company dialog style)
   const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
   const [activeStep, setActiveStep] = React.useState(0);
-  const steps = ['Personal Info', 'ID Picture', 'Team Members', 'Review', 'Confirmation'];
+  const steps = ['Personal Info', 'ID Picture', 'Team Members', 'Team Member IDs', 'Review', 'Confirmation'];
   const [teamMembers, setTeamMembers] = React.useState([
-    { name: '', surname: '', address: '', idNumber: '' }
+    { id: '', name: '', surname: '', address: '', idNumber: '', cellNumber: '', picture: '', qrcode: '' }
   ]);
   const [form, setForm] = React.useState({
     name: '',
@@ -46,6 +49,27 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     idPicture: '',
     teamMembers: [''],
   });
+
+  // Initialize first team member with ID and QR code
+  React.useEffect(() => {
+    const initializeFirstMember = async () => {
+      if (teamMembers.length === 1 && !teamMembers[0].id) {
+        const newId = generateTeamMemberId();
+        const qrCodeData = await generateQRCode(newId);
+        setTeamMembers([{
+          id: newId,
+          name: '',
+          surname: '',
+          address: '',
+          idNumber: '',
+          cellNumber: '',
+          picture: '',
+          qrcode: qrCodeData
+        }]);
+      }
+    };
+    initializeFirstMember();
+  }, []);
 
   // Validate Zimbabwean ID number format
   const validateZimbabweanID = (idNumber: string): string | null => {
@@ -81,6 +105,145 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     } else {
       return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
     }
+  };
+
+  // Generate unique ID for team members
+  const generateTeamMemberId = (): string => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `LASHER-${timestamp}-${random}`;
+  };
+
+  // Generate QR code
+  const generateQRCode = async (data: string): Promise<string> => {
+    try {
+      const qrCodeDataUrl = await QRCode.toDataURL(data, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+      return qrCodeDataUrl;
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      return '';
+    }
+  };
+
+  // Download team member ID card
+  const downloadTeamMemberID = async (member: any) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Border
+    ctx.strokeStyle = '#32383e';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+    
+    // Title
+    ctx.fillStyle = '#32383e';
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('LASHER ID', canvas.width / 2, 50);
+    
+    // Cooperative name
+    ctx.font = 'bold 20px Arial';
+    ctx.fillText(form.cooperative, canvas.width / 2, 80);
+    
+    // Divider line
+    ctx.beginPath();
+    ctx.moveTo(30, 95);
+    ctx.lineTo(canvas.width - 30, 95);
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Member picture
+    if (member.picture) {
+      try {
+        const img = new Image();
+        img.src = member.picture;
+        await new Promise((resolve) => {
+          img.onload = () => {
+            ctx.drawImage(img, 30, 110, 120, 150);
+            resolve(null);
+          };
+          img.onerror = resolve;
+        });
+      } catch (error) {
+        console.error('Error loading member picture:', error);
+      }
+    } else {
+      // Placeholder for picture
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(30, 110, 120, 150);
+      ctx.fillStyle = '#999999';
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('No Photo', 90, 185);
+    }
+    
+    // Member details
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 18px Arial';
+    ctx.fillText(`${member.name} ${member.surname}`, 170, 130);
+    
+    ctx.font = '14px Arial';
+    ctx.fillText(`ID: ${member.id}`, 170, 155);
+    ctx.fillText(`National ID: ${member.idNumber}`, 170, 180);
+    ctx.fillText(`Phone: ${member.cellNumber}`, 170, 205);
+    if (member.address) {
+      ctx.fillText(`Address: ${member.address}`, 170, 230);
+    }
+    
+    // QR Code
+    if (member.qrcode) {
+      try {
+        const qrImg = new Image();
+        qrImg.src = member.qrcode;
+        await new Promise((resolve) => {
+          qrImg.onload = () => {
+            ctx.drawImage(qrImg, canvas.width - 180, 110, 150, 150);
+            resolve(null);
+          };
+          qrImg.onerror = resolve;
+        });
+      } catch (error) {
+        console.error('Error loading QR code:', error);
+      }
+    }
+    
+    // Footer
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#666666';
+    ctx.fillText('This ID must be carried at all times', canvas.width / 2, canvas.height - 30);
+    ctx.fillText(new Date().toLocaleDateString(), canvas.width / 2, canvas.height - 15);
+    
+    // Download
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Lasher-ID-${member.name}-${member.surname}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    });
   };
 
   const handleChange = (
@@ -160,21 +323,58 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
   };
 
   const handleTeamChange = (idx: number, e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    let processedValue = value as string;
-    // Apply formatting and uppercase for team member ID numbers
-    if (name === 'idNumber') {
-      processedValue = formatIdNumber(processedValue).toUpperCase();
+    const { name, value, files, type } = e.target as HTMLInputElement;
+    
+    if (type === 'file' && files && files[0]) {
+      const file = files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        return;
+      }
+
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        const base64String = reader.result as string;
+        setTeamMembers((prev) => {
+          const updated = [...prev];
+          (updated[idx] as any)[name] = base64String;
+          return updated;
+        });
+      });
+      reader.readAsDataURL(file);
+    } else {
+      let processedValue = value as string;
+      // Apply formatting and uppercase for team member ID numbers
+      if (name === 'idNumber') {
+        processedValue = formatIdNumber(processedValue).toUpperCase();
+      }
+      setTeamMembers((prev) => {
+        const updated = [...prev];
+        (updated[idx] as any)[name] = processedValue;
+        return updated;
+      });
     }
-    setTeamMembers((prev) => {
-      const updated = [...prev];
-      (updated[idx] as any)[name] = processedValue;
-      return updated;
-    });
   };
 
-  const addTeamMember = () => {
-    setTeamMembers((prev) => [...prev, { name: '', surname: '', address: '', idNumber: '' }]);
+  const addTeamMember = async () => {
+    const newId = generateTeamMemberId();
+    const qrCodeData = await generateQRCode(newId);
+    setTeamMembers((prev) => [...prev, { 
+      id: newId,
+      name: '', 
+      surname: '', 
+      address: '', 
+      idNumber: '',
+      cellNumber: '',
+      picture: '',
+      qrcode: qrCodeData
+    }]);
+  };
+
+  const removeTeamMember = (idx: number) => {
+    setTeamMembers((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const validatePersonalInfo = () => {
@@ -222,6 +422,11 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       const errs: string[] = [];
       if (!member.name.trim()) errs.push('Name');
       if (!member.surname.trim()) errs.push('Surname');
+      if (!member.cellNumber.trim()) {
+        errs.push('Phone Number');
+      } else if (!/^\d{10}$/.test(member.cellNumber.trim())) {
+        errs.push('Invalid phone format');
+      }
       if (!member.idNumber.trim()) {
         errs.push('ID Number');
       } else {
@@ -250,9 +455,10 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     if (activeStep === 0 && !validatePersonalInfo()) return;
     if (activeStep === 1 && !validateIdPicture()) return;
     if (activeStep === 2 && !validateTeamMembers()) return;
+    // Step 3 is Team Member IDs - no validation needed, just viewing
 
-    if (activeStep === 3) {
-      // Submit on review step
+    if (activeStep === 4) {
+      // Submit on review step (now step 4)
       // synthesize a submit by calling handleSubmit via a fake event
       await handleSubmit(new Event('submit') as any);
       const newStep = activeStep + 1;
@@ -292,12 +498,16 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       const { error, success } = await authClient.registerMiner({
         ...form,
         teamMembers: teamMembers.map(member => ({
+          id: member.id,
           name: member.name,
           surname: member.surname,
           address: member.address,
           idNumber: member.idNumber,
+          cellNumber: member.cellNumber,
+          picture: member.picture,
+          qrcode: member.qrcode,
         })),
-        cooperativename: ''
+        cooperativename: form.cooperative
       });
 
       if (error) {
@@ -312,8 +522,8 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       if (success) {
         // Show success snackbar then advance to Confirmation step
         setShowSuccessAlert(true);
-        // Move to confirmation
-        setActiveStep(4);
+        // Move to confirmation (step 5)
+        setActiveStep(5);
         // Optionally refresh after a small delay
         setTimeout(() => {
           if (onRefresh) {
@@ -525,72 +735,229 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
           <IconButton color="primary" onClick={addTeamMember} sx={{ mb: 2 }}>
             <AddCircleIcon />
           </IconButton>
-          <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, p: 2, maxWidth: 700 }}>
+          <Box sx={{ maxWidth: 900 }}>
             {teamMembers.map((member, idx) => (
-              <Box key={idx} sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5, mb: 2 }}>
-                <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-                  <TextField
-                    name="name"
-                    label="Name"
-                    fullWidth
-                    value={member.name}
-                    onChange={(e) => handleTeamChange(idx, e)}
-                    error={!!errors.teamMembers[idx] && errors.teamMembers[idx].includes('Name')}
-                    helperText={errors.teamMembers[idx] && errors.teamMembers[idx].includes('Name') ? 'Name is required' : ''}
-                    required
-                  />
-                </Box>
-                <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-                  <TextField
-                    name="surname"
-                    label="Surname"
-                    fullWidth
-                    value={member.surname}
-                    onChange={(e) => handleTeamChange(idx, e)}
-                    error={!!errors.teamMembers[idx] && errors.teamMembers[idx].includes('Surname')}
-                    helperText={errors.teamMembers[idx] && errors.teamMembers[idx].includes('Surname') ? 'Surname is required' : ''}
-                    required
-                  />
-                </Box>
-                <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-                  <TextField
-                    name="address"
-                    label="Address"
-                    fullWidth
-                    value={member.address}
-                    onChange={(e) => handleTeamChange(idx, e)}
-                  />
-                </Box>
-                <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5 }}>
-                  <TextField
-                    name="idNumber"
-                    label="ID Number"
-                    fullWidth
-                    value={member.idNumber}
-                    onChange={(e) => handleTeamChange(idx, e)}
-                    error={
-                      !!errors.teamMembers[idx] && (
-                        errors.teamMembers[idx].includes('ID Number') ||
-                        errors.teamMembers[idx].includes('Invalid ID format')
-                      )
-                    }
-                    helperText={
-                      errors.teamMembers[idx]
-                        ? errors.teamMembers[idx].includes('ID Number')
-                          ? 'ID Number is required'
-                          : errors.teamMembers[idx].includes('Invalid ID format')
-                            ? 'Format: XX-XXXXXXDXX (e.g., 67-657432D45)'
-                            : ''
-                        : ''
-                    }
-                    placeholder="67-657432D45"
-                    inputProps={{
-                      maxLength: 13, // XX-XXXXXXDXX = 13 characters with dash
-                      style: { textTransform: 'uppercase' }
-                    }}
-                    required
-                  />
-                </Box>
+              <Card key={idx} sx={{ mb: 3, border: '1px solid #e0e0e0' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      Team Member {idx + 1}
+                    </Typography>
+                    {teamMembers.length > 1 && (
+                      <IconButton 
+                        size="small" 
+                        color="error" 
+                        onClick={() => removeTeamMember(idx)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1 }}>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <TextField
+                        name="name"
+                        label="Name"
+                        fullWidth
+                        value={member.name}
+                        onChange={(e) => handleTeamChange(idx, e)}
+                        error={!!errors.teamMembers[idx] && errors.teamMembers[idx].includes('Name')}
+                        helperText={errors.teamMembers[idx] && errors.teamMembers[idx].includes('Name') ? 'Name is required' : ''}
+                        required
+                      />
+                    </Box>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <TextField
+                        name="surname"
+                        label="Surname"
+                        fullWidth
+                        value={member.surname}
+                        onChange={(e) => handleTeamChange(idx, e)}
+                        error={!!errors.teamMembers[idx] && errors.teamMembers[idx].includes('Surname')}
+                        helperText={errors.teamMembers[idx] && errors.teamMembers[idx].includes('Surname') ? 'Surname is required' : ''}
+                        required
+                      />
+                    </Box>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <TextField
+                        name="cellNumber"
+                        label="Phone Number"
+                        fullWidth
+                        value={member.cellNumber}
+                        onChange={(e) => handleTeamChange(idx, e)}
+                        error={
+                          !!errors.teamMembers[idx] && (
+                            errors.teamMembers[idx].includes('Phone Number') ||
+                            errors.teamMembers[idx].includes('Invalid phone format')
+                          )
+                        }
+                        helperText={
+                          errors.teamMembers[idx]
+                            ? errors.teamMembers[idx].includes('Phone Number')
+                              ? 'Phone number is required'
+                              : errors.teamMembers[idx].includes('Invalid phone format')
+                                ? 'Must be 10 digits'
+                                : ''
+                            : 'Enter 10-digit phone number'
+                        }
+                        placeholder="0771234567"
+                        inputProps={{
+                          maxLength: 10
+                        }}
+                        required
+                      />
+                    </Box>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <TextField
+                        name="address"
+                        label="Address"
+                        fullWidth
+                        value={member.address}
+                        onChange={(e) => handleTeamChange(idx, e)}
+                      />
+                    </Box>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <TextField
+                        name="idNumber"
+                        label="National ID Number"
+                        fullWidth
+                        value={member.idNumber}
+                        onChange={(e) => handleTeamChange(idx, e)}
+                        error={
+                          !!errors.teamMembers[idx] && (
+                            errors.teamMembers[idx].includes('ID Number') ||
+                            errors.teamMembers[idx].includes('Invalid ID format')
+                          )
+                        }
+                        helperText={
+                          errors.teamMembers[idx]
+                            ? errors.teamMembers[idx].includes('ID Number')
+                              ? 'ID Number is required'
+                              : errors.teamMembers[idx].includes('Invalid ID format')
+                                ? 'Format: XX-XXXXXXDXX (e.g., 67-657432D45)'
+                                : ''
+                            : 'Format: XX-XXXXXXDXX'
+                        }
+                        placeholder="67-657432D45"
+                        inputProps={{
+                          maxLength: 13,
+                          style: { textTransform: 'uppercase' }
+                        }}
+                        required
+                      />
+                    </Box>
+                    <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1, mb: 2 }}>
+                      <InputLabel sx={{ mb: 1 }}>Picture Upload</InputLabel>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        fullWidth
+                        sx={{ justifyContent: 'flex-start' }}
+                      >
+                        {member.picture ? 'Change Picture' : 'Upload Picture'}
+                        <input
+                          type="file"
+                          name="picture"
+                          hidden
+                          onChange={(e) => handleTeamChange(idx, e)}
+                          accept="image/*"
+                        />
+                      </Button>
+                      {member.picture && (
+                        <Box sx={{ mt: 1, textAlign: 'center' }}>
+                          <img
+                            src={member.picture}
+                            alt="Member"
+                            style={{
+                              maxWidth: '100px',
+                              maxHeight: '100px',
+                              objectFit: 'cover',
+                              borderRadius: '4px',
+                              border: '1px solid #e0e0e0'
+                            }}
+                          />
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ width: '100%', px: 1, mb: 2 }}>
+                      <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          <strong>Generated ID:</strong> {member.id}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {/* Team Member IDs Step */}
+      {activeStep === 3 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>Team Member IDs</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Review and download ID cards for all team members
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', mx: -1.5 }}>
+            {teamMembers.map((member, idx) => (
+              <Box key={idx} sx={{ width: { xs: '100%', sm: '50%', md: '33.333%' }, px: 1.5, mb: 3 }}>
+                <Card sx={{ border: '1px solid #e0e0e0', height: '100%' }}>
+                  <CardContent>
+                    <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 2 }}>
+                      {member.name} {member.surname}
+                    </Typography>
+                    {member.picture && (
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <img
+                          src={member.picture}
+                          alt={`${member.name} ${member.surname}`}
+                          style={{
+                            width: '100px',
+                            height: '100px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            border: '2px solid #e0e0e0'
+                          }}
+                        />
+                      </Box>
+                    )}
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        <strong>ID:</strong> {member.id}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        <strong>Phone:</strong> {member.cellNumber}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        <strong>National ID:</strong> {member.idNumber}
+                      </Typography>
+                    </Box>
+                    {member.qrcode && (
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <img
+                          src={member.qrcode}
+                          alt="QR Code"
+                          style={{ width: '100px', height: '100px' }}
+                        />
+                      </Box>
+                    )}
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      startIcon={<DownloadIcon />}
+                      onClick={() => downloadTeamMemberID(member)}
+                      sx={{
+                        bgcolor: 'secondary.main',
+                        '&:hover': { bgcolor: 'secondary.dark' }
+                      }}
+                    >
+                      Download ID
+                    </Button>
+                  </CardContent>
+                </Card>
               </Box>
             ))}
           </Box>
@@ -598,7 +965,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       )}
 
       {/* Review Step */}
-      {activeStep === 3 && (
+      {activeStep === 4 && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Review Details</Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
@@ -628,7 +995,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
       )}
 
       {/* Confirmation Step */}
-      {activeStep === 4 && (
+      {activeStep === 5 && (
         <Box sx={{ textAlign: 'center', py: 2 }}>
           <Typography variant="h6" color="success.main" sx={{ mb: 1 }}>
             Miner Submitted Successfully!
@@ -647,7 +1014,7 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
 export function RegMinerDialog({ open, onClose, onRefresh }: RegMinerDialogProps): React.JSX.Element {
   const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
-  const steps = ['Personal Info', 'ID Picture', 'Team Members', 'Review', 'Confirmation'];
+  const steps = ['Personal Info', 'ID Picture', 'Team Members', 'Team Member IDs', 'Review', 'Confirmation'];
   const formRef = React.useRef<{ handleNext: () => void; handleBack: () => void }>(null);
 
   const handleStepChange = (step: number) => {

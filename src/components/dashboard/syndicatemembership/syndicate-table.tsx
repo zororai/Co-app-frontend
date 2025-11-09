@@ -306,11 +306,7 @@ export function CustomersTable({
                    <TableCell>{row.registrationNumber}</TableCell>
                     {/* <TableCell>{row.cooperativename}</TableCell> */}
                   <TableCell>{row.cooperativename}</TableCell>
-                 
-                   <TableCell>{row.shaftnumber}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
-                  
-                
+          
                   <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
