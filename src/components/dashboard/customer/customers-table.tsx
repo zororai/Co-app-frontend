@@ -304,7 +304,7 @@ export function CustomersTable({
                   direction={sortField === 'status' ? sortDirection : 'asc'}
                   onClick={() => handleSort('status')}
                 >
-                  Status
+                  xxStatus
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>

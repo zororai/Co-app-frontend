@@ -16,8 +16,8 @@ import dayjs from 'dayjs';
 
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
-import { LazyCustomersMainTable, LazyRegMinerDialog } from '@/components/lazy/LazyComponents';
-import type { Customer } from '@/components/dashboard/customer/customers-table';
+import { LazySyndicateTable, LazyRegMinerDialog } from '@/components/lazy/LazyComponents';
+import type { Customer } from '@/components/dashboard/syndicatemembership/syndicate-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -122,7 +122,7 @@ export default function Page(): React.JSX.Element {
         </Stack>
       ) : (
         <LazyWrapper>
-          <LazyCustomersMainTable
+          <LazySyndicateTable
             count={customers.length}
             page={page}
             rows={customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
