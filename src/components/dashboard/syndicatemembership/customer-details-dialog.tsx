@@ -73,24 +73,31 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
     }
   };
 
-  // Delete team member handler
-  const handleDeleteTeamMember = async (memberIndex: number) => {
+  // Delete team member handler - opens confirmation dialog
+  const handleDeleteTeamMember = (memberIndex: number) => {
     if (!customerId && !customer.id) {
       setDeleteError('Miner ID is required');
       return;
     }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete this team member? This action cannot be undone.`
-    );
+    // Get member name for confirmation dialog
+    const member = customer.teamMembers[memberIndex];
+    const memberName = member ? `${member.name} ${member.surname}` : 'this team member';
+    
+    setMemberToDelete({ index: memberIndex, name: memberName });
+    setDeleteConfirmOpen(true);
+  };
 
-    if (!confirmed) return;
+  // Confirm deletion after user accepts
+  const confirmDeleteTeamMember = async () => {
+    if (!memberToDelete) return;
 
-    setDeletingMemberIndex(memberIndex);
+    setDeleteConfirmOpen(false);
+    setDeletingMemberIndex(memberToDelete.index);
     setDeleteError(null);
 
     try {
-      const result = await authClient.deleteTeamMember(customerId || customer.id, memberIndex);
+      const result = await authClient.deleteTeamMember(customerId || customer.id, memberToDelete.index);
       
       if (result.success) {
         // Refresh the page or notify parent to refresh data
@@ -103,7 +110,14 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
       setDeleteError(error.message || 'An error occurred while deleting team member');
     } finally {
       setDeletingMemberIndex(null);
+      setMemberToDelete(null);
     }
+  };
+
+  // Cancel deletion
+  const cancelDeleteTeamMember = () => {
+    setDeleteConfirmOpen(false);
+    setMemberToDelete(null);
   };
 
   // Determine which tabs to show based on available data
@@ -119,6 +133,7 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
   };
 
   return (
+    <>
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle
         sx={{
@@ -835,5 +850,62 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
         </Button>
       </DialogActions>
     </Dialog>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog
+      open={deleteConfirmOpen}
+      onClose={cancelDeleteTeamMember}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle
+        sx={{
+          bgcolor: theme.palette.error.main,
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <DeleteIcon />
+        Confirm Deletion
+      </DialogTitle>
+      <DialogContent sx={{ mt: 2 }}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Are you sure you want to delete <strong>{memberToDelete?.name}</strong>?
+        </Typography>
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          This action cannot be undone. The team member will be permanently removed from the system.
+        </Alert>
+      </DialogContent>
+      <DialogActions sx={{ p: 2.5, bgcolor: 'background.default' }}>
+        <Button
+          onClick={cancelDeleteTeamMember}
+          variant="outlined"
+          sx={{
+            borderColor: theme.palette.secondary.main,
+            color: theme.palette.secondary.main,
+            '&:hover': {
+              borderColor: theme.palette.secondary.dark,
+              bgcolor: 'rgba(0, 0, 0, 0.04)',
+            },
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={confirmDeleteTeamMember}
+          variant="contained"
+          color="error"
+          sx={{
+            bgcolor: theme.palette.error.main,
+            '&:hover': { bgcolor: theme.palette.error.dark },
+          }}
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </>
   );
 }
