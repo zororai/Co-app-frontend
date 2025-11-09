@@ -183,30 +183,7 @@ export function CustomersTable({
   return (
     <Card>
       {/* Action Buttons */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: theme.palette.secondary.main,
-            color: '#fff',
-            '&:hover': { bgcolor: theme.palette.secondary.dark }
-          }}
-          onClick={() => handleRedirect('/dashboard/customers')}
-        >
-          View Syndicate
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            bgcolor: theme.palette.secondary.main,
-            color: '#fff',
-            '&:hover': { bgcolor: theme.palette.secondary.dark }
-          }}
-          onClick={() => handleRedirect('/dashboard/company')}
-        >
-         View Company
-        </Button>
-      </Box>
+     
       <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -259,44 +236,26 @@ export function CustomersTable({
                   Registration Number
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortField === 'name' ? sortDirection : false}>
+
+
+
+              <TableCell sortDirection={sortField === 'cooperativename' ? sortDirection : false}>
                 <TableSortLabel
-                  active={sortField === 'name'}
-                  direction={sortField === 'name' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('name')}
+                  active={sortField === 'cooperativename'}
+                  direction={sortField === 'cooperativename' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('cooperativename')}
                 >
-                  Name
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'surname' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'surname'}
-                  direction={sortField === 'surname' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('surname')}
-                >
-                  Surname
-                </TableSortLabel>
-              </TableCell>
-               <TableCell sortDirection={sortField === 'surname' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'shaftNumber'}
-                  direction={sortField === 'shaftNumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('shaftNumber')}
-                >
-                  Shaft Number
-                </TableSortLabel>
-              </TableCell>
-              <TableCell sortDirection={sortField === 'nationIdNumber' ? sortDirection : false}>
-                <TableSortLabel
-                  active={sortField === 'nationIdNumber'}
-                  direction={sortField === 'nationIdNumber' ? sortDirection : 'asc'}
-                  onClick={() => handleSort('nationIdNumber')}
-                >
-                  Nationality ID Number
+                  Cooperative Name
                 </TableSortLabel>
               </TableCell>
               <TableCell sortDirection={sortField === 'shaftnumber' ? sortDirection : false}>
-               
+                <TableSortLabel
+                  active={sortField === 'shaftnumber'}
+                  direction={sortField === 'shaftnumber' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('shaftnumber')}
+                >
+                  Shaft Number
+                </TableSortLabel>
               </TableCell>
               <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
                 <TableSortLabel
@@ -346,8 +305,8 @@ export function CustomersTable({
 
                    <TableCell>{row.registrationNumber}</TableCell>
                     {/* <TableCell>{row.cooperativename}</TableCell> */}
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.surname}</TableCell>
+                  <TableCell>{row.cooperativename}</TableCell>
+                 
                    <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>
                   
