@@ -2,7 +2,6 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 
 export const allNavItems = [
-  { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
   { key: 'user-admin-onboarding', 
     title: 'Onboarding Process',
@@ -20,7 +19,26 @@ export const allNavItems = [
   ], 
     
    },
+
+ 
+  {
+    key: 'Miner-registration',
+    title: 'Miner Registration',
+    icon: 'id-card',
+    items: [
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
+    { key: 'syndicate-teammembership', title: 'Syndicate Membership', href: paths.dashboard.syndicatemembership, icon: 'id-card' },
+
+    ],
+  },
+
+
+
+
+
+
+
+
   {
     key: 'site-management',
     title: 'Shaft Management',

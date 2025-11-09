@@ -3132,6 +3132,52 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
   }
 
+  /**
+   * Update driver status with a reason
+   */
+  async updateDriverStatus(driverId: string, status: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    if (!status) {
+      return { success: false, error: 'Status is required' };
+    }
+    
+    if (!reason.trim()) {
+      return { success: false, error: 'Reason is required for status change' };
+    }
+    
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const response = await fetch(`/api/drivers/${driverId}/update-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status, reason }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to update driver status:', response.status, response.statusText);
+        const errorText = await response.text();
+        return { success: false, error: errorText || 'Request failed' };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error(`Error updating driver status with ID ${driverId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
     /**
      * Fetch a company by its ID
      */

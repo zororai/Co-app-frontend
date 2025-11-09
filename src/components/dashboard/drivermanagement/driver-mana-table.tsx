@@ -45,6 +45,7 @@ import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { DriverDetailsDialog } from '@/components/dashboard/drivermanagement/driver-details-dialog';
+import { ChangeDriverStatusDialog } from '@/components/dashboard/drivermanagement/change-driver-status-dialog';
 
 
 function noop(): void {
@@ -164,6 +165,8 @@ export function CustomersTable({
 
   const [selectedDriverId, setSelectedDriverId] = React.useState<string | null>(null);
   const [isDriverDetailsDialogOpen, setIsDriverDetailsDialogOpen] = React.useState(false);
+  const [isChangeStatusDialogOpen, setIsChangeStatusDialogOpen] = React.useState(false);
+  const [changeStatusDriverId, setChangeStatusDriverId] = React.useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
   const [deleteDriverId, setDeleteDriverId] = React.useState<string | null>(null);
   const [deleteDriverName, setDeleteDriverName] = React.useState<string>('');
@@ -200,11 +203,8 @@ export function CustomersTable({
 
   // Function to handle editing driver
   const handleEditDriver = (driverId: string) => {
-    // TODO: Implement edit functionality
-    console.log('Edit driver:', driverId);
-    setSnackbarMessage('Edit functionality coming soon');
-    setSnackbarSeverity('info');
-    setSnackbarOpen(true);
+    setChangeStatusDriverId(driverId);
+    setIsChangeStatusDialogOpen(true);
   };
 
   // Function to handle delete driver (open confirmation dialog)
@@ -478,7 +478,7 @@ export function CustomersTable({
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edit Driver">
+                      <Tooltip title="Change Status">
                         <IconButton 
                           onClick={() => handleEditDriver(row.id)}
                           size="small"
@@ -529,6 +529,19 @@ export function CustomersTable({
           driverId={selectedDriverId}
         />
       )}
+
+      {/* Change Driver Status Dialog */}
+      <ChangeDriverStatusDialog
+        open={isChangeStatusDialogOpen}
+        onClose={() => setIsChangeStatusDialogOpen(false)}
+        driverId={changeStatusDriverId}
+        onSuccess={() => {
+          setRefreshTrigger(prev => prev + 1);
+          setSnackbarMessage('Driver status updated successfully');
+          setSnackbarSeverity('success');
+          setSnackbarOpen(true);
+        }}
+      />
 
       {/* Delete confirmation dialog */}
       <Dialog
