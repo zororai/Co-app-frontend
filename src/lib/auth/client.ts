@@ -4256,20 +4256,72 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     cell: string;
     nationId: string;
     position: string;
-cooperativename: string;
+    cooperativename: string;
     idPicture: string;  // Changed to string for base64
     teamMembers: Array<{
+      id?: string;
       name: string;
       surname: string;
       address: string;
       idNumber: string;
-   
+      cellNumber?: string;
+      picture?: string;
+      qrcode?: string;
     }>;
   }): Promise<{ error?: string; success?: boolean }> {
     try {
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
         throw new Error('Authentication required');
+      }
+
+      // Function to clean base64 strings - ensure they're valid
+      const cleanBase64 = (base64String: string | undefined | null): string => {
+        if (!base64String) return '';
+        // Remove any potential problematic characters and ensure it's a valid base64
+        return base64String.trim();
+      };
+
+      // Clean and validate team members data
+      const cleanTeamMembers = data.teamMembers.map(member => ({
+        name: String(member.name || '').trim(),
+        surname: String(member.surname || '').trim(),
+        address: String(member.address || '').trim(),
+        idNumber: String(member.idNumber || '').trim(),
+        cellNumber: String(member.cellNumber || '').trim(),
+        picture: cleanBase64(member.picture),
+        // Don't send qrcode and id to backend if not needed
+      }));
+
+      // Build the request payload
+      const payload = {
+        name: String(data.name).trim(),
+        surname: String(data.surname).trim(),
+        address: String(data.address).trim(),
+        cellNumber: String(data.cell).trim(),
+        nationIdNumber: String(data.nationId).trim(),
+        position: String(data.position).trim(),
+        cooperativename: String(data.cooperativename).trim(),
+        idPicture: cleanBase64(data.idPicture),
+        teamMembers: cleanTeamMembers
+      };
+
+      console.log('Sending registration payload:', {
+        ...payload,
+        idPicture: payload.idPicture ? `${payload.idPicture.substring(0, 50)}...` : 'empty',
+        teamMembers: payload.teamMembers.map(m => ({ 
+          ...m, 
+          picture: m.picture ? `${m.picture.substring(0, 50)}...` : 'empty' 
+        }))
+      });
+
+      // Validate JSON before sending
+      let jsonString;
+      try {
+        jsonString = JSON.stringify(payload);
+      } catch (jsonError) {
+        console.error('Failed to stringify payload:', jsonError);
+        throw new Error('Invalid data format. Please check all fields and try again.');
       }
 
       // Send JSON data with base64 image
@@ -4280,22 +4332,18 @@ cooperativename: string;
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          name: data.name,
-          surname: data.surname,
-          address: data.address,
-          cellNumber: data.cell,
-          nationIdNumber: data.nationId,
-          position: data.position,
-          cooperativename: data.cooperativename,
-          idPicture: data.idPicture,  // Send base64 image string
-          teamMembers: data.teamMembers
-        })
+        body: jsonString
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to register miner');
+        const errorText = await response.text();
+        console.error('Server response error:', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to register miner');
+        } catch (parseError) {
+          throw new Error(errorText || `Failed to register miner (Status: ${response.status})`);
+        }
       }
 
       const result = await response.json();
@@ -6852,6 +6900,117 @@ cooperativename: string;
       return { success: false, error: 'Empty or invalid response' };
     } catch (error) {
       console.error('Error fetching miner details:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Fetch team members by miner ID
+   * GET /api/miners/{id}/team-members
+   */
+  async fetchTeamMembers(minerId: string | number): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId));
+      const response = await fetch(`/api/miners/${safeId}/team-members`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Team members not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch team members' };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data: Array.isArray(data) ? data : [] };
+        }
+      }
+      
+      return { success: true, data: [] };
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Add a new team member (lasher) to a miner
+   * POST /api/miners/{id}/team-members
+   */
+  async addTeamMember(minerId: string | number, teamMemberData: {
+    name: string;
+    surname: string;
+    qrcode: string;
+    cellNumber: string;
+    picture: string;
+    idNumber: string;
+    address: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId));
+      
+      // Clean and validate data
+      const payload = {
+        name: String(teamMemberData.name).trim(),
+        surname: String(teamMemberData.surname).trim(),
+        qrcode: String(teamMemberData.qrcode).trim(),
+        cellNumber: String(teamMemberData.cellNumber).trim(),
+        picture: String(teamMemberData.picture).trim(),
+        idNumber: String(teamMemberData.idNumber).trim(),
+        address: String(teamMemberData.address).trim(),
+      };
+
+      console.log('Adding team member:', {
+        minerId: safeId,
+        ...payload,
+        picture: payload.picture ? `${payload.picture.substring(0, 30)}...` : 'empty',
+        qrcode: payload.qrcode ? `${payload.qrcode.substring(0, 30)}...` : 'empty'
+      });
+
+      const response = await fetch(`/api/miners/${safeId}/team-members`, {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to add team member (Status: ${response.status})` };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding team member:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }

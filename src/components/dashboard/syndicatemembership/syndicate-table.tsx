@@ -28,13 +28,15 @@ import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
+import { CustomerDetailsDialog } from '@/components/dashboard/syndicatemembership/customer-details-dialog';
+import { AddLasherDialog } from '@/components/dashboard/syndicatemembership/add-lasher-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -162,6 +164,10 @@ export function CustomersTable({
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [loadingCustomerId, setLoadingCustomerId] = React.useState<string | null>(null);
+  
+  // Add Lasher Dialog state
+  const [isAddLasherDialogOpen, setIsAddLasherDialogOpen] = React.useState(false);
+  const [selectedMinerId, setSelectedMinerId] = React.useState<string | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
     setLoadingCustomerId(customerId);
@@ -178,6 +184,16 @@ export function CustomersTable({
     } finally {
       setLoadingCustomerId(null);
     }
+  };
+
+  const handleAddLasher = (minerId: string) => {
+    setSelectedMinerId(minerId);
+    setIsAddLasherDialogOpen(true);
+  };
+
+  const handleLasherSuccess = () => {
+    // Optionally refresh the table or show a success message
+    console.log('Lasher added successfully');
   };
 
   return (
@@ -350,6 +366,19 @@ export function CustomersTable({
                           )}
                         </IconButton>
                       </Tooltip>
+                      
+                      <Tooltip title="Add Lasher">
+                        <IconButton 
+                          onClick={() => handleAddLasher(row.id)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.success.main,
+                            '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.08)' },
+                          }}
+                        >
+                          <AddCircleIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -381,6 +410,17 @@ export function CustomersTable({
         }}
         customer={selectedCustomer}
         customerId={selectedCustomerId}
+      />
+      
+      {/* Add Lasher Dialog */}
+      <AddLasherDialog
+        open={isAddLasherDialogOpen}
+        onClose={() => {
+          setIsAddLasherDialogOpen(false);
+          setSelectedMinerId(null);
+        }}
+        minerId={selectedMinerId}
+        onSuccess={handleLasherSuccess}
       />
     </Card>
   );

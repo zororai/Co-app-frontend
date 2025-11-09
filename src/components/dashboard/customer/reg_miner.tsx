@@ -495,20 +495,39 @@ const RegMinerForm = React.forwardRef<{ handleNext: () => void; handleBack: () =
     }
 
     try {
-      const { error, success } = await authClient.registerMiner({
-        ...form,
+      // Build explicit payload with only required fields
+      const payload = {
+        name: form.name,
+        surname: form.surname,
+        address: form.address,
+        cell: form.cell,
+        nationId: form.nationId,
+        position: form.position,
+        cooperativename: form.cooperative,
+        idPicture: form.idPicture,
         teamMembers: teamMembers.map(member => ({
           id: member.id,
           name: member.name,
           surname: member.surname,
           address: member.address,
           idNumber: member.idNumber,
-          cellNumber: member.cellNumber,
-          picture: member.picture,
-          qrcode: member.qrcode,
-        })),
-        cooperativename: form.cooperative
+          cellNumber: member.cellNumber || '',
+          picture: member.picture || '',
+          qrcode: member.qrcode || '',
+        }))
+      };
+
+      console.log('Submitting registration with payload:', {
+        ...payload,
+        idPicture: payload.idPicture ? `${payload.idPicture.substring(0, 30)}...` : 'empty',
+        teamMembers: payload.teamMembers.map(m => ({
+          ...m,
+          picture: m.picture ? `${m.picture.substring(0, 30)}...` : 'empty',
+          qrcode: m.qrcode ? `${m.qrcode.substring(0, 30)}...` : 'empty'
+        }))
       });
+
+      const { error, success } = await authClient.registerMiner(payload);
 
       if (error) {
         setErrors(prev => ({
