@@ -7016,6 +7016,43 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   }
 
   /**
+   * Delete a team member (lasher) from a miner
+   * DELETE /api/miners/{minerId}/team-members/{index}
+   */
+  async deleteTeamMember(minerId: string | number, memberIndex: number): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeMinerId = encodeURIComponent(String(minerId));
+      const safeIndex = encodeURIComponent(memberIndex);
+
+      console.log('Deleting team member:', {
+        minerId: safeMinerId,
+        memberIndex: safeIndex
+      });
+
+      const response = await fetch(`/api/miners/${safeMinerId}/team-members/${safeIndex}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to delete team member (Status: ${response.status})` };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting team member:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Fetch total mining area
    * GET /api/sectionmapping/area-total
    */

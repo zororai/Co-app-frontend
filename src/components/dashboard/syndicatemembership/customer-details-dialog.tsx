@@ -17,6 +17,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PersonIcon from '@mui/icons-material/Person';
 import BusinessIcon from '@mui/icons-material/Business';
 import GroupIcon from '@mui/icons-material/Group';
@@ -40,6 +41,10 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
   const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
   const [shaftLoading, setShaftLoading] = React.useState(false);
   const [shaftError, setShaftError] = React.useState<string | null>(null);
+  const [deletingMemberIndex, setDeletingMemberIndex] = React.useState<number | null>(null);
+  const [deleteError, setDeleteError] = React.useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [memberToDelete, setMemberToDelete] = React.useState<{ index: number; name: string } | null>(null);
   
   if (!customer) return null;
 
@@ -65,6 +70,39 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
       setShaftError(error.message || 'Failed to fetch shaft assignments');
     } finally {
       setShaftLoading(false);
+    }
+  };
+
+  // Delete team member handler
+  const handleDeleteTeamMember = async (memberIndex: number) => {
+    if (!customerId && !customer.id) {
+      setDeleteError('Miner ID is required');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete this team member? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingMemberIndex(memberIndex);
+    setDeleteError(null);
+
+    try {
+      const result = await authClient.deleteTeamMember(customerId || customer.id, memberIndex);
+      
+      if (result.success) {
+        // Refresh the page or notify parent to refresh data
+        window.location.reload();
+      } else {
+        setDeleteError(result.error || 'Failed to delete team member');
+      }
+    } catch (error: any) {
+      console.error('Error deleting team member:', error);
+      setDeleteError(error.message || 'An error occurred while deleting team member');
+    } finally {
+      setDeletingMemberIndex(null);
     }
   };
 
@@ -379,6 +417,14 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
                   }}
                 />
               </Box>
+              
+              {/* Delete Error Alert */}
+              {deleteError && (
+                <Alert severity="error" sx={{ mb: 2 }} onClose={() => setDeleteError(null)}>
+                  {deleteError}
+                </Alert>
+              )}
+              
               <Box sx={{ 
                 display: 'grid', 
                 gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' },
@@ -419,17 +465,33 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
                       }}>
                         Team Member
                       </Typography>
-                      <Chip 
-                        label={`#${String(index + 1).padStart(2, '0')}`}
-                        size="small"
-                        sx={{ 
-                          bgcolor: 'white',
-                          color: theme.palette.secondary.main,
-                          fontWeight: 700,
-                          fontSize: '0.7rem',
-                          height: 24
-                        }}
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip 
+                          label={`#${String(index + 1).padStart(2, '0')}`}
+                          size="small"
+                          sx={{ 
+                            bgcolor: 'white',
+                            color: theme.palette.secondary.main,
+                            fontWeight: 700,
+                            fontSize: '0.7rem',
+                            height: 24
+                          }}
+                        />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDeleteTeamMember(index)}
+                          disabled={deletingMemberIndex === index}
+                          sx={{
+                            color: 'white',
+                            '&:hover': {
+                              bgcolor: 'rgba(255, 255, 255, 0.2)',
+                            },
+                          }}
+                          title="Delete Team Member"
+                        >
+                          <DeleteIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Box>
                     </Box>
 
                     {/* Card Body */}

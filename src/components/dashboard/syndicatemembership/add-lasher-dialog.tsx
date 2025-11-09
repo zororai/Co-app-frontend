@@ -293,13 +293,47 @@ export function AddLasherDialog({ open, onClose, minerId, onSuccess }: AddLasher
   };
 
   // Download ID card as image
-  const handleDownloadID = () => {
+  const handleDownloadID = async () => {
     const idCard = document.getElementById('lasher-id-card');
     if (!idCard) return;
 
-    // Use html2canvas or similar library in production
-    // For now, just trigger print
-    window.print();
+    try {
+      // Dynamically import html2canvas
+      const html2canvas = (await import('html2canvas')).default;
+      
+      // Convert the ID card to canvas
+      const canvas = await html2canvas(idCard, {
+        scale: 2, // Higher quality
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+
+      // Convert canvas to blob
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // Use team member's full name for the filename
+        const fileName = `${form.name}_${form.surname}_ID_Card.png`.replace(/\s+/g, '_');
+        link.download = fileName;
+        link.href = url;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error downloading ID card:', error);
+      // Fallback to print if html2canvas fails
+      window.print();
+    }
   };
 
   return (
@@ -698,12 +732,12 @@ export function AddLasherDialog({ open, onClose, minerId, onSuccess }: AddLasher
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="outlined"
-                onClick={handleDownloadIdCard}
+                onClick={handleDownloadID}
                 startIcon={<DownloadIcon />}
                 sx={{
                   borderColor: theme.palette.secondary.main,
                   color: theme.palette.secondary.main,
-                  '&:hover': { 
+                  '&:hover': {
                     borderColor: theme.palette.secondary.dark,
                     bgcolor: 'rgba(0, 0, 0, 0.04)',
                   },
