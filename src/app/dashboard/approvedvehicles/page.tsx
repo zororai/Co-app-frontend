@@ -6,8 +6,6 @@ import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -33,70 +31,12 @@ import { RegMinerDialog } from '@/components/dashboard/customer/reg_miner';
 import { authClient } from '@/lib/auth/client';
 import { AddVehicleDialog } from '@/components/dashboard/vehicleonboarding/add-vehicle-dialog-box';
 
-// Tab content components with loading states
-interface TabProps {
-  customers: Customer[];
-  page: number;
-  rowsPerPage: number;
-  onRefresh: () => void;
-  isLoading?: boolean;
-}
-
-function IdleTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading idle vehicles...</Typography>
-      </Stack>
-    );
-  }
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="idle" />;
-}
-
-function LoadingTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading vehicles in loading status...</Typography>
-      </Stack>
-    );
-  }
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loading" />;
-}
-
-function LoadedTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading loaded vehicles...</Typography>
-      </Stack>
-    );
-  }
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="loaded" />;
-}
-
-function MaintainanceTab({ customers, page, rowsPerPage, onRefresh, isLoading }: TabProps) {
-  if (isLoading) {
-    return (
-      <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
-        <CircularProgress />
-        <Typography variant="body2" sx={{ mt: 2 }}>Loading vehicles in maintenance...</Typography>
-      </Stack>
-    );
-  }
-  return <CustomersTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} operationalStatusFilter="Maintainance" />;
-}
-
 export default function Page(): React.JSX.Element {
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
-  const [tab, setTab] = React.useState<'Idle' | 'Loading' | 'Loaded' | 'Maintainance'>('Idle');
   
   // Loading state for initial data fetch
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -141,41 +81,14 @@ export default function Page(): React.JSX.Element {
     return () => clearTimeout(timer);
   }, [fetchApprovedVehicles]);
 
-  // Filter customers by selected tab/status
-  const idleCustomers = customers.filter(c => c.status === 'idle');
-  const loadingCustomers = customers.filter(c => c.status === 'loading');
-  const loadedCustomers = customers.filter(c => c.status === 'loaded');
-  const maintainanceCustomers = customers.filter(c => c.status === 'maintainance');
-
   // Export table data as CSV
   const handleExport = () => {
     const headers = [
       'Registration Number', 'Driver', 'Operational Status', 'Vehicle Make', 'Vehicle Type', 'Status'
     ];
 
-    // Determine which customers to export based on the current tab
-    let filteredCustomers: Customer[] = [];
-    switch (tab) {
-    case 'Idle': {
-    filteredCustomers = idleCustomers;
-    break;
-    }
-    case 'Loading': {
-    filteredCustomers = loadingCustomers;
-    break;
-    }
-    case 'Loaded': {
-    filteredCustomers = loadedCustomers;
-    break;
-    }
-    case 'Maintainance': {
-    filteredCustomers = maintainanceCustomers;
-    break;
-    }
-    }
-
-    // Export all filtered customers, not just paginated ones
-    const rows = filteredCustomers.map((c: any) => [
+    // Export all customers
+    const rows = customers.map((c: any) => [
       c.regNumber || '',
       c.assignedDriver || '',
       c.operationalStatus || '',
@@ -189,7 +102,7 @@ export default function Page(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `approved-vehicles-${tab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `approved-vehicles-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.append(a);
 
     a.click();
@@ -204,16 +117,6 @@ export default function Page(): React.JSX.Element {
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4"> Vehicle Management </Typography>
-          <Tabs
-            value={tab}
-            onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
-          >
-            <Tab label="Idle" value="Idle" />
-            <Tab label="Loading" value="Loading" />
-            <Tab label="Loaded" value="Loaded" />
-            <Tab label="Maintainance" value="Maintainance" />
-          </Tabs>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
@@ -225,17 +128,19 @@ export default function Page(): React.JSX.Element {
         <TopRightActions onRefresh={refreshData} />
       </Stack>
 
-      {tab === 'Idle' && (
-        <IdleTab customers={idleCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'Loading' && (
-        <LoadingTab customers={loadingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'Loaded' && (
-        <LoadedTab customers={loadedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
-      )}
-      {tab === 'Maintainance' && (
-        <MaintainanceTab customers={maintainanceCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} isLoading={isInitialLoading} />
+      {isInitialLoading ? (
+        <Stack alignItems="center" justifyContent="center" sx={{ minHeight: 200 }}>
+          <CircularProgress />
+          <Typography variant="body2" sx={{ mt: 2 }}>Loading vehicles...</Typography>
+        </Stack>
+      ) : (
+        <CustomersTable 
+          count={customers.length} 
+          page={page} 
+          rows={customers} 
+          rowsPerPage={rowsPerPage} 
+          onRefresh={refreshData} 
+        />
       )}
 
       <RegMinerDialog open={open} onClose={() => setOpen(false)} />

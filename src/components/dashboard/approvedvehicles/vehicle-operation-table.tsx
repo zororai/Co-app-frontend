@@ -22,6 +22,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import SettingsIcon from '@mui/icons-material/Settings';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -361,7 +365,7 @@ export function CustomersTable({
               <TableCell>Vehicle Type</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
-              <TableCell>Send Vehicle To Ore Maintenance</TableCell>
+              <TableCell>Manage Vehicle Healthy</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -409,37 +413,41 @@ export function CustomersTable({
             
               
                    <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Vehicle Details</button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Tooltip title="View Vehicle Details" arrow>
+                        <IconButton
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: '#081b2fff',
+                            '&:hover': {
+                              backgroundColor: 'rgba(8, 27, 47, 0.08)',
+                            }
+                          }}
+                        >
+                          <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
 
                   
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleSendToMaintenance(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>
-                        {row.operationalStatus === 'Maintainance' ? 'Manage Status' : 'Manage Status'}
-                      </button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Tooltip title="Manage Vehicle Status" arrow>
+                        <IconButton
+                          onClick={() => handleSendToMaintenance(row.id)}
+                          size="small"
+                          sx={{
+                            color: '#081b2fff',
+                            '&:hover': {
+                              backgroundColor: 'rgba(8, 27, 47, 0.08)',
+                            }
+                          }}
+                        >
+                          <SettingsIcon />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                
