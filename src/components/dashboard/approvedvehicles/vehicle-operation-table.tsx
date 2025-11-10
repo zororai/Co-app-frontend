@@ -26,6 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SettingsIcon from '@mui/icons-material/Settings';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -413,7 +414,7 @@ export function CustomersTable({
             
               
                    <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                       <Tooltip title="View Vehicle Details" arrow>
                         <IconButton
                           onClick={() => handleViewUserDetails(row.id)}
@@ -426,6 +427,20 @@ export function CustomersTable({
                           }}
                         >
                           <VisibilityIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Interchange" arrow>
+                        <IconButton
+                          onClick={() => {/* Add interchange handler here */}}
+                          size="small"
+                          sx={{
+                            color: '#081b2fff',
+                            '&:hover': {
+                              backgroundColor: 'rgba(8, 27, 47, 0.08)',
+                            }
+                          }}
+                        >
+                          <SwapVertIcon />
                         </IconButton>
                       </Tooltip>
                     </Box>
