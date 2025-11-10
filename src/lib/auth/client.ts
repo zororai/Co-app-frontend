@@ -5222,7 +5222,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/vehicles/status/approved', {
+      const response = await fetch('/api/vehicles', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -5503,6 +5503,52 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { success: true };
     } catch (error) {
       console.error('Error sending vehicle to maintenance:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Update vehicle status with reason
+   * PUT /api/vehicles/{id}/update-status
+   * @param vehicleId The ID of the vehicle to update
+   * @param status The new status for the vehicle
+   * @param reason The reason for the status update
+   * @returns A promise that resolves to success or error
+   */
+  async updateVehicleStatus(vehicleId: string, status: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}/update-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status,
+          reason,
+        }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update vehicle status: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating vehicle status:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error occurred' 
