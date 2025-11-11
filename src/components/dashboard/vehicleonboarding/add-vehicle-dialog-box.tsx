@@ -177,15 +177,15 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
 
   // Format ID number with dashes
   const formatIdNumber = (value: string): string => {
-    // Remove all non-alphanumeric characters
-    const clean = value.replace(/[^0-9A-Za-z]/g, '');
+    // Remove all non-alphanumeric characters and convert to uppercase
+    const clean = value.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
     
     // Apply formatting: XX-XXXXXXDXX
     if (clean.length <= 2) {
       return clean;
     } else if (clean.length <= 8) {
       return `${clean.slice(0, 2)}-${clean.slice(2)}`;
-    } else if (clean.length <= 10) {
+    } else if (clean.length <= 9) {
       return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8)}`;
     } else {
       return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
@@ -268,9 +268,12 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           newErrors.ownerCellNumber = 'Invalid phone number format';
         }
         
-        // ID number validation to allow format like 80-101500D87
-        if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
-          newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
+        // ID number validation - convert to uppercase for validation
+        if (formData.ownerIdNumber) {
+          const cleanId = formData.ownerIdNumber.replace(/[\s-]/g, '').toUpperCase();
+          if (!/^\d{2}\d{6}[A-Z]\d{2}$/.test(cleanId)) {
+            newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXDXX (e.g., 80-101500D87)';
+          }
         }
         break;
       }
@@ -309,9 +312,12 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       newErrors.ownerCellNumber = 'Invalid phone number format';
     }
     
-    // ID number validation to allow format like 80-101500D87
-    if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
-      newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
+    // ID number validation - convert to uppercase for validation
+    if (formData.ownerIdNumber) {
+      const cleanId = formData.ownerIdNumber.replace(/[\s-]/g, '').toUpperCase();
+      if (!/^\d{2}\d{6}[A-Z]\d{2}$/.test(cleanId)) {
+        newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXDXX (e.g., 80-101500D87)';
+      }
     }
     
     // Document validation
