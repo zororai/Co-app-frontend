@@ -142,9 +142,9 @@ export function CustomersTable({
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
     
-    // If no manual sorting is active, maintain LIFO order (data is already sorted)
+    // If no manual sorting is active, maintain LIFO order (newest first)
     if (!sortField || sortField === '') {
-      return filtered;
+      return sortNewestFirst(filtered);
     }
     
     // Apply manual sorting when user clicks column headers

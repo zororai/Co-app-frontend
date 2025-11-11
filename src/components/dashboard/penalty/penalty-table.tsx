@@ -34,6 +34,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { sortNewestFirst } from '@/utils/sort';
 import { DotsThreeVertical as DotsThreeVerticalIcon } from '@phosphor-icons/react/dist/ssr/DotsThreeVertical';
 import { Eye as EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { PencilSimple as PencilSimpleIcon } from '@phosphor-icons/react/dist/ssr/PencilSimple';
@@ -158,7 +159,8 @@ export function PenaltyTable({
       return 0;
     });
 
-    return filtered;
+    // Apply LIFO sorting (newest first) after filtering
+    return sortNewestFirst(filtered);
   }, [rows, filters, sortField, sortDirection]);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, penaltyId: string) => {
