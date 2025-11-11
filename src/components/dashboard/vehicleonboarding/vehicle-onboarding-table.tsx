@@ -103,7 +103,7 @@ export function CustomersTable({
   });
   
   // Sorting state
-  const [sortField, setSortField] = React.useState<string>('regNumber');
+  const [sortField, setSortField] = React.useState<string>(''); // Empty string = LIFO order (default)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
   
   // Delete dialog state
@@ -142,7 +142,12 @@ export function CustomersTable({
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
     
-    // Apply sorting
+    // If no manual sorting is active, maintain LIFO order (data is already sorted)
+    if (!sortField || sortField === '') {
+      return filtered;
+    }
+    
+    // Apply manual sorting when user clicks column headers
     return [...filtered].sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
@@ -210,10 +215,21 @@ export function CustomersTable({
           ownerIdNumber: vehicle.ownerIdNumber || '',
           status: vehicle.status || 'PENDING',
           reason: vehicle.reason || '',
+          createdAt: vehicle.createdAt || vehicle.date || vehicle.timestamp, // Preserve timestamps for LIFO
+          updatedAt: vehicle.updatedAt, // Preserve update timestamp
           // Add any other fields needed for the table
         }));
         
-        setUsers(transformedVehicles);
+        // Apply LIFO sorting (newest records first)
+        const sortedVehicles = sortNewestFirst(transformedVehicles);
+        console.log('Applied LIFO sorting - First 3 records:', sortedVehicles.slice(0, 3).map(v => ({
+          id: v.id,
+          regNumber: v.regNumber,
+          createdAt: v.createdAt,
+          updatedAt: v.updatedAt
+        })));
+        
+        setUsers(sortedVehicles);
       } catch (error_) {
         console.error('Error fetching vehicles:', error_);
         setError('Failed to load vehicles. Please try again.');

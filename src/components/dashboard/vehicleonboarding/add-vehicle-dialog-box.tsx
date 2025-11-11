@@ -359,10 +359,28 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       return;
     }
     
+    // Additional validation for driverId
+    if (!formData.driverId || formData.driverId.trim() === '') {
+      setError('Please select an assigned driver');
+      setErrors({ ...errors, assignedDriver: 'Driver selection is required' });
+      setActiveStep(0); // Go back to first step
+      return;
+    }
+    
+    // Debug log before submission
+    console.log('=== SUBMITTING VEHICLE REGISTRATION ===');
+    console.log('Form Data:', formData);
+    console.log('Driver ID:', formData.driverId);
+    console.log('Driver Name:', formData.assignedDriver);
+    
     setLoading(true);
+    setError(null); // Clear previous errors
+    
     try {
       // Call the API to register the vehicle
       const result = await authClient.registerVehicle(formData);
+      
+      console.log('Registration Result:', result);
       
       if (result.success) {
         // Set success state and move to confirmation step
@@ -380,12 +398,36 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           onRefresh();
         }
       } else {
-        // Show error
-        setError(`Failed to register vehicle: ${result.error || 'Unknown error'}`);
+        // Show error with better formatting
+        const errorMessage = result.error || 'Unknown error';
+        
+        // Check for specific error types and provide helpful messages
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          setError(`Registration Number Conflict: ${errorMessage}\n\nPlease use a different registration number.`);
+          // Also highlight the field with the error
+          setErrors({ ...errors, regNumber: 'This registration number is already in use' });
+          // Go back to the first step to fix it
+          setActiveStep(0);
+        } else if (errorMessage.toLowerCase().includes('driver')) {
+          setError(`Driver Error: ${errorMessage}`);
+          setErrors({ ...errors, assignedDriver: 'Please select a valid driver' });
+          setActiveStep(0);
+        } else {
+          setError(`Failed to register vehicle: ${errorMessage}`);
+        }
       }
     } catch (error) {
       console.error('Error registering vehicle:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      // Handle specific error types
+      if (errorMessage.toLowerCase().includes('already exists')) {
+        setError(`Registration Number Conflict: ${errorMessage}\n\nPlease use a different registration number.`);
+        setErrors({ ...errors, regNumber: 'This registration number is already in use' });
+        setActiveStep(0);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -415,6 +457,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setSuccess(false);
     setError(null);
     setErrors({});
+    
+    // Refresh the table if onRefresh callback is provided
+    if (onRefresh) {
+      onRefresh();
+    }
     
     onClose();
   };
@@ -532,17 +579,41 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     labelId="assigned-driver-label"
                     id="assigned-driver"
                     name="driverId"
-                    value={formData.driverId}
+                    value={formData.driverId || ''}
                     onChange={(e) => {
                       const selectedDriverId = e.target.value;
+                      
+                      // Debug log to see what's being selected
+                      console.log('Selected Driver ID:', selectedDriverId);
+                      console.log('Available Drivers:', approvedDrivers);
+                      
+                      // If empty string is selected (None), don't update
+                      if (!selectedDriverId) {
+                        console.warn('No driver selected - skipping update');
+                        return;
+                      }
+                      
                       const selectedDriver = approvedDrivers.find(driver => driver.id === selectedDriverId);
-                      setFormData({
-                        ...formData,
-                        driverId: selectedDriverId,
-                        assignedDriver: selectedDriver 
-                          ? `${selectedDriver.name || (selectedDriver as any).firstName || ''} ${selectedDriver.surname || (selectedDriver as any).lastName || ''}`.trim()
-                          : ''
-                      });
+                      console.log('Found Driver:', selectedDriver);
+                      
+                      if (selectedDriver) {
+                        const driverFullName = `${selectedDriver.name || (selectedDriver as any).firstName || ''} ${selectedDriver.surname || (selectedDriver as any).lastName || ''}`.trim();
+                        console.log('Setting driverId to:', selectedDriverId);
+                        console.log('Setting assignedDriver to:', driverFullName);
+                        
+                        setFormData({
+                          ...formData,
+                          driverId: selectedDriverId,
+                          assignedDriver: driverFullName
+                        });
+                        
+                        // Clear any previous errors
+                        const newErrors = { ...errors };
+                        delete newErrors.assignedDriver;
+                        setErrors(newErrors);
+                      } else {
+                        console.error('Driver not found in approvedDrivers array!');
+                      }
                     }}
                     label="Assigned Driver"
                     sx={{
@@ -551,15 +622,26 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
                     }}
                   >
-                    <MenuItem value=""><em>None</em></MenuItem>
+                    <MenuItem value="" disabled><em>Select a driver</em></MenuItem>
                     {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
-                      approvedDrivers.map((driver) => (
-                        <MenuItem key={driver?.id || Math.random()} value={driver?.id || ''}>
-                          {driver?.name || (driver as any)?.firstName || ''} {driver?.surname || (driver as any)?.lastName || ''}
-                        </MenuItem>
-                      ))
+                      approvedDrivers.map((driver) => {
+                        const driverId = driver?.id || '';
+                        const driverName = `${driver?.name || (driver as any)?.firstName || ''} ${driver?.surname || (driver as any)?.lastName || ''}`.trim();
+                        
+                        // Skip if driver has no ID
+                        if (!driverId) {
+                          console.warn('Driver without ID found:', driver);
+                          return null;
+                        }
+                        
+                        return (
+                          <MenuItem key={driverId} value={driverId}>
+                            {driverName || 'Unnamed Driver'}
+                          </MenuItem>
+                        );
+                      }).filter(Boolean)
                     ) : (
-                      <MenuItem value=""><em>No drivers available</em></MenuItem>
+                      <MenuItem value="" disabled><em>No drivers available</em></MenuItem>
                     )}
                   </Select>
                   {formSubmitted && errors.assignedDriver && (
