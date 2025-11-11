@@ -13,11 +13,18 @@ import Divider from '@mui/material/Divider';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import BuildIcon from '@mui/icons-material/Build';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { authClient } from '@/lib/auth/client';
 
 interface VehicleInterchangeDialogProps {
@@ -34,8 +41,13 @@ export function VehicleInterchangeDialog({
   const theme = useTheme();
   const [vehicle, setVehicle] = React.useState<any>(null);
   const [driver, setDriver] = React.useState<any>(null);
+  const [approvedDrivers, setApprovedDrivers] = React.useState<any[]>([]);
+  const [selectedDriverId, setSelectedDriverId] = React.useState<string>('');
+  const [selectedDriverDetails, setSelectedDriverDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [driverLoading, setDriverLoading] = React.useState<boolean>(false);
+  const [approvedDriversLoading, setApprovedDriversLoading] = React.useState<boolean>(false);
+  const [selectedDriverLoading, setSelectedDriverLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const fetchVehicleDetails = async () => {
@@ -80,9 +92,58 @@ export function VehicleInterchangeDialog({
     }
   };
 
+  const fetchApprovedDrivers = async () => {
+    setApprovedDriversLoading(true);
+    
+    try {
+      const data = await authClient.fetchApprovedDrivers();
+      
+      if (data) {
+        setApprovedDrivers(data);
+      } else {
+        console.error('Failed to fetch approved drivers');
+      }
+    } catch (error_) {
+      console.error('Error fetching approved drivers:', error_);
+    } finally {
+      setApprovedDriversLoading(false);
+    }
+  };
+
+  const fetchSelectedDriverDetails = async (driverId: string) => {
+    if (!driverId) return;
+    
+    setSelectedDriverLoading(true);
+    
+    try {
+      const data = await authClient.fetchDriverById(driverId);
+      
+      if (data) {
+        setSelectedDriverDetails(data);
+      } else {
+        console.error('Failed to fetch selected driver details');
+      }
+    } catch (error_) {
+      console.error('Error fetching selected driver details:', error_);
+    } finally {
+      setSelectedDriverLoading(false);
+    }
+  };
+
+  const handleDriverChange = (event: SelectChangeEvent<string>) => {
+    const driverId = event.target.value;
+    setSelectedDriverId(driverId);
+    if (driverId) {
+      fetchSelectedDriverDetails(driverId);
+    } else {
+      setSelectedDriverDetails(null);
+    }
+  };
+
   React.useEffect(() => {
     if (open && vehicleId) {
       fetchVehicleDetails();
+      fetchApprovedDrivers();
     }
   }, [open, vehicleId]);
 
@@ -290,11 +351,11 @@ export function VehicleInterchangeDialog({
               </Card>
             </Box>
 
-            {/* Bottom Section - Two Equal Cards Side by Side */}
+            {/* Bottom Section - Three Columns Side by Side */}
             <Box sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                {/* Driver Details Card */}
-                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '300px' }}>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'stretch' }}>
+                {/* Column 1: Driver Details Card */}
+                <Box sx={{ flex: '1 1 0', minWidth: '0' }}>
                   <Card 
                     elevation={2}
                     sx={{ 
@@ -416,8 +477,47 @@ export function VehicleInterchangeDialog({
                   </Card>
                 </Box>
 
-                {/* Additional Information Card */}
-                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '300px' }}>
+                {/* Column 2: Switch Driver Button */}
+                <Box 
+                  sx={{ 
+                    flex: '0 0 auto',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    px: 1
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    startIcon={<SwapHorizIcon />}
+                    sx={{
+                      bgcolor: '#4caf50',
+                      color: 'white',
+                      py: 2,
+                      px: 2.5,
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '0.95rem',
+                      boxShadow: 3,
+                      minWidth: '120px',
+                      '&:hover': {
+                        bgcolor: '#45a049',
+                        boxShadow: 6,
+                      },
+                      '&:disabled': {
+                        bgcolor: '#ccc',
+                        color: '#666'
+                      }
+                    }}
+                    disabled={!selectedDriverId || selectedDriverLoading}
+                  >
+                    Switch Driver
+                  </Button>
+                </Box>
+
+                {/* Column 3: Switch Driver Card */}
+                <Box sx={{ flex: '1 1 0', minWidth: '0' }}>
                   <Card 
                     elevation={2}
                     sx={{ 
@@ -437,48 +537,169 @@ export function VehicleInterchangeDialog({
                             display: 'flex'
                           }}
                         >
-                          <BuildIcon sx={{ fontSize: 24 }} />
+                          <SwapHorizIcon sx={{ fontSize: 24 }} />
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.secondary.main }}>
-                          Additional Information
+                          Switch Driver
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                        {vehicle.reason && (
-                          <Box>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                              Reason / Notes
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                              {vehicle.reason}
-                            </Typography>
-                          </Box>
-                        )}
+                      {/* Driver Selection Dropdown */}
+                      <FormControl fullWidth sx={{ mb: 3 }}>
+                        <InputLabel id="driver-select-label">Select Driver</InputLabel>
+                        <Select
+                          labelId="driver-select-label"
+                          id="driver-select"
+                          value={selectedDriverId}
+                          label="Select Driver"
+                          onChange={handleDriverChange}
+                          disabled={approvedDriversLoading}
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {approvedDrivers.map((approvedDriver) => (
+                            <MenuItem key={approvedDriver.id} value={approvedDriver.id}>
+                              {approvedDriver.firstName} {approvedDriver.lastName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
 
+                      {/* Selected Driver Details */}
+                      {approvedDriversLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                          <CircularProgress size={32} />
+                        </Box>
+                      ) : selectedDriverLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                          <CircularProgress size={32} />
+                        </Box>
+                      ) : selectedDriverDetails ? (
                         <Box>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                            Vehicle ID
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5, fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                            {vehicle.id || 'N/A'}
+                          <Divider sx={{ mb: 2.5 }} />
+                          
+                          {/* Driver Avatar/Picture */}
+                          {selectedDriverDetails.picture && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+                              <Avatar
+                                src={selectedDriverDetails.picture}
+                                alt={`${selectedDriverDetails.firstName} ${selectedDriverDetails.lastName}`}
+                                sx={{ 
+                                  width: 100, 
+                                  height: 100,
+                                  border: `3px solid ${theme.palette.secondary.main}`
+                                }}
+                              />
+                            </Box>
+                          )}
+
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                Full Name
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.firstName} {selectedDriverDetails.lastName}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                ID Number
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.idNumber || 'N/A'}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                Date of Birth
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.dateOfBirth || 'N/A'}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                License Number
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.licenseNumber || 'N/A'}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                License Class
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.licenseClass || 'N/A'}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                License Expiry Date
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.licenseExpiryDate || 'N/A'}
+                              </Typography>
+                            </Box>
+
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                Years of Experience
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {selectedDriverDetails.yearsOfExperience || 0} years
+                              </Typography>
+                            </Box>
+
+                            {/* QR Code */}
+                            {selectedDriverDetails.qrcode && (
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600, mb: 1, display: 'block' }}>
+                                  QR Code
+                                </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                  <img 
+                                    src={selectedDriverDetails.qrcode} 
+                                    alt="Driver QR Code"
+                                    style={{ maxWidth: '150px', height: 'auto' }}
+                                  />
+                                </Box>
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      ) : selectedDriverId ? (
+                        <Box sx={{ 
+                          bgcolor: '#fff3e0', 
+                          borderRadius: 2, 
+                          p: 3, 
+                          textAlign: 'center',
+                          border: '1px solid #ffb74d'
+                        }}>
+                          <Typography variant="body2" sx={{ color: '#e65100' }}>
+                            Failed to load driver details
                           </Typography>
                         </Box>
-
-                        {!vehicle.reason && (
-                          <Box sx={{ 
-                            bgcolor: '#f5f5f5', 
-                            borderRadius: 2, 
-                            p: 2, 
-                            textAlign: 'center',
-                            border: '1px dashed #ccc'
-                          }}>
-                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                              No additional notes available
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
+                      ) : (
+                        <Box sx={{ 
+                          bgcolor: '#f5f5f5', 
+                          borderRadius: 2, 
+                          p: 3, 
+                          textAlign: 'center',
+                          border: '1px dashed #ccc'
+                        }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Select a driver to view details
+                          </Typography>
+                        </Box>
+                      )}
                     </CardContent>
                   </Card>
                 </Box>
