@@ -33,14 +33,10 @@ export function VehicleInterchangeDialog({
 }: VehicleInterchangeDialogProps): React.JSX.Element {
   const theme = useTheme();
   const [vehicle, setVehicle] = React.useState<any>(null);
+  const [driver, setDriver] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [driverLoading, setDriverLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (open && vehicleId) {
-      fetchVehicleDetails();
-    }
-  }, [open, vehicleId]);
 
   const fetchVehicleDetails = async () => {
     if (!vehicleId) return;
@@ -63,6 +59,38 @@ export function VehicleInterchangeDialog({
       setLoading(false);
     }
   };
+
+  const fetchDriverDetails = async (driverId: string) => {
+    if (!driverId) return;
+    
+    setDriverLoading(true);
+    
+    try {
+      const data = await authClient.fetchDriverById(driverId);
+      
+      if (data) {
+        setDriver(data);
+      } else {
+        console.error('Failed to fetch driver details');
+      }
+    } catch (error_) {
+      console.error('Error fetching driver details:', error_);
+    } finally {
+      setDriverLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (open && vehicleId) {
+      fetchVehicleDetails();
+    }
+  }, [open, vehicleId]);
+
+  React.useEffect(() => {
+    if (vehicle?.driverId) {
+      fetchDriverDetails(vehicle.driverId);
+    }
+  }, [vehicle]);
 
   return (
     <Dialog
@@ -265,7 +293,7 @@ export function VehicleInterchangeDialog({
             {/* Bottom Section - Two Equal Cards Side by Side */}
             <Box sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                {/* Owner Details Card */}
+                {/* Driver Details Card */}
                 <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '300px' }}>
                   <Card 
                     elevation={2}
@@ -289,47 +317,101 @@ export function VehicleInterchangeDialog({
                           <PersonIcon sx={{ fontSize: 24 }} />
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.secondary.main }}>
-                          Owner Details
+                          Driver Details
                         </Typography>
                       </Box>
 
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                        <Box>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                            Owner Name
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                            {vehicle.ownerName || 'N/A'}
+                      {!vehicle.driverId ? (
+                        <Box sx={{ 
+                          bgcolor: '#f5f5f5', 
+                          borderRadius: 2, 
+                          p: 3, 
+                          textAlign: 'center',
+                          border: '1px dashed #ccc'
+                        }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            No driver assigned to this vehicle
                           </Typography>
                         </Box>
+                      ) : driverLoading ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                          <CircularProgress size={32} />
+                        </Box>
+                      ) : driver ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                              Full Name
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                              {driver.firstName && driver.lastName ? `${driver.firstName} ${driver.lastName}` : driver.firstName || driver.lastName || driver.name || driver.surname || 'N/A'}
+                            </Typography>
+                          </Box>
 
-                        <Box>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                            Cell Number
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                            {vehicle.ownerCellNumber || 'N/A'}
-                          </Typography>
-                        </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                              Cell Number
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                              {driver.phoneNumber || driver.cellNumber || 'N/A'}
+                            </Typography>
+                          </Box>
 
-                        <Box>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                            ID Number
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                            {vehicle.ownerIdNumber || 'N/A'}
-                          </Typography>
-                        </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                              ID Number
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                              {driver.idNumber || 'N/A'}
+                            </Typography>
+                          </Box>
 
-                        <Box>
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                            Address
-                          </Typography>
-                          <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
-                            {vehicle.ownerAddress || 'N/A'}
+                          {driver.licenseNumber && (
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                License Number
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {driver.licenseNumber}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {driver.licenseExpiryDate && (
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                License Expiry Date
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {driver.licenseExpiryDate}
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {driver.address && (
+                            <Box>
+                              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                                Address
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.5 }}>
+                                {driver.address}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      ) : (
+                        <Box sx={{ 
+                          bgcolor: '#fff3e0', 
+                          borderRadius: 2, 
+                          p: 3, 
+                          textAlign: 'center',
+                          border: '1px solid #ffb74d'
+                        }}>
+                          <Typography variant="body2" sx={{ color: '#e65100' }}>
+                            Failed to load driver details
                           </Typography>
                         </Box>
-                      </Box>
+                      )}
                     </CardContent>
                   </Card>
                 </Box>
