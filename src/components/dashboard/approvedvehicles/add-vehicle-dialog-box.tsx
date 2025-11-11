@@ -48,6 +48,7 @@ export interface VehicleFormData {
   model: string;
   year: string;
   assignedDriver: string;
+  driverId: string;
   lastServiceDate: dayjs.Dayjs | null;
   ownerName: string;
   ownerAddress: string;
@@ -93,6 +94,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     model: '',
     year: '',
     assignedDriver: '',
+    driverId: '',
     lastServiceDate: null,
     ownerName: '',
     ownerAddress: '',
@@ -143,10 +145,20 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name?: string; value: string } }, child?: React.ReactNode): void => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name as string]: value,
-    });
+    
+    // If changing assignedDriver, also update driverId
+    if (name === 'assignedDriver') {
+      setFormData({
+        ...formData,
+        assignedDriver: value,
+        driverId: value, // Set driverId to the same value as assignedDriver
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name as string]: value,
+      });
+    }
   };
 
   const handleDateChange = (field: string) => (value: dayjs.Dayjs | null): void => {
@@ -319,6 +331,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       model: '',
       year: '',
       assignedDriver: '',
+      driverId: '',
       lastServiceDate: null,
       ownerName: '',
       ownerAddress: '',
