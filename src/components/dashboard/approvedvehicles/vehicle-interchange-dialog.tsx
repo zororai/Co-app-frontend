@@ -19,6 +19,8 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import PersonIcon from '@mui/icons-material/Person';
@@ -48,7 +50,11 @@ export function VehicleInterchangeDialog({
   const [driverLoading, setDriverLoading] = React.useState<boolean>(false);
   const [approvedDriversLoading, setApprovedDriversLoading] = React.useState<boolean>(false);
   const [selectedDriverLoading, setSelectedDriverLoading] = React.useState<boolean>(false);
+  const [switchingDriver, setSwitchingDriver] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = React.useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = React.useState<string>('');
+  const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
 
   const fetchVehicleDetails = async () => {
     if (!vehicleId) return;
@@ -138,6 +144,45 @@ export function VehicleInterchangeDialog({
     } else {
       setSelectedDriverDetails(null);
     }
+  };
+
+  const handleSwitchDriver = async () => {
+    if (!vehicleId || !selectedDriverId || !selectedDriverDetails) return;
+
+    setSwitchingDriver(true);
+    
+    try {
+      const result = await authClient.assignDriverToVehicle(vehicleId, selectedDriverId);
+      
+      if (result.success) {
+        const driverFullName = `${selectedDriverDetails.firstName} ${selectedDriverDetails.lastName}`;
+        setSnackbarMessage(`Driver switched successfully to ${driverFullName}!`);
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        
+        // Refresh vehicle details to show new driver
+        await fetchVehicleDetails();
+        
+        // Reset selection
+        setSelectedDriverId('');
+        setSelectedDriverDetails(null);
+      } else {
+        setSnackbarMessage(`Failed to switch driver: ${result.error}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error_) {
+      setSnackbarMessage('An error occurred while switching driver');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      console.error('Error switching driver:', error_);
+    } finally {
+      setSwitchingDriver(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   React.useEffect(() => {
@@ -490,6 +535,7 @@ export function VehicleInterchangeDialog({
                   <Button
                     variant="contained"
                     startIcon={<SwapHorizIcon />}
+                    onClick={handleSwitchDriver}
                     sx={{
                       bgcolor: '#4caf50',
                       color: 'white',
@@ -510,9 +556,9 @@ export function VehicleInterchangeDialog({
                         color: '#666'
                       }
                     }}
-                    disabled={!selectedDriverId || selectedDriverLoading}
+                    disabled={!selectedDriverId || selectedDriverLoading || switchingDriver}
                   >
-                    Switch Driver
+                    {switchingDriver ? 'Switching...' : 'Switch Driver'}
                   </Button>
                 </Box>
 
@@ -708,6 +754,32 @@ export function VehicleInterchangeDialog({
           </Box>
         )}
       </DialogContent>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={6000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbarSeverity} 
+          sx={{ 
+            width: '100%',
+            ...(snackbarSeverity === 'success' && {
+              bgcolor: '#4caf50',
+              color: 'white',
+              '& .MuiAlert-icon': {
+                color: 'white'
+              }
+            })
+          }}
+          variant="filled"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 }

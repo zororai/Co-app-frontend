@@ -5304,6 +5304,54 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
   }
 
+  /**
+   * Assign driver to vehicle
+   * @param vehicleId The ID of the vehicle
+   * @param driverId The ID of the driver to assign
+   * @returns A promise that resolves to the response
+   */
+  async assignDriverToVehicle(vehicleId: string, driverId: string): Promise<any> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`/api/vehicles/${vehicleId}/assign-driver`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          driverId: driverId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to assign driver: ${errorText}`);
+      }
+
+      // Try to parse as JSON, if it fails, treat as plain text success message
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // Plain text response (e.g., "Driver assigned successfully")
+        data = await response.text();
+      }
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error assigning driver to vehicle:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
 
     // This method is implemented above - removing duplicate implementation
 
