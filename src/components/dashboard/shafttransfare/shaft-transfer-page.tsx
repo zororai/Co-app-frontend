@@ -25,6 +25,7 @@ import { MagnifyingGlass as SearchIcon } from '@phosphor-icons/react';
 import { User as UserIcon } from '@phosphor-icons/react';
 import { ArrowsClockwise as RefreshIcon } from '@phosphor-icons/react';
 import { authClient } from '@/lib/auth/client';
+import { sortNewestFirst } from '@/utils/sort';
 
 // Remove mock data - will fetch from API
 
@@ -163,7 +164,7 @@ export function ShaftTransferPage(): React.JSX.Element {
       shaft.sectionName.toLowerCase().includes(searchValue.toLowerCase()) ||
       shaft.shaftNumbers.toLowerCase().includes(searchValue.toLowerCase())
     );
-    setFilteredShafts(filtered);
+    setFilteredShafts(sortNewestFirst(filtered));
   }, [searchValue, shaftAssignments]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
