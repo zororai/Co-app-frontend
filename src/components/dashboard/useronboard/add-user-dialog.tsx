@@ -62,6 +62,7 @@ const steps = [
 // Define role options
 const roleOptions = [
   { value: 'admin', label: 'Admin' },
+  { value: 'Security', label: 'Security' },
   { value: 'manager', label: 'Manager' },
   { value: 'user', label: 'User' },
   { value: 'she_officer', label: 'SHE Officer' },
@@ -75,6 +76,7 @@ const positionOptions = [
   { value: 'operator', label: 'Operator' },
   { value: 'engineer', label: 'Engineer' },
   { value: 'safety_officer', label: 'Safety Officer' },
+  { value: 'security_officer', label: 'Security Officer' },
   { value: 'administrator', label: 'Administrator' }
 ];
 

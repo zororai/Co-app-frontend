@@ -411,10 +411,10 @@ export function CustomersTable({
            
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Weight (Before Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Number of Bags (Before Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Weight (After Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Tax Deduction)</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Extracted Ore</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Number of Bags (Before Charges Deduction)</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Processed Ore</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Charges  Deduction)</TableCell>
               <TableCell>Transport Status</TableCell>
              
               <TableCell>Location</TableCell>
