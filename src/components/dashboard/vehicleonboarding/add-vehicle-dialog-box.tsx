@@ -47,7 +47,8 @@ export interface VehicleFormData {
   make: string;
   model: string;
   year: string;
-  assignedDriver: string;
+  assignedDriver: string; // This will store the driver's full name for display
+  driverId: string; // This will store the driver's ID for the API
   lastServiceDate: dayjs.Dayjs | null;
   ownerName: string;
   ownerAddress: string;
@@ -93,6 +94,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     model: '',
     year: '',
     assignedDriver: '',
+    driverId: '',
     lastServiceDate: null,
     ownerName: '',
     ownerAddress: '',
@@ -157,15 +159,15 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   // Validate Zimbabwean ID number format
   const validateZimbabweanID = (idNumber: string): string | null => {
     // Remove any spaces or dashes for validation
-    const cleanId = idNumber.replace(/[\s-]/g, '');
+    const cleanId = idNumber.replace(/[\s-]/g, '').toUpperCase();
     
     // Check if it's exactly 11 characters
     if (cleanId.length !== 11) {
       return 'ID number must be exactly 11 characters';
     }
     
-    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
-    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    // Check format: 2 digits + 6 digits + 1 letter + 2 digits
+    const idPattern = /^\d{2}\d{6}[A-Z]\d{2}$/;
     if (!idPattern.test(cleanId)) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
@@ -250,7 +252,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         if (!formData.make) newErrors.make = 'Make is required';
         if (!formData.model) newErrors.model = 'Model is required';
         if (!formData.year) newErrors.year = 'Year is required';
-        if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+        if (!formData.driverId) newErrors.assignedDriver = 'Assigned driver is required';
         if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
         break;
       }
@@ -295,7 +297,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     if (!formData.make) newErrors.make = 'Make is required';
     if (!formData.model) newErrors.model = 'Model is required';
     if (!formData.year) newErrors.year = 'Year is required';
-    if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+    if (!formData.driverId) newErrors.assignedDriver = 'Assigned driver is required';
     if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
     if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
     if (!formData.ownerIdNumber) newErrors.ownerIdNumber = 'Owner ID number is required';
@@ -392,6 +394,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       model: '',
       year: '',
       assignedDriver: '',
+      driverId: '',
       lastServiceDate: null,
       ownerName: '',
       ownerAddress: '',
@@ -522,9 +525,19 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   <Select
                     labelId="assigned-driver-label"
                     id="assigned-driver"
-                    name="assignedDriver"
-                    value={formData.assignedDriver}
-                    onChange={handleChange}
+                    name="driverId"
+                    value={formData.driverId}
+                    onChange={(e) => {
+                      const selectedDriverId = e.target.value;
+                      const selectedDriver = approvedDrivers.find(driver => driver.id === selectedDriverId);
+                      setFormData({
+                        ...formData,
+                        driverId: selectedDriverId,
+                        assignedDriver: selectedDriver 
+                          ? `${selectedDriver.name || (selectedDriver as any).firstName || ''} ${selectedDriver.surname || (selectedDriver as any).lastName || ''}`.trim()
+                          : ''
+                      });
+                    }}
                     label="Assigned Driver"
                     sx={{
                       '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
@@ -535,7 +548,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     <MenuItem value=""><em>None</em></MenuItem>
                     {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
                       approvedDrivers.map((driver) => (
-                        <MenuItem key={driver?.id || Math.random()} value={driver?.name || (driver as any)?.firstName || '' + ' ' + driver?.surname || (driver as any)?.lastName || ''} >
+                        <MenuItem key={driver?.id || Math.random()} value={driver?.id || ''}>
                           {driver?.name || (driver as any)?.firstName || ''} {driver?.surname || (driver as any)?.lastName || ''}
                         </MenuItem>
                       ))
@@ -818,6 +831,14 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     </Typography>
                     <Typography variant="body2">
                       {formData.year}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Assigned Driver:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.assignedDriver || 'Not assigned'}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', mb: 0.5 }}>

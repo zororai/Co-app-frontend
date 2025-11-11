@@ -5066,6 +5066,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     model: string;
     year: string;
     assignedDriver: string;
+    driverId: string;
     lastServiceDate: any; // dayjs.Dayjs | null
     ownerName: string;
     ownerAddress: string;
@@ -5100,7 +5101,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
         make: vehicleData.make,
         model: vehicleData.model,
         year: vehicleData.year,
-        assignedDriver: vehicleData.assignedDriver,
+        driverId: vehicleData.driverId, // Send the driver ID instead of name
         lastServiceDate: lastServiceDate,
         ownerName: vehicleData.ownerName,
         ownerAddress: vehicleData.ownerAddress,

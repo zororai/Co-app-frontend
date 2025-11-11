@@ -36,6 +36,7 @@ import { MinerDetailsDialog } from '@/components/dashboard/useronboard/useronboa
 import { UserDetailsDialog } from '@/components/dashboard/useronboard/user-details-dialog';
 import { VehicleDetailsDialog } from '@/components/dashboard/vehicleonboarding/vehicle-details-dialog';
 import { VehicleMaintenanceDialog } from '@/components/dashboard/approvedvehicles/vehicle-maintenance-dialog';
+import { VehicleInterchangeDialog } from '@/components/dashboard/approvedvehicles/vehicle-interchange-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 
@@ -134,6 +135,8 @@ export function CustomersTable({
   const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = React.useState(false);
   const [selectedVehicleForMaintenance, setSelectedVehicleForMaintenance] = React.useState<string | null>(null);
   const [selectedVehicleStatus, setSelectedVehicleStatus] = React.useState<string>('');
+  const [isInterchangeDialogOpen, setIsInterchangeDialogOpen] = React.useState(false);
+  const [selectedVehicleForInterchange, setSelectedVehicleForInterchange] = React.useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
   // Fetch vehicles from API when component mounts or refreshTrigger changes
@@ -214,6 +217,11 @@ export function CustomersTable({
     if (onRefresh) {
       onRefresh();
     }
+  };
+
+  const handleInterchange = (vehicleId: string) => {
+    setSelectedVehicleForInterchange(vehicleId);
+    setIsInterchangeDialogOpen(true);
   };
 
   // Function to refresh the table data
@@ -431,7 +439,7 @@ export function CustomersTable({
                       </Tooltip>
                       <Tooltip title="Interchange" arrow>
                         <IconButton
-                          onClick={() => {/* Add interchange handler here */}}
+                          onClick={() => handleInterchange(row.id)}
                           size="small"
                           sx={{
                             color: '#081b2fff',
@@ -517,6 +525,15 @@ export function CustomersTable({
           vehicleId={selectedVehicleForMaintenance}
           vehicleStatus={selectedVehicleStatus}
           onStatusChange={handleMaintenanceStatusChange}
+        />
+      )}
+
+      {/* Vehicle Interchange Dialog */}
+      {selectedVehicleForInterchange && (
+        <VehicleInterchangeDialog
+          open={isInterchangeDialogOpen}
+          onClose={() => setIsInterchangeDialogOpen(false)}
+          vehicleId={selectedVehicleForInterchange}
         />
       )}
     </Card>
