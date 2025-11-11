@@ -99,6 +99,11 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
   
+  // State for security companies
+  const [securityCompanies, setSecurityCompanies] = React.useState<any[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = React.useState(false);
+  const [showCompanyDropdown, setShowCompanyDropdown] = React.useState(false);
+  
   // Custom TextField styling
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
@@ -139,7 +144,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     emergencyContactName: '',
     emergencyContactPhone: '',
     picture: '',
-    qrcode: ''
+    qrcode: '',
+    securityCompany: ''
   });
 
   const validateEmail = (email: string): boolean => {
@@ -226,10 +232,41 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
 
   // Handle select changes
   const handleSelectChange = (field: string) => (event: any) => {
+    const value = event.target.value;
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: value
     });
+    
+    // Check if security company dropdown should be shown
+    if (field === 'role' || field === 'position') {
+      const updatedFormData = { ...formData, [field]: value };
+      const shouldShowCompany = 
+        updatedFormData.role === 'Security' || 
+        updatedFormData.position === 'security_officer';
+      
+      if (shouldShowCompany && !showCompanyDropdown) {
+        setShowCompanyDropdown(true);
+        fetchSecurityCompanies();
+      } else if (!shouldShowCompany && showCompanyDropdown) {
+        setShowCompanyDropdown(false);
+        setFormData(prev => ({ ...prev, securityCompany: '' }));
+      }
+    }
+  };
+
+  // Fetch security companies
+  const fetchSecurityCompanies = async () => {
+    setLoadingCompanies(true);
+    try {
+      const companies = await authClient.fetchSecurityCompany();
+      setSecurityCompanies(companies);
+    } catch (error) {
+      console.error('Error fetching security companies:', error);
+      setSecurityCompanies([]);
+    } finally {
+      setLoadingCompanies(false);
+    }
   };
 
   // Handle date changes
@@ -417,10 +454,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     if (activeStep === 1) {
       setFormSubmitted(true);
       
+      // Check if security company is required
+      const requiresCompany = formData.role === 'Security' || formData.position === 'security_officer';
+      
       if (
         !formData.role ||
         !formData.position ||
-        !formData.location
+        !formData.location ||
+        (requiresCompany && !formData.securityCompany)
       ) {
         return; // Don't proceed if validation fails
       }
@@ -521,7 +562,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       emergencyContactName: '',
       emergencyContactPhone: '',
       picture: '',
-      qrcode: ''
+      qrcode: '',
+      securityCompany: ''
     });
     setValidationErrors({});
     setError(null);
@@ -531,6 +573,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setShowPassword(false);
     setFormSubmitted(false);
     setPermissions({});
+    setShowCompanyDropdown(false);
+    setSecurityCompanies([]);
     
     // Call parent onClose
     onClose();
@@ -976,6 +1020,55 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   )}
                 </FormControl>
               </Grid>
+              
+              {/* Security Company Dropdown - Only shown for Security role or Security Officer position */}
+              {showCompanyDropdown && (
+                <Grid item xs={12}>
+                  <FormControl 
+                    fullWidth 
+                    required 
+                    error={formSubmitted && !formData.securityCompany}
+                    margin="normal"
+                  >
+                    <Typography variant="body2" component="label" sx={{ mb: 1, fontWeight: 500 }}>
+                      Security Company *
+                    </Typography>
+                    <Select
+                      displayEmpty
+                      value={formData.securityCompany}
+                      onChange={handleSelectChange('securityCompany')}
+                      disabled={loadingCompanies}
+                      renderValue={
+                        formData.securityCompany === "" 
+                          ? () => <Typography color="text.secondary">
+                              {loadingCompanies ? 'Loading companies...' : 'Select security company'}
+                            </Typography> 
+                          : undefined
+                      }
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                      }}
+                    >
+                      {securityCompanies.map((company) => (
+                        <MenuItem key={company.id} value={company.companyName}>
+                          {company.companyName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {formSubmitted && !formData.securityCompany && (
+                      <FormHelperText>Security company is required for security personnel</FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+              )}
             
               <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -1190,6 +1283,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     {locationOptions.find(option => option.value === formData.location)?.label || formData.location}
                   </Typography>
                 </Grid>
+                {formData.securityCompany && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary">Security Company</Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      {formData.securityCompany}
+                    </Typography>
+                  </Grid>
+                )}
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
