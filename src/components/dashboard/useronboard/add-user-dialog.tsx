@@ -103,6 +103,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [securityCompanies, setSecurityCompanies] = React.useState<any[]>([]);
   const [loadingCompanies, setLoadingCompanies] = React.useState(false);
   const [showCompanyDropdown, setShowCompanyDropdown] = React.useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState<string>('');
   
   // Custom TextField styling
   const textFieldStyle = {
@@ -238,6 +239,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       [field]: value
     });
     
+    // If selecting a security company, also store the company ID
+    if (field === 'securityCompany') {
+      const selectedCompany = securityCompanies.find(company => company.companyName === value);
+      if (selectedCompany) {
+        setSelectedCompanyId(selectedCompany.id);
+      }
+    }
+    
     // Check if security company dropdown should be shown
     if (field === 'role' || field === 'position') {
       const updatedFormData = { ...formData, [field]: value };
@@ -251,6 +260,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       } else if (!shouldShowCompany && showCompanyDropdown) {
         setShowCompanyDropdown(false);
         setFormData(prev => ({ ...prev, securityCompany: '' }));
+        setSelectedCompanyId('');
       }
     }
   };
@@ -523,6 +533,20 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         return;
       }
       
+      // If security company is selected, assign the user to the security company
+      if (selectedCompanyId && response.data?.id) {
+        const assignResponse = await authClient.assignEmployeeToSecurityCompany(
+          selectedCompanyId, 
+          response.data.id
+        );
+        
+        if (!assignResponse.success) {
+          console.error('Failed to assign employee to security company:', assignResponse.error);
+          // Note: We don't fail the entire operation, just log the error
+          // The user was created successfully, but assignment failed
+        }
+      }
+      
       // Generate temporary password and reference number
       const tempPass = '0000';
       setTempPassword(tempPass);
@@ -575,6 +599,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setPermissions({});
     setShowCompanyDropdown(false);
     setSecurityCompanies([]);
+    setSelectedCompanyId('');
     
     // Call parent onClose
     onClose();

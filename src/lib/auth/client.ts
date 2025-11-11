@@ -1969,6 +1969,33 @@ class AuthClient {
             return [];
         }
     }
+
+    async assignEmployeeToSecurityCompany(companyId: string, employeeId: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            const response = await fetch(`/api/security-companies/${companyId}/employees`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                credentials: 'include',
+                body: JSON.stringify({ employeeId }),
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Failed to assign employee to security company:', response.status, errorText);
+                return { success: false, error: `Failed to assign employee: ${response.status}` };
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Error assigning employee to security company:', error);
+            return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
+        }
+    }
     // Transport cost actions (moved here from inside fetchSecurityCompany)
     /**
      * Approve a transport cost entry by ID
