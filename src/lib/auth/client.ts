@@ -1923,6 +1923,57 @@ class AuthClient {
       }
   }
 
+  /**
+   * Create a gold sale record for an ore transport
+   * PUT /api/ore-transports/{id}/gold-sale?weight={weight}&price={price}&buyer={buyer}
+   * @param oreTransportId - The ID of the ore transport
+   * @param weight - Gold weight in grams
+   * @param price - Price per gram
+   * @param buyer - Name of the buyer
+   */
+  async createGoldSale(
+    oreTransportId: string | number,
+    weight: number,
+    price: number,
+    buyer: string
+  ): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(oreTransportId).trim());
+      const url = new URL(`/api/ore-transports/${safeId}/gold-sale`, globalThis.location.origin);
+      url.searchParams.set('weight', String(weight));
+      url.searchParams.set('price', String(price));
+      url.searchParams.set('buyer', encodeURIComponent(buyer));
+      
+      console.log('Creating gold sale with URL:', url.toString());
+      
+      const response = await fetch(url.toString(), {
+        method: 'PUT',
+        headers: {
+          Accept: '*/*',
+          Authorization: `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Failed to create gold sale:', response.status, errorText);
+        return { success: false, error: errorText || 'Failed to create gold sale' };
+      }
+      
+      const data = await response.json().catch(() => ({}));
+      console.log('Gold sale created successfully:', data);
+      return { success: true, data };
+    } catch (error) {
+      console.error(`Error creating gold sale for ore transport ${oreTransportId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         try {

@@ -86,8 +86,13 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
 
   const [shaftOwner, setShaftOwner] = React.useState(assignment?.shaftOwner ?? "");
   const [shaftNumber, setShaftNumber] = React.useState(assignment?.shaftNumber ?? "");
-  const [goldWeightGrams, setGoldWeightGrams] = React.useState<number>(0);
-  const [pricePerGram, setPricePerGram] = React.useState<number>(assignment?.defaultPricePerGram ?? 0);
+  // Allow empty string so the input can be blank instead of showing a default 0
+  const [goldWeightGrams, setGoldWeightGrams] = React.useState<number | ''>('');
+  // If assignment provides a positive default price, use it; otherwise keep the field blank instead of showing 0
+  const initialPrice = (assignment && typeof assignment.defaultPricePerGram === 'number' && assignment.defaultPricePerGram > 0)
+    ? assignment.defaultPricePerGram
+    : '';
+  const [pricePerGram, setPricePerGram] = React.useState<number | ''>(initialPrice);
   const [loanType, setLoanType] = React.useState<string>("");
   const [transportCost, setTransportCost] = React.useState<number>(0);
   const [buyer, setBuyer] = React.useState<string>("");
@@ -98,8 +103,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
   React.useEffect(() => {
     setLoanDetailsState(loanDetails);
   }, [loanDetails]);
-  // Pay loan amount
-  const [payAmount, setPayAmount] = React.useState<number>(0);
+  // Pay loan amount (allow blank so field doesn't show 0 by default)
+  const [payAmount, setPayAmount] = React.useState<number | ''>('');
   const [paying, setPaying] = React.useState<boolean>(false);
   // Track Apply/Pause per transport cost item
   const [appliedStatus, setAppliedStatus] = React.useState<Record<number, 'none' | 'applied' | 'paused'>>({});
@@ -119,12 +124,11 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     if (open) {
       setShaftOwner(assignment?.shaftOwner ?? "");
       setShaftNumber(assignment?.shaftNumber ?? "");
-      setGoldWeightGrams(0);
-      setPricePerGram(assignment?.defaultPricePerGram ?? 0);
+  setGoldWeightGrams('');
       setLoanType("");
       setTransportCost(0);
       setBuyer("");
-      setPayAmount(0);
+      setPayAmount('');
       setError(null); // Reset error when dialog opens
       setSubmitted(false); // Reset submit state when dialog opens
     }
@@ -153,8 +157,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
 
   // Determine loan payment deduction based on loan payment method
   const loanPaymentMethod = (loanDetailsState?.paymentMethod || '').toString().trim().toLowerCase();
-  const loanGoldDeductionGrams = payAmount > 0 && loanPaymentMethod === 'gold' ? Number(payAmount) : 0;
-  const loanCashDeductionAmount = payAmount > 0 && loanPaymentMethod === 'cash' ? Number(payAmount) : 0;
+  const payAmountNum = Number(payAmount) || 0;
+  const loanGoldDeductionGrams = payAmountNum > 0 && loanPaymentMethod === 'gold' ? payAmountNum : 0;
+  const loanCashDeductionAmount = payAmountNum > 0 && loanPaymentMethod === 'cash' ? payAmountNum : 0;
 
   // Totals for deductions combining transport and loan payment
   const totalGoldDeductionGrams = (appliedGoldDeductionGrams || 0) + (loanGoldDeductionGrams || 0);
@@ -198,6 +203,14 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     return gw > 0 && ppg > 0 && buyerOk;
   }, [goldWeightGrams, pricePerGram, buyer]);
 
+  // Determine whether we can skip applying transport costs:
+  // - If there are no transport cost items at all
+  // - Or if the transportCost value is explicitly zero
+  const canSkipApply = React.useMemo(() => {
+    const hasTransportCosts = Array.isArray(transportCosts) && transportCosts.length > 0;
+    return !hasTransportCosts || Number(transportCost) === 0;
+  }, [transportCosts, transportCost]);
+
   // Handle stepper navigation
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -212,7 +225,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     setError(null); // Clear any previous errors
     try {
       // If there is a payment amount and the loan isn't already PAID, process loan payment first
-      if (!isLoanPaid && payAmount > 0) {
+  if (!isLoanPaid && payAmountNum > 0) {
         const shaft = assignment?.shaftNumber; 
         if (!shaft) {
           throw new Error('Missing shaft number for loan payment.');
@@ -236,13 +249,33 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
               : undefined;
             setLoanDetailsState(refreshed);
           }
-          setPayAmount(0);
+          setPayAmount('');
         } else {
           const errorMsg = res.error || 'Failed to process loan payment';
           setError(errorMsg);
           return; // Don't proceed with payout if loan payment fails
         }
       }
+
+      // Create gold sale record
+      const oreTransportId = assignment?.assignmentId;
+      if (!oreTransportId) {
+        throw new Error('Missing ore transport ID for gold sale.');
+      }
+
+      const goldSaleResult = await authClient.createGoldSale(
+        oreTransportId,
+        Number(goldWeightGrams) || 0,
+        Number(pricePerGram) || 0,
+        buyer
+      );
+
+      if (!goldSaleResult.success) {
+        const errorMsg = goldSaleResult.error || 'Failed to create gold sale';
+        setError(errorMsg);
+        return;
+      }
+
       const payload = {
         receiptNumber: generatedReceipt,
         shaftOwner,
@@ -256,8 +289,6 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       if (onSubmit) {
         await onSubmit(payload);
       } else {
-        // Placeholder: integrate API call here
-        // await authClient.createPayout( ...payload )
         console.log("Payout submitted:", payload);
       }
       // Mark as submitted (show complete state)
@@ -448,12 +479,12 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                 {!isLoanPaid && (
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
                     <TextField
-                      label="Amount to pay"
+                      label="Amount to be Paid"
                       type="number"
                       size="small"
                       inputProps={{ min: 0, step: 0.01 }}
                       value={payAmount}
-                      onChange={(e) => setPayAmount(Number(e.target.value))}
+                      onChange={(e) => setPayAmount(e.target.value === '' ? '' : Number(e.target.value))}
                       sx={{
                         ...textFieldStyle,
                         '& .MuiOutlinedInput-root': {
@@ -512,7 +543,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   type="number"
                   inputProps={{ min: 0, step: 0.01 }}
                   value={goldWeightGrams}
-                  onChange={(e) => setGoldWeightGrams(Number(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGoldWeightGrams(e.target.value === '' ? '' : Number(e.target.value))}
                   size="small"
                   sx={textFieldStyle}
                 />
@@ -523,7 +554,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   type="number"
                   inputProps={{ min: 0, step: 0.01 }}
                   value={pricePerGram}
-                  onChange={(e) => setPricePerGram(Number(e.target.value))}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPricePerGram(e.target.value === '' ? '' : Number(e.target.value))}
                   size="small"
                   sx={textFieldStyle}
                 />
@@ -580,7 +611,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                     <Typography variant="body2">-${appliedCashDeductionAmount.toFixed(2)}</Typography>
                   </Box>
                 )}
-                {payAmount > 0 && (
+                {payAmountNum > 0 && (
                   <>
                     <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                       <Typography variant="body2">Loan Payment Entered:</Typography>
@@ -729,7 +760,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
               Previous
             </Button>
             <Box sx={{ flex: '1 1 auto' }} />
-            {!anyApplied && activeStep === steps.length - 1 && (
+            {!anyApplied && activeStep === steps.length - 1 && !canSkipApply && (
               <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
                 Apply at least one transport cost to proceed
               </Typography>
@@ -737,7 +768,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
             <Button
               variant="contained"
               onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-              disabled={submitting || (activeStep === steps.length - 1 && !anyApplied)}
+              disabled={submitting || (activeStep === steps.length - 1 && !anyApplied && !canSkipApply)}
               sx={{
                 bgcolor: theme.palette.secondary.main,
                 '&:hover': {
