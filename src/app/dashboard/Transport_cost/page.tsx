@@ -33,31 +33,31 @@ import { LazyRegMinerDialog, LazyAddTaxDialog } from '@/components/lazy/LazyComp
 import { authClient } from '@/lib/auth/client';
 
 
-function PendingTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+function PendingTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
   return (
     <LazyWrapper>
-      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PENDING" />
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} externalRefreshKey={refreshKey} statusFilter="PENDING" />
     </LazyWrapper>
   );
 }
-function PushedBackTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+function PushedBackTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
   return (
     <LazyWrapper>
-      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="PUSHED_BACK" />
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} externalRefreshKey={refreshKey} statusFilter="PUSHED_BACK" />
     </LazyWrapper>
   );
 }
-function RejectedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+function RejectedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
   return (
     <LazyWrapper>
-      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="REJECTED" />
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} externalRefreshKey={refreshKey} statusFilter="REJECTED" />
     </LazyWrapper>
   );
 }
-function ApprovedTab({ customers, page, rowsPerPage, onRefresh }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void }) {
+function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { customers: Customer[], page: number, rowsPerPage: number, onRefresh: () => void, refreshKey: number }) {
   return (
     <LazyWrapper>
-      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} statusFilter="APPROVED" />
+      <LazyTransportCostTable count={customers.length} page={page} rows={customers} rowsPerPage={rowsPerPage} onRefresh={onRefresh} externalRefreshKey={refreshKey} statusFilter="APPROVED" />
     </LazyWrapper>
   );
 }
@@ -94,10 +94,10 @@ export default function Page(): React.JSX.Element {
       } catch (error) {
         console.error('API call failed, using mock data:', error);
         // Use mock data when API fails
-   
+
       }
     })();
-  }, []);
+  }, [refreshKey]);
 
   // Filter customers by selected tab/status
   const pendingCustomers = customers.filter(c => c.status === 'PENDING');
@@ -188,20 +188,20 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-        <TopRightActions />
+    <TopRightActions onRefresh={refreshData} />
       </Stack>
 
       {tab === 'PENDING' && (
-        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PendingTab customers={pendingCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'PUSHED_BACK' && (
-        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <PushedBackTab customers={pushedBackCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'REJECTED' && (
-        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <RejectedTab customers={rejectedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
       {tab === 'APPROVED' && (
-        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} />
+        <ApprovedTab customers={approvedCustomers} page={page} rowsPerPage={rowsPerPage} onRefresh={refreshData} refreshKey={refreshKey} />
       )}
 
       <LazyWrapper>
@@ -216,7 +216,7 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions(): React.JSX.Element {
+function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const open = Boolean(anchorEl);
@@ -257,6 +257,7 @@ function TopRightActions(): React.JSX.Element {
         <LazyAddTaxDialog 
           open={dialogOpen} 
           onClose={handleCloseDialog} 
+          onRefresh={onRefresh}
         />
       </LazyWrapper>
     </React.Fragment>

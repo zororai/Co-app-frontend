@@ -77,6 +77,7 @@ export interface CustomersTableProps {
   page?: number;
   rowsPerPage?: number;
   onRefresh?: () => void; // Optional callback to refresh data from parent
+  externalRefreshKey?: number; // Optional external refresh trigger from parent
   statusFilter?: 'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED' | null; // Optional status filter
 }
 
@@ -86,6 +87,7 @@ export function CustomersTable({
   page = 0,
   rowsPerPage = 0,
   onRefresh,
+  externalRefreshKey,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
   const theme = useTheme();
@@ -196,7 +198,7 @@ export function CustomersTable({
     };
 
     fetchUserData();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, externalRefreshKey]);
 
   const handleViewCustomer = async (customerId: string) => {
     try {
