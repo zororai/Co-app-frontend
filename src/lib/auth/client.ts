@@ -7175,6 +7175,77 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
   }
 
   /**
+   * Add a new employee (lasher) to a company
+   * POST /api/company-employees/{companyId}
+   */
+  async addCompanyEmployee(companyId: string | number, employeeData: {
+    name: string;
+    postion: string;
+    contactNumber: string;
+    email: string;
+    address: string;
+    idNumber: string;
+    qrcode: string;
+    picture: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(companyId));
+      
+      // Clean and validate data
+      const payload = {
+        name: String(employeeData.name).trim(),
+        postion: String(employeeData.postion).trim(),
+        contactNumber: String(employeeData.contactNumber).trim(),
+        email: String(employeeData.email).trim(),
+        address: String(employeeData.address).trim(),
+        idNumber: String(employeeData.idNumber).trim(),
+        qrcode: String(employeeData.qrcode).trim(),
+        picture: String(employeeData.picture).trim(),
+      };
+
+      console.log('Adding company employee:', {
+        companyId: safeId,
+        ...payload,
+        picture: payload.picture ? `${payload.picture.substring(0, 30)}...` : 'empty',
+        qrcode: payload.qrcode ? `${payload.qrcode.substring(0, 30)}...` : 'empty'
+      });
+
+      const response = await fetch(`/api/company-employees/${safeId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to add company employee (Status: ${response.status})` };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding company employee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Fetch total mining area
    * GET /api/sectionmapping/area-total
    */
