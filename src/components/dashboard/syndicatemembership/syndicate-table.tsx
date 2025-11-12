@@ -29,6 +29,7 @@ import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
 
@@ -371,12 +372,16 @@ export function CustomersTable({
                         <IconButton 
                           onClick={() => handleAddLasher(row.id)}
                           size="small"
-                          sx={{
-                            color: theme.palette.success.main,
-                            '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.08)' },
+                              sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' },
+                            '&.Mui-disabled': {
+                              color: theme.palette.secondary.main,
+                              opacity: 0.6
+                            }
                           }}
                         >
-                          <AddCircleIcon fontSize="small" />
+                          <PersonAddIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>

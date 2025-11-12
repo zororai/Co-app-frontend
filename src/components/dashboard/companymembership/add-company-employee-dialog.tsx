@@ -31,10 +31,11 @@ interface AddCompanyEmployeeDialogProps {
   open: boolean;
   onClose: () => void;
   companyId: string | null;
+  companyName?: string;
   onSuccess?: () => void;
 }
 
-export function AddCompanyEmployeeDialog({ open, onClose, companyId, onSuccess }: AddCompanyEmployeeDialogProps): React.JSX.Element {
+export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName, onSuccess }: AddCompanyEmployeeDialogProps): React.JSX.Element {
   const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [showSuccessAlert, setShowSuccessAlert] = React.useState(false);
@@ -647,6 +648,11 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, onSuccess }
                     <Typography variant="h4" sx={{ fontWeight: 700, letterSpacing: 2 }}>
                       EMPLOYEE ID
                     </Typography>
+                    {companyName && (
+                      <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 600, mt: 1 }}>
+                        {companyName}
+                      </Typography>
+                    )}
                     <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
                       Company Member
                     </Typography>
