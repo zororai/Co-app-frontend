@@ -139,8 +139,9 @@ export function AddLasherDialog({ open, onClose, minerId, onSuccess }: AddLasher
       return 'ID number must be exactly 11 characters';
     }
     
-    const idPattern = /^\d{8}[A-Za-z]\d{2}$/;
-    if (!idPattern.test(cleanId)) {
+    const idPattern = /^(\d{2})(\d{6})([A-Za-z])(\d{2})$/;
+    const match = cleanId.match(idPattern);
+    if (!match) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 12-234732D49)';
     }
     

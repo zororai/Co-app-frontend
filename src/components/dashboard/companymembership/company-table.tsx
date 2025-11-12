@@ -352,7 +352,7 @@ export function CompanyTable({
                         </Tooltip>
                         <Tooltip title="Add Employee">
                           <IconButton
-                            onClick={() => handleAddEmployee(row.id)}
+                            onClick={() => handleAddEmployee(row.id, row.companyName)}
                             size="small"
                                 sx={{
                               color: theme.palette.secondary.main,
@@ -409,6 +409,7 @@ export function CompanyTable({
         open={isAddEmployeeDialogOpen}
         onClose={handleCloseAddEmployeeDialog}
         companyId={selectedCompanyId}
+        companyName={selectedCompanyName}
         onSuccess={() => {
           // Optionally refresh the table or show a success message
           console.log('Employee added successfully');

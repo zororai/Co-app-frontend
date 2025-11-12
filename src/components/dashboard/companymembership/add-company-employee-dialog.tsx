@@ -145,8 +145,9 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
       return 'ID number must be exactly 11 characters';
     }
     
-    const idPattern = /^\d{8}[A-Za-z]\d{2}$/;
-    if (!idPattern.test(cleanId)) {
+    const idPattern = /^(\d{2})(\d{6})([A-Za-z])(\d{2})$/;
+    const match = cleanId.match(idPattern);
+    if (!match) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 12-234732D49)';
     }
     
@@ -367,20 +368,44 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            bgcolor: theme.palette.primary.main,
+            background: 'linear-gradient(135deg, rgb(5, 5, 68) 0%, rgb(5, 5, 68) 100%)',
             color: 'white',
-            p: 2,
-            fontWeight: 600,
+            py: 2.5,
+            px: 3,
+            m: 0,
           }}
         >
-          Add New Employee
-          <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+            Add New Employee
+          </Typography>
+          <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close" sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
 
-        <Box sx={{ px: 3, pt: 3 }}>
-          <Stepper activeStep={activeStep}>
+        {/* Stepper Section */}
+        <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            Add a new employee with personal details and generate an ID card
+          </Typography>
+          <Stepper 
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': { color: 'rgb(5, 5, 68)' },
+                '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
+                '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              },
+              '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+              '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -649,7 +674,7 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
                       EMPLOYEE ID
                     </Typography>
                     {companyName && (
-                      <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 600, mt: 1 }}>
+                      <Typography variant="h6" sx={{ color: 'rgb(5, 5, 68)', fontWeight: 600, mt: 1 }}>
                         {companyName}
                       </Typography>
                     )}
@@ -771,7 +796,18 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
 
         <DialogActions sx={{ p: 2.5, bgcolor: 'background.default' }}>
           {activeStep > 0 && activeStep < 2 && (
-            <Button onClick={handleBack} sx={{ mr: 1 }}>
+            <Button 
+              onClick={handleBack} 
+              sx={{ 
+                mr: 1,
+                borderColor: 'rgb(5, 5, 68)', 
+                color: 'rgb(5, 5, 68)', 
+                '&:hover': { 
+                  borderColor: 'rgb(5, 5, 68)', 
+                  backgroundColor: 'rgba(5, 5, 68, 0.04)' 
+                } 
+              }}
+            >
               Back
             </Button>
           )}
@@ -781,8 +817,8 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
               variant="contained"
               onClick={handleNext}
               sx={{
-                bgcolor: theme.palette.primary.main,
-                '&:hover': { bgcolor: theme.palette.primary.dark },
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
               }}
             >
               Next: Review
@@ -795,8 +831,8 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
               onClick={handleSubmit}
               disabled={isSubmitting}
               sx={{
-                bgcolor: theme.palette.primary.main,
-                '&:hover': { bgcolor: theme.palette.primary.dark },
+                bgcolor: 'rgb(5, 5, 68)',
+                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
               }}
             >
               {isSubmitting ? 'Adding Employee...' : 'Add Employee'}
@@ -810,11 +846,11 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
                 onClick={handleDownloadID}
                 startIcon={<DownloadIcon />}
                 sx={{
-                  borderColor: theme.palette.primary.main,
-                  color: theme.palette.primary.main,
+                  borderColor: 'rgb(5, 5, 68)',
+                  color: 'rgb(5, 5, 68)',
                   '&:hover': {
-                    borderColor: theme.palette.primary.dark,
-                    bgcolor: 'rgba(0, 0, 0, 0.04)',
+                    borderColor: 'rgb(5, 5, 68)',
+                    bgcolor: 'rgba(5, 5, 68, 0.04)',
                   },
                 }}
               >
@@ -824,8 +860,8 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
                 variant="contained"
                 onClick={onClose}
                 sx={{
-                  bgcolor: theme.palette.primary.main,
-                  '&:hover': { bgcolor: theme.palette.primary.dark },
+                  bgcolor: 'rgb(5, 5, 68)',
+                  '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' },
                 }}
               >
                 Done
