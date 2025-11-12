@@ -271,7 +271,13 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       );
 
       if (!goldSaleResult.success) {
-        const errorMsg = goldSaleResult.error || 'Failed to create gold sale';
+        let errorMsg = goldSaleResult.error || 'Failed to create gold sale';
+        
+        // Provide helpful message if backend endpoint doesn't exist (404)
+        if (errorMsg.includes('404') || errorMsg.toLowerCase().includes('not found')) {
+          errorMsg = 'Backend API endpoint not yet implemented. The gold sale record could not be saved. Please contact your system administrator. (Error: PUT /api/ore-transports/{id}/gold-sale endpoint returns 404)';
+        }
+        
         setError(errorMsg);
         return;
       }
