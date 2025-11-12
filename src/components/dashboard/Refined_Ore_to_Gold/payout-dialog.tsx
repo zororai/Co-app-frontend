@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { Fragment } from "react";
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -12,9 +13,15 @@ import MenuItem from "@mui/material/MenuItem";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import Alert from "@mui/material/Alert";
 import dayjs from "dayjs";
-import { error } from "console";
 import { authClient } from "@/lib/auth/client";
+import { useTheme } from "@mui/material/styles";
 
 export type PayoutAssignment = {
   assignmentId?: string | number;
@@ -59,7 +66,19 @@ export interface PayoutDialogProps {
   }) => Promise<void> | void;
 }
 
+// Define steps for the stepper
+const steps = [
+  'Assignment Information',
+  'Transport Cost',
+  'Loan Details',
+  'Payout Details',
+  'Payout Summary'
+];
+
 export function PayoutDialog({ open, onClose, assignment, loanDetails, transportCosts, onSubmit }: PayoutDialogProps) {
+  const theme = useTheme();
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [error, setError] = React.useState<string | null>(null);
   // Generate receipt number only on client after mount to avoid SSR/CSR mismatch
   const [generatedReceipt, setGeneratedReceipt] = React.useState<string>('');
   React.useEffect(() => {
@@ -106,6 +125,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       setTransportCost(0);
       setBuyer("");
       setPayAmount(0);
+      setError(null); // Reset error when dialog opens
     }
   }, [open, assignment]);
 
@@ -151,6 +171,18 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
 
   const anyApplied = React.useMemo(() => Object.values(appliedStatus).some((v) => v === 'applied'), [appliedStatus]);
 
+  // Consistent TextField styling using theme colors
+  const textFieldStyle = {
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: theme.palette.secondary.main },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
+    },
+    '& .MuiInputLabel-root': {
+      '&.Mui-focused': { color: theme.palette.secondary.main },
+    },
+  } as const;
+
   // Determine if the loan is already fully paid to hide pay controls
   const isLoanPaid = React.useMemo(() => {
     const status = (loanDetailsState?.paymentStatus || '').toString().trim().toUpperCase();
@@ -165,8 +197,18 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     return gw > 0 && ppg > 0 && buyerOk;
   }, [goldWeightGrams, pricePerGram, buyer]);
 
+  // Handle stepper navigation
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
+    setError(null); // Clear any previous errors
     try {
       // If there is a payment amount and the loan isn't already PAID, process loan payment first
       if (!isLoanPaid && payAmount > 0) {
@@ -195,7 +237,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
           }
           setPayAmount(0);
         } else {
-          console.error(res.error);
+          const errorMsg = res.error || 'Failed to process loan payment';
+          setError(errorMsg);
+          return; // Don't proceed with payout if loan payment fails
         }
       }
       const payload = {
@@ -215,81 +259,92 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
         // await authClient.createPayout( ...payload )
         console.log("Payout submitted:", payload);
       }
-      onClose();
+      // Move to confirmation step
+      setActiveStep(steps.length - 1);
     } catch (error) {
-      console.error(error);
+      console.error('Payout submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      // Check for authentication errors
+      if (errorMessage.toLowerCase().includes('authentication') || errorMessage.toLowerCase().includes('unauthorized')) {
+        setError('Authentication required. Please log in again and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>Payout</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 0 }}>
-       
-            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Loan Details
-                </Typography>
+  const handleClose = () => {
+    // Reset to first step
+    setActiveStep(0);
+    setError(null); // Clear errors on close
+    onClose();
+  };
 
-                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
-                  Details of the Current Loan
-                </Typography>
-                
-                <Box sx={{ display: "grid", rowGap: 1 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Loan Name:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.loanName ?? '-'}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Payment Method:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.paymentMethod ?? '-'}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Amount/Grams:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.amountOrGrams ?? 0}</Typography>
-                  </Box>
-                  {/* Pay Loan controls */}
-                  {!isLoanPaid && (
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <TextField
-                        label="Amount to pay"
-                        type="number"
-                        size="small"
-                        inputProps={{ min: 0, step: 0.01 }}
-                        value={payAmount}
-                        onChange={(e) => setPayAmount(Number(e.target.value))}
-                      />
-                
-                    </Box>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Payment Status:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.paymentStatus ?? '-'}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Amount Paid:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.amountPaid ?? 0}</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Balance:</Typography>
-                    <Typography variant="body2">{loanDetailsState?.balance ?? 0}</Typography>
+  // Render step content based on active step
+  const renderStepContent = (): React.ReactNode => {
+    switch (activeStep) {
+      case 0: { // Assignment Information
+        return (
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Assignment Information
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Details of the current assignment
+            </Typography>
+            
+            <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
+              <Box sx={{ display: "grid", rowGap: 1 }}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Shaft Number</Typography>
+                  <Typography variant="body2">{assignment?.shaftNumber ?? "-"}</Typography>
                 </Box>
-             
-               
-             
+                
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Shaft Owner</Typography>
+                  <Typography variant="body2">{assignment?.shaftOwner ?? "-"}</Typography>
+                </Box>
+                
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Ore Weight</Typography>
+                  <Typography variant="body2">{assignment?.oreWeightKg ?? 0} kg</Typography>
+                </Box>
+                
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Mill</Typography>
+                  <Typography variant="body2">{assignment?.mill ?? "-"}</Typography>
+                </Box>
+                
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Default Price per Gram</Typography>
+                  <Typography variant="body2">${assignment?.defaultPricePerGram ?? 0}</Typography>
+                </Box>
               </Box>
+            </Box>
           </Box>
-         
-          <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Transport Cost
-              </Typography>
-              <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
-                Transport cost details
-              </Typography>
+        );
+      }
+      
+      case 1: { // Transport Cost
+        return (
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Transport Cost
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Manage transport cost deductions
+            </Typography>
+            
+            {!inputsReady && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Please complete Payout Details (Gold Weight, Price per gram, and Buyer) before applying transport costs.
+              </Alert>
+            )}
+            
+            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
               <Box sx={{ display: "grid", rowGap: 1 }}>
                 {Array.isArray(transportCosts) && transportCosts.length > 0 ? (
                   transportCosts.map((tc, idx) => (
@@ -359,128 +414,93 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   </>
                 )}
               </Box>
+            </Box>
           </Box>
-         
-          {/* Assignment Information */}
-     
-            <Box sx={{ bgcolor: 'success.light', border: 1, borderColor: 'success.main', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Assignment Information
-                </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-                  Details of the current assignment
-                </Typography>
-                <Box sx={{ display: "grid", rowGap: 1}}>
-                  
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Shaft Number</Typography>
-                    <Typography variant="body2">{assignment?.shaftNumber ?? "-"}</Typography>
-                  </Box>
-                  
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">Ore Weight</Typography>
-                    <Typography variant="body2">{assignment?.oreWeightKg ?? 0} kg</Typography>
-                  </Box>
-                 
+        );
+      }
+      
+      case 2: { // Loan Details
+        return (
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Loan Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Details of the Current Loan
+            </Typography>
+            
+            <Box sx={{ bgcolor: 'error.main', color: 'common.white', border: 1, borderColor: 'error.dark', borderRadius: 1, p: 2 }}>
+              <Box sx={{ display: "grid", rowGap: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Loan Name:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.loanName ?? '-'}</Typography>
                 </Box>
-            </Box>
-         
-         
-            <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Payout Summary
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.85)', mb: 2 }}>
-                  Calculated payout breakdown
-                </Typography>
-
-                <Box sx={{ display: "grid", rowGap: 1 }}>
-                  {appliedGoldDeductionGrams > 0 && (
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body2">Original Gold Weight:</Typography>
-                      <Typography variant="body2">{originalGoldWeight} g</Typography>
-                    </Box>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gold Weight{appliedGoldDeductionGrams > 0 ? ' (after deduction)' : ''}:</Typography>
-                    <Typography variant="body2">{computedGoldWeight} g</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Price per gram:</Typography>
-                    <Typography variant="body2">${pricePerGram || 0}</Typography>
-                  </Box>
-                  {totalCashDeductionAmount > 0 && (
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body2">Original Gross Amount:</Typography>
-                      <Typography variant="body2">${originalGrossAmount.toFixed(2)}</Typography>
-                    </Box>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2">Gross Amount{appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? ' (after cash deduction)' : ''}:</Typography>
-                    <Typography variant="body2">${(appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? grossAfterCashDeduction : grossAmount).toFixed(2)}</Typography>
-                  </Box>
-                  {appliedGoldDeductionGrams > 0 && (
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body2">Transport Deduction (Gold):</Typography>
-                      <Typography variant="body2">-{appliedGoldDeductionGrams} g</Typography>
-                    </Box>
-                  )}
-                  {appliedCashDeductionAmount > 0 && (
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography variant="body2">Transport Deduction (Cash):</Typography>
-                      <Typography variant="body2">-${appliedCashDeductionAmount.toFixed(2)}</Typography>
-                    </Box>
-                  )}
-                  {payAmount > 0 && (
-                    <>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography variant="body2">Loan Payment Entered:</Typography>
-                        <Typography variant="body2">
-                          {loanPaymentMethod === 'gold' ? `${loanGoldDeductionGrams} g` : `$${loanCashDeductionAmount.toFixed(2)}`}
-                        </Typography>
-                      </Box>
-                      {loanGoldDeductionGrams > 0 && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2">Loan Payment Deduction (Gold):</Typography>
-                          <Typography variant="body2">-{loanGoldDeductionGrams} g</Typography>
-                        </Box>
-                      )}
-                      {loanCashDeductionAmount > 0 && (
-                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                          <Typography variant="body2">Loan Payment Deduction (Cash):</Typography>
-                          <Typography variant="body2">-${loanCashDeductionAmount.toFixed(2)}</Typography>
-                        </Box>
-                      )}
-                    </>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                    <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
-                    <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
-                  </Box>
-                  
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Payment Method:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.paymentMethod ?? '-'}</Typography>
                 </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Amount/Grams:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.amountOrGrams ?? 0}</Typography>
+                </Box>
+                {/* Pay Loan controls */}
+                {!isLoanPaid && (
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
+                    <TextField
+                      label="Amount to pay"
+                      type="number"
+                      size="small"
+                      inputProps={{ min: 0, step: 0.01 }}
+                      value={payAmount}
+                      onChange={(e) => setPayAmount(Number(e.target.value))}
+                      sx={{
+                        ...textFieldStyle,
+                        '& .MuiOutlinedInput-root': {
+                          ...textFieldStyle['& .MuiOutlinedInput-root'],
+                          backgroundColor: 'white',
+                        }
+                      }}
+                    />
+                  </Box>
+                )}
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Payment Status:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.paymentStatus ?? '-'}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Amount Paid:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.amountPaid ?? 0}</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Balance:</Typography>
+                  <Typography variant="body2">{loanDetailsState?.balance ?? 0}</Typography>
+                </Box>
+              </Box>
             </Box>
-    
+          </Box>
+        );
+      }
+      
+      case 3: { // Payout Details
+        return (
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Payout Details
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Enter payout information
+            </Typography>
 
-        
-
-          {/* Payout Details */}
-          
             <Card variant="outlined">
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Payout Details
-                </Typography>
-                <Typography variant="body2" sx={{ color: "common.white", mb: 2 }}>
-                  Enter payout information
-                </Typography>
-
                 <TextField
                   fullWidth
                   margin="dense"
                   label="Receipt Number"
                   value={generatedReceipt || 'Generating...'}
                   InputProps={{ readOnly: true }}
+                  size="small"
+                  sx={textFieldStyle}
                 />
               
                 <TextField
@@ -491,6 +511,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   inputProps={{ min: 0, step: 0.01 }}
                   value={goldWeightGrams}
                   onChange={(e) => setGoldWeightGrams(Number(e.target.value))}
+                  size="small"
+                  sx={textFieldStyle}
                 />
                 <TextField
                   fullWidth
@@ -500,6 +522,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   inputProps={{ min: 0, step: 0.01 }}
                   value={pricePerGram}
                   onChange={(e) => setPricePerGram(Number(e.target.value))}
+                  size="small"
+                  sx={textFieldStyle}
                 />
              
                 <TextField
@@ -509,28 +533,231 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   type="text"
                   value={buyer}
                   onChange={(e) => setBuyer(e.target.value)}
+                  size="small"
+                  sx={textFieldStyle}
                 />
               </CardContent>
             </Card>
-        
+          </Box>
+        );
+      }
+      
+      case 4: { // Payout Summary
+        return (
+          <Box sx={{ p: 1 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Payout Summary
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              Calculated payout breakdown
+            </Typography>
 
-          {/* Payout Summary */}
-         
-        </Grid>
+            <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
+              <Box sx={{ display: "grid", rowGap: 1 }}>
+                {appliedGoldDeductionGrams > 0 && (
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Original Gold Weight:</Typography>
+                    <Typography variant="body2">{originalGoldWeight} g</Typography>
+                  </Box>
+                )}
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Gold Weight{appliedGoldDeductionGrams > 0 ? ' (after deduction)' : ''}:</Typography>
+                  <Typography variant="body2">{computedGoldWeight} g</Typography>
+                </Box>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Price per gram:</Typography>
+                  <Typography variant="body2">${pricePerGram || 0}</Typography>
+                </Box>
+                {totalCashDeductionAmount > 0 && (
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Original Gross Amount:</Typography>
+                    <Typography variant="body2">${originalGrossAmount.toFixed(2)}</Typography>
+                  </Box>
+                )}
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2">Gross Amount{appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? ' (after cash deduction)' : ''}:</Typography>
+                  <Typography variant="body2">${(appliedCashDeductionAmount > 0 || loanCashDeductionAmount > 0 ? grossAfterCashDeduction : grossAmount).toFixed(2)}</Typography>
+                </Box>
+                {appliedGoldDeductionGrams > 0 && (
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Transport Deduction (Gold):</Typography>
+                    <Typography variant="body2">-{appliedGoldDeductionGrams} g</Typography>
+                  </Box>
+                )}
+                {appliedCashDeductionAmount > 0 && (
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Typography variant="body2">Transport Deduction (Cash):</Typography>
+                    <Typography variant="body2">-${appliedCashDeductionAmount.toFixed(2)}</Typography>
+                  </Box>
+                )}
+                {payAmount > 0 && (
+                  <>
+                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Typography variant="body2">Loan Payment Entered:</Typography>
+                      <Typography variant="body2">
+                        {loanPaymentMethod === 'gold' ? `${loanGoldDeductionGrams} g` : `$${loanCashDeductionAmount.toFixed(2)}`}
+                      </Typography>
+                    </Box>
+                    {loanGoldDeductionGrams > 0 && (
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Loan Payment Deduction (Gold):</Typography>
+                        <Typography variant="body2">-{loanGoldDeductionGrams} g</Typography>
+                      </Box>
+                    )}
+                    {loanCashDeductionAmount > 0 && (
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <Typography variant="body2">Loan Payment Deduction (Cash):</Typography>
+                        <Typography variant="body2">-${loanCashDeductionAmount.toFixed(2)}</Typography>
+                      </Box>
+                    )}
+                  </>
+                )}
+                <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
+                  <Typography variant="subtitle1" fontWeight={700}>Net Payout:</Typography>
+                  <Typography variant="subtitle1" fontWeight={700}>${netPayout.toFixed(2)}</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        );
+      }
+      
+      default: {
+        return null;
+      }
+    }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={submitting ? undefined : handleClose} 
+      maxWidth="lg" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 2
+        }
+      }}
+    >
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        bgcolor: theme.palette.secondary.main,
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
+      }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
+          {activeStep === steps.length - 1 ? 'Payout Complete' : 'Payout'}
+        </Typography>
+  
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          disabled={submitting}
+          sx={{
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <Typography variant="body2" color="text.secondary" sx={{ padding: 2, mt: 0.5 }}>
+        Process payout for refined ore with automated deductions
+      </Typography>
+      
+      <Box sx={{ width: '100%', px: 3, py: 2 }}>
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepIcon-root': {
+              color: '#d1d5db',
+              '&.Mui-active': { color: theme.palette.secondary.main },
+              '&.Mui-completed': { color: theme.palette.secondary.main },
+            },
+            '& .MuiStepLabel-label': {
+              '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+              '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
+            },
+            '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+          }}
+        >
+          {steps.map((label, index) => (
+            <Step key={label} completed={activeStep > index}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
+
+      <DialogContent
+        dividers
+        sx={{
+          px: 3,
+          py: 2,
+          maxHeight: '60vh',
+          overflow: 'auto',
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+          '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
+        }}
+      >
+        {/* Error message */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Step content */}
+        {renderStepContent()}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">Cancel</Button>
-        {!anyApplied ? (
-          <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
-            Apply at least one transport cost to proceed
-          </Typography>
-        ) : null}
-        {anyApplied && (
-          <Button onClick={handleSubmit}  
-          
-          variant="contained" disabled={submitting}>
-            {submitting ? "Saving..." : "Save Payout"}
+
+      <DialogActions sx={{ p: 2 }}>
+        {activeStep === steps.length - 1 ? (
+          <Button
+            variant="contained"
+            onClick={handleClose}
+            sx={{ ml: 'auto' }}
+          >
+            Close
           </Button>
+        ) : (
+          <Fragment>
+            <Button
+              color="inherit"
+              disabled={activeStep === 0 || submitting}
+              onClick={handleBack}
+            >
+              Previous
+            </Button>
+            <Box sx={{ flex: '1 1 auto' }} />
+            {!anyApplied && activeStep === 4 && (
+              <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
+                Apply at least one transport cost to proceed
+              </Typography>
+            )}
+            <Button
+              variant="contained"
+              onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
+              disabled={submitting || (activeStep === 4 && !anyApplied)}
+              sx={{
+                bgcolor: theme.palette.secondary.main,
+                '&:hover': {
+                  bgcolor: theme.palette.secondary.dark
+                }
+              }}
+            >
+              {activeStep === steps.length - 2 ? (submitting ? 'Saving...' : 'Submit') : 'Next'}
+            </Button>
+          </Fragment>
         )}
       </DialogActions>
     </Dialog>
