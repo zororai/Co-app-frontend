@@ -94,11 +94,11 @@ export default function Page(): React.JSX.Element {
             variant="contained"
             startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
             onClick={() => setIsShaftDialogOpen(true)}
-            sx={{
-              bgcolor: '#5f4bfa',
-              color: '#fff',
-              '&:hover': { bgcolor: '#4d3fd6' }
-            }}
+          sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           >
             Create Shaft
           </Button>

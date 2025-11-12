@@ -216,13 +216,13 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
         variant="contained"
         startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
         onClick={handleOpenDialog}
-        sx={{
-          bgcolor: '#5f4bfa',
+         sx={{
+          bgcolor: 'secondary.main',
           color: '#fff',
-          '&:hover': { bgcolor: '#4aa856' }
+          '&:hover': { bgcolor: 'secondary.dark' }
         }}
       >
-        Add Ore
+        Add Ore for Processing 
       </Button>
       
       {/* Add Ore Dialog */}
