@@ -188,7 +188,7 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         {/* Top-right action button with menu */}
-    <TopRightActions onRefresh={refreshData} />
+  <TopRightActions onRefresh={refreshData} hasRows={customers.length > 0} />
       </Stack>
 
       {tab === 'PENDING' && (
@@ -216,7 +216,7 @@ function applyPagination(rows: Customer[], page: number, rowsPerPage: number): C
 }
 
 // Actions component placed at top-right
-function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.Element {
+function TopRightActions({ onRefresh, hasRows }: { onRefresh: () => void; hasRows: boolean }): React.JSX.Element {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const open = Boolean(anchorEl);
@@ -239,18 +239,20 @@ function TopRightActions({ onRefresh }: { onRefresh: () => void }): React.JSX.El
 
   return (
     <React.Fragment>
-      <Button
-        variant="contained"
-        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-        onClick={handleOpenDialog}
-        sx={{
-          bgcolor: 'secondary.main',
-          color: '#fff',
-          '&:hover': { bgcolor: 'secondary.dark' }
-        }}
-      >
-        Add Transport Cost
-      </Button>
+      {!hasRows && (
+        <Button
+          variant="contained"
+          startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+          onClick={handleOpenDialog}
+          sx={{
+            bgcolor: 'secondary.main',
+            color: '#fff',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          Add Transport Cost
+        </Button>
+      )}
       
       {/* Add Tax Dialog */}
       <LazyWrapper>

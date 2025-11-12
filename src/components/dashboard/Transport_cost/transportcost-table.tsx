@@ -102,8 +102,8 @@ export function CustomersTable({
     position: 'all'
   });
   
-  // Sorting state
-  const [sortField, setSortField] = React.useState<string>('paymentMethod');
+  // Sorting state (empty = use LIFO/newest-first by default)
+  const [sortField, setSortField] = React.useState<string>('');
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
   
   // Delete dialog state
@@ -142,7 +142,12 @@ export function CustomersTable({
       return matchesSearch && matchesDropdownStatus && matchesPosition && matchesTabStatus;
     });
     
-    // Apply sorting
+    // If no manual sort is active, preserve the LIFO order (users already sorted newest-first)
+    if (!sortField || sortField === '') {
+      return filtered;
+    }
+
+    // Apply manual sorting when user clicks column headers
     return [...filtered].sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
@@ -181,14 +186,26 @@ export function CustomersTable({
   const [isUserDetailsDialogOpen, setIsUserDetailsDialogOpen] = React.useState(false);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0); // State to trigger refreshes
 
-  // Fetch users from API when component mounts or refreshTrigger changes
+  // Fetch users from API when component mounts or refreshTrigger/externalRefreshKey changes
   React.useEffect(() => {
     const fetchUserData = async () => {
       setLoading(true);
       setError('');
       try {
         const fetchedUsers = await authClient.fetchTransportCost();
-        setUsers(fetchedUsers);
+
+        // Preserve timestamps in a consistent field and apply LIFO (newest-first)
+        const transformed = (fetchedUsers || []).map((item: any) => ({
+          ...item,
+          createdAt: item.createdAt || item.date || item.timestamp || item.transactionDate || item.created_at,
+          updatedAt: item.updatedAt || item.updated_at,
+        }));
+
+        const sorted = sortNewestFirst(transformed);
+        // Optional debug:
+        // console.log('LIFO applied - first items:', sorted.slice(0,3).map((r:any)=>({ id: r.id, createdAt: r.createdAt })));
+
+        setUsers(sorted);
       } catch (error_) {
         console.error('Error fetching users:', error_);
         setError('Failed to load users. Please try again.');
