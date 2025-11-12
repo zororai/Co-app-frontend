@@ -690,6 +690,11 @@ export function AddCompanyEmployeeDialog({ open, onClose, companyId, companyName
                       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
                         {form.name}
                       </Typography>
+                      {companyName && (
+                        <Typography variant="body2" sx={{ mb: 0.5, color: theme.palette.primary.main, fontWeight: 600 }}>
+                          <strong>Company:</strong> {companyName}
+                        </Typography>
+                      )}
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
                         <strong>ID:</strong> {form.employeeId}
                       </Typography>

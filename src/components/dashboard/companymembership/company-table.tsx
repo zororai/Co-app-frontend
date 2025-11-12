@@ -95,6 +95,7 @@ export function CompanyTable({
   // Dialog state for adding employee
   const [isAddEmployeeDialogOpen, setIsAddEmployeeDialogOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
 
   const handleViewCompany = async (companyId: string) => {
     setLoadingCompanyId(companyId);
@@ -115,14 +116,16 @@ export function CompanyTable({
     }
   };
 
-  const handleAddEmployee = (companyId: string) => {
+  const handleAddEmployee = (companyId: string, companyName: string) => {
     setSelectedCompanyId(companyId);
+    setSelectedCompanyName(companyName);
     setIsAddEmployeeDialogOpen(true);
   };
 
   const handleCloseAddEmployeeDialog = () => {
     setIsAddEmployeeDialogOpen(false);
     setSelectedCompanyId(null);
+    setSelectedCompanyName('');
   };
 
   const [filters, setFilters] = React.useState({
