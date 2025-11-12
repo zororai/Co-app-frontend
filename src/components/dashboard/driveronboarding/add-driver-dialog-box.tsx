@@ -512,6 +512,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     }
     
     setLoading(true);
+    setError(''); // Clear any previous errors
+    
     try {
       // Call the API to register the driver
       const result = await authClient.registerDriver(formData);
@@ -527,12 +529,32 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           onSubmit(formData);
         }
       } else {
-        // Show error
-        setError(`Failed to register driver: ${result.error || 'Unknown error'}`);
+        // Show error with clear message
+        const errorMessage = result.error || 'Unknown error';
+        setError(errorMessage);
+        
+        // If it's a duplicate email error, set field-specific error and navigate back
+        if (errorMessage.toLowerCase().includes('email already exists')) {
+          setErrors(prev => ({
+            ...prev,
+            emailAddress: 'This email address is already registered. Please use a different email.'
+          }));
+          setActiveStep(0); // Go back to Personal Details step
+        }
       }
     } catch (error) {
       console.error('Error registering driver:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      
+      // If it's a duplicate email error, set field-specific error and go back to first step
+      if (errorMessage.toLowerCase().includes('email already exists')) {
+        setErrors(prev => ({
+          ...prev,
+          emailAddress: 'This email address is already registered. Please use a different email.'
+        }));
+        setActiveStep(0);
+      }
     } finally {
       setLoading(false);
     }
