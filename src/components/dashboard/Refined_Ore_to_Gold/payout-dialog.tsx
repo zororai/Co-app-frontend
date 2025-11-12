@@ -66,13 +66,12 @@ export interface PayoutDialogProps {
   }) => Promise<void> | void;
 }
 
-// Define steps for the stepper
+// Define steps for the stepper (combine Payout Details and Summary into one step)
 const steps = [
   'Assignment Information',
   'Transport Cost',
   'Loan Details',
-  'Payout Details',
-  'Payout Summary'
+  'Payout Details & Summary'
 ];
 
 export function PayoutDialog({ open, onClose, assignment, loanDetails, transportCosts, onSubmit }: PayoutDialogProps) {
@@ -93,6 +92,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
   const [transportCost, setTransportCost] = React.useState<number>(0);
   const [buyer, setBuyer] = React.useState<string>("");
   const [submitting, setSubmitting] = React.useState(false);
+  const [submitted, setSubmitted] = React.useState(false);
   // Local copy of loan details so we can refresh after payment
   const [loanDetailsState, setLoanDetailsState] = React.useState<LoanDetails | undefined>(loanDetails);
   React.useEffect(() => {
@@ -126,6 +126,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       setBuyer("");
       setPayAmount(0);
       setError(null); // Reset error when dialog opens
+      setSubmitted(false); // Reset submit state when dialog opens
     }
   }, [open, assignment]);
 
@@ -259,7 +260,9 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
         // await authClient.createPayout( ...payload )
         console.log("Payout submitted:", payload);
       }
-      // Move to confirmation step
+      // Mark as submitted (show complete state)
+      setSubmitted(true);
+      // Ensure the stepper indicator is on the last step
       setActiveStep(steps.length - 1);
     } catch (error) {
       console.error('Payout submission error:', error);
@@ -280,6 +283,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
     // Reset to first step
     setActiveStep(0);
     setError(null); // Clear errors on close
+    setSubmitted(false);
     onClose();
   };
 
@@ -318,10 +322,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                   <Typography variant="body2">{assignment?.mill ?? "-"}</Typography>
                 </Box>
                 
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Default Price per Gram</Typography>
-                  <Typography variant="body2">${assignment?.defaultPricePerGram ?? 0}</Typography>
-                </Box>
+                {/* Removed Default Price per Gram display as requested */}
               </Box>
             </Box>
           </Box>
@@ -481,17 +482,18 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
         );
       }
       
-      case 3: { // Payout Details
+      case 3: { // Combined Payout Details & Summary
         return (
           <Box sx={{ p: 1 }}>
+            {/* Payout Details */}
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
               Payout Details
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
-              Enter payout information
+              Enter payout information and review the summary below
             </Typography>
 
-            <Card variant="outlined">
+            <Card variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
                 <TextField
                   fullWidth
@@ -538,20 +540,8 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                 />
               </CardContent>
             </Card>
-          </Box>
-        );
-      }
-      
-      case 4: { // Payout Summary
-        return (
-          <Box sx={{ p: 1 }}>
-            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              Payout Summary
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
-              Calculated payout breakdown
-            </Typography>
 
+            {/* Payout Summary (same step) */}
             <Box sx={{ bgcolor: 'success.dark', color: 'common.white', border: 1, borderColor: 'success.dark', borderRadius: 1, p: 2 }}>
               <Box sx={{ display: "grid", rowGap: 1 }}>
                 {appliedGoldDeductionGrams > 0 && (
@@ -651,7 +641,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
         m: 0
       }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
-          {activeStep === steps.length - 1 ? 'Payout Complete' : 'Payout'}
+          {submitted ? 'Payout Complete' : 'Payout'}
         </Typography>
   
         <IconButton
@@ -721,7 +711,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        {activeStep === steps.length - 1 ? (
+        {submitted ? (
           <Button
             variant="contained"
             onClick={handleClose}
@@ -739,15 +729,15 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
               Previous
             </Button>
             <Box sx={{ flex: '1 1 auto' }} />
-            {!anyApplied && activeStep === 4 && (
+            {!anyApplied && activeStep === steps.length - 1 && (
               <Typography variant="caption" sx={{ color: 'text.secondary', mr: 2 }}>
                 Apply at least one transport cost to proceed
               </Typography>
             )}
             <Button
               variant="contained"
-              onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
-              disabled={submitting || (activeStep === 4 && !anyApplied)}
+              onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
+              disabled={submitting || (activeStep === steps.length - 1 && !anyApplied)}
               sx={{
                 bgcolor: theme.palette.secondary.main,
                 '&:hover': {
@@ -755,7 +745,7 @@ export function PayoutDialog({ open, onClose, assignment, loanDetails, transport
                 }
               }}
             >
-              {activeStep === steps.length - 2 ? (submitting ? 'Saving...' : 'Submit') : 'Next'}
+              {activeStep === steps.length - 1 ? (submitting ? 'Saving...' : 'Submit') : 'Next'}
             </Button>
           </Fragment>
         )}

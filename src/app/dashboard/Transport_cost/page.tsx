@@ -239,21 +239,18 @@ function TopRightActions({ onRefresh, hasRows }: { onRefresh: () => void; hasRow
 
   return (
     <React.Fragment>
-      {!hasRows && (
-        <Button
-          variant="contained"
-          startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
-          onClick={handleOpenDialog}
-          sx={{
-            bgcolor: 'secondary.main',
-            color: '#fff',
-            '&:hover': { bgcolor: 'secondary.dark' }
-          }}
-        >
-          Add Transport Cost
-        </Button>
-      )}
-      
+      <Button
+        variant="contained"
+        startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+        onClick={handleOpenDialog}
+        sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
+      >
+        Add Transport Cost
+      </Button>
       {/* Add Tax Dialog */}
       <LazyWrapper>
         <LazyAddTaxDialog 
