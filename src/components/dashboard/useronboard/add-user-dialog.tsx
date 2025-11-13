@@ -98,6 +98,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
+  const theme = useTheme();
   
   // State for security companies
   const [securityCompanies, setSecurityCompanies] = React.useState<any[]>([]);
@@ -632,7 +633,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        background: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -684,19 +685,19 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
             },
             '& .MuiStepLabel-label': {
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 600,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 500,
               },
             },
@@ -704,10 +705,10 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               borderColor: '#d1d5db',
             },
             '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
             '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
           }}
         >
