@@ -433,8 +433,7 @@ export function CustomersTable({
           }}
         >
           <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
-            Section Discussion
-          </Typography>
+            Section Decision           </Typography>
           <IconButton 
             onClick={handleCloseDiscussionDialog} 
             size="small"
