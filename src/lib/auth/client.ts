@@ -1925,7 +1925,8 @@ class AuthClient {
 
   /**
    * Create a gold sale record for an ore transport
-   * PUT /api/ore-transports/{id}/gold-sale?weight={weight}&price={price}&buyer={buyer}
+   * PUT /api/ore-transports/{id}/gold-sale
+   * Body: { weight: number, price: number, buyer: string }
    * @param oreTransportId - The ID of the ore transport
    * @param weight - Gold weight in grams
    * @param price - Price per gram
@@ -1941,18 +1942,23 @@ class AuthClient {
     try {
       const safeId = encodeURIComponent(String(oreTransportId).trim());
       const url = new URL(`/api/ore-transports/${safeId}/gold-sale`, globalThis.location.origin);
-      url.searchParams.set('weight', String(weight));
-      url.searchParams.set('price', String(price));
-      url.searchParams.set('buyer', encodeURIComponent(buyer));
       
-      console.log('Creating gold sale with URL:', url.toString());
+      const payload = {
+        weight,
+        price,
+        buyer: buyer || '',
+      };
+      
+      console.log('Creating gold sale with payload:', payload);
       
       const response = await fetch(url.toString(), {
         method: 'PUT',
         headers: {
-          Accept: '*/*',
-          Authorization: `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
         },
+        body: JSON.stringify(payload),
         credentials: 'include',
       });
       
