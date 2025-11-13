@@ -22,6 +22,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -215,7 +217,7 @@ View Company Miner Reg Status Health
               <TableCell>Name Of Cooperative</TableCell>
               <TableCell>Current Status</TableCell>
               
-              <TableCell>View Application Details</TableCell>
+              <TableCell>View </TableCell>
               
             </TableRow>
           </TableHead>
@@ -231,7 +233,7 @@ View Company Miner Reg Status Health
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
                 
-                  <TableCell>{row.cooperativeName}</TableCell>
+                  <TableCell>{row.cooperativename}</TableCell>
                   
                   <TableCell>
                     <Box sx={{
@@ -258,17 +260,19 @@ View Company Miner Reg Status Health
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <IconButton
+                        aria-label="view application details"
                         onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
+                        size="small"
+                        sx={{
+                         
                           color: '#081b2fff',
                           borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Application Details</button>
+                          padding: '4px',
+                        }}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
                     </Box>
                   </TableCell>
                
