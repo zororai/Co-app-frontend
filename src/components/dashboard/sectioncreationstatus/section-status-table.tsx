@@ -507,28 +507,28 @@ export function CustomersTable({
             <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mb: 2 }}>
               <Button 
                 onClick={() => handleDiscussionStatusChange('APPROVED')}
-                variant="contained"
+                variant={discussionStatus === 'APPROVED' ? 'contained' : 'outlined'}
                 color="success"
                 disabled={isSubmitting}
-                sx={{ flex: 1, minHeight: '48px' }}
+                sx={{ minWidth: '120px' }}
               >
                 Approve
               </Button>
               <Button 
                 onClick={() => handleDiscussionStatusChange('PUSHED_BACK')}
-                variant="contained"
+                variant={discussionStatus === 'PUSHED_BACK' ? 'contained' : 'outlined'}
                 color="warning"
                 disabled={isSubmitting}
-                sx={{ flex: 1, minHeight: '48px' }}
+                sx={{ minWidth: '120px' }}
               >
                 Push Back
               </Button>
               <Button 
                 onClick={() => handleDiscussionStatusChange('REJECTED')}
-                variant="contained"
+                variant={discussionStatus === 'REJECTED' ? 'contained' : 'outlined'}
                 color="error"
                 disabled={isSubmitting}
-                sx={{ flex: 1, minHeight: '48px' }}
+                sx={{ minWidth: '120px' }}
               >
                 Reject
               </Button>
