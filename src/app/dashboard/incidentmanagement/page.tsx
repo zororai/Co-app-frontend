@@ -185,7 +185,20 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+            variant="contained"
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: 'secondary.dark',
+              color: 'white',
+              borderRadius: '999px',
+              textTransform: 'none',
+              px: 2,
+              py: '6px',
+              '&:hover': { bgcolor: 'secondary.main' }
+            }}
+          >
             Add Incident
           </Button>
         </div>
