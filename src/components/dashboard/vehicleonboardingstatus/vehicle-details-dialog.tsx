@@ -138,16 +138,20 @@ export function VehicleDetailsDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          p: 2
+          p: 2,
+          bgcolor: 'secondary.main',
+          color: 'white'
         }}
       >
-        <Typography variant="subtitle1" component="span">Vehicle Details</Typography>
-        <IconButton onClick={onClose} size="small">
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Vehicle Details
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
