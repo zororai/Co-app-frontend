@@ -445,10 +445,10 @@ export function TrainingTable({
                 <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>{row.trainingType || ''}</TableCell>
                   <TableCell>
+
+                  
                     <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                      <Avatar sx={{ width: 32, height: 32 }}>
-                        {row.trainerName.split(' ').map(n => n[0]).join('')}
-                      </Avatar>
+                   
                       <Typography variant="subtitle2">{row.trainerName}</Typography>
                     </Stack>
                   </TableCell>

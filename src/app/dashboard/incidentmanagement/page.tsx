@@ -20,6 +20,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import { WarningCircle, Bell } from '@phosphor-icons/react/dist/ssr';
+import { useTheme } from '@mui/material/styles';
 
 
 
@@ -31,6 +32,7 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
@@ -172,10 +174,10 @@ export default function Page(): React.JSX.Element {
 
       {/* Quick Action Cards */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('emergency')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.error.main}` }} onClick={() => openQuickAction('emergency')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <WarningCircle size={32} color="#d32f2f" />
+              <WarningCircle size={32} color={theme.palette.error.main} />
               <Stack>
                 <Typography variant="h6" color="error">Emergency Alert</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -186,10 +188,10 @@ export default function Page(): React.JSX.Element {
           </CardContent>
         </Card>
 
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('safety')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.warning.main}` }} onClick={() => openQuickAction('safety')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <WarningCircle size={32} color="#ed6c02" />
+              <WarningCircle size={32} color={theme.palette.warning.main} />
               <Stack>
                 <Typography variant="h6" color="warning.main">Safety Reminder</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -200,10 +202,10 @@ export default function Page(): React.JSX.Element {
           </CardContent>
         </Card>
 
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('notice')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.primary.main}` }} onClick={() => openQuickAction('notice')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Bell size={32} color="#1976d2" />
+              <Bell size={32} color={theme.palette.primary.main} />
               <Stack>
                 <Typography variant="h6" color="primary">General Notice</Typography>
                 <Typography variant="body2" color="text.secondary">
