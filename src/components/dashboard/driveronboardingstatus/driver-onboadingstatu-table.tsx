@@ -345,22 +345,27 @@ export function CustomersTable({
                   
             
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
+                      <Button
                         onClick={() => {
                           console.log('Button clicked for driver ID:', row.id);
                           setSelectedDriverId(row.id);
                           setIsDriverDetailsDialogOpen(true);
                         }}
-                        variant="outlined"
+                        variant="contained"
                         size="small"
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
+                          bgcolor: 'secondary.dark',
+                          color: 'white',
+                          borderRadius: '999px',
+                          textTransform: 'none',
+                          minWidth: 140,
+                          px: 2,
+                          py: '6px',
+                          boxShadow: 'none',
                           '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                            bgcolor: 'secondary.main'
                           }
                         }}
                       >

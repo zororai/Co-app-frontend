@@ -218,20 +218,28 @@ export function MillDetailsDialog({ open, onClose, driverId, onActionComplete }:
       fullWidth
       maxWidth="md"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        Mill Details
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
+        <DialogTitle
           sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            bgcolor: 'secondary.main',
+            color: 'white'
           }}
         >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+          <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+            Mill Details
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            size="small"
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
       
       <DialogContent>
         {loading ? (

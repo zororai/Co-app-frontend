@@ -97,15 +97,18 @@ export function DriverDetailsDialog({ open, onClose, minerId, assignment: provid
           justifyContent: 'space-between',
           alignItems: 'center',
           p: 2,
-          bgcolor: '#15073d'
+          bgcolor: 'secondary.main',
+          color: 'white'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Shaft Assignment Details</Typography>
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Shaft Assignment Details
+        </Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('shaftloan-details-printable', 'Shaft Assignment Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+          <IconButton onClick={() => printElementById('shaftloan-details-printable', 'Shaft Assignment Details')} size="small" sx={{ mr: 1, color: 'white' }}>
             <PrintIcon />
           </IconButton>
-          <IconButton aria-label="close" onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton aria-label="close" onClick={onClose} size="small" sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </Box>

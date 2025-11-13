@@ -187,19 +187,26 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-        <Box sx={{ display: 'flex',PaddingTop:2, justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
-            Transport Cost Details
-          </Typography>
-          <Box>
-            <IconButton onClick={() => printElementById('transportcost-details-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
-              <PrintIcon />
-            </IconButton>
-            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          bgcolor: 'secondary.main',
+          color: 'white'
+        }}
+      >
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Transport Cost Details
+        </Typography>
+        <Box>
+          <IconButton onClick={() => printElementById('transportcost-details-printable')} size="small" sx={{ color: 'white', mr: 1 }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
@@ -301,32 +308,32 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       )}
       
       {/* Action buttons */}
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button 
-          variant="contained" 
-          color="success" 
+      <DialogActions sx={{ px: 3, pb: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+        <Button
+          variant="contained"
+          color="success"
           onClick={handleApprove}
           disabled={actionLoading}
-          sx={{ bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+          sx={{ minWidth: '120px', bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
         >
           {actionLoading ? 'Processing...' : 'Approve'}
         </Button>
-        <Button 
-          variant="contained" 
-          color="error" 
-          onClick={() => showReasonFieldFor('reject')}
-          disabled={actionLoading}
-          sx={{ bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
-        >
-          Reject
-        </Button>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => showReasonFieldFor('pushback')}
           disabled={actionLoading}
-          sx={{ bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
+          sx={{ minWidth: '120px', bgcolor: '#ed6c02', '&:hover': { bgcolor: '#e65100' } }}
         >
           Push Back
+        </Button>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => showReasonFieldFor('reject')}
+          disabled={actionLoading}
+          sx={{ minWidth: '120px', bgcolor: '#d32f2f', '&:hover': { bgcolor: '#b71c1c' } }}
+        >
+          Reject
         </Button>
       </DialogActions>
       
