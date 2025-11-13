@@ -17,7 +17,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
-import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import { WarningCircle, Bell } from '@phosphor-icons/react/dist/ssr';
@@ -139,36 +138,7 @@ export default function Page(): React.JSX.Element {
   const paginatedCustomers = React.useMemo(() => 
     applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
-  const handleExport = React.useCallback(() => {
-    const headers = [
-      'ID', 'Name', 'Surname', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
-    ];
-
-    const rows = customers.map((c: any) => [
-      c.id || '',
-      c.name || '',
-      c.surname || '',
-      c.address || '',
-      c.cellNumber || '',
-      c.position || '',
-      c.cooperativeName || '',
-      c.numShafts || '',
-      c.status || '',
-      c.reason || ''
-    ]);
-    
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.append(a);
-
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }, [customers]);
+  
 
   
 
@@ -178,10 +148,6 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
             <Typography variant="h4" sx={{ flexGrow: 1 }}>Incident Report Register</Typography>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
-              Export
-            </Button>
           </Stack>
         </Stack>
         <div>
