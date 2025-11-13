@@ -450,35 +450,49 @@ export function CustomersTable({
                   
                  
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <Button
                         onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Ore Details</button>
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          bgcolor: 'secondary.dark',
+                          color: 'white',
+                          borderRadius: '999px',
+                          textTransform: 'none',
+                          minWidth: 140,
+                          px: 2,
+                          py: '6px',
+                          boxShadow: 'none',
+                          '&:hover': { bgcolor: 'secondary.main' }
+                        }}
+                      >
+                        View Ore Details
+                      </Button>
                     </Box>
                   </TableCell>
                   <TableCell>
                     {(!row.newnumberOfBags || row.newWeight === '') && (
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <button 
+                        <Button
                           onClick={() => handleCostDeduction(row.id)}
-                          style={{
-                            background: 'none',
-                            border: '1px solid #06131fff',
-                            color: '#081b2fff',
-                            borderRadius: '6px',
-                            padding: '2px 12px',
-                            cursor: 'pointer',
-                            fontWeight: 500,
-                        }}>Cost Deduction</button>
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            bgcolor: 'secondary.dark',
+                            color: 'white',
+                            borderRadius: '999px',
+                            textTransform: 'none',
+                            minWidth: 140,
+                            px: 2,
+                            py: '6px',
+                            boxShadow: 'none',
+                            '&:hover': { bgcolor: 'secondary.main' }
+                          }}
+                        >
+                          Cost Deduction
+                        </Button>
                       </Box>
                     )}
                   </TableCell>
