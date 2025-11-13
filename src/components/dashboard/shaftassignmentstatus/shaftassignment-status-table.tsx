@@ -306,22 +306,26 @@ export function CustomersTable({
                                                     </Box>
                                 </TableCell>
 
-                                <TableCell>{row.reason}</TableCell>
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>Make A Decision</button>
-                    </Box>
-                  </TableCell>
+                                 <TableCell>{row.reason}</TableCell>
+                                 <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <Button
+                                      onClick={() => handleViewCustomer(row.id)}
+                                      variant="contained"
+                                      size="small"
+                                      sx={{
+                                        bgcolor: 'secondary.main',
+                                        color: '#fff',
+                                        '&:hover': { bgcolor: 'secondary.dark' },
+                                        textTransform: 'none',
+                                        borderRadius: '24px',
+                                        paddingX: 2
+                                      }}
+                                    >
+                                      Make A Decision
+                                    </Button>
+                                  </Box>
+                                </TableCell>
                
                 </TableRow>
               );

@@ -365,19 +365,24 @@ export function CustomersTable({
                     </Box>
                   </TableCell>
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <button
                         onClick={() => handleViewUserDetails(row.id)}
                         style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
+                          background: '#2b3136',
+                          border: '1px solid #2b3136',
+                          color: '#ffffff',
+                          borderRadius: '24px',
+                          padding: '6px 16px',
                           cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View User Details</button>
+                          fontWeight: 600,
+                          boxShadow: '0 1px 0 rgba(0,0,0,0.2)',
+                          lineHeight: 1
+                        }}
+                      >
+                      Make Decision
+                      </button>
                     </Box>
                   </TableCell>
        
