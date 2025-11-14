@@ -717,9 +717,8 @@ export function CustomersTable({
             )}
             {filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
-              const statusColor = STATUS_COLORS[
-                (row.oreSample && row.oreSample[0] && row.oreSample[0].status?.toLowerCase().replace('_', '_')) || 'unknown'
-              ] || STATUS_COLORS.unknown;
+              const statusKey = ((row.oreSample && row.oreSample[0] && row.oreSample[0].status?.toLowerCase().replace('_', '_')) || 'unknown') as keyof typeof STATUS_COLORS;
+              const statusColor = STATUS_COLORS[statusKey] || STATUS_COLORS.unknown;
               
               return (
                 <TableRow 
