@@ -28,6 +28,11 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -79,6 +84,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -387,6 +393,7 @@ export function CustomersTable({
         <Typography 
           variant="subtitle1" 
           sx={{ 
+            color: theme.palette.secondary.main,
             fontWeight: 500, 
             mb: 2 
           }}
@@ -506,6 +513,28 @@ export function CustomersTable({
               
               </TableRow>
             )}
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
             {filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
@@ -518,25 +547,38 @@ export function CustomersTable({
                   <TableCell>{row.mills && row.mills[0] ? row.mills[0].millName : ''}</TableCell>
                   <TableCell>{row.mills && row.mills[0] ? row.mills[0].location : ''}</TableCell>
                   <TableCell>{row.mills && row.mills[0] ? row.mills[0].millType : ''}</TableCell>
-                  <TableCell>{row.processStatus || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: row.processStatus === 'Completed' ? '#C8E6C9' : 
+                               row.processStatus === 'In Progress' ? '#FFF9C4' : 
+                               row.processStatus === 'Pending' ? '#FFE0B2' : '#FFCDD2',
+                      color: row.processStatus === 'Completed' ? '#1B5E20' : 
+                             row.processStatus === 'In Progress' ? '#F57F17' : 
+                             row.processStatus === 'Pending' ? '#E65100' : '#B71C1C',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.processStatus || 'N/A'}
+                    </Box>
+                  </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                 
-
-                                   <Button 
-                                                     onClick={() => handleViewUserDetails(row.id)}
-                                                variant="outlined"
-                                                size="small"
-                                                sx={{
-                                                  borderColor: '#06131fff',
-                                                  color: '#081b2fff',
-                                                  '&:hover': {
-                                                    borderColor: '#06131fff',
-                                                    backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                                                  }
-                                                }}
-                                              >View Details</Button>
-                        
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          onClick={() => handleViewUserDetails(row.id)}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                   <TableCell>
@@ -546,13 +588,13 @@ export function CustomersTable({
                         
                       <Button 
                         onClick={() => handleAssignMill(row.id)}
+                        variant="contained"
+                        size="small"
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
+                          bgcolor: theme.palette.secondary.main,
+                          color: '#fff',
+                          '&:hover': { bgcolor: theme.palette.secondary.dark },
+                          textTransform: 'none'
                         }}
                         disabled={row.millStatus === 'Assigned'}
                       >

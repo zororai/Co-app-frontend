@@ -156,7 +156,18 @@ export default function Page(): React.JSX.Element {
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: 'secondary.main',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              }
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />
