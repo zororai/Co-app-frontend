@@ -10,6 +10,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
@@ -141,25 +143,48 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Ore registration </Typography>
+          <Typography variant="h4">Ore Registration</Typography>
+          
+          {/* Tabs with styling guide compliance */}
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTab-root': {
+                color: 'text.secondary',
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: 'secondary.main',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'secondary.main',
+              }
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />
             <Tab label="Rejected" value="REJECTED" />
             <Tab label="Approved" value="APPROVED" />
           </Tabs>
+          
+          {/* Export button */}
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} 
+              onClick={handleExport}
+              sx={{
+                color: 'secondary.main',
+                '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+              }}
+            >
               Export
             </Button>
           </Stack>
         </Stack>
-        {/* Top-right action button with menu */}
+        
+        {/* Top-right action button */}
         <TopRightActions onRefresh={refreshData} />
       </Stack>
 
