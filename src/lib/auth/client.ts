@@ -2016,6 +2016,42 @@ class AuthClient {
     }
   }
 
+  /**
+   * Submit registration/payment for a company
+   * PUT /api/companies/{id}/payment
+   * Body: { regfeePaid: string, attachDocuments: string, reciptnumber: string }
+   */
+  async putCompanyPayment(companyId: string, payload: { regfeePaid: string; attachDocuments: string; reciptnumber: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(companyId).trim());
+      const url = `/api/companies/${safeId}/payment`;
+      console.log('PUT', url, 'payload:', payload);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('putCompanyPayment failed:', response.status, errorText);
+        return { success: false, error: errorText || 'Failed to submit payment' };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error in putCompanyPayment:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         try {

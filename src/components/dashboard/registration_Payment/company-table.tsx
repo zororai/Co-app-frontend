@@ -37,6 +37,7 @@ import { sortNewestFirst } from '@/utils/sort';
 import { authClient } from '@/lib/auth/client';
 import { Customer } from './regcustomers-table';
 import { CompanyDetailsDialog } from './company-details-dialog';
+import CompanyPaymentDialog from './company-payment-dialog';
 
 function noop(): void {
   // do nothing
@@ -90,12 +91,14 @@ export function CompanyTable({
   const [companyDialogError, setCompanyDialogError] = useState<string | null>(null);
   const [loadingCompanyId, setLoadingCompanyId] = useState<string | null>(null);
   const [loadingPaymentId, setLoadingPaymentId] = useState<string | null>(null);
+  const [paymentDialogCompanyId, setPaymentDialogCompanyId] = useState<string | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const handleInitPayment = (companyId: string) => {
-    // show a local loading state then redirect to the registration payment page
+    // open the company payment dialog and set a loading indicator while the dialog is visible
     setLoadingPaymentId(companyId);
-    const path = `/dashboard/registration_Paymentcompany?minerId=${encodeURIComponent(String(companyId))}`;
-    globalThis.location.href = path;
+    setPaymentDialogCompanyId(companyId);
+    setPaymentDialogOpen(true);
   };
 
   const handleViewCompany = async (companyId: string) => {
@@ -431,6 +434,21 @@ export function CompanyTable({
         company={selectedCompany}
         loading={companyDialogLoading}
         error={companyDialogError}
+      />
+      <CompanyPaymentDialog
+        open={paymentDialogOpen}
+        onClose={() => {
+          setPaymentDialogOpen(false);
+          setPaymentDialogCompanyId(null);
+          setLoadingPaymentId(null);
+        }}
+        companyId={paymentDialogCompanyId}
+        onSuccess={() => {
+          // close dialog and clear loading
+          setPaymentDialogOpen(false);
+          setPaymentDialogCompanyId(null);
+          setLoadingPaymentId(null);
+        }}
       />
     </Card>
   );
