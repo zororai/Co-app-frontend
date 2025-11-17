@@ -61,6 +61,7 @@ export const allNavItems = [
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
       { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
+       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'id-card' },
       
     ],
   },

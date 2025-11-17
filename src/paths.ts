@@ -4,6 +4,7 @@ export const paths = {
    dashboard: {
     overview: '/dashboard',
     drivermanagement:'/dashboard/drivermanagement',
+    Registration_Payment:'/dashboard/registration_Payment',
     Ore_reports: '/dashboard/ore_reports',
     shaftinspectionresolution: '/dashboard/shaftinspectionresolution',
     shaftcreation: '/dashboard/shaftcreation',
