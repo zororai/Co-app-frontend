@@ -16,8 +16,8 @@ import dayjs from 'dayjs';
 
 import { config } from '@/config';
 import { LazyWrapper } from '@/components/common/LazyWrapper';
-import { LazyCustomersMainTable, LazyRegMinerDialog } from '@/components/lazy/LazyComponents';
-import type { Customer } from '@/components/dashboard/registration_Payment/customers-table';
+import { LazyRegCustomersMainTable, LazyRegMinerDialog } from '@/components/lazy/LazyComponents';
+import type { Customer } from '@/components/dashboard/registration_Payment/regcustomers-table';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -102,7 +102,7 @@ export default function Page(): React.JSX.Element {
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Registrated Miners Fee Payments</Typography>
+          <Typography variant="h4">Registration Fee Payment For Syndicate Miners</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
@@ -122,7 +122,7 @@ export default function Page(): React.JSX.Element {
         </Stack>
       ) : (
         <LazyWrapper>
-          <LazyCustomersMainTable
+          <LazyRegCustomersMainTable
             count={customers.length}
             page={page}
             rows={customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}

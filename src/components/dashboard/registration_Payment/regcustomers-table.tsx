@@ -28,16 +28,15 @@ import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import PaymentIcon from '@mui/icons-material/Payment';
 import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
+import RegPaymentDialog from './reg-payment-dialog';
 
 import { useSelection } from '@/hooks/use-selection';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Backdrop from '@mui/material/Backdrop';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
-import { CustomerDetailsDialog } from '@/components/dashboard/registration_Payment/customer-details-dialog';
+import { CustomerDetailsDialog } from '@/components/dashboard/customer/customer-details-dialog';
 import { sortNewestFirst } from '@/utils/sort';
 
 function noop(): void {
@@ -157,23 +156,17 @@ export function CustomersTable({
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
-  const router = useRouter();
-  const [navigating, setNavigating] = React.useState(false);
-  const handleNavigate = async (path: string) => {
-    try {
-      setNavigating(true);
-      await router.push(path);
-      // navigation will unmount this component, so no need to setNavigating(false) here
-    } catch (err) {
-      console.error('Navigation failed, falling back to full reload', err);
-      globalThis.location.href = path;
-    }
+  const handleRedirect = (path: string) => {
+    globalThis.location.href = path;
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [loadingCustomerId, setLoadingCustomerId] = React.useState<string | null>(null);
+  const [loadingPaymentId, setLoadingPaymentId] = React.useState<string | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
+  const [paymentDialogMinerId, setPaymentDialogMinerId] = React.useState<string | null>(null);
 
   const handleViewCustomer = async (customerId: string) => {
     setLoadingCustomerId(customerId);
@@ -192,6 +185,12 @@ export function CustomersTable({
     }
   };
 
+  const handleInitPayment = (customerId: string) => {
+    // open the payment dialog for this customer
+    setPaymentDialogMinerId(customerId);
+    setPaymentDialogOpen(true);
+  };
+
   return (
     <Card>
       {/* Action Buttons */}
@@ -203,7 +202,7 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleNavigate('/dashboard/registration_Payment')}
+          onClick={() => handleRedirect('/dashboard/customers')}
         >
           View Syndicate
         </Button>
@@ -214,15 +213,11 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleNavigate('/dashboard/registration_Paymentcompany')}
+          onClick={() => handleRedirect('/dashboard/company')}
         >
          View Company
         </Button>
       </Box>
-
-      <Backdrop open={navigating} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
       <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -308,7 +303,7 @@ export function CustomersTable({
                   direction={sortField === 'nationIdNumber' ? sortDirection : 'asc'}
                   onClick={() => handleSort('nationIdNumber')}
                 >
-                  Nationality ID Number
+                  Payment Status
                 </TableSortLabel>
               </TableCell>
               
@@ -318,7 +313,7 @@ export function CustomersTable({
                   direction={sortField === 'status' ? sortDirection : 'asc'}
                   onClick={() => handleSort('status')}
                 >
-                  xxStatus
+                  Status
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
@@ -363,7 +358,7 @@ export function CustomersTable({
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
                    <TableCell>{row.shaftnumber}</TableCell>
-                  <TableCell>{row.nationIdNumber}</TableCell>
+                  <TableCell>{row.regfeePaid}</TableCell>
                   
                 
                   
@@ -388,6 +383,28 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip title="Make Payment">
+                        <IconButton
+                          onClick={() => handleInitPayment(row.id)}
+                          disabled={loadingPaymentId === row.id}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' },
+                            '&.Mui-disabled': {
+                              color: theme.palette.secondary.main,
+                              opacity: 0.6
+                            }
+                          }}
+                        >
+                          {loadingPaymentId === row.id ? (
+                            <CircularProgress size={20} sx={{ color: theme.palette.secondary.main }} />
+                          ) : (
+                            <PaymentIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+
                       <Tooltip title="View Application Details">
                         <IconButton 
                           onClick={() => handleViewCustomer(row.id)}
@@ -440,6 +457,19 @@ export function CustomersTable({
         }}
         customer={selectedCustomer}
         customerId={selectedCustomerId}
+      />
+      <RegPaymentDialog
+        open={paymentDialogOpen}
+        onClose={() => {
+          setPaymentDialogOpen(false);
+          setPaymentDialogMinerId(null);
+        }}
+        minerId={paymentDialogMinerId}
+        onSuccess={() => {
+          // Optionally refresh data or show success message
+          // For now, just console log
+          console.log('Payment submitted for miner', paymentDialogMinerId);
+        }}
       />
     </Card>
   );
