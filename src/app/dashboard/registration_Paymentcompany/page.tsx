@@ -120,31 +120,7 @@ export default function Page(): React.JSX.Element {
           </Stack>
         </Stack>
         <div>
-          <Button 
-            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
-            variant="contained" 
-            onClick={() => setOpen(true)}
-            sx={{
-              bgcolor: theme.palette.secondary.main,
-              color: '#fff',
-              '&:hover': { bgcolor: theme.palette.secondary.dark }
-            }}
-          >
-           
-Onboarding Process
-Miner Registration
-Shaft Management
-Financial Management
-SHE Management
-Report Management
-Ore Management
-Site Management
-Transport Management
-Security
-Record Approval Management
-1
-Registration Company Miner Fee Payments
-          </Button>
+ 
         </div>
       </Stack>
 

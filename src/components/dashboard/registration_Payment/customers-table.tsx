@@ -32,6 +32,9 @@ import dayjs from 'dayjs';
 import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Backdrop from '@mui/material/Backdrop';
 import { ReactNode } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { CustomerDetailsDialog } from '@/components/dashboard/registration_Payment/customer-details-dialog';
@@ -154,8 +157,17 @@ export function CustomersTable({
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
-  const handleRedirect = (path: string) => {
-    globalThis.location.href = path;
+  const router = useRouter();
+  const [navigating, setNavigating] = React.useState(false);
+  const handleNavigate = async (path: string) => {
+    try {
+      setNavigating(true);
+      await router.push(path);
+      // navigation will unmount this component, so no need to setNavigating(false) here
+    } catch (err) {
+      console.error('Navigation failed, falling back to full reload', err);
+      globalThis.location.href = path;
+    }
   };
 
   const [selectedCustomer, setSelectedCustomer] = React.useState<Customer | null>(null);
@@ -191,7 +203,7 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/registration_Payment')}
+          onClick={() => handleNavigate('/dashboard/registration_Payment')}
         >
           View Syndicate
         </Button>
@@ -202,11 +214,15 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/registration_Paymentcompany')}
+          onClick={() => handleNavigate('/dashboard/registration_Paymentcompany')}
         >
          View Company
         </Button>
       </Box>
+
+      <Backdrop open={navigating} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Divider />
       {/* Filters Section */}
       <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
