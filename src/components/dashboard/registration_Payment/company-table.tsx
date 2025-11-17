@@ -299,6 +299,15 @@ export function CompanyTable({
                   Status
                 </TableSortLabel>
               </TableCell>
+               <TableCell>
+                <TableSortLabel
+                  active={sortField === 'Payment Status'}
+                  direction={sortField === 'Payment Status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('Payment Status')}
+                >
+                  Payment Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>View Miner Details</TableCell>
             </TableRow>
           </TableHead>
@@ -355,6 +364,7 @@ export function CompanyTable({
                         </Box>
                       </Box>
                     </TableCell>
+                    <TableCell>{row.regfeePaid}</TableCell> 
                     <TableCell>
                       
                       <Tooltip title="View Company Details">
