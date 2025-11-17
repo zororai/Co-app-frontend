@@ -27,6 +27,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useTheme } from '@mui/material/styles';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -34,7 +35,7 @@ import { ReactNode, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { sortNewestFirst } from '@/utils/sort';
 import { authClient } from '@/lib/auth/client';
-import { Customer } from './customers-table';
+import { Customer } from './regcustomers-table';
 import { CompanyDetailsDialog } from './company-details-dialog';
 
 function noop(): void {
@@ -88,6 +89,14 @@ export function CompanyTable({
   const [companyDialogLoading, setCompanyDialogLoading] = useState(false);
   const [companyDialogError, setCompanyDialogError] = useState<string | null>(null);
   const [loadingCompanyId, setLoadingCompanyId] = useState<string | null>(null);
+  const [loadingPaymentId, setLoadingPaymentId] = useState<string | null>(null);
+
+  const handleInitPayment = (companyId: string) => {
+    // show a local loading state then redirect to the registration payment page
+    setLoadingPaymentId(companyId);
+    const path = `/dashboard/registration_Paymentcompany?minerId=${encodeURIComponent(String(companyId))}`;
+    globalThis.location.href = path;
+  };
 
   const handleViewCompany = async (companyId: string) => {
     setLoadingCompanyId(companyId);
@@ -181,7 +190,7 @@ export function CompanyTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/customers')}
+          onClick={() => handleRedirect('/dashboard/registration_Payment')}
         >
         View Syndicate
         </Button>
@@ -192,7 +201,7 @@ export function CompanyTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/company')}
+          onClick={() => handleRedirect('/dashboard/registration_Paymentcompany')}
         >
         View Company
         </Button>
@@ -344,6 +353,7 @@ export function CompanyTable({
                       </Box>
                     </TableCell>
                     <TableCell>
+                      
                       <Tooltip title="View Company Details">
                         <IconButton
                           onClick={() => handleViewCompany(row.id)}
@@ -364,6 +374,27 @@ export function CompanyTable({
                             <CircularProgress size={20} sx={{ color: theme.palette.secondary.main }} />
                           ) : (
                             <VisibilityIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Make Payment">
+                        <IconButton
+                          onClick={() => handleInitPayment(row.id)}
+                          disabled={loadingPaymentId === row.id}
+                          size="small"
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' },
+                            '&.Mui-disabled': {
+                              color: theme.palette.secondary.main,
+                              opacity: 0.6
+                            }
+                          }}
+                        >
+                          {loadingPaymentId === row.id ? (
+                            <CircularProgress size={20} sx={{ color: theme.palette.secondary.main }} />
+                          ) : (
+                            <PaymentIcon fontSize="small" />
                           )}
                         </IconButton>
                       </Tooltip>

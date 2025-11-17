@@ -202,7 +202,7 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/customers')}
+          onClick={() => handleRedirect('/dashboard/registration_Payment')}
         >
           View Syndicate
         </Button>
@@ -213,7 +213,7 @@ export function CustomersTable({
             color: '#fff',
             '&:hover': { bgcolor: theme.palette.secondary.dark }
           }}
-          onClick={() => handleRedirect('/dashboard/company')}
+          onClick={() => handleRedirect('/dashboard/registration_Paymentcompany')}
         >
          View Company
         </Button>
