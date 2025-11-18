@@ -477,11 +477,11 @@ export function SideNav(): React.JSX.Element {
   );
 }
 
-function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: NavItemConfig[]; pathname: string | null; onNavigateStart?: () => void }): React.JSX.Element {
+function renderNavItems({ items = [], pathname, onNavigateStart, collapsed }: { items?: NavItemConfig[]; pathname: string | null; onNavigateStart?: () => void; collapsed?: boolean }): React.JSX.Element {
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
 
-    acc.push(<NavItem key={key} pathname={pathname ?? ''} onNavigateStart={onNavigateStart} {...item} />);
+    acc.push(<NavItem key={key} pathname={pathname ?? ''} onNavigateStart={onNavigateStart} collapsed={collapsed} {...item} />);
 
     return acc;
   }, []);
@@ -497,13 +497,13 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string | null;
   items?: NavItemConfig[];
   onNavigateStart?: () => void;
+  collapsed?: boolean;
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, title, items, onNavigateStart }: NavItemProps): React.JSX.Element {
+function NavItem({ disabled, external, href, icon, matcher, pathname, title, items, onNavigateStart, collapsed }: NavItemProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const hasChildren = Array.isArray(items) && items.length > 0;
-  const collapsed = typeof window !== 'undefined' && window.localStorage.getItem('sideNavCollapsed') === 'true';
   // Handle click for items with children
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
@@ -575,18 +575,24 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
             />
           ) : null}
         </Box>
-        {!collapsed && (
-          <Box sx={{ flex: '1 1 auto' }}>
-            <Typography
-              component="span"
-              sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}
-            >
-              {title}
-            </Typography>
-          </Box>
-        )}
-        {hasChildren && !collapsed ? (
-          <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            overflow: 'hidden',
+            transition: 'opacity 180ms ease, max-width 220ms ease, transform 180ms ease',
+            opacity: collapsed ? 0 : 1,
+            maxWidth: collapsed ? 0 : '100%'
+          }}
+        >
+          <Typography
+            component="span"
+            sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            {title}
+          </Typography>
+        </Box>
+        {hasChildren ? (
+          <Box sx={{ ml: 1, display: collapsed ? 'none' : 'flex', alignItems: 'center', transition: 'opacity 180ms ease' }}>
             <CaretUpDownIcon style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
           </Box>
         ) : null}

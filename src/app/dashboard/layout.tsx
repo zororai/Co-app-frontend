@@ -26,6 +26,12 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
             '--MobileNav-width': '320px',
             '--MobileNav-zIndex': 1100,
           },
+          'body[data-nav-collapsed="true"]': {
+            '--SideNav-width': '72px'
+          },
+          'body[data-nav-collapsed="false"]': {
+            '--SideNav-width': '280px'
+          }
         }}
       />
       <Box
