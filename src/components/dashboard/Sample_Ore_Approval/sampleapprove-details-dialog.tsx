@@ -9,10 +9,16 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
+import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import { authClient } from '@/lib/auth/client';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import PrintIcon from '@mui/icons-material/Print';
+import { useTheme } from '@mui/material/styles';
+import { printElementById } from '@/lib/print';
 
 interface OreDetailsDialogProps {
   open: boolean;
@@ -22,6 +28,7 @@ interface OreDetailsDialogProps {
 }
 
 export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [oreDetails, setOreDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -108,6 +115,10 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
     }
   };
 
+  if (!open) {
+    return <Dialog open={false} onClose={onClose} maxWidth="md" fullWidth />;
+  }
+
   return (
     <Dialog 
       open={open} 
@@ -115,18 +126,48 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ 
-        fontSize: '1.25rem', 
-        fontWeight: 600,
-        borderBottom: '1px solid #e0e0e0',
-        pb: 2
-      }}>
-        Ore Details
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
+        }}
+      >
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>Ore Details</Typography>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton
+            onClick={() => printElementById('ore-details-printable', 'Ore Details')}
+            size="small"
+            sx={{ mr: 1, color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}
+          >
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={40} />
+          <Box sx={{ p: 3 }}>
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 2.5
+            }}>
+              <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5, bgcolor: '#ffffff' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <CircularProgress size={32} />
+                  <Skeleton variant="text" width="70%" />
+                </Box>
+              </Box>
+              <Box sx={{ border: `2px solid ${theme.palette.secondary.main}`, borderRadius: '12px', p: 2.5, bgcolor: '#ffffff' }}>
+                <Skeleton variant="rectangular" height={48} />
+              </Box>
+            </Box>
           </Box>
         )}
 
@@ -137,7 +178,8 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
         )}
 
         {!loading && !error && oreDetails && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ p: 3 }} id="ore-details-printable">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
               <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
               <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
@@ -228,6 +270,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                 </Box>
               </Box>
             )}
+            </Box>
           </Box>
         )}
       </DialogContent>
