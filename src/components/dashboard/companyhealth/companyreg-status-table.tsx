@@ -157,11 +157,7 @@ export function CustomersTable({
           bgcolor: 'secondary.main',
           color: '#fff',
           '&:hover': { bgcolor: 'secondary.dark' }
-        }}   sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+        }}
           onClick={() => handleRedirect('/dashboard/companyhealth')}
         >
 View Company Miner Reg Status Health
