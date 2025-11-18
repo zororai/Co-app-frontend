@@ -32,6 +32,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
@@ -162,6 +163,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -948,14 +950,31 @@ export function CustomersTable({
           }
         }}
       >
-        <DialogTitle sx={{ 
-          fontWeight: 600, 
-          fontSize: '1.1rem',
-          backgroundColor: '#f5f5f5',
-          borderBottom: '1px solid #e0e0e0',
-        }}>
-          Update Sample Information
-        </DialogTitle>
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Update Sample Information</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleUpdateDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Stack spacing={2.5}>
             <TextField
@@ -1039,14 +1058,31 @@ export function CustomersTable({
           }
         }}
       >
-        <DialogTitle sx={{ 
-          fontWeight: 600, 
-          fontSize: '1.1rem',
-          backgroundColor: '#f5f5f5',
-          borderBottom: '1px solid #e0e0e0',
-        }}>
-          Add Sample Results
-        </DialogTitle>
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Add Sample Results</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleResultsDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Stack spacing={2.5}>
             <TextField
