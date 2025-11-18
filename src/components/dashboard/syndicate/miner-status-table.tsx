@@ -93,6 +93,12 @@ export function CustomersTable({
     return sortNewestFirst(filtered);
   }, [rows, filters]);
 
+  // Determine whether to show the View column: show it when at least one visible row
+  // has regfeePaid !== 'Not Paid' (case-insensitive)
+  const showViewColumn = React.useMemo(() => {
+    return filteredRows.some(r => String(r.regfeePaid || '').toLowerCase() !== 'not paid');
+  }, [filteredRows]);
+
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
   }, [filteredRows]);
@@ -217,7 +223,7 @@ View Company Miner Reg Status Health
               <TableCell>Name Of Cooperative</TableCell>
               <TableCell>Current Status</TableCell>
               
-              <TableCell>View </TableCell>
+              {showViewColumn && <TableCell>Make Decision</TableCell>}
               
             </TableRow>
           </TableHead>
@@ -258,24 +264,30 @@ View Company Miner Reg Status Health
                     </Box>
                   </TableCell>
               
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      {String(row.regfeePaid || '').toLowerCase() !== 'Not Paid' && (
-                        <IconButton
-                          aria-label="view application details"
-                          onClick={() => handleViewCustomer(row.id)}
-                          size="small"
-                          sx={{
-                            color: '#081b2fff',
-                            borderRadius: '6px',
-                            padding: '4px',
-                          }}
-                        >
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
-                  </TableCell>
+                  {showViewColumn && (
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {(() => {
+                          const v = String(row.regfeePaid ?? '').trim().toLowerCase();
+                          const isUnpaid = v === '' || v === 'null' || v === 'none' || v === 'not paid';
+                          return !isUnpaid && (
+                            <IconButton
+                              aria-label="view application details"
+                              onClick={() => handleViewCustomer(row.id)}
+                              size="small"
+                              sx={{
+                                color: '#081b2fff',
+                                borderRadius: '6px',
+                                padding: '4px',
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          );
+                        })()}
+                      </Box>
+                    </TableCell>
+                  )}
                
                 </TableRow>
               );
