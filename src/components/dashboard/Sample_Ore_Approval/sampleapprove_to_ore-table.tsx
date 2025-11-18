@@ -821,16 +821,15 @@ export function CustomersTable({
                           onClick={() => handleOpenSampleResultsDialog(row.id)}
                           variant="outlined"
                           size="small"
-                          sx={{
-                            borderColor: '#06131f',
-                            color: '#081b2f',
+                         sx={{
+                            backgroundColor: '#06131f',
+                            color: '#fff',
                             fontSize: '0.75rem',
                             fontWeight: 500,
                             textTransform: 'none',
                             padding: '6px 10px',
                             '&:hover': {
-                              borderColor: '#06131f',
-                              backgroundColor: 'rgba(6, 19, 31, 0.06)',
+                              backgroundColor: '#000814',
                             }
                           }}
                         >

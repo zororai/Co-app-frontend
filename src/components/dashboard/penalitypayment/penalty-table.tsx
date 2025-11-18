@@ -728,7 +728,7 @@ export function PenaltyTable({
                             onClick={() => handlePaymentClick(row)}
                             size="small"
                             sx={{
-                              color: 'success.main',
+                              color: 'secondary.main',
                               '&:hover': {
                                 bgcolor: 'rgba(76, 175, 80, 0.08)'
                               }
