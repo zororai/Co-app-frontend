@@ -24,7 +24,7 @@ export const allNavItems = [
   {
     key: 'Miner-registration',
     title: 'Miner Registration',
-    icon: 'id-card',
+    icon: 'mountain',
     items: [
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
     { key: 'syndicate-teammembership', title: 'Syndicate Membership', href: paths.dashboard.syndicatemembership, icon: 'id-card' },

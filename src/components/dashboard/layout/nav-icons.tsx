@@ -14,13 +14,13 @@ import { TruckIcon } from '@phosphor-icons/react/dist/ssr/Truck';
 import { LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
 import { KeyIcon } from '@phosphor-icons/react/dist/ssr/Key';
 
-
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
   'x-square': XSquare,
-    'shield': ShieldCheckIcon,
+  'shield': ShieldCheckIcon,
+
   'id-card': IdentificationCardIcon,
   'buildings': BuildingsIcon,
   'mountain': MountainsIcon,

@@ -25,6 +25,7 @@ export const iconMap = {
   'buildings': Business,
   'user-secret': Person,
   'mountain': Terrain,
+  
   'tools': Build,
   'truck': LocalShipping,
   'lock': Lock,
