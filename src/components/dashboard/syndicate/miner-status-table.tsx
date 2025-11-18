@@ -260,19 +260,20 @@ View Company Miner Reg Status Health
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <IconButton
-                        aria-label="view application details"
-                        onClick={() => handleViewCustomer(row.id)}
-                        size="small"
-                        sx={{
-                         
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '4px',
-                        }}
-                      >
-                        <VisibilityIcon fontSize="small" />
-                      </IconButton>
+                      {String(row.regfeePaid || '').toLowerCase() !== 'Not Paid' && (
+                        <IconButton
+                          aria-label="view application details"
+                          onClick={() => handleViewCustomer(row.id)}
+                          size="small"
+                          sx={{
+                            color: '#081b2fff',
+                            borderRadius: '6px',
+                            padding: '4px',
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      )}
                     </Box>
                   </TableCell>
                
