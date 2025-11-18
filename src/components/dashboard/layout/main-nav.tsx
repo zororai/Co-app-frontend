@@ -12,6 +12,8 @@ import { ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { useTheme } from '@mui/material/styles';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { usePopover } from '@/hooks/use-popover';
 import { useUser } from '@/hooks/use-user';
@@ -84,7 +86,30 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
-            
+            {/* Collapse/expand side nav to icons-only for large screens */}
+            <IconButton
+              onClick={() => {
+                try {
+                  const currently = typeof window !== 'undefined' && window.localStorage.getItem('sideNavCollapsed') === 'true';
+                  const next = !currently;
+                  if (typeof window !== 'undefined') {
+                    window.localStorage.setItem('sideNavCollapsed', String(next));
+                    // set CSS variable for width so layout responds
+                    window.document.documentElement.style.setProperty('--SideNav-width', next ? '72px' : '280px');
+                    // add data attribute for other components to react to
+                    window.document.body.setAttribute('data-nav-collapsed', String(next));
+                    // fire event for listeners
+                    window.dispatchEvent(new CustomEvent('nav-collapse', { detail: next }));
+                  }
+                } catch (e) {
+                  // ignore
+                }
+              }}
+              sx={{ display: { xs: 'none', lg: 'inline-flex' } }}
+              aria-label="Toggle side navigation"
+            >
+              {typeof window !== 'undefined' && window.localStorage.getItem('sideNavCollapsed') === 'true' ? <MenuOpenIcon /> : <MenuIcon />}
+            </IconButton>
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
          

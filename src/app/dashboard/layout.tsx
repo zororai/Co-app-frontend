@@ -38,7 +38,7 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
         }}
       >
         <SideNav />
-        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' } }}>
+        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' }, transition: { lg: 'padding-left 220ms ease' } }}>
           <MainNav />
           <main>
             <Box sx={{ py: '24px', px: '32px' }}>
