@@ -695,7 +695,7 @@ export function CustomersTable({
           <TableHead sx={{ bgcolor: '#f5f5f5' }}>
             <TableRow>
           
-              <TableCell sx={TABLE_STYLES.headerCell}>Ore ID</TableCell>
+
               <TableCell sx={TABLE_STYLES.headerCell}>Shaft Numbers</TableCell>
               
               <TableCell sx={TABLE_STYLES.headerCell}>Sample Type</TableCell>
@@ -735,7 +735,7 @@ export function CustomersTable({
                   }}
                 >
                 
-                  <TableCell sx={TABLE_STYLES.bodyCell}>{row.oreUniqueId || 'N/A'}</TableCell>
+
                   <TableCell sx={TABLE_STYLES.bodyCell}>{row.shaftNumbers || 'N/A'}</TableCell>
                   <TableCell sx={TABLE_STYLES.bodyCell}>
                     {row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : 'N/A'}
@@ -773,19 +773,16 @@ export function CustomersTable({
                         size="small"
                         startIcon={<VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                         sx={{
-                          borderColor: '#06131f',
+                          /* remove border while keeping visual text/icon */
+                          border: 'none',
+                          boxShadow: 'none',
                           color: '#081b2f',
                           fontSize: '0.75rem',
                           fontWeight: 500,
                           textTransform: 'none',
                           padding: '6px 10px',
-                          '&:hover': {
-                            borderColor: '#06131f',
-                            backgroundColor: 'rgba(6, 19, 31, 0.06)',
-                          }
                         }}
                       >
-                        View
                       </Button>
                     </Box>
                   </TableCell>
