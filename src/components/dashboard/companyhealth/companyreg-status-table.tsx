@@ -143,17 +143,21 @@ export function CustomersTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           onClick={() => handleRedirect('/dashboard/syndicate')}
         >
           View Syndicate Miner Reg Status Health 
         </Button>
         <Button
           variant="contained"
-          sx={{
+            sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}   sx={{
             bgcolor: '#5f4bfa',
             color: '#fff',
             '&:hover': { bgcolor: '#4d3fd6' }
