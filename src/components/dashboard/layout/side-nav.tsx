@@ -340,19 +340,19 @@ export function SideNav(): React.JSX.Element {
         zIndex: 'var(--SideNav-zIndex)',
       }}
     >
-      <Stack spacing={2} sx={{ p: 3 }}>
+      <Stack spacing={2} sx={{ p: collapsed ? 2 : 3 }}>
         <Box
           component={RouterLink}
           href={paths.home}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none', color: 'inherit' }}
+          sx={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0.5 : 1.5, textDecoration: 'none', color: 'inherit' }}
         >
           <Box
             component="img"
             src="/assets/Logo.png"
             alt="Logo"
             sx={{
-              height: 50,
-              width: 50,
+              height: collapsed ? 36 : 50,
+              width: collapsed ? 36 : 50,
               flexShrink: 0
             }}
           />
@@ -365,7 +365,7 @@ export function SideNav(): React.JSX.Element {
               transition: 'opacity 180ms ease, max-width 220ms ease, margin 180ms ease',
               opacity: collapsed ? 0 : 1,
               maxWidth: collapsed ? 0 : '160px',
-              ml: collapsed ? 0 : 1.5,
+              ml: collapsed ? 0 : 1,
             }}
           >
             <Typography 
@@ -545,8 +545,9 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           flex: '0 0 auto',
-          gap: 1,
+          gap: collapsed ? 0 : 1,
           p: collapsed ? '6px' : '6px 16px',
+          justifyContent: collapsed ? 'center' : undefined,
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
@@ -566,7 +567,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           }),
         }}
       >
-        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
+        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto', mx: collapsed ? 0 : undefined }}>
           {Icon ? (
             <Icon
               fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'}
