@@ -24,7 +24,7 @@ export const allNavItems = [
   {
     key: 'Miner-registration',
     title: 'Miner Registration',
-    icon: 'mountain',
+    icon: 'id-card',
     items: [
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
     { key: 'syndicate-teammembership', title: 'Syndicate Membership', href: paths.dashboard.syndicatemembership, icon: 'id-card' },
@@ -85,7 +85,7 @@ export const allNavItems = [
   {
     key: 'Report-management',
     title: 'Report Management',
-    icon: 'chart-pie',
+    icon: 'chart-bar',
     items: [
      
    { key: 'she-summary-reports', title: 'SHE Summary Report', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
@@ -113,7 +113,7 @@ export const allNavItems = [
   {
     key: 'Site-management',
     title: 'Site Management',
-    icon: 'tools',
+    icon: 'map-trifold',
     items: [
 
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
