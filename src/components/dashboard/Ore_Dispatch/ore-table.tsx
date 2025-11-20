@@ -454,17 +454,26 @@ export function CustomersTable({
               
                    <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <Button
                         onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Ore Details</button>
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          bgcolor: '#202226',
+                          color: '#ffffff',
+                          borderRadius: '999px',
+                          px: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          boxShadow: 'none',
+                          '&:hover': {
+                            bgcolor: '#0f0f10',
+                            boxShadow: 'none'
+                          }
+                        }}
+                      >
+                        View Ore Details
+                      </Button>
                     </Box>
                   </TableCell>
                   <TableCell>
