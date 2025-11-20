@@ -303,7 +303,8 @@ export function CustomersTable({
               <TableCell>Location</TableCell>
               <TableCell>Reported By</TableCell>
               <TableCell>Satatus</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>View</TableCell>
+               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -358,20 +359,25 @@ export function CustomersTable({
                  
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
+                      <Button
                         onClick={() => {
                           console.log('Button clicked for driver ID:', row.id);
                           setSelectedDriverId(row.id);
                           setIsIncidentDetailsDialogOpen(true);
                         }}
-                        variant="outlined"
+                        variant="contained"
                         size="small"
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
+                          bgcolor: '#202226',
+                          color: '#ffffff',
+                          borderRadius: '999px',
+                          px: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          boxShadow: 'none',
                           '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                            bgcolor: '#0f0f10',
+                            boxShadow: 'none'
                           }
                         }}
                       >
@@ -384,20 +390,25 @@ export function CustomersTable({
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {/* Show resolution button only for investigating status */}
                       {row.status?.toLowerCase() === 'investigating' && (
-                        <Button 
+                        <Button
                           onClick={() => {
                             console.log('Incident Resolution button clicked for incident ID:', row.id);
                             setSelectedIncidentId(row.id);
                             setIsResolutionDialogOpen(true);
                           }}
-                          variant="outlined"
+                          variant="contained"
                           size="small"
                           sx={{
-                            borderColor: '#d32f2f',
-                            color: '#d32f2f',
+                            bgcolor: '#202226',
+                            color: '#ffffff',
+                            borderRadius: '999px',
+                            px: 3,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            boxShadow: 'none',
                             '&:hover': {
-                              borderColor: '#b71c1c',
-                              backgroundColor: 'rgba(211, 47, 47, 0.04)',
+                              bgcolor: '#0f0f10',
+                              boxShadow: 'none'
                             }
                           }}
                         >
