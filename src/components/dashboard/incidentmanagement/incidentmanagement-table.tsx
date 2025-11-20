@@ -245,7 +245,7 @@ export function CustomersTable({
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
-              <TableCell>Type</TableCell>
+       
               <TableCell>Severity</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Reported By</TableCell>
@@ -268,7 +268,6 @@ export function CustomersTable({
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>{row.incidentTitle || row.title || 'N/A'}</TableCell>
-                  <TableCell>{row.type || row.incidentType || 'N/A'}</TableCell>
                   <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
                   <TableCell>{row.location || row.address || 'N/A'}</TableCell>
                   <TableCell>{row.reportedBy || `${row.firstName || ''} ${row.lastName || ''}`.trim() || row.emailAddress || 'N/A'}</TableCell>
@@ -276,24 +275,29 @@ export function CustomersTable({
                  
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
+                      <Button
                         onClick={() => {
                           console.log('Button clicked for driver ID:', row.id);
                           setSelectedDriverId(row.id);
                           setIsIncidentDetailsDialogOpen(true);
                         }}
-                        variant="outlined"
+                        variant="contained"
                         size="small"
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
+                          bgcolor: '#202226',
+                          color: '#ffffff',
+                          borderRadius: '999px',
+                          px: 3,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          boxShadow: 'none',
                           '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                            bgcolor: '#0f0f10',
+                            boxShadow: 'none'
                           }
                         }}
                       >
-                        View details
+                        View Details
                       </Button>
                     </Box>
                   </TableCell>
