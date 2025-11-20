@@ -55,7 +55,7 @@ export const allNavItems = [
   {
     key: 'financial-management',
     title: 'Financial Management',
-    icon: 'buildings',
+    icon: 'wallet',
     items: [
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
@@ -69,7 +69,7 @@ export const allNavItems = [
   {
     key: 'she-management',
     title: 'SHE Management',
-    icon: 'buildings',
+    icon: 'shield',
     items: [
      { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
