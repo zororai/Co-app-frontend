@@ -298,7 +298,7 @@ export function CustomersTable({
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
-              <TableCell>Type</TableCell>
+      
               <TableCell>Severity</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Reported By</TableCell>
@@ -322,8 +322,7 @@ export function CustomersTable({
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
                   <TableCell>{row.incidentTitle || row.title || 'N/A'}</TableCell>
-                  <TableCell>{row.type || row.incidentType || 'N/A'}</TableCell>
-                  <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
+                 <TableCell>{row.severityLevel || row.severity || 'N/A'}</TableCell>
                   <TableCell>{row.location || row.address || 'N/A'}</TableCell>
                   <TableCell>{row.reportedBy || `${row.firstName || ''} ${row.lastName || ''}`.trim() || row.emailAddress || 'N/A'}</TableCell>
                   <TableCell>
