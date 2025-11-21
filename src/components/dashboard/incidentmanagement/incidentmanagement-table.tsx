@@ -22,6 +22,12 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -72,6 +78,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // Use rows prop instead of fetching data internally
   const incidents = React.useMemo(() => {
     return Array.isArray(rows) ? rows : [];
@@ -274,31 +281,25 @@ export function CustomersTable({
                   <TableCell>{row.status} </TableCell>
                  
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button
-                        onClick={() => {
-                          console.log('Button clicked for driver ID:', row.id);
-                          setSelectedDriverId(row.id);
-                          setIsIncidentDetailsDialogOpen(true);
-                        }}
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          bgcolor: '#202226',
-                          color: '#ffffff',
-                          borderRadius: '999px',
-                          px: 3,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          boxShadow: 'none',
-                          '&:hover': {
-                            bgcolor: '#0f0f10',
-                            boxShadow: 'none'
-                          }
-                        }}
-                      >
-                        View Details
-                      </Button>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            console.log('Button clicked for driver ID:', row.id);
+                            setSelectedDriverId(row.id);
+                            setIsIncidentDetailsDialogOpen(true);
+                          }}
+                          sx={{
+                            color: theme.palette.secondary.main,
+                            '&:hover': {
+                              bgcolor: `rgba(50, 56, 62, 0.1)`
+                            }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
                   </TableCell>
                

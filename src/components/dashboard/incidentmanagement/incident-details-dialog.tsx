@@ -195,7 +195,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
           justifyContent: 'space-between', 
           alignItems: 'center',
           p: 2,
-          bgcolor: '#15073d'
+          bgcolor: theme.palette.secondary.main
         }}
       >
         <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Incident Details</Typography>
@@ -226,8 +226,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
               gap: 2 
             }}>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Incident Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -267,8 +267,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Location Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -277,8 +277,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                 </Box>
               </Box>
               
-              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Description
                 </Typography>
                 <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
@@ -287,8 +287,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               </Box>
               
               {incident.participants && incident.participants.length > 0 && (
-                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                     Participants ({incident.participants.length})
                   </Typography>
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -320,8 +320,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               )}
               
               {incident.attachments && incident.attachments.length > 0 && (
-                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                     Attachments ({incident.attachments.length})
                   </Typography>
                   <Box sx={{ mt: 2 }}>

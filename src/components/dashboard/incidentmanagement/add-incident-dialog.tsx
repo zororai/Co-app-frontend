@@ -414,14 +414,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
 
 
 
-  // TextField styling with rgb(5, 5, 68) theme
+  // TextField styling with theme colors
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       '& fieldset': { borderColor: '#d1d5db' },
-      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
     },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+    '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.secondary.main },
   };
 
   return (
@@ -438,7 +438,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -463,16 +463,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           sx={{
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
-              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-active': { color: theme.palette.secondary.main },
+              '&.Mui-completed': { color: theme.palette.secondary.main },
             },
             '& .MuiStepLabel-label': {
-              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+              '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
             },
             '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
           }}
         >
           {steps.map((label) => (
@@ -490,7 +490,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         overflow: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
       }}>
         
         {/* Error Message */}
