@@ -17,6 +17,10 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import PrintIcon from '@mui/icons-material/Print';
+import DownloadIcon from '@mui/icons-material/Download';
+import FileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import { printElementById } from '@/lib/print';
@@ -182,6 +186,75 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
     return dayjs(dateString).format('MMM D, YYYY');
   };
 
+  // Helper function to get file info from attachment
+  const getAttachmentInfo = (attachment: string) => {
+    try {
+      // Check if it's a data URL
+      if (attachment.startsWith('data:')) {
+        const matches = attachment.match(/data:([^;]+);base64,/);
+        const mimeType = matches ? matches[1] : 'application/octet-stream';
+        
+        // Determine file extension from mime type
+        const mimeToExt: Record<string, string> = {
+          'image/png': 'png',
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/gif': 'gif',
+          'image/webp': 'webp',
+          'application/pdf': 'pdf',
+          'application/msword': 'doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'application/vnd.ms-excel': 'xls',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+        };
+        
+        const ext = mimeToExt[mimeType] || 'file';
+        const isImage = mimeType.startsWith('image/');
+        
+        return {
+          mimeType,
+          ext,
+          isImage,
+          fileName: `attachment.${ext}`,
+          isDataUrl: true
+        };
+      }
+      
+      // Regular URL
+      const urlParts = attachment.split('/');
+      const fileName = urlParts[urlParts.length - 1].split('?')[0];
+      const isImage = /\.(png|jpe?g|gif|webp)$/i.test(fileName);
+      
+      return {
+        mimeType: 'application/octet-stream',
+        fileName,
+        isImage,
+        isDataUrl: false
+      };
+    } catch {
+      return {
+        mimeType: 'application/octet-stream',
+        fileName: 'attachment',
+        isImage: false,
+        isDataUrl: false
+      };
+    }
+  };
+
+  // Helper function to download attachment
+  const downloadAttachment = (attachment: string, fileName: string) => {
+    try {
+      const link = document.createElement('a');
+      link.href = attachment;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+    }
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -327,8 +400,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                   <Box sx={{ mt: 2 }}>
                     <Stack spacing={1}>
                       {incident.attachments.map((attachment: string, index: number) => {
-                        const isDataImage = typeof attachment === 'string' && /^data:image\//.test(attachment);
-                        const isImageUrl = typeof attachment === 'string' && /\.(png|jpe?g|gif|webp)(\?|$)/i.test(attachment);
+                        const attachmentInfo = getAttachmentInfo(attachment);
+                        const isImage = attachmentInfo.isImage;
 
                         return (
                           <Box 
@@ -336,30 +409,91 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                             sx={{ 
                               display: 'flex', 
                               alignItems: 'center', 
-                              gap: 1,
+                              gap: 2,
                               p: 1.5,
                               bgcolor: '#f5f5f5',
-                              borderRadius: 1
+                              borderRadius: 1,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                bgcolor: '#eeeeee'
+                              }
                             }}
                           >
-                            <CheckCircleOutlineIcon fontSize="small" color="success" />
-                            {isDataImage || isImageUrl ? (
-                              <Box
-                                component="img"
-                                src={attachment}
-                                alt={`attachment-${index}`}
-                                sx={{
-                                  maxWidth: 240,
-                                  maxHeight: 160,
-                                  borderRadius: 1,
-                                  objectFit: 'cover',
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => window.open(attachment, '_blank')}
-                              />
-                            ) : (
-                              <Typography variant="body2">{attachment}</Typography>
-                            )}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
+                              {isImage ? (
+                                <ImageIcon sx={{ color: theme.palette.secondary.main, flexShrink: 0 }} fontSize="small" />
+                              ) : (
+                                <FileIcon sx={{ color: theme.palette.secondary.main, flexShrink: 0 }} fontSize="small" />
+                              )}
+                              
+                              {isImage && attachmentInfo.isDataUrl ? (
+                                <Box
+                                  component="img"
+                                  src={attachment}
+                                  alt={`attachment-${index}`}
+                                  sx={{
+                                    maxWidth: 240,
+                                    maxHeight: 160,
+                                    borderRadius: 1,
+                                    objectFit: 'cover',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      opacity: 0.8
+                                    }
+                                  }}
+                                  onClick={() => window.open(attachment, '_blank')}
+                                />
+                              ) : (
+                                <Box sx={{ minWidth: 0, flex: 1 }}>
+                                  <Typography 
+                                    variant="body2" 
+                                    sx={{ 
+                                      fontWeight: 500,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                    title={attachmentInfo.fileName}
+                                  >
+                                    {attachmentInfo.fileName}
+                                  </Typography>
+                                  <Typography 
+                                    variant="caption" 
+                                    color="text.secondary"
+                                  >
+                                    {attachmentInfo.ext.toUpperCase()}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                            
+                            <IconButton
+                              size="small"
+                              onClick={() => window.open(attachment, '_blank')}
+                              sx={{
+                                color: theme.palette.secondary.main,
+                                '&:hover': {
+                                  bgcolor: `rgba(50, 56, 62, 0.1)`
+                                }
+                              }}
+                              title="Preview attachment"
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                            
+                            <IconButton
+                              size="small"
+                              onClick={() => downloadAttachment(attachment, attachmentInfo.fileName)}
+                              sx={{
+                                color: theme.palette.secondary.main,
+                                '&:hover': {
+                                  bgcolor: `rgba(50, 56, 62, 0.1)`
+                                }
+                              }}
+                              title="Download attachment"
+                            >
+                              <DownloadIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         );
                       })}
