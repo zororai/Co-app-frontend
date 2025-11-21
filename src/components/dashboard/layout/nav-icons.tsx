@@ -35,6 +35,7 @@ import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
 
 
+
 export const navIcons = {
   'percent': PercentIcon,
   'currency-dollar': CurrencyDollarIcon,
