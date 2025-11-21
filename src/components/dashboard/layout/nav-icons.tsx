@@ -20,10 +20,14 @@ import { WalletIcon } from '@phosphor-icons/react/dist/ssr/Wallet';
 import { MapTrifoldIcon } from '@phosphor-icons/react/dist/ssr/MapTrifold';
 import { HandCoinsIcon } from '@phosphor-icons/react/dist/ssr/HandCoins';
 import { RoadHorizonIcon } from '@phosphor-icons/react/dist/ssr/RoadHorizon';
+import { HandshakeIcon } from '@phosphor-icons/react/dist/ssr/Handshake';
+import { BriefcaseIcon } from '@phosphor-icons/react/dist/ssr/Briefcase';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
+  'handshake': HandshakeIcon,
+  'briefcase': BriefcaseIcon,
   'road-horizon': RoadHorizonIcon,
   'plugs-connected': PlugsConnectedIcon,
   'chart-bar': ChartBarIcon,
