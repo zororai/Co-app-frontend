@@ -23,9 +23,6 @@ import {
 import { X as CloseIcon } from '@phosphor-icons/react/dist/ssr/X';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DownloadIcon from '@mui/icons-material/Download';
-import FileIcon from '@mui/icons-material/InsertDriveFile';
 import type { Training } from './training-table';
 import { authClient } from '@/lib/auth/client';
 import { useTheme } from '@mui/material/styles';
@@ -51,7 +48,7 @@ interface TrainingFormData {
   trainerName: string;
   scheduleDate: string;
   location: string;
-  materials: File[];
+  materials: string[];
   safetyProtocols: string[];
   trainees: TraineeData[];
   status: Training['status'];
@@ -82,7 +79,7 @@ export function TrainingDialog({
     trainerName: '',
     scheduleDate: '',
     location: '',
-    materials: [],
+    materials: [''],
     safetyProtocols: [''],
     trainees: [{
       name: '',
@@ -133,7 +130,7 @@ export function TrainingDialog({
           trainerName: '',
           scheduleDate: '',
           location: '',
-          materials: [],
+          materials: [''],
           safetyProtocols: [''],
           trainees: [{
             name: '',
@@ -163,9 +160,9 @@ export function TrainingDialog({
     }
   };
 
-  // Handle dynamic array fields (only for safetyProtocols)
+  // Handle dynamic array fields
   const handleArrayFieldChange = (
-    field: 'safetyProtocols',
+    field: 'materials' | 'safetyProtocols',
     index: number,
     value: string
   ) => {
@@ -195,20 +192,11 @@ export function TrainingDialog({
     }
   };
 
-  const addArrayField = (field: 'safetyProtocols') => {
+  const addArrayField = (field: 'materials' | 'safetyProtocols') => {
     setFormData((prev) => ({
       ...prev,
       [field]: [...prev[field], '']
     }));
-  };
-
-  const removeArrayField = (field: 'safetyProtocols', index: number) => {
-    if (formData[field].length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: prev[field].filter((_, i) => i !== index)
-      }));
-    }
   };
 
   const addTrainee = () => {
@@ -243,21 +231,6 @@ export function TrainingDialog({
     }
   };
 
-  const handleMaterialsUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setFormData((prev) => ({
-      ...prev,
-      materials: [...prev.materials, ...files]
-    }));
-  };
-
-  const removeMaterial = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      materials: prev.materials.filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSubmit = async () => {
     // Validate required fields
     if (!formData.trainingType.trim()) {
@@ -284,11 +257,12 @@ export function TrainingDialog({
       // Filter out empty strings from arrays and validate trainees
       const cleanedData = {
         ...formData,
+        materials: formData.materials.filter(item => item.trim() !== ''),
         safetyProtocols: formData.safetyProtocols.filter(item => item.trim() !== ''),
         trainees: formData.trainees.filter(trainee => trainee.name.trim() !== ''),
       };
 
-      // Format the data for API (materials will stay as File objects for FormData)
+      // Format the data for API
       const apiData = {
         ...cleanedData,
         scheduleDate: new Date(cleanedData.scheduleDate).toISOString(),
@@ -343,36 +317,27 @@ export function TrainingDialog({
   };
 
   const renderArrayField = (
-    field: 'safetyProtocols',
+    field: 'materials' | 'safetyProtocols',
     label: string,
     placeholder: string
   ) => (
-    <Box sx={{ 
-      border: `2px solid ${theme.palette.secondary.main}`, 
-      borderRadius: 2, 
-      p: 2.5, 
-      bgcolor: '#fafafa' 
-    }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, mb: 0.5 }}>
-            {label}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {formData[field].filter(item => item.trim()).length} item{formData[field].filter(item => item.trim()).length !== 1 ? 's' : ''} added
-          </Typography>
-        </Box>
+    <Box>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+          {label}
+        </Typography>
         <Button
           startIcon={<PlusIcon fontSize="var(--icon-fontSize-sm)" />}
           onClick={() => addArrayField(field)}
           disabled={loading}
-          variant="contained"
+          variant="outlined"
           size="small"
           sx={{ 
-            bgcolor: theme.palette.secondary.main, 
-            color: 'white', 
+            borderColor: theme.palette.secondary.main, 
+            color: theme.palette.secondary.main, 
             '&:hover': { 
-              bgcolor: theme.palette.secondary.dark
+              borderColor: theme.palette.secondary.dark, 
+              backgroundColor: 'rgba(50, 56, 62, 0.04)' 
             } 
           }}
         >
@@ -380,325 +345,123 @@ export function TrainingDialog({
         </Button>
       </Stack>
       
-      <Stack spacing={1.5}>
-        {formData[field].length === 0 ? (
-          <Typography variant="body2" sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}>
-            No {label.toLowerCase()} added yet
-          </Typography>
-        ) : (
-          formData[field].map((item, index) => (
-            <Stack 
-              key={index} 
-              direction="row" 
-              spacing={1} 
-              alignItems="center"
-              sx={{ 
-                p: 1.5,
-                bgcolor: 'white',
-                border: '1px solid #e0e0e0',
-                borderRadius: 1,
-                '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.02)' }
-              }}
-            >
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                width: 28,
-                height: 28,
-                bgcolor: theme.palette.secondary.main,
-                color: 'white',
-                borderRadius: '50%',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                flexShrink: 0
-              }}>
-                {index + 1}
-              </Box>
-              <TextField
-                value={item}
-                onChange={(e) => handleArrayFieldChange(field, index, e.target.value)}
-                disabled={loading}
-                fullWidth
-                placeholder={placeholder}
-                size="small"
-                variant="standard"
-                InputProps={{ disableUnderline: false }}
-                sx={{ 
-                  '& .MuiInput-underline:hover:before': { borderBottomColor: theme.palette.secondary.main },
-                  '& .MuiInput-underline:before': { borderBottomColor: '#e0e0e0' },
-                  '& .MuiInput-underline.Mui-focused:after': { borderBottomColor: theme.palette.secondary.main }
-                }}
-              />
-              {formData[field].length > 1 && (
-                <IconButton
-                  onClick={() => removeArrayField(field, index)}
-                  disabled={loading}
-                  size="small"
-                  sx={{ 
-                    color: 'error.main',
-                    '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
-                  }}
-                >
-                  <TrashIcon fontSize="var(--icon-fontSize-sm)" />
-                </IconButton>
-              )}
-            </Stack>
-          ))
-        )}
-      </Stack>
-    </Box>
-  );
-
-  const renderMaterialsUpload = () => (
-    <Box sx={{ 
-      border: `2px solid ${theme.palette.secondary.main}`, 
-      borderRadius: 2, 
-      p: 2.5, 
-      bgcolor: '#fafafa' 
-    }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, mb: 0.5 }}>
-            Training Materials
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {formData.materials.length} file{formData.materials.length !== 1 ? 's' : ''} uploaded
-          </Typography>
-        </Box>
-      </Stack>
-
-      {/* File Upload Area */}
-      <Box
-        sx={{
-          border: `2px dashed ${theme.palette.secondary.main}`,
-          borderRadius: 1.5,
-          p: 3,
-          textAlign: 'center',
-          bgcolor: 'white',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          mb: 2.5,
-          '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.02)', borderColor: theme.palette.secondary.dark }
-        }}
-        component="label"
-      >
-        <input
-          type="file"
-          multiple
-          onChange={handleMaterialsUpload}
-          disabled={loading}
-          style={{ display: 'none' }}
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif"
-        />
-        <CloudUploadIcon sx={{ fontSize: 40, color: theme.palette.secondary.main, mb: 1 }} />
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
-          Upload Files
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
-          Supported: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, Images
-        </Typography>
-      </Box>
-
-      {/* Uploaded Files */}
-      {formData.materials.length === 0 ? (
-        <Typography variant="body2" sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}>
-          No files uploaded yet
-        </Typography>
-      ) : (
-        <Stack spacing={1.5}>
-          {formData.materials.map((file, index) => (
-            <Stack
-              key={index}
-              direction="row"
-              spacing={1.5}
-              alignItems="center"
-              sx={{
-                p: 1.5,
-                bgcolor: 'white',
-                border: '1px solid #e0e0e0',
-                borderRadius: 1,
-                '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.02)' }
-              }}
-            >
-              <Box sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 28,
-                height: 28,
-                bgcolor: theme.palette.secondary.main,
-                color: 'white',
-                borderRadius: '50%',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                flexShrink: 0
-              }}>
-                {index + 1}
-              </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {file.name}
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  {(file.size / 1024).toFixed(2)} KB
-                </Typography>
-              </Box>
+      <Stack spacing={2}>
+        {formData[field].map((item, index) => (
+          <Stack key={index} direction="row" spacing={2} alignItems="flex-start">
+            <TextField
+              value={item}
+              onChange={(e) => handleArrayFieldChange(field, index, e.target.value)}
+              disabled={loading}
+              fullWidth
+              placeholder={placeholder}
+              sx={textFieldStyle}
+            />
+            {formData[field].length > 1 && (
               <IconButton
-                onClick={() => removeMaterial(index)}
+                onClick={() => removeArrayField(field, index)}
                 disabled={loading}
                 size="small"
-                sx={{
+                sx={{ 
+                  mt: 0.5,
                   color: 'error.main',
-                  '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                  '&:hover': { backgroundColor: 'error.light', color: 'white' }
                 }}
               >
                 <TrashIcon fontSize="var(--icon-fontSize-sm)" />
               </IconButton>
-            </Stack>
-          ))}
-        </Stack>
-      )}
+            )}
+          </Stack>
+        ))}
+      </Stack>
     </Box>
   );
 
   const renderTraineesField = () => (
-    <Box sx={{ 
-      border: `2px solid ${theme.palette.secondary.main}`, 
-      borderRadius: 2, 
-      p: 2.5, 
-      bgcolor: '#fafafa' 
-    }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
-        <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, mb: 0.5 }}>
-            Trainees
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {formData.trainees.filter(t => t.name.trim()).length} trainee{formData.trainees.filter(t => t.name.trim()).length !== 1 ? 's' : ''} added
-          </Typography>
-        </Box>
+    <Box>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+          Trainees
+        </Typography>
         <Button
           startIcon={<PlusIcon fontSize="var(--icon-fontSize-sm)" />}
           onClick={addTrainee}
           disabled={loading}
-          variant="contained"
+          variant="outlined"
           size="small"
           sx={{ 
-            bgcolor: theme.palette.secondary.main, 
-            color: 'white', 
+            borderColor: theme.palette.secondary.main, 
+            color: theme.palette.secondary.main, 
             '&:hover': { 
-              bgcolor: theme.palette.secondary.dark
+              borderColor: theme.palette.secondary.dark, 
+              backgroundColor: 'rgba(50, 56, 62, 0.04)' 
             } 
           }}
         >
           Add Trainee
         </Button>
       </Stack>
-
-      {formData.trainees.length === 0 ? (
-        <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
-          No trainees added yet. Click "Add Trainee" to get started.
-        </Typography>
-      ) : (
-        <Stack spacing={2}>
-          {formData.trainees.map((trainee, index) => (
-            <Box 
-              key={index} 
-              sx={{ 
-                p: 2,
-                bgcolor: 'white',
-                border: `2px solid ${trainee.name.trim() ? theme.palette.secondary.main : '#e0e0e0'}`,
-                borderRadius: 1.5,
-                transition: 'all 0.2s ease',
-                '&:hover': { boxShadow: '0 2px 8px rgba(50, 56, 62, 0.1)' }
-              }}
-            >
-              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    width: 32,
-                    height: 32,
-                    bgcolor: trainee.name.trim() ? theme.palette.secondary.main : '#e0e0e0',
-                    color: 'white',
-                    borderRadius: '50%',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                  }}>
-                    {index + 1}
-                  </Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: trainee.name.trim() ? 'inherit' : 'text.secondary' }}>
-                    {trainee.name.trim() || 'Trainee ' + (index + 1)}
-                  </Typography>
-                </Stack>
+      
+      <Stack spacing={2}>
+        {formData.trainees.map((trainee, index) => (
+          <Box key={index} sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+            <Stack spacing={2}>
+              <Stack direction="row" spacing={2} alignItems="flex-start">
+                <TextField
+                  label="Name"
+                  value={trainee.name}
+                  onChange={(e) => handleTraineeFieldChange(index, 'name', e.target.value)}
+                  disabled={loading}
+                  fullWidth
+                  placeholder="Enter trainee name..."
+                  sx={textFieldStyle}
+                />
+                <TextField
+                  label="Employee ID"
+                  value={trainee.employeeId}
+                  onChange={(e) => handleTraineeFieldChange(index, 'employeeId', e.target.value)}
+                  disabled={loading}
+                  fullWidth
+                  placeholder="Enter employee ID..."
+                  sx={textFieldStyle}
+                />
                 {formData.trainees.length > 1 && (
-                  <Button
+                  <IconButton
                     onClick={() => removeTrainee(index)}
                     disabled={loading}
                     size="small"
-                    startIcon={<TrashIcon fontSize="var(--icon-fontSize-sm)" />}
                     sx={{ 
-                      color: 'error.main',
-                      '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                      color: 'rgb(239, 68, 68)', 
+                      '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.04)' } 
                     }}
                   >
-                    Remove
-                  </Button>
+                    <TrashIcon fontSize="var(--icon-fontSize-sm)" />
+                  </IconButton>
                 )}
               </Stack>
-              <Stack spacing={1.5}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <TextField
-                    label="Name"
-                    value={trainee.name}
-                    onChange={(e) => handleTraineeFieldChange(index, 'name', e.target.value)}
-                    disabled={loading}
-                    fullWidth
-                    placeholder="Enter trainee name..."
-                    size="small"
-                    sx={textFieldStyle}
-                  />
-                  <TextField
-                    label="Employee ID"
-                    value={trainee.employeeId}
-                    onChange={(e) => handleTraineeFieldChange(index, 'employeeId', e.target.value)}
-                    disabled={loading}
-                    fullWidth
-                    placeholder="Enter employee ID..."
-                    size="small"
-                    sx={textFieldStyle}
-                  />
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <TextField
-                    label="Department"
-                    value={trainee.department}
-                    onChange={(e) => handleTraineeFieldChange(index, 'department', e.target.value)}
-                    disabled={loading}
-                    fullWidth
-                    placeholder="Enter department..."
-                    size="small"
-                    sx={textFieldStyle}
-                  />
-                  <TextField
-                    label="Position"
-                    value={trainee.position}
-                    onChange={(e) => handleTraineeFieldChange(index, 'position', e.target.value)}
-                    disabled={loading}
-                    fullWidth
-                    placeholder="Enter position..."
-                    size="small"
-                    sx={textFieldStyle}
-                  />
-                </Stack>
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  label="Department"
+                  value={trainee.department}
+                  onChange={(e) => handleTraineeFieldChange(index, 'department', e.target.value)}
+                  disabled={loading}
+                  fullWidth
+                  placeholder="Enter department..."
+                  sx={textFieldStyle}
+                />
+                <TextField
+                  label="Position"
+                  value={trainee.position}
+                  onChange={(e) => handleTraineeFieldChange(index, 'position', e.target.value)}
+                  disabled={loading}
+                  fullWidth
+                  placeholder="Enter position..."
+                  sx={textFieldStyle}
+                />
               </Stack>
-            </Box>
-          ))}
-        </Stack>
-      )}
+            </Stack>
+          </Box>
+        ))}
+      </Stack>
     </Box>
   );
 
@@ -741,7 +504,7 @@ export function TrainingDialog({
         overflow: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
       }}>
         <Stack spacing={3}>
           {error && (
@@ -806,7 +569,7 @@ export function TrainingDialog({
             sx={textFieldStyle}
           />
 
-          {renderMaterialsUpload()}
+          {renderArrayField('materials', 'Materials', 'Enter material name...')}
           
           {renderArrayField('safetyProtocols', 'Safety Protocols', 'Enter safety protocol...')}
           
