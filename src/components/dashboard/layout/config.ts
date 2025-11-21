@@ -61,7 +61,7 @@ export const allNavItems = [
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'percent' },
       { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'currency-dollar' },
       { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'seal-warning' },
-       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'credit-card' },
+       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'id-card' },
       
     ],
   },
@@ -71,14 +71,15 @@ export const allNavItems = [
     title: 'SHE Management',
     icon: 'shield',
     items: [
-     { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
-      { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
-     { key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
-     { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'id-card' },
-     { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
-     { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
-     { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
-    
+      
+ { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: WarningCircle },
+{ key: 'incidentresolve', title: 'Incident Resolution', href: paths.dashboard.resolveissue, icon: CheckCircle },
+{ key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: ExclamationTriangle },
+{ key: 'listissuedpenality', title: 'List of Issued Penalty', href: paths.dashboard.listissuedpenality, icon: ClipboardText },
+{ key: 'training', title: 'Training', href: paths.dashboard.training, icon: Chalkboard },
+{ key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: MagnifyingGlass },
+{ key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: CheckSquare },
+
     ],
   },
 

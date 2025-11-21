@@ -464,7 +464,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                                     variant="caption" 
                                     color="text.secondary"
                                   >
-                                    {attachmentInfo.ext.toUpperCase()}
+                                    {(attachmentInfo.ext ?? '').toUpperCase()}
                                   </Typography>
                                 </Box>
                               )}
