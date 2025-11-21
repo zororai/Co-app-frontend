@@ -57,11 +57,11 @@ export const allNavItems = [
     title: 'Financial Management',
     icon: 'wallet',
     items: [
-      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
-      { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
-      { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
-      { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
-       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'id-card' },
+      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'package'},
+      { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'percent' },
+      { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'currency-dollar' },
+      { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'seal-warning' },
+       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'credit-card' },
       
     ],
   },
