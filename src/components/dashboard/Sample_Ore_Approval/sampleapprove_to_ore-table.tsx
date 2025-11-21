@@ -32,6 +32,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
@@ -162,6 +163,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -695,7 +697,7 @@ export function CustomersTable({
           <TableHead sx={{ bgcolor: '#f5f5f5' }}>
             <TableRow>
           
-              <TableCell sx={TABLE_STYLES.headerCell}>Ore ID</TableCell>
+
               <TableCell sx={TABLE_STYLES.headerCell}>Shaft Numbers</TableCell>
               
               <TableCell sx={TABLE_STYLES.headerCell}>Sample Type</TableCell>
@@ -735,7 +737,7 @@ export function CustomersTable({
                   }}
                 >
                 
-                  <TableCell sx={TABLE_STYLES.bodyCell}>{row.oreUniqueId || 'N/A'}</TableCell>
+
                   <TableCell sx={TABLE_STYLES.bodyCell}>{row.shaftNumbers || 'N/A'}</TableCell>
                   <TableCell sx={TABLE_STYLES.bodyCell}>
                     {row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : 'N/A'}
@@ -773,19 +775,16 @@ export function CustomersTable({
                         size="small"
                         startIcon={<VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                         sx={{
-                          borderColor: '#06131f',
+                          /* remove border while keeping visual text/icon */
+                          border: 'none',
+                          boxShadow: 'none',
                           color: '#081b2f',
                           fontSize: '0.75rem',
                           fontWeight: 500,
                           textTransform: 'none',
                           padding: '6px 10px',
-                          '&:hover': {
-                            borderColor: '#06131f',
-                            backgroundColor: 'rgba(6, 19, 31, 0.06)',
-                          }
                         }}
                       >
-                        View
                       </Button>
                     </Box>
                   </TableCell>
@@ -822,16 +821,15 @@ export function CustomersTable({
                           onClick={() => handleOpenSampleResultsDialog(row.id)}
                           variant="outlined"
                           size="small"
-                          sx={{
-                            borderColor: '#06131f',
-                            color: '#081b2f',
+                         sx={{
+                            backgroundColor: '#06131f',
+                            color: '#fff',
                             fontSize: '0.75rem',
                             fontWeight: 500,
                             textTransform: 'none',
                             padding: '6px 10px',
                             '&:hover': {
-                              borderColor: '#06131f',
-                              backgroundColor: 'rgba(6, 19, 31, 0.06)',
+                              backgroundColor: '#000814',
                             }
                           }}
                         >
@@ -951,14 +949,31 @@ export function CustomersTable({
           }
         }}
       >
-        <DialogTitle sx={{ 
-          fontWeight: 600, 
-          fontSize: '1.1rem',
-          backgroundColor: '#f5f5f5',
-          borderBottom: '1px solid #e0e0e0',
-        }}>
-          Update Sample Information
-        </DialogTitle>
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Update Sample Information</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleUpdateDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Stack spacing={2.5}>
             <TextField
@@ -1042,14 +1057,31 @@ export function CustomersTable({
           }
         }}
       >
-        <DialogTitle sx={{ 
-          fontWeight: 600, 
-          fontSize: '1.1rem',
-          backgroundColor: '#f5f5f5',
-          borderBottom: '1px solid #e0e0e0',
-        }}>
-          Add Sample Results
-        </DialogTitle>
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Add Sample Results</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleResultsDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Stack spacing={2.5}>
             <TextField

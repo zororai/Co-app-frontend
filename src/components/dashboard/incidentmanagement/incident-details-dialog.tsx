@@ -232,7 +232,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography sx={{ mb: 1 }}><strong>Title:</strong> {incident.incidentTitle || 'Untitled Incident'}</Typography>
-                  <Typography sx={{ mb: 1 }}><strong>Severity Level:</strong> 
+                  <Typography component="div" sx={{ mb: 1 }}><strong>Severity Level:</strong> 
                     <Chip 
                       label={incident.severityLevel || 'N/A'}
                       size="small"
@@ -326,22 +326,43 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                   </Typography>
                   <Box sx={{ mt: 2 }}>
                     <Stack spacing={1}>
-                      {incident.attachments.map((attachment: string, index: number) => (
-                        <Box 
-                          key={index}
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1,
-                            p: 1.5,
-                            bgcolor: '#f5f5f5',
-                            borderRadius: 1
-                          }}
-                        >
-                          <CheckCircleOutlineIcon fontSize="small" color="success" />
-                          <Typography variant="body2">{attachment}</Typography>
-                        </Box>
-                      ))}
+                      {incident.attachments.map((attachment: string, index: number) => {
+                        const isDataImage = typeof attachment === 'string' && /^data:image\//.test(attachment);
+                        const isImageUrl = typeof attachment === 'string' && /\.(png|jpe?g|gif|webp)(\?|$)/i.test(attachment);
+
+                        return (
+                          <Box 
+                            key={index}
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 1,
+                              p: 1.5,
+                              bgcolor: '#f5f5f5',
+                              borderRadius: 1
+                            }}
+                          >
+                            <CheckCircleOutlineIcon fontSize="small" color="success" />
+                            {isDataImage || isImageUrl ? (
+                              <Box
+                                component="img"
+                                src={attachment}
+                                alt={`attachment-${index}`}
+                                sx={{
+                                  maxWidth: 240,
+                                  maxHeight: 160,
+                                  borderRadius: 1,
+                                  objectFit: 'cover',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => window.open(attachment, '_blank')}
+                              />
+                            ) : (
+                              <Typography variant="body2">{attachment}</Typography>
+                            )}
+                          </Box>
+                        );
+                      })}
                     </Stack>
                   </Box>
                 </Box>

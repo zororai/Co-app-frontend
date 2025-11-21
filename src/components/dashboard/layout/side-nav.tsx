@@ -166,6 +166,25 @@ function MenuSkeleton(): React.JSX.Element {
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
   const theme = useTheme();
+  const [collapsed, setCollapsed] = React.useState<boolean>(() => {
+    try {
+      if (typeof window === 'undefined') return false;
+      return window.localStorage.getItem('sideNavCollapsed') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  // Ensure CSS variable matches collapsed state on mount/update
+  React.useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.document.documentElement.style.setProperty('--SideNav-width', collapsed ? '72px' : '280px');
+        window.document.body.setAttribute('data-nav-collapsed', String(collapsed));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [collapsed]);
   const [loading, setLoading] = React.useState(false);
   const [permissionsLoading, setPermissionsLoading] = React.useState(true);
   const [filteredNavItems, setFilteredNavItems] = React.useState<NavItemConfig[]>([]);
@@ -225,6 +244,26 @@ export function SideNav(): React.JSX.Element {
       fetchPermissions();
     }, 150); // Small delay to allow layout to render first
     return () => clearTimeout(timer);
+  }, []);
+
+  // Listen to collapse/expand events and update local state
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail;
+        setCollapsed(Boolean(detail));
+      } catch (err) {
+        // ignore
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('nav-collapse', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('nav-collapse', handler as EventListener);
+      }
+    };
   }, []);
 
   // Hide loader after route change completes
@@ -297,26 +336,38 @@ export function SideNav(): React.JSX.Element {
         position: 'fixed',
         top: 0,
         width: 'var(--SideNav-width)',
+        transition: 'width 220ms ease',
         zIndex: 'var(--SideNav-zIndex)',
       }}
     >
-      <Stack spacing={2} sx={{ p: 3 }}>
+      <Stack spacing={2} sx={{ p: collapsed ? 2 : 3 }}>
         <Box
           component={RouterLink}
           href={paths.home}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, textDecoration: 'none', color: 'inherit' }}
+          sx={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0.5 : 1.5, textDecoration: 'none', color: 'inherit' }}
         >
           <Box
             component="img"
             src="/assets/Logo.png"
             alt="Logo"
             sx={{
-              height: 50,
-              width: 50,
+              height: collapsed ? 36 : 50,
+              width: collapsed ? 36 : 50,
               flexShrink: 0
             }}
           />
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 0.25,
+              overflow: 'hidden',
+              transition: 'opacity 180ms ease, max-width 220ms ease, margin 180ms ease',
+              opacity: collapsed ? 0 : 1,
+              maxWidth: collapsed ? 0 : '160px',
+              ml: collapsed ? 0 : 1,
+            }}
+          >
             <Typography 
               variant="h6" 
               sx={{ 
@@ -341,9 +392,8 @@ export function SideNav(): React.JSX.Element {
             </Typography>
           </Box>
         </Box>
-        
-        {/* Search box for filtering menu items */}
-        <Box sx={{ 
+        {/* Search box for filtering menu items (always rendered but animated) */}
+        <Box sx={{
           display: 'flex',
           alignItems: 'center',
           border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -354,7 +404,11 @@ export function SideNav(): React.JSX.Element {
           '&:focus-within': {
             borderColor: 'rgba(255, 255, 255, 0.4)',
             bgcolor: 'rgba(255, 255, 255, 0.08)'
-          }
+          },
+          transition: 'opacity 180ms ease, max-width 220ms ease, padding 180ms ease',
+          opacity: collapsed ? 0 : 1,
+          maxWidth: collapsed ? 0 : '100%',
+          overflow: 'hidden'
         }}>
           <SearchIcon 
             fontSize={18}
@@ -413,7 +467,7 @@ export function SideNav(): React.JSX.Element {
           <EmptyNavState searchQuery={searchQuery} />
         ) : (
           <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
-            {renderNavItems({ pathname, items: searchFilteredNavItems, onNavigateStart: () => setLoading(true) })}
+            {renderNavItems({ pathname, items: searchFilteredNavItems, onNavigateStart: () => setLoading(true), collapsed })}
           </Stack>
         )}
       </Box>
@@ -423,11 +477,11 @@ export function SideNav(): React.JSX.Element {
   );
 }
 
-function renderNavItems({ items = [], pathname, onNavigateStart }: { items?: NavItemConfig[]; pathname: string | null; onNavigateStart?: () => void }): React.JSX.Element {
+function renderNavItems({ items = [], pathname, onNavigateStart, collapsed }: { items?: NavItemConfig[]; pathname: string | null; onNavigateStart?: () => void; collapsed?: boolean }): React.JSX.Element {
   const children = items.reduce((acc: React.ReactNode[], curr: NavItemConfig): React.ReactNode[] => {
     const { key, ...item } = curr;
 
-    acc.push(<NavItem key={key} pathname={pathname ?? ''} onNavigateStart={onNavigateStart} {...item} />);
+    acc.push(<NavItem key={key} pathname={pathname ?? ''} onNavigateStart={onNavigateStart} collapsed={collapsed} {...item} />);
 
     return acc;
   }, []);
@@ -443,9 +497,10 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   pathname: string | null;
   items?: NavItemConfig[];
   onNavigateStart?: () => void;
+  collapsed?: boolean;
 }
 
-function NavItem({ disabled, external, href, icon, matcher, pathname, title, items, onNavigateStart }: NavItemProps): React.JSX.Element {
+function NavItem({ disabled, external, href, icon, matcher, pathname, title, items, onNavigateStart, collapsed }: NavItemProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const hasChildren = Array.isArray(items) && items.length > 0;
@@ -490,8 +545,9 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           flex: '0 0 auto',
-          gap: 1,
-          p: '6px 16px',
+          gap: collapsed ? 0 : 1,
+          p: collapsed ? '6px' : '6px 16px',
+          justifyContent: collapsed ? 'center' : undefined,
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
@@ -511,7 +567,7 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           }),
         }}
       >
-        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto' }}>
+        <Box sx={{ alignItems: 'center', display: 'flex', justifyContent: 'center', flex: '0 0 auto', mx: collapsed ? 0 : undefined }}>
           {Icon ? (
             <Icon
               fill={active ? 'var(--NavItem-icon-active-color)' : 'var(--NavItem-icon-color)'}
@@ -520,21 +576,29 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
             />
           ) : null}
         </Box>
-        <Box sx={{ flex: '1 1 auto' }}>
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            overflow: 'hidden',
+            transition: 'opacity 180ms ease, max-width 220ms ease, transform 180ms ease',
+            opacity: collapsed ? 0 : 1,
+            maxWidth: collapsed ? 0 : '100%'
+          }}
+        >
           <Typography
             component="span"
-            sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px' }}
+            sx={{ color: 'inherit', fontSize: '0.875rem', fontWeight: 500, lineHeight: '28px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
             {title}
           </Typography>
         </Box>
         {hasChildren ? (
-          <Box sx={{ ml: 1, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ ml: 1, display: collapsed ? 'none' : 'flex', alignItems: 'center', transition: 'opacity 180ms ease' }}>
             <CaretUpDownIcon style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
           </Box>
         ) : null}
       </Box>
-      {hasChildren && open && (
+      {hasChildren && !collapsed && open && (
         <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0, pl: 3 }}>
           {items!.map((child, idx) => {
             // Destructure key and pass it directly, spread the rest

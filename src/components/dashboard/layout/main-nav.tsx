@@ -12,6 +12,8 @@ import { ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { useTheme } from '@mui/material/styles';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import { usePopover } from '@/hooks/use-popover';
 import { useUser } from '@/hooks/use-user';
@@ -25,6 +27,14 @@ export function MainNav(): React.JSX.Element {
   const theme = useTheme();
   const { user } = useUser();
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const [navCollapsed, setNavCollapsed] = React.useState<boolean>(() => {
+    try {
+      if (typeof window === 'undefined') return false;
+      return window.localStorage.getItem('sideNavCollapsed') === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
   const [notificationsOpen, setNotificationsOpen] = React.useState<boolean>(false);
   const [notificationCount, setNotificationCount] = React.useState<number>(0);
 
@@ -51,6 +61,38 @@ export function MainNav(): React.JSX.Element {
     }, 200); // Delay to allow layout to render first
     return () => clearTimeout(timer);
   }, [fetchNotificationCount]);
+
+  // Listen for nav-collapse events to keep toggle icon in sync
+  React.useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const d = (e as CustomEvent).detail;
+        setNavCollapsed(Boolean(d));
+      } catch (err) {}
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('nav-collapse', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('nav-collapse', handler as EventListener);
+      }
+    };
+  }, []);
+
+  // Ensure document CSS var and body attribute are synced to the current state on mount/update
+  React.useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.document.documentElement.style.setProperty('--SideNav-width', navCollapsed ? '72px' : '280px');
+        window.document.body.setAttribute('data-nav-collapsed', String(navCollapsed));
+        // Broadcast initial state so SideNav picks it up
+        window.dispatchEvent(new CustomEvent('nav-collapse', { detail: navCollapsed }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [navCollapsed]);
 
   // Handle closing notifications dialog and refresh count
   const handleCloseNotifications = React.useCallback(() => {
@@ -84,7 +126,28 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
-            
+            {/* Collapse/expand side nav to icons-only for large screens */}
+            <IconButton
+              onClick={() => {
+                try {
+                  const currently = navCollapsed;
+                  const next = !currently;
+                  setNavCollapsed(next);
+                  if (typeof window !== 'undefined') {
+                    window.localStorage.setItem('sideNavCollapsed', String(next));
+                    window.document.documentElement.style.setProperty('--SideNav-width', next ? '72px' : '280px');
+                    window.document.body.setAttribute('data-nav-collapsed', String(next));
+                    window.dispatchEvent(new CustomEvent('nav-collapse', { detail: next }));
+                  }
+                } catch (e) {
+                  // ignore
+                }
+              }}
+              sx={{ display: { xs: 'none', lg: 'inline-flex' } }}
+              aria-label="Toggle side navigation"
+            >
+              {navCollapsed ? <MenuOpenIcon /> : <MenuIcon />}
+            </IconButton>
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
          

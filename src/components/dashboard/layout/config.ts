@@ -55,12 +55,13 @@ export const allNavItems = [
   {
     key: 'financial-management',
     title: 'Financial Management',
-    icon: 'buildings',
+    icon: 'wallet',
     items: [
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
       { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
+       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'id-card' },
       
     ],
   },
@@ -68,7 +69,7 @@ export const allNavItems = [
   {
     key: 'she-management',
     title: 'SHE Management',
-    icon: 'buildings',
+    icon: 'shield',
     items: [
      { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
@@ -84,7 +85,7 @@ export const allNavItems = [
   {
     key: 'Report-management',
     title: 'Report Management',
-    icon: 'chart-pie',
+    icon: 'chart-bar',
     items: [
      
    { key: 'she-summary-reports', title: 'SHE Summary Report', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
@@ -112,7 +113,7 @@ export const allNavItems = [
   {
     key: 'Site-management',
     title: 'Site Management',
-    icon: 'tools',
+    icon: 'map-trifold',
     items: [
 
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},

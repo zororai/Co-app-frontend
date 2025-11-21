@@ -74,6 +74,17 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
     }
   }, [open, userId]);
   
+  // Defensive formatting for shaft numbers (could be array or string from backend)
+  const shaftNumbersDisplay = React.useMemo(() => {
+    if (!oreDetails) return 'N/A';
+    const s = oreDetails.shaftNumbers;
+    if (Array.isArray(s)) return s.join(', ');
+    if (s == null) return 'N/A';
+    // If it's a non-empty string or other primitive, coerce to string
+    const str = String(s);
+    return str.trim() === '' ? 'N/A' : str;
+  }, [oreDetails]);
+  
   // Cancel action
   const cancelAction = () => {
     setShowReasonField(false);
@@ -194,7 +205,7 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
-                <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers?.join(', ') || 'N/A'} />
+                <DetailItem label="Shaft Numbers" value={shaftNumbersDisplay} />
                 <DetailItem label="Weight" value={`${oreDetails.weight || 'N/A'} kg`} />
                 <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
                 <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />

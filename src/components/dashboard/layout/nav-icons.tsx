@@ -13,14 +13,22 @@ import { WrenchIcon } from '@phosphor-icons/react/dist/ssr/Wrench';
 import { TruckIcon } from '@phosphor-icons/react/dist/ssr/Truck';
 import { LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
 import { KeyIcon } from '@phosphor-icons/react/dist/ssr/Key';
+import { UserPlusIcon } from '@phosphor-icons/react/dist/ssr/UserPlus';
+import { ChartBarIcon } from '@phosphor-icons/react/dist/ssr/ChartBar';
+import { WalletIcon } from '@phosphor-icons/react/dist/ssr/Wallet';
+import { MapTrifoldIcon } from '@phosphor-icons/react/dist/ssr/MapTrifold';
 
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plugs-connected': PlugsConnectedIcon,
+  'chart-bar': ChartBarIcon,
+  'map-trifold': MapTrifoldIcon,
+  'user-plus': UserPlusIcon,
   'x-square': XSquare,
-    'shield': ShieldCheckIcon,
+  'shield': ShieldCheckIcon,
+   'wallet': WalletIcon,
   'id-card': IdentificationCardIcon,
   'buildings': BuildingsIcon,
   'mountain': MountainsIcon,
