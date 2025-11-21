@@ -11,23 +11,52 @@ import { BuildingsIcon } from '@phosphor-icons/react/dist/ssr/Buildings';
 import { MountainsIcon } from '@phosphor-icons/react/dist/ssr/Mountains';
 import { WrenchIcon } from '@phosphor-icons/react/dist/ssr/Wrench';
 import { TruckIcon } from '@phosphor-icons/react/dist/ssr/Truck';
+import { FactoryIcon } from '@phosphor-icons/react/dist/ssr/Factory';
 import { LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
 import { KeyIcon } from '@phosphor-icons/react/dist/ssr/Key';
 import { UserPlusIcon } from '@phosphor-icons/react/dist/ssr/UserPlus';
 import { ChartBarIcon } from '@phosphor-icons/react/dist/ssr/ChartBar';
 import { WalletIcon } from '@phosphor-icons/react/dist/ssr/Wallet';
 import { MapTrifoldIcon } from '@phosphor-icons/react/dist/ssr/MapTrifold';
+import { HandCoinsIcon } from '@phosphor-icons/react/dist/ssr/HandCoins';
+import { RoadHorizonIcon } from '@phosphor-icons/react/dist/ssr/RoadHorizon';
+import { HandshakeIcon } from '@phosphor-icons/react/dist/ssr/Handshake';
+import { BriefcaseIcon } from '@phosphor-icons/react/dist/ssr/Briefcase';
+import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowsLeftRight';
+import { UserSwitchIcon } from '@phosphor-icons/react/dist/ssr/UserSwitch';
+import { PlusCircleIcon } from '@phosphor-icons/react/dist/ssr/PlusCircle';
 
+import { PercentIcon } from '@phosphor-icons/react/dist/ssr/Percent';
+import { CurrencyDollarIcon } from '@phosphor-icons/react/dist/ssr/CurrencyDollar';
+import { SealWarningIcon } from '@phosphor-icons/react/dist/ssr/SealWarning';
+import { CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
+import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
 export const navIcons = {
+  'percent': PercentIcon,
+  'currency-dollar': CurrencyDollarIcon,
+  'seal-warning': SealWarningIcon,
+  'credit-card': CreditCardIcon,
+  'package': PackageIcon,
+
+
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
+  'plus-circle': PlusCircleIcon,
+  'user-plus': UserPlusIcon,
+  'user-switch': UserSwitchIcon,
+  'arrows-left-right': ArrowsLeftRightIcon,
+  'handshake': HandshakeIcon,
+  'briefcase': BriefcaseIcon,
+  'road-horizon': RoadHorizonIcon,
   'plugs-connected': PlugsConnectedIcon,
   'chart-bar': ChartBarIcon,
   'map-trifold': MapTrifoldIcon,
-  'user-plus': UserPlusIcon,
+  
   'x-square': XSquare,
   'shield': ShieldCheckIcon,
+  'factory': FactoryIcon,
+  'hand-coins': HandCoinsIcon,
    'wallet': WalletIcon,
   'id-card': IdentificationCardIcon,
   'buildings': BuildingsIcon,

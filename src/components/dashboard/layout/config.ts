@@ -11,10 +11,10 @@ export const allNavItems = [
       { key: 'securityonboard', title: 'Security', href:  paths.dashboard.securityonboarding, icon: 'shield'},
       { key: 'driveronboard', title: 'Driver ', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
       { key: 'vehicleonboard', title: 'Vehicle', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
-    { key: 'Taxonboard', title: 'Operational Charges ', href:  paths.dashboard.taxonboarding, icon: 'truck'},
-    { key: 'mill', title: 'Mill ', href:  paths.dashboard.mill, icon: 'truck'},
-    { key: 'Production_loan', title: 'Production Loan ', href:  paths.dashboard.Production_loan, icon: 'truck'},
-    { key: 'Transport_cost', title: 'Transport Cost ', href:  paths.dashboard.Transport_cost, icon: 'truck'}
+    { key: 'Taxonboard', title: 'Operational Charges ', href:  paths.dashboard.taxonboarding, icon: 'hand-coins'},
+    { key: 'mill', title: 'Mill ', href:  paths.dashboard.mill, icon: 'factory'},
+    { key: 'Production_loan', title: 'Production Loan ', href:  paths.dashboard.Production_loan, icon: 'hand-coins'},
+    { key: 'Transport_cost', title: 'Transport Cost ', href:  paths.dashboard.Transport_cost, icon: 'road-horizon'}
  
   ], 
     
@@ -27,8 +27,8 @@ export const allNavItems = [
     icon: 'id-card',
     items: [
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
-    { key: 'syndicate-teammembership', title: 'Syndicate Membership', href: paths.dashboard.syndicatemembership, icon: 'id-card' },
-  { key: 'company-teammembership', title: 'Company Membership', href: paths.dashboard.companymembership, icon: 'id-card' },
+    { key: 'syndicate-teammembership', title: 'Syndicate Membership', href: paths.dashboard.syndicatemembership, icon: 'handshake' },
+  { key: 'company-teammembership', title: 'Company Membership', href: paths.dashboard.companymembership, icon: 'briefcase' },
 
     ],
   },
@@ -45,9 +45,9 @@ export const allNavItems = [
     title: 'Shaft Management',
     icon: 'buildings',
     items: [
-      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
-     { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'id-card'},
+      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'user-switch'},
+     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'plus-circle'},
+     { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'arrows-left-right'},
      
     ],
   },
@@ -57,11 +57,11 @@ export const allNavItems = [
     title: 'Financial Management',
     icon: 'wallet',
     items: [
-      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
-      { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
-      { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
-      { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
-       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'id-card' },
+      { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'package'},
+      { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'percent' },
+      { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'currency-dollar' },
+      { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'seal-warning' },
+       { key: 'Registrationpay', title: 'Registration Payment', href: paths.dashboard.Registration_Payment, icon: 'credit-card' },
       
     ],
   },
