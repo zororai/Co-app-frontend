@@ -841,91 +841,141 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {/* Step 2: Persons Involved */}
         {activeStep === 2 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Persons Involved
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+              Persons Involved in the Incident
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                {formData.persons.map((person, index) => (
-                  <Box key={person.id} sx={{ 
-                    p: 2, 
-                    mb: 2, 
-                    border: '1px solid #e0e0e0', 
-                    borderRadius: 1
-                  }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="subtitle2">Person {index + 1}</Typography>
-                      {index > 0 && (
-                        <IconButton
-                          size="small"
-                          onClick={() => removePerson(index)}
-                          sx={{ color: 'error.main' }}
-                          aria-label="Remove person"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Add details of all individuals involved in or affected by this incident. At least one person is required.
+            </Typography>
 
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Name"
-                          value={person.name}
-                          onChange={handlePersonChange(index, 'name')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Surname"
-                          value={person.surname}
-                          onChange={handlePersonChange(index, 'surname')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="National ID"
-                          value={person.nationalId}
-                          onChange={handlePersonChange(index, 'nationalId')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Address"
-                          value={person.address}
-                          onChange={handlePersonChange(index, 'address')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-                ))}
-                
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={addPerson}
-                  sx={{ mt: 1 }}
+            {/* Persons List */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              {formData.persons.map((person, index) => (
+                <Box 
+                  key={person.id}
+                  sx={{
+                    border: `1px solid ${theme.palette.secondary.main}`,
+                    borderRadius: 2,
+                    p: 2.5,
+                    bgcolor: 'background.paper',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      boxShadow: `0 2px 8px rgba(50, 56, 62, 0.12)`,
+                      bgcolor: 'rgba(50, 56, 62, 0.01)'
+                    }
+                  }}
                 >
-                  Add Person
-                </Button>
-              </Grid>
-            </Grid>
+                  {/* Person Header */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, pb: 1.5, borderBottom: `1px solid ${theme.palette.secondary.main}` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box 
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          bgcolor: theme.palette.secondary.main,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '14px'
+                        }}
+                      >
+                        {index + 1}
+                      </Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        Person {index + 1}
+                        {person.name || person.surname ? ` - ${person.name} ${person.surname}`.trim() : ''}
+                      </Typography>
+                    </Box>
+                    {index > 0 && (
+                      <IconButton
+                        size="small"
+                        onClick={() => removePerson(index)}
+                        sx={{
+                          color: 'error.main',
+                          '&:hover': {
+                            bgcolor: 'rgba(211, 47, 47, 0.1)'
+                          }
+                        }}
+                        title="Remove person"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {/* Form Fields Grid */}
+                  <Box sx={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 2
+                  }}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      placeholder="Enter first name"
+                      value={person.name}
+                      onChange={handlePersonChange(index, 'name')}
+                      size="small"
+                      sx={textFieldStyle}
+                      variant="outlined"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      placeholder="Enter last name"
+                      value={person.surname}
+                      onChange={handlePersonChange(index, 'surname')}
+                      size="small"
+                      sx={textFieldStyle}
+                      variant="outlined"
+                    />
+                    <TextField
+                      fullWidth
+                      label="National ID"
+                      placeholder="Enter national ID number"
+                      value={person.nationalId}
+                      onChange={handlePersonChange(index, 'nationalId')}
+                      size="small"
+                      sx={textFieldStyle}
+                      variant="outlined"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Address"
+                      placeholder="Enter residential address"
+                      value={person.address}
+                      onChange={handlePersonChange(index, 'address')}
+                      size="small"
+                      sx={textFieldStyle}
+                      variant="outlined"
+                    />
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+
+            {/* Add Person Button */}
+            <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid #e0e0e0` }}>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={addPerson}
+                sx={{
+                  borderColor: theme.palette.secondary.main,
+                  color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    bgcolor: 'rgba(50, 56, 62, 0.04)'
+                  }
+                }}
+              >
+                Add Another Person
+              </Button>
+            </Box>
 
             {/* Buttons moved to fixed bottom action bar */}
           </Box>
