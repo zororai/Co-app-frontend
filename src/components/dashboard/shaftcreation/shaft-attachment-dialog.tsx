@@ -15,6 +15,7 @@ import {
   IconButton,
   CircularProgress,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import MapIcon from '@mui/icons-material/Map';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -22,6 +23,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { authClient } from '@/lib/auth/client';
+import { useTheme } from '@mui/material/styles';
 
 export interface ShaftAttachmentDialogProps {
   open: boolean;
@@ -48,6 +50,7 @@ export function ShaftAttachmentDialog({
   onClose,
   customerId,
 }: ShaftAttachmentDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [formData, setFormData] = React.useState<ShaftAssignmentData>({
     sectionName: '',
     shaftNumbers: '',
@@ -339,13 +342,45 @@ export function ShaftAttachmentDialog({
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Typography variant="h6" component="div">
+        <DialogTitle 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}
+        >
+          <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
             Shaft Attachment
           </Typography>
+          <IconButton 
+            onClick={handleClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
         
-        <DialogContent>
+        <DialogContent sx={{
+          px: 3,
+          py: 2,
+          maxHeight: '70vh',
+          overflow: 'auto',
+          '&::-webkit-scrollbar': { width: '6px' },
+          '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+          '&::-webkit-scrollbar-thumb': { 
+            backgroundColor: theme.palette.secondary.main, 
+            borderRadius: '3px' 
+          },
+        }}>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -625,11 +660,26 @@ export function ShaftAttachmentDialog({
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3 }}>
+        <DialogActions sx={{ 
+          px: 3, 
+          py: 2.5, 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          borderTop: '1px solid #e0e0e0',
+          gap: 1
+        }}>
           <Button 
             onClick={handleClose} 
             disabled={loading}
-            sx={{ mr: 1 }}
+            variant="outlined"
+            sx={{
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main,
+              '&:hover': {
+                borderColor: theme.palette.secondary.dark,
+                backgroundColor: 'rgba(50, 56, 62, 0.04)'
+              }
+            }}
           >
             Cancel
           </Button>
@@ -638,9 +688,10 @@ export function ShaftAttachmentDialog({
             variant="contained"
             disabled={loading}
             sx={{
-              bgcolor: '#6366f1',
+              bgcolor: theme.palette.secondary.main,
+              color: 'white',
               '&:hover': {
-                bgcolor: '#5048e5',
+                bgcolor: theme.palette.secondary.dark,
               },
               px: 4,
             }}
