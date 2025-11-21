@@ -49,6 +49,9 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
   const [actionLoading, setActionLoading] = React.useState(false);
   const [actionSuccess, setActionSuccess] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  
+  // Preview attachment state
+  const [previewAttachment, setPreviewAttachment] = React.useState<{data: string, info: any} | null>(null);
 
   // Fetch incident details when dialog opens and incidentId changes
   React.useEffect(() => {
@@ -469,7 +472,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                             
                             <IconButton
                               size="small"
-                              onClick={() => window.open(attachment, '_blank')}
+                              onClick={() => setPreviewAttachment({ data: attachment, info: attachmentInfo })}
                               sx={{
                                 color: theme.palette.secondary.main,
                                 '&:hover': {
@@ -627,6 +630,124 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
             disabled={actionLoading || !actionReason.trim()}
           >
             {actionLoading ? 'Processing...' : 'Escalate'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Attachment Preview Modal */}
+      <Dialog
+        open={!!previewAttachment}
+        onClose={() => setPreviewAttachment(null)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}
+        >
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+            {previewAttachment?.info?.fileName || 'Preview Attachment'}
+          </Typography>
+          <IconButton 
+            onClick={() => setPreviewAttachment(null)} 
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', bgcolor: '#f5f5f5' }}>
+          {previewAttachment && (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+              {previewAttachment.info?.isImage ? (
+                <Box
+                  component="img"
+                  src={previewAttachment.data}
+                  alt="Attachment preview"
+                  sx={{
+                    maxWidth: '100%',
+                    maxHeight: '600px',
+                    borderRadius: 1,
+                    objectFit: 'contain'
+                  }}
+                />
+              ) : previewAttachment.info?.ext === 'pdf' ? (
+                <Box
+                  component="iframe"
+                  src={previewAttachment.data}
+                  sx={{
+                    width: '100%',
+                    height: '600px',
+                    border: 'none',
+                    borderRadius: 1
+                  }}
+                />
+              ) : (
+                <Box sx={{ textAlign: 'center' }}>
+                  <FileIcon sx={{ fontSize: 80, color: theme.palette.secondary.main, mb: 2 }} />
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    {previewAttachment.info?.fileName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Preview not available for this file type
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    onClick={() => {
+                      if (previewAttachment) {
+                        downloadAttachment(previewAttachment.data, previewAttachment.info.fileName);
+                        setPreviewAttachment(null);
+                      }
+                    }}
+                    sx={{
+                      bgcolor: theme.palette.secondary.main,
+                      color: 'white',
+                      '&:hover': { bgcolor: theme.palette.secondary.dark }
+                    }}
+                  >
+                    Download File
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => {
+              if (previewAttachment) {
+                downloadAttachment(previewAttachment.data, previewAttachment.info.fileName);
+              }
+            }}
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: 'white',
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            Download
+          </Button>
+          <Button 
+            onClick={() => setPreviewAttachment(null)} 
+            variant="outlined"
+            sx={{
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main
+            }}
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>
