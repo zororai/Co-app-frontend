@@ -29,6 +29,11 @@ import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import Switch from '@mui/material/Switch';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -656,49 +661,178 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {/* Step 1: Attachments */}
         {activeStep === 1 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
               Attachments (Photos/Documents)
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <input
-                  accept="image/*,.pdf,.doc,.docx"
-                  style={{ display: 'none' }}
-                  id="raised-button-file"
-                  multiple
-                  type="file"
-                  onChange={handleFileUpload}
-                />
-                <label htmlFor="raised-button-file">
-                  <Button variant="outlined" component="span" startIcon={<AddIcon />}>
-                    Add Files
-                  </Button>
-                </label>
+            
+            <input
+              accept="image/*,.pdf,.doc,.docx"
+              style={{ display: 'none' }}
+              id="raised-button-file"
+              multiple
+              type="file"
+              onChange={handleFileUpload}
+            />
+            
+            {/* Upload Area */}
+            <label htmlFor="raised-button-file" style={{ width: '100%' }}>
+              <Box
+                sx={{
+                  border: `2px dashed ${theme.palette.secondary.main}`,
+                  borderRadius: 2,
+                  p: 4,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  bgcolor: 'rgba(50, 56, 62, 0.02)',
+                  '&:hover': {
+                    bgcolor: 'rgba(50, 56, 62, 0.08)',
+                    borderColor: theme.palette.secondary.dark
+                  },
+                  component: 'div'
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 48, color: theme.palette.secondary.main, mb: 1 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: theme.palette.secondary.main }}>
+                  Click to upload or drag and drop
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Supported formats: Images (PNG, JPG, GIF), PDF, DOC, DOCX
+                </Typography>
+                <Button
+                  variant="contained"
+                  component="span"
+                  startIcon={<AddIcon />}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    color: 'white',
+                    '&:hover': { bgcolor: theme.palette.secondary.dark }
+                  }}
+                >
+                  Select Files
+                </Button>
+              </Box>
+            </label>
 
-                {formData.attachments.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    {formData.attachments.map((file, index) => (
-                      <Box key={index} sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 1,
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 1,
-                        mb: 1
-                      }}>
-                        <Typography variant="body2">
+            {/* File Count */}
+            {formData.attachments.length > 0 && (
+              <Box sx={{ mt: 3, mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CheckCircleOutlineIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    {formData.attachments.length} file{formData.attachments.length !== 1 ? 's' : ''} selected
+                  </Typography>
+                </Box>
+
+                {/* Files Grid */}
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
+                  gap: 2
+                }}>
+                  {formData.attachments.map((file, index) => {
+                    const isImage = file.type.startsWith('image/');
+                    const isPdf = file.type === 'application/pdf';
+                    const isDocument = file.type.includes('word') || file.type.includes('document');
+                    
+                    let icon = <InsertDriveFileIcon />;
+                    if (isImage) icon = <ImageIcon />;
+                    else if (isPdf) icon = <DocumentScannerIcon />;
+                    else if (isDocument) icon = <InsertDriveFileIcon />;
+
+                    return (
+                      <Box
+                        key={index}
+                        sx={{
+                          border: `1px solid ${theme.palette.secondary.main}`,
+                          borderRadius: 1.5,
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 1,
+                          transition: 'all 0.2s ease',
+                          bgcolor: 'background.paper',
+                          '&:hover': {
+                            boxShadow: `0 2px 8px rgba(50, 56, 62, 0.12)`,
+                            bgcolor: 'rgba(50, 56, 62, 0.02)'
+                          }
+                        }}
+                      >
+                        {/* File Icon */}
+                        <Box sx={{ color: theme.palette.secondary.main, fontSize: 32 }}>
+                          {icon}
+                        </Box>
+
+                        {/* File Name */}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 500,
+                            textAlign: 'center',
+                            wordBreak: 'break-word',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            minHeight: '40px'
+                          }}
+                          title={file.name}
+                        >
                           {file.name}
                         </Typography>
-                        <IconButton size="small" onClick={() => removeAttachment(index)}>
-                          <CloseIcon fontSize="small" />
+
+                        {/* File Size */}
+                        <Typography variant="caption" color="text.secondary">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </Typography>
+
+                        {/* Delete Button */}
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeAttachment(index);
+                          }}
+                          sx={{
+                            color: 'error.main',
+                            marginTop: 'auto',
+                            '&:hover': {
+                              bgcolor: 'rgba(211, 47, 47, 0.1)'
+                            }
+                          }}
+                          title="Remove file"
+                        >
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Box>
-                    ))}
-                  </Box>
-                )}
-              </Grid>
-            </Grid>
+                    );
+                  })}
+                </Box>
+
+                {/* Add More Button */}
+                <Box sx={{ mt: 3 }}>
+                  <label htmlFor="raised-button-file">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        borderColor: theme.palette.secondary.main,
+                        color: theme.palette.secondary.main,
+                        '&:hover': {
+                          borderColor: theme.palette.secondary.dark,
+                          bgcolor: 'rgba(50, 56, 62, 0.04)'
+                        }
+                      }}
+                    >
+                      Add More Files
+                    </Button>
+                  </label>
+                </Box>
+              </Box>
+            )}
 
             {/* Buttons moved to fixed bottom action bar */}
           </Box>
