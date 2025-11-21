@@ -183,19 +183,19 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     });
   };
 
-  // Add new person
+  // Add new person (adds to the beginning of the array)
   const addPerson = () => {
     setFormData({
       ...formData,
       persons: [
-        ...formData.persons,
         {
           id: crypto.randomUUID(),
           name: '',
           surname: '',
           nationalId: '',
           address: ''
-        }
+        },
+        ...formData.persons
       ]
     });
   };
@@ -849,6 +849,24 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               Add details of all individuals involved in or affected by this incident. At least one person is required.
             </Typography>
 
+            {/* Add Person Button - Sticky at Top */}
+            <Box sx={{ mb: 3, pb: 2.5, borderBottom: `1px solid #e0e0e0` }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={addPerson}
+                sx={{
+                  bgcolor: theme.palette.secondary.main,
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: theme.palette.secondary.dark
+                  }
+                }}
+              >
+                Add Person
+              </Button>
+            </Box>
+
             {/* Persons List */}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               {formData.persons.map((person, index) => (
@@ -919,62 +937,43 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                       placeholder="Enter first name"
                       value={person.name}
                       onChange={handlePersonChange(index, 'name')}
-                      size="small"
-                      sx={textFieldStyle}
-                      variant="outlined"
-                    />
-                    <TextField
-                      fullWidth
-                      label="Last Name"
-                      placeholder="Enter last name"
-                      value={person.surname}
-                      onChange={handlePersonChange(index, 'surname')}
-                      size="small"
-                      sx={textFieldStyle}
-                      variant="outlined"
-                    />
-                    <TextField
-                      fullWidth
-                      label="National ID"
-                      placeholder="Enter national ID number"
-                      value={person.nationalId}
-                      onChange={handlePersonChange(index, 'nationalId')}
-                      size="small"
-                      sx={textFieldStyle}
-                      variant="outlined"
-                    />
-                    <TextField
-                      fullWidth
-                      label="Address"
-                      placeholder="Enter residential address"
-                      value={person.address}
-                      onChange={handlePersonChange(index, 'address')}
-                      size="small"
-                      sx={textFieldStyle}
-                      variant="outlined"
-                    />
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        placeholder="Enter last name"
+                        value={person.surname}
+                        onChange={handlePersonChange(index, 'surname')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="National ID"
+                        placeholder="Enter national ID number"
+                        value={person.nationalId}
+                        onChange={handlePersonChange(index, 'nationalId')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="Address"
+                        placeholder="Enter residential address"
+                        value={person.address}
+                        onChange={handlePersonChange(index, 'address')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                    </Box>
                   </Box>
-                </Box>
               ))}
-            </Box>
-
-            {/* Add Person Button */}
-            <Box sx={{ mt: 3, pt: 2, borderTop: `1px solid #e0e0e0` }}>
-              <Button
-                variant="outlined"
-                startIcon={<AddIcon />}
-                onClick={addPerson}
-                sx={{
-                  borderColor: theme.palette.secondary.main,
-                  color: theme.palette.secondary.main,
-                  '&:hover': {
-                    borderColor: theme.palette.secondary.dark,
-                    bgcolor: 'rgba(50, 56, 62, 0.04)'
-                  }
-                }}
-              >
-                Add Another Person
-              </Button>
             </Box>
 
             {/* Buttons moved to fixed bottom action bar */}
