@@ -100,15 +100,9 @@ interface PersonDetail {
 
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
   const theme = useTheme();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState(false);
-  const [referenceNumber, setReferenceNumber] = React.useState('');
-  const [formSubmitted, setFormSubmitted] = React.useState(false);
   
-  // State for form data
-  const [formData, setFormData] = React.useState({
+  // Helper function to create fresh form data
+  const getInitialFormData = () => ({
     // Incident Details
     incidentTitle: '',
     incidentType: '',
@@ -130,6 +124,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       }
     ] as PersonDetail[]
   });
+  
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
+  const [referenceNumber, setReferenceNumber] = React.useState('');
+  const [formSubmitted, setFormSubmitted] = React.useState(false);
+  
+  // State for form data
+  const [formData, setFormData] = React.useState(getInitialFormData());
 
   // State for shaft assignments
   const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
@@ -403,11 +407,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle dialog close
   const handleClose = () => {
     if (!loading) {
-      // Reset form state
+      // Reset all form state to initial values
       setActiveStep(0);
       setError(null);
       setSuccess(false);
       setFormSubmitted(false);
+      setReferenceNumber('');
+      setValidationErrors({});
+      setFormData(getInitialFormData());
       onClose();
     }
   };
