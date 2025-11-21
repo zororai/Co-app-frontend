@@ -22,6 +22,8 @@ import Stack from '@mui/material/Stack';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { useTheme } from '@mui/material/styles';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { authClient } from '@/lib/auth/client';
 
 interface TraineeData {
@@ -267,131 +269,245 @@ export function EditTrainingDialog({ open, onClose, trainingId, onSuccess }: Edi
   };
 
   const renderArrayField = (field: 'materials' | 'safetyProtocols', label: string, placeholder: string) => (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-        {label}
-      </Typography>
-      {formData[field].map((item, index) => (
-        <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-          <TextField
-            fullWidth
-            size="small"
-            value={item}
-            onChange={handleArrayFieldChange(field, index)}
-            placeholder={placeholder}
-          />
-          {formData[field].length > 1 && (
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              onClick={() => removeArrayField(field, index)}
-              sx={{ minWidth: 'auto', px: 1 }}
-            >
-              ×
-            </Button>
-          )}
+    <Box sx={{ 
+      border: `2px solid ${theme.palette.secondary.main}`, 
+      borderRadius: 2, 
+      p: 2.5, 
+      bgcolor: '#fafafa',
+      mb: 2
+    }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, mb: 0.5 }}>
+            {label}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {formData[field].filter(item => item.trim()).length} item{formData[field].filter(item => item.trim()).length !== 1 ? 's' : ''} added
+          </Typography>
         </Box>
-      ))}
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={() => addArrayField(field)}
-        sx={{ mt: 1 }}
-      >
-        Add {label.slice(0, -1)}
-      </Button>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={() => addArrayField(field)}
+          disabled={loading}
+          variant="contained"
+          size="small"
+          sx={{ 
+            bgcolor: theme.palette.secondary.main, 
+            color: 'white',
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
+          }}
+        >
+          Add
+        </Button>
+      </Stack>
+
+      <Stack spacing={1.5}>
+        {formData[field].length === 0 ? (
+          <Typography variant="body2" sx={{ color: 'text.secondary', py: 2, textAlign: 'center' }}>
+            No {label.toLowerCase()} added yet
+          </Typography>
+        ) : (
+          formData[field].map((item, index) => (
+            <Stack 
+              key={index} 
+              direction="row" 
+              spacing={1} 
+              alignItems="center"
+              sx={{ 
+                p: 1.5,
+                bgcolor: 'white',
+                border: '1px solid #e0e0e0',
+                borderRadius: 1,
+                '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.02)' }
+              }}
+            >
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                bgcolor: theme.palette.secondary.main,
+                color: 'white',
+                borderRadius: '50%',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+                flexShrink: 0
+              }}>
+                {index + 1}
+              </Box>
+              <TextField
+                value={item}
+                onChange={handleArrayFieldChange(field, index)}
+                disabled={loading}
+                fullWidth
+                size="small"
+                placeholder={placeholder}
+              />
+              {formData[field].length > 1 && (
+                <IconButton
+                  onClick={() => removeArrayField(field, index)}
+                  disabled={loading}
+                  size="small"
+                  sx={{ 
+                    color: 'error.main',
+                    '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              )}
+            </Stack>
+          ))
+        )}
+      </Stack>
     </Box>
   );
 
   const renderTraineesField = () => (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-        Trainees
-      </Typography>
-      {formData.trainees.map((trainee, index) => (
-        <Box key={index} sx={{ 
-          border: '1px solid #e0e0e0', 
-          borderRadius: 1, 
-          p: 2, 
-          mb: 2,
-          bgcolor: '#fafafa'
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-              Trainee {index + 1}
-            </Typography>
-            {formData.trainees.length > 1 && (
-              <Button
-                variant="outlined"
-                color="error"
-                size="small"
-                onClick={() => removeTrainee(index)}
-                sx={{ minWidth: 'auto', px: 1 }}
-              >
-                Remove
-              </Button>
-            )}
-          </Box>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              label="Name"
-              value={trainee.name}
-              onChange={handleTraineeChange(index, 'name')}
-              required
-            />
-            <TextField
-              fullWidth
-              size="small"
-              label="Employee ID"
-              value={trainee.employeeId}
-              onChange={handleTraineeChange(index, 'employeeId')}
-            />
-            <TextField
-              fullWidth
-              size="small"
-              label="Department"
-              value={trainee.department}
-              onChange={handleTraineeChange(index, 'department')}
-            />
-            <TextField
-              fullWidth
-              size="small"
-              label="Position"
-              value={trainee.position}
-              onChange={handleTraineeChange(index, 'position')}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={trainee.attended}
-                  onChange={(e) => handleTraineeChange(index, 'attended')({ target: { value: e.target.checked } })}
-                />
-              }
-              label="Attended"
-            />
-            <TextField
-              fullWidth
-              size="small"
-              label="Feedback"
-              value={trainee.feedback}
-              onChange={handleTraineeChange(index, 'feedback')}
-              multiline
-              rows={2}
-            />
-          </Box>
+    <Box sx={{ 
+      border: `2px solid ${theme.palette.secondary.main}`, 
+      borderRadius: 2, 
+      p: 2.5, 
+      bgcolor: '#fafafa',
+      mb: 2
+    }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: theme.palette.secondary.main, mb: 0.5 }}>
+            Trainees
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {formData.trainees.filter(t => t.name.trim()).length} trainee{formData.trainees.filter(t => t.name.trim()).length !== 1 ? 's' : ''} added
+          </Typography>
         </Box>
-      ))}
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={addTrainee}
-        sx={{ mt: 1 }}
-      >
-        Add Trainee
-      </Button>
+        <Button
+          startIcon={<AddIcon />}
+          onClick={addTrainee}
+          disabled={loading}
+          variant="contained"
+          size="small"
+          sx={{ 
+            bgcolor: theme.palette.secondary.main, 
+            color: 'white',
+            '&:hover': { bgcolor: theme.palette.secondary.dark }
+          }}
+        >
+          Add
+        </Button>
+      </Stack>
+
+      {formData.trainees.length === 0 ? (
+        <Typography variant="body2" sx={{ color: 'text.secondary', py: 3, textAlign: 'center' }}>
+          No trainees added yet. Click "Add" to get started.
+        </Typography>
+      ) : (
+        <Stack spacing={2}>
+          {formData.trainees.map((trainee, index) => (
+            <Box 
+              key={index}
+              sx={{ 
+                p: 2,
+                bgcolor: 'white',
+                border: `2px solid ${trainee.name.trim() ? theme.palette.secondary.main : '#e0e0e0'}`,
+                borderRadius: 1.5,
+                transition: 'all 0.2s ease',
+                '&:hover': { boxShadow: '0 2px 8px rgba(50, 56, 62, 0.1)' }
+              }}
+            >
+              <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    width: 32,
+                    height: 32,
+                    bgcolor: trainee.name.trim() ? theme.palette.secondary.main : '#e0e0e0',
+                    color: 'white',
+                    borderRadius: '50%',
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                  }}>
+                    {index + 1}
+                  </Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: trainee.name.trim() ? 'inherit' : 'text.secondary' }}>
+                    {trainee.name.trim() || 'Trainee ' + (index + 1)}
+                  </Typography>
+                </Stack>
+                {formData.trainees.length > 1 && (
+                  <Button
+                    onClick={() => removeTrainee(index)}
+                    disabled={loading}
+                    size="small"
+                    startIcon={<DeleteIcon fontSize="small" />}
+                    sx={{ 
+                      color: 'error.main',
+                      '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                    }}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </Stack>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Name"
+                  value={trainee.name}
+                  onChange={handleTraineeChange(index, 'name')}
+                  required
+                  placeholder="Enter trainee name..."
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Employee ID"
+                  value={trainee.employeeId}
+                  onChange={handleTraineeChange(index, 'employeeId')}
+                  placeholder="Enter employee ID..."
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Department"
+                  value={trainee.department}
+                  onChange={handleTraineeChange(index, 'department')}
+                  placeholder="Enter department..."
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Position"
+                  value={trainee.position}
+                  onChange={handleTraineeChange(index, 'position')}
+                  placeholder="Enter position..."
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={trainee.attended}
+                      onChange={(e) => handleTraineeChange(index, 'attended')({ target: { value: e.target.checked } })}
+                    />
+                  }
+                  label="Attended"
+                />
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Feedback"
+                  value={trainee.feedback}
+                  onChange={handleTraineeChange(index, 'feedback')}
+                  multiline
+                  rows={2}
+                  placeholder="Enter feedback..."
+                />
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+      )}
     </Box>
   );
 
