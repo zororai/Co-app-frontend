@@ -47,6 +47,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { TrainingDetailsDialog } from './training-details-dialog';
 import { EditTrainingDialog } from './edit-training-dialog';
 import { authClient } from '@/lib/auth/client';
+import { useTheme } from '@mui/material/styles';
 
 export interface Training {
   id: string;
@@ -80,6 +81,7 @@ export function TrainingTable({
   rowsPerPage = 10,
   onRefresh
 }: TrainingTableProps): React.JSX.Element {
+  const theme = useTheme();
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
   const [filters, setFilters] = React.useState({
@@ -460,26 +462,12 @@ export function TrainingTable({
                     </Typography>
                   </TableCell>
                   <TableCell>
-                    <Box sx={{
-                      display: 'inline-block',
-                      px: 1,
-                      py: 0.5,
-                      borderRadius: 1,
-                      bgcolor: 
-                        row.status === 'Scheduled' ? '#FFF9C4' : 
-                        row.status === 'Cancelled' ? '#FFCDD2' : 
-                        row.status === 'In Progress' ? '#FFE0B2' : 
-                        '#C8E6C9',
-                      color: 
-                        row.status === 'Scheduled' ? '#F57F17' : 
-                        row.status === 'Cancelled' ? '#B71C1C' : 
-                        row.status === 'In Progress' ? '#E65100' : 
-                        '#1B5E20',
-                      fontWeight: 'medium',
-                      fontSize: '0.875rem'
-                    }}>
-                      {row.status}
-                    </Box>
+                    <Chip
+                      label={row.status}
+                      size="small"
+                      color={row.status === 'Scheduled' ? 'info' : row.status === 'Cancelled' ? 'error' : row.status === 'In Progress' ? 'warning' : 'success'}
+                      sx={{ fontWeight: 500 }}
+                    />
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
