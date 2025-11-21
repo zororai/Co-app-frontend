@@ -45,9 +45,9 @@ export const allNavItems = [
     title: 'Shaft Management',
     icon: 'buildings',
     items: [
-      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
-     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
-     { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'id-card'},
+      { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'user-switch'},
+     { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'plus-circle'},
+     { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'arrows-left-right'},
      
     ],
   },

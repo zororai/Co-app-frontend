@@ -22,17 +22,24 @@ import { HandCoinsIcon } from '@phosphor-icons/react/dist/ssr/HandCoins';
 import { RoadHorizonIcon } from '@phosphor-icons/react/dist/ssr/RoadHorizon';
 import { HandshakeIcon } from '@phosphor-icons/react/dist/ssr/Handshake';
 import { BriefcaseIcon } from '@phosphor-icons/react/dist/ssr/Briefcase';
+import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowsLeftRight';
+import { UserSwitchIcon } from '@phosphor-icons/react/dist/ssr/UserSwitch';
+import { PlusCircleIcon } from '@phosphor-icons/react/dist/ssr/PlusCircle';
 
 export const navIcons = {
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
+  'plus-circle': PlusCircleIcon,
+  'user-plus': UserPlusIcon,
+  'user-switch': UserSwitchIcon,
+  'arrows-left-right': ArrowsLeftRightIcon,
   'handshake': HandshakeIcon,
   'briefcase': BriefcaseIcon,
   'road-horizon': RoadHorizonIcon,
   'plugs-connected': PlugsConnectedIcon,
   'chart-bar': ChartBarIcon,
   'map-trifold': MapTrifoldIcon,
-  'user-plus': UserPlusIcon,
+  
   'x-square': XSquare,
   'shield': ShieldCheckIcon,
   'factory': FactoryIcon,
