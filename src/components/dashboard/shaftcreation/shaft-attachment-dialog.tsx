@@ -580,7 +580,14 @@ export function ShaftAttachmentDialog({
                       }
                     }}
                     disabled={loading || locationLoading}
-                    sx={{ borderColor: '#6366f1', color: '#6366f1' }}
+                    sx={{ 
+                      borderColor: theme.palette.secondary.main, 
+                      color: theme.palette.secondary.main,
+                      '&:hover': {
+                        borderColor: theme.palette.secondary.dark,
+                        backgroundColor: 'rgba(50, 56, 62, 0.04)'
+                      }
+                    }}
                   >
                     {manualEntry ? 'Switch to GPS' : 'Enter Manually'}
                   </Button>
