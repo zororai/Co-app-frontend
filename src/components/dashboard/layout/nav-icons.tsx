@@ -32,12 +32,17 @@ import { SealWarningIcon } from '@phosphor-icons/react/dist/ssr/SealWarning';
 import { CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
 import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
+
+
+
+
 export const navIcons = {
   'percent': PercentIcon,
   'currency-dollar': CurrencyDollarIcon,
   'seal-warning': SealWarningIcon,
   'credit-card': CreditCardIcon,
   'package': PackageIcon,
+
 
 
   'chart-pie': ChartPieIcon,
