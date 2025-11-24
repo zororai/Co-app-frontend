@@ -110,7 +110,7 @@ class AuthClient {
 
     /**
      * Fetch all incidents
-     * GET http://localhost:1000/api/incident-management/all
+     * GET /api/incident-management/all
      */
     async fetchIncidents(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
@@ -136,7 +136,7 @@ class AuthClient {
 
     /**
      * Fetch incident details by ID
-     * GET http://localhost:1000/api/incident-management/{id}
+     * GET /api/incident-management/{id}
      */
     async fetchIncidentById(incidentId: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
@@ -163,7 +163,7 @@ class AuthClient {
 
     /**
      * Fetch incident count by period
-     * GET http://localhost:1000/api/incident-management/count?period={period}&value={value}&year={year}
+     * GET /api/incident-management/count?period={period}&value={value}&year={year}
      */
     async fetchIncidentCount(period: string, value: number, year: number): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -189,7 +189,7 @@ class AuthClient {
 
     /**
      * Fetch incident count by severity
-     * GET http://localhost:1000/api/incident-management/count-by-severity?period={period}
+     * GET /api/incident-management/count-by-severity?period={period}
      */
     async fetchIncidentCountBySeverity(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -215,7 +215,7 @@ class AuthClient {
 
     /**
      * Fetch shaft inspection counts by section
-     * GET http://localhost:1000/api/shaft-inspections/counts-by-section?period={period}
+     * GET /api/shaft-inspections/counts-by-section?period={period}
      */
     async fetchShaftInspectionCountsBySection(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -241,7 +241,7 @@ class AuthClient {
 
     /**
      * Fetch shaft inspection counts by type
-     * GET http://localhost:1000/api/shaft-inspections/counts-by-type?period={period}
+     * GET /api/shaft-inspections/counts-by-type?period={period}
      */
     async fetchShaftInspectionCountsByType(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -267,7 +267,7 @@ class AuthClient {
 
     /**
      * Fetch contraventions statistics by status
-     * GET http://localhost:1000/api/contraventions/stats/status?period={period}
+     * GET /api/contraventions/stats/status?period={period}
      */
     async fetchContraventionsStatsByStatus(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -1437,7 +1437,7 @@ class AuthClient {
 
     /**
      * Create an incident record
-     * POST http://localhost:1000/api/incident-management/create
+     * POST /api/incident-management/create
      */
     async createIncident(payload: {
       incidentTitle: string;
@@ -1491,7 +1491,7 @@ class AuthClient {
 
     /**
      * Resolve an incident by ID
-     * PUT http://localhost:1000/api/incident-management/{id}/resolve?resolution={resolution}
+     * PUT /api/incident-management/{id}/resolve?resolution={resolution}
      */
     async resolveIncident(incidentId: string, resolution: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -6235,19 +6235,26 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { success: false, error: 'Authentication required. Please sign in first.' };
     }
     try {
+
       const response = await fetch('/api/sections/status/approved', {
         method: 'GET',
         headers: {
           'Accept': '*/*',
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        credentials: 'include',
       });
+            console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Request failed');
-        return { success: false, error: errorText || 'Failed to fetch approved sections' };
+        console.error('API Error Response:', errorText);
+        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
       }
+      
       const data = await response.json().catch(() => []);
+      console.log('Parsed data:', data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       console.error('Error fetching approved sections:', error);
@@ -6491,7 +6498,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'GET',
         headers: {
           'Accept': '*/*',
@@ -6525,7 +6532,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
     
     try {
-      const response = await fetch('http://localhost:1000/api/trainers', {
+      const response = await fetch('/api/trainers', {
         method: 'GET',
         headers: {
           'Accept': '*/*',
@@ -6559,7 +6566,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: {
           'Accept': '*/*',
@@ -6608,7 +6615,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Accept': '*/*',
@@ -6660,7 +6667,7 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
     
     try {
-      const response = await fetch('http://localhost:1000/api/trainers', {
+      const response = await fetch('/api/trainers', {
         method: 'POST',
         headers: {
           'Accept': '*/*',
@@ -7410,6 +7417,37 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
       return { success: false, error: 'Empty or invalid response' };
     } catch (error) {
       console.error('Error fetching total mining area:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Fetch section coordinates with boundaries and shafts
+   */
+  async fetchSectionCoordinatesWithBoundaries(sectionName: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        return { success: false, error: 'No authentication token found' };
+      }
+
+      const response = await fetch(`/api/shaft-assignments/coordinates-with-boundaries/section/${encodeURIComponent(sectionName)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'accept': '*/*'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching section coordinates with boundaries:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }

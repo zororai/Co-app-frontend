@@ -78,6 +78,7 @@ export const allNavItems = [
      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
      { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
      { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
+     { key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'id-card' },
     
     ],
   },
