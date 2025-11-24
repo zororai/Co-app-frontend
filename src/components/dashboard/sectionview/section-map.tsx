@@ -361,42 +361,6 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
               )}
             </Box>
             
-            {/* Fallback: Show shaft data in table format */}
-            {shaftData.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Shaft Details
-                </Typography>
-                <Box sx={{ display: 'grid', gap: 2 }}>
-                  {shaftData.filter(shaft => shaft.latitude !== 0 && shaft.longitude !== 0).map((shaft, index) => (
-                    <Paper key={index} sx={{ p: 2 }}>
-                      <Typography variant="subtitle1" gutterBottom>
-                        Shaft {shaft.shaftNumbers}
-                      </Typography>
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 1 }}>
-                        <Typography variant="body2">
-                          <strong>ID:</strong> {shaft.shaftId}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Status:</strong> {shaft.status}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Assign Status:</strong> {shaft.assignStatus}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Coordinates:</strong> {shaft.latitude.toFixed(6)}, {shaft.longitude.toFixed(6)}
-                        </Typography>
-                        {shaft.minerId && (
-                          <Typography variant="body2">
-                            <strong>Miner ID:</strong> {shaft.minerId}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Paper>
-                  ))}
-                </Box>
-              </Box>
-            )}
             
             {shaftData.length === 0 && (
               <Alert severity="info" sx={{ mt: 2 }}>
