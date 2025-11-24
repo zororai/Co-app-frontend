@@ -11,8 +11,11 @@ import {
   CircularProgress,
   Paper,
   Divider,
-  Button
+  Button,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import { Print as PrintIcon } from '@mui/icons-material';
 import { authClient } from '@/lib/auth/client';
 
 interface Point {
@@ -164,6 +167,172 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
       setError('Failed to initialize map manually: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }, [initAttempts]);
+
+  // Print function
+  const handlePrint = useCallback(() => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const validShafts = shaftData.filter(shaft => shaft.latitude !== 0 && shaft.longitude !== 0);
+    const currentDate = new Date().toLocaleDateString();
+    const currentTime = new Date().toLocaleTimeString();
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Section Map Report - ${sectionName}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              color: #333;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 2px solid #1976d2;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .section-info {
+              background-color: #f5f5f5;
+              padding: 15px;
+              border-radius: 5px;
+              margin-bottom: 20px;
+            }
+            .legend {
+              border: 1px solid #ddd;
+              padding: 15px;
+              margin-bottom: 20px;
+              border-radius: 5px;
+            }
+            .legend-item {
+              display: flex;
+              align-items: center;
+              margin-bottom: 10px;
+            }
+            .legend-color {
+              width: 20px;
+              height: 20px;
+              margin-right: 10px;
+              border: 1px solid #ccc;
+            }
+            .shaft-list {
+              margin-top: 20px;
+            }
+            .shaft-item {
+              border: 1px solid #ddd;
+              padding: 10px;
+              margin-bottom: 10px;
+              border-radius: 3px;
+            }
+            .instructions {
+              background-color: #e3f2fd;
+              padding: 15px;
+              border-radius: 5px;
+              margin-top: 20px;
+            }
+            .footer {
+              margin-top: 30px;
+              text-align: center;
+              font-size: 12px;
+              color: #666;
+              border-top: 1px solid #ddd;
+              padding-top: 15px;
+            }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Section Map Report</h1>
+            <h2>${sectionName}</h2>
+            <p>Generated on ${currentDate} at ${currentTime}</p>
+          </div>
+
+          <div class="section-info">
+            <h3>Current Section Information</h3>
+            <p><strong>Section Name:</strong> ${sectionName}</p>
+            <p><strong>Total Shafts:</strong> ${shaftData.length}</p>
+            <p><strong>Shafts with Valid Coordinates:</strong> ${validShafts.length}</p>
+            <p><strong>Report Date:</strong> ${currentDate}</p>
+            <p><strong>Report Time:</strong> ${currentTime}</p>
+          </div>
+
+          <div class="legend">
+            <h3>Map Legend</h3>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #ff4444; border-radius: 50%;"></div>
+              <span><strong>Red Markers:</strong> Shaft Locations</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #2196F3; opacity: 0.3;"></div>
+              <span><strong>Blue Areas:</strong> Section Boundaries</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #4CAF50;"></div>
+              <span><strong>Green Status:</strong> Active Shafts</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #FF9800;"></div>
+              <span><strong>Orange Status:</strong> Pending Shafts</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background-color: #f44336;"></div>
+              <span><strong>Red Status:</strong> Inactive Shafts</span>
+            </div>
+          </div>
+
+          <div class="shaft-list">
+            <h3>Shaft Details (${validShafts.length} shafts with coordinates)</h3>
+            ${validShafts.map(shaft => `
+              <div class="shaft-item">
+                <h4>Shaft ${shaft.shaftNumbers}</h4>
+                <p><strong>ID:</strong> ${shaft.shaftId}</p>
+                <p><strong>Status:</strong> ${shaft.status}</p>
+                <p><strong>Assignment Status:</strong> ${shaft.assignStatus}</p>
+                <p><strong>Coordinates:</strong> ${shaft.latitude.toFixed(6)}, ${shaft.longitude.toFixed(6)}</p>
+                ${shaft.minerId ? `<p><strong>Miner ID:</strong> ${shaft.minerId}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="instructions">
+            <h3>Instructions</h3>
+            <ul>
+              <li><strong>Map Navigation:</strong> Use mouse to pan and zoom the interactive map</li>
+              <li><strong>Shaft Information:</strong> Click on red markers to view detailed shaft information</li>
+              <li><strong>Section Boundaries:</strong> Blue shaded areas represent the section boundaries</li>
+              <li><strong>Status Colors:</strong> Shaft markers may vary in color based on their operational status</li>
+              <li><strong>Coordinates:</strong> All coordinates are displayed in decimal degrees format</li>
+              <li><strong>Data Accuracy:</strong> This report shows shafts with valid coordinate data only</li>
+              <li><strong>Updates:</strong> Select a different section to view updated information</li>
+            </ul>
+          </div>
+
+          <div class="footer">
+            <p>This report was generated from the Human Resource Management System</p>
+            <p>Section View Module - Mining Operations Dashboard</p>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  }, [sectionName, shaftData]);
 
   // Debug effect to track data changes
   useEffect(() => {
@@ -448,10 +617,19 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
         
         {!loading && !error && (
           <>
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body2" color="text.secondary">
                 Found {shaftData.length} shaft(s) in section {sectionName}
               </Typography>
+              <Tooltip title="Print Section Report">
+                <IconButton 
+                  onClick={handlePrint}
+                  color="primary"
+                  disabled={!sectionName || shaftData.length === 0}
+                >
+                  <PrintIcon />
+                </IconButton>
+              </Tooltip>
             </Box>
             
             <Box 
