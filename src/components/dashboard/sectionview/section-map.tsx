@@ -13,8 +13,11 @@ import {
   Divider
 } from '@mui/material';
 import { authClient } from '@/lib/auth/client';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
+
+// Dynamically import Leaflet to avoid SSR issues
+let L: any = null;
+let leafletLoaded = false;
 
 interface Point {
   x: number;
@@ -87,22 +90,73 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
     }
   }, [sectionName, fetchSectionData]);
 
+  // Load Leaflet dynamically
+  const loadLeaflet = async () => {
+    if (leafletLoaded && L) return L;
+    
+    try {
+      console.log('Loading Leaflet...');
+      
+      // Import Leaflet dynamically
+      const leaflet = await import('leaflet');
+      await import('leaflet/dist/leaflet.css');
+      
+      L = leaflet.default;
+      
+      // Fix for default markers in Next.js
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+      
+      leafletLoaded = true;
+      console.log('Leaflet loaded successfully');
+      return L;
+    } catch (error) {
+      console.error('Error loading Leaflet:', error);
+      return null;
+    }
+  };
+
   // Initialize map
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
-    // Create map
-    const map = L.map(mapRef.current).setView(defaultCenter, defaultZoom);
+    console.log('Initializing Leaflet map...');
+    
+    const initMap = async () => {
+      const leaflet = await loadLeaflet();
+      if (!leaflet || !mapRef.current) return;
+      
+      try {
+        // Create map
+        const map = leaflet.map(mapRef.current).setView(defaultCenter, defaultZoom);
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+        // Add tile layer
+        leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
 
-    mapInstanceRef.current = map;
+        mapInstanceRef.current = map;
+        console.log('Map initialized successfully');
+        
+        // Force resize to ensure proper rendering
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 100);
+        
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    };
+    
+    initMap();
 
     return () => {
       if (mapInstanceRef.current) {
+        console.log('Cleaning up map...');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -111,12 +165,23 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
 
   // Update map with shaft data
   useEffect(() => {
-    if (!mapInstanceRef.current || !shaftData.length) return;
+    console.log('Shaft data updated:', shaftData.length, 'shafts');
+    
+    if (!mapInstanceRef.current || !L) {
+      console.log('Map or Leaflet not ready yet');
+      return;
+    }
+    
+    if (!shaftData.length) {
+      console.log('No shaft data available');
+      return;
+    }
 
     const map = mapInstanceRef.current;
+    console.log('Updating map with', shaftData.length, 'shafts');
     
     // Clear existing layers
-    map.eachLayer((layer) => {
+    map.eachLayer((layer: any) => {
       if (layer instanceof L.Marker || layer instanceof L.Polygon) {
         map.removeLayer(layer);
       }
@@ -151,8 +216,13 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
     const validShafts = shaftData.filter(shaft => 
       shaft.latitude !== 0 && shaft.longitude !== 0
     );
+    
+    console.log('Valid shafts with coordinates:', validShafts.length);
+    console.log('Sample shaft data:', validShafts[0]);
 
-    validShafts.forEach(shaft => {
+    validShafts.forEach((shaft, index) => {
+      console.log(`Adding marker ${index + 1}:`, shaft.latitude, shaft.longitude);
+      
       const marker = L.marker([shaft.latitude, shaft.longitude])
         .addTo(map)
         .bindPopup(`
@@ -166,6 +236,8 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
             ${shaft.minerId ? `<p><strong>Miner ID:</strong> ${shaft.minerId}</p>` : ''}
           </div>
         `);
+        
+      console.log('Marker added successfully');
     });
 
     // Fit map to show all shafts
