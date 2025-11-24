@@ -10,7 +10,8 @@ import {
   Alert,
   CircularProgress,
   Paper,
-  Divider
+  Divider,
+  Button
 } from '@mui/material';
 import { authClient } from '@/lib/auth/client';
 
@@ -57,6 +58,7 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [initAttempts, setInitAttempts] = useState(0);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const leafletRef = useRef<any>(null);
@@ -87,6 +89,82 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
     }
   }, [sectionName, fetchSectionData]);
 
+  // Manual map initialization function
+  const initializeMap = useCallback(async () => {
+    if (!mapRef.current) {
+      console.log('Cannot initialize: Map ref not available');
+      return;
+    }
+
+    if (mapInstanceRef.current) {
+      console.log('Map already exists, cleaning up first...');
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+      setMapReady(false);
+    }
+
+    setInitAttempts(prev => prev + 1);
+    console.log('Manual initialization attempt:', initAttempts + 1);
+
+    try {
+      console.log('Starting manual map initialization...');
+      
+      // Import Leaflet dynamically
+      const leaflet = await import('leaflet');
+      console.log('Leaflet module loaded manually');
+      
+      await import('leaflet/dist/leaflet.css');
+      console.log('Leaflet CSS loaded manually');
+      
+      const L = leaflet.default;
+      console.log('Leaflet default available:', !!L);
+      
+      leafletRef.current = L;
+      
+      // Fix for default markers in Next.js
+      try {
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        });
+        console.log('Leaflet icons configured manually');
+      } catch (iconError) {
+        console.warn('Icon configuration failed:', iconError);
+      }
+      
+      console.log('Creating map instance manually...');
+      
+      // Create map
+      const map = L.map(mapRef.current).setView(defaultCenter, defaultZoom);
+      console.log('Map created successfully manually');
+
+      // Add tile layer
+      console.log('Adding tile layer manually...');
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      console.log('Tile layer added manually');
+
+      mapInstanceRef.current = map;
+      console.log('Map instance stored in ref manually');
+      
+      setMapReady(true);
+      console.log('Map ready state set to true manually');
+      
+      // Force resize to ensure proper rendering
+      setTimeout(() => {
+        console.log('Invalidating map size manually');
+        map.invalidateSize();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Error during manual map initialization:', error);
+      setError('Failed to initialize map manually: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  }, [initAttempts]);
+
   // Debug effect to track data changes
   useEffect(() => {
     console.log('Shaft data changed:', {
@@ -98,55 +176,90 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
 
   // Initialize map
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    console.log('Map initialization effect triggered');
+    console.log('Map ref current:', !!mapRef.current);
+    console.log('Map instance exists:', !!mapInstanceRef.current);
+    
+    if (!mapRef.current) {
+      console.log('Map ref not available yet');
+      return;
+    }
+    
+    if (mapInstanceRef.current) {
+      console.log('Map already initialized');
+      return;
+    }
 
     const initMap = async () => {
       try {
+        console.log('Starting map initialization...');
         console.log('Loading Leaflet...');
         
         // Import Leaflet dynamically
         const leaflet = await import('leaflet');
+        console.log('Leaflet module loaded');
+        
         await import('leaflet/dist/leaflet.css');
+        console.log('Leaflet CSS loaded');
         
         const L = leaflet.default;
+        console.log('Leaflet default:', !!L);
+        
         leafletRef.current = L;
         
         // Fix for default markers in Next.js
-        delete (L.Icon.Default.prototype as any)._getIconUrl;
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        });
+        try {
+          delete (L.Icon.Default.prototype as any)._getIconUrl;
+          L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+          });
+          console.log('Leaflet icons configured');
+        } catch (iconError) {
+          console.warn('Icon configuration failed:', iconError);
+        }
         
-        console.log('Initializing map...');
+        console.log('Creating map instance...');
+        console.log('Map container element:', mapRef.current);
         
         // Create map
         const map = L.map(mapRef.current!).setView(defaultCenter, defaultZoom);
+        console.log('Map created successfully');
 
         // Add tile layer
+        console.log('Adding tile layer...');
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors'
         }).addTo(map);
+        console.log('Tile layer added');
 
         mapInstanceRef.current = map;
+        console.log('Map instance stored in ref');
+        
         setMapReady(true);
-        console.log('Map initialized successfully');
+        console.log('Map ready state set to true');
         
         // Force resize to ensure proper rendering
         setTimeout(() => {
+          console.log('Invalidating map size');
           map.invalidateSize();
         }, 100);
         
       } catch (error) {
-        console.error('Error initializing map:', error);
-        setError('Failed to initialize map');
+        console.error('Error during map initialization:', error);
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        setError('Failed to initialize map: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
     };
     
-    initMap();
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initMap();
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         console.log('Cleaning up map...');
         mapInstanceRef.current.remove();
@@ -351,13 +464,30 @@ export default function SectionMap({ sectionName }: SectionMapProps) {
                 backgroundColor: '#f5f5f5',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                position: 'relative'
               }} 
             >
-              {!mapInstanceRef.current && (
-                <Typography variant="body2" color="text.secondary">
-                  Loading map...
-                </Typography>
+              {!mapReady && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <CircularProgress size={40} sx={{ mb: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Initializing map...
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    Map Ready: {mapReady ? 'Yes' : 'No'} | 
+                    Has Map: {!!mapInstanceRef.current ? 'Yes' : 'No'} | 
+                    Has Leaflet: {!!leafletRef.current ? 'Yes' : 'No'}
+                  </Typography>
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={initializeMap}
+                    sx={{ mt: 2 }}
+                  >
+                    Retry Map Initialization ({initAttempts})
+                  </Button>
+                </Box>
               )}
             </Box>
             
