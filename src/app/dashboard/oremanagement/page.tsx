@@ -11,6 +11,12 @@ import Tab from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
@@ -54,26 +60,38 @@ function ApprovedTab({ customers, page, rowsPerPage, onRefresh, refreshKey }: { 
   );
 }
 
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
+import { useSearchParams } from 'next/navigation';
 import { LazyRegMinerDialog, LazyAddOreManagementDialog } from '@/components/lazy/LazyComponents';
 import { authClient } from '@/lib/auth/client';
+import { generateSampleOreData } from '@/utils/generateSampleOreData';
 
 
 export default function Page(): React.JSX.Element {
+  const searchParams = useSearchParams();
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
   const [customers, setCustomers] = React.useState<Customer[]>([]);
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [tab, setTab] = React.useState<'PENDING' | 'PUSHED_BACK' | 'REJECTED' | 'APPROVED'>('PENDING');
+  const [sampleOreDialogOpen, setSampleOreDialogOpen] = React.useState(searchParams?.get('generateSample') === 'true');
 
   // Function to refresh the miner data
   const refreshData = React.useCallback(() => {
     setRefreshKey(prevKey => prevKey + 1);
+  }, []);
+
+  // Listen for sample ore generation event
+  React.useEffect(() => {
+    const handleOpenSampleOreDialog = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail?.action === 'generate-sample-ore') {
+        setSampleOreDialogOpen(true);
+      }
+    };
+
+    window.addEventListener('openOreGeneratorDialog', handleOpenSampleOreDialog);
+    return () => window.removeEventListener('openOreGeneratorDialog', handleOpenSampleOreDialog);
   }, []);
 
   // Filter customers by selected tab/status
@@ -204,6 +222,81 @@ export default function Page(): React.JSX.Element {
       <LazyWrapper>
         <LazyRegMinerDialog open={open} onClose={() => setOpen(false)} />
       </LazyWrapper>
+      
+      {/* Sample Ore Dialog - displays sample data info */}
+      <Dialog 
+        open={sampleOreDialogOpen} 
+        onClose={() => setSampleOreDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: 'secondary.main',
+          color: 'white'
+        }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
+            Generate Sample Ore Data
+          </Typography>
+          <IconButton 
+            edge="end" 
+            color="inherit" 
+            onClick={() => setSampleOreDialogOpen(false)}
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Typography variant="body1" paragraph>
+            This will create 120 sample ore records with the following specifications:
+          </Typography>
+          <Box component="ul" sx={{ pl: 3, mb: 2 }}>
+            <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+              10 records per month for all 12 months of 2025
+            </Typography>
+            <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+              Weights ranging from 35,000 to 45,000 kg
+            </Typography>
+            <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+              Random dates distributed throughout each month
+            </Typography>
+            <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+              Default status: Pending
+            </Typography>
+            <Typography component="li" variant="body2">
+              Processing tax: 5%
+            </Typography>
+          </Box>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            The records will be created in batches and this may take a minute or two depending on your connection.
+          </Alert>
+        </DialogContent>
+        <Box sx={{ px: 3, pb: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+          <Button 
+            variant="outlined"
+            onClick={() => setSampleOreDialogOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="contained"
+            onClick={() => {
+              setSampleOreDialogOpen(false);
+              setOpen(true);
+            }}
+            sx={{
+              bgcolor: 'secondary.main',
+              color: 'white',
+              '&:hover': { bgcolor: 'secondary.dark' }
+            }}
+          >
+            Open Add Ore Dialog
+          </Button>
+        </Box>
+      </Dialog>
     </Stack>
   );
 }
