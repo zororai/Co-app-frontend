@@ -19,11 +19,7 @@ import {
 import { authClient } from '@/lib/auth/client';
 
 interface Section {
-  id: string;
-  name: string;
-  status: string;
-  area?: string;
-  country?: string;
+  sectionName: string;
 }
 
 interface SectionSelectionDialogProps {
@@ -128,18 +124,9 @@ export default function SectionSelectionDialog({
                 onChange={handleSectionChange}
                 disabled={sections.length === 0}
               >
-                {sections.map((section) => (
-                  <MenuItem key={section.id} value={section.name}>
-                    <Box>
-                      <Typography variant="body1">
-                        {section.name}
-                      </Typography>
-                      {section.area && (
-                        <Typography variant="caption" color="text.secondary">
-                          Area: {section.area}
-                        </Typography>
-                      )}
-                    </Box>
+                {sections.map((section, index) => (
+                  <MenuItem key={index} value={section.sectionName}>
+                    {section.sectionName}
                   </MenuItem>
                 ))}
               </Select>
