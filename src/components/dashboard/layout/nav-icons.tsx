@@ -32,6 +32,8 @@ import { SealWarningIcon } from '@phosphor-icons/react/dist/ssr/SealWarning';
 import { CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
 import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
+import { ChartLineIcon } from '@phosphor-icons/react/dist/ssr/ChartLine';
+import { FileTextIcon } from '@phosphor-icons/react/dist/ssr/FileText';
 
 import { ClipboardTextIcon } from '@phosphor-icons/react/dist/ssr/ClipboardText';
 import { GraduationCapIcon } from '@phosphor-icons/react/dist/ssr/GraduationCap';
@@ -43,6 +45,10 @@ export const navIcons = {
   'seal-warning': SealWarningIcon,
   'credit-card': CreditCardIcon,
   'package': PackageIcon,
+
+'chart-line': ChartLineIcon,
+'file-text': FileTextIcon,
+'map-trifold': MapTrifoldIcon,
 
 
   'clipboard-text': ClipboardTextIcon,
@@ -61,7 +67,7 @@ export const navIcons = {
   'road-horizon': RoadHorizonIcon,
   'plugs-connected': PlugsConnectedIcon,
   'chart-bar': ChartBarIcon,
-  'map-trifold': MapTrifoldIcon,
+
   
   'x-square': XSquare,
   'shield': ShieldCheckIcon,
