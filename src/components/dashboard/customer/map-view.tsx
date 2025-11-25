@@ -34,25 +34,42 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
 
   // Filter assignments that have valid coordinates
   const validAssignments = React.useMemo(() => {
-    const filtered = assignments.filter(assignment => 
-      assignment.latitude && 
-      assignment.longitude && 
-      !isNaN(assignment.latitude) && 
-      !isNaN(assignment.longitude) &&
-      assignment.latitude !== 0 &&
-      assignment.longitude !== 0
-    );
+    console.log('MapView: Processing assignments:', assignments);
+    
+    const filtered = assignments.filter((assignment, index) => {
+      const lat = Number(assignment.latitude);
+      const lng = Number(assignment.longitude);
+      
+      console.log(`MapView: Assignment ${index}:`, {
+        id: assignment.id,
+        shaftNumbers: assignment.shaftNumbers,
+        latitude: assignment.latitude,
+        longitude: assignment.longitude,
+        latNum: lat,
+        lngNum: lng,
+        isValidLat: !isNaN(lat) && lat !== 0 && lat >= -90 && lat <= 90,
+        isValidLng: !isNaN(lng) && lng !== 0 && lng >= -180 && lng <= 180
+      });
+      
+      const isValid = assignment.latitude != null && 
+                     assignment.longitude != null && 
+                     !isNaN(lat) && 
+                     !isNaN(lng) &&
+                     lat !== 0 &&
+                     lng !== 0 &&
+                     lat >= -90 && lat <= 90 &&
+                     lng >= -180 && lng <= 180;
+      
+      if (isValid) {
+        console.log(`MapView: ✅ Valid assignment found:`, { lat, lng, shaft: assignment.shaftNumbers });
+      } else {
+        console.log(`MapView: ❌ Invalid assignment:`, { lat, lng, shaft: assignment.shaftNumbers });
+      }
+      
+      return isValid;
+    });
 
-    // For testing: if no valid assignments, create sample data
-    if (filtered.length === 0 && assignments.length > 0) {
-      console.log('MapView: No valid coordinates found, creating sample data for testing');
-      return assignments.map((assignment, index) => ({
-        ...assignment,
-        latitude: -26.2041 + (index * 0.1), // Johannesburg area with slight offsets
-        longitude: 28.0473 + (index * 0.1)
-      }));
-    }
-
+    console.log(`MapView: Filtered ${filtered.length} valid assignments from ${assignments.length} total`);
     return filtered;
   }, [assignments]);
 
@@ -156,11 +173,21 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
           // Set initial view
           if (validAssignments.length > 0) {
             console.log('MapView: Setting bounds for assignments:', validAssignments);
-            // Calculate bounds to fit all markers
-            const bounds = L.latLngBounds(
-              validAssignments.map(assignment => [assignment.latitude!, assignment.longitude!])
-            );
-            map.fitBounds(bounds, { padding: [20, 20] });
+            
+            if (validAssignments.length === 1) {
+              // For single assignment, center on the coordinates with appropriate zoom
+              const assignment = validAssignments[0];
+              const lat = Number(assignment.latitude);
+              const lng = Number(assignment.longitude);
+              console.log(`MapView: Centering on single assignment: ${lat}, ${lng}`);
+              map.setView([lat, lng], 14); // Increased zoom for better visibility
+            } else {
+              // Calculate bounds to fit all markers
+              const bounds = L.latLngBounds(
+                validAssignments.map(assignment => [Number(assignment.latitude), Number(assignment.longitude)])
+              );
+              map.fitBounds(bounds, { padding: [20, 20] });
+            }
           } else {
             console.log('MapView: No valid assignments, using default view');
             // Default view (South Africa center)
@@ -209,8 +236,22 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
         markersRef.current = [];
 
         // Add markers for valid assignments
+        console.log('MapView: About to create markers for assignments:', validAssignments);
+        
         validAssignments.forEach((assignment, index) => {
-          if (assignment.latitude && assignment.longitude) {
+          const lat = Number(assignment.latitude);
+          const lng = Number(assignment.longitude);
+          
+          console.log(`MapView: Processing marker ${index}:`, {
+            assignment,
+            lat,
+            lng,
+            shaft: assignment.shaftNumbers,
+            isValidNumbers: !isNaN(lat) && !isNaN(lng)
+          });
+          
+          if (!isNaN(lat) && !isNaN(lng)) {
+            console.log(`MapView: ✅ Creating marker at [${lat}, ${lng}]`);
             // Determine marker color based on status
             const getMarkerColor = (status: string) => {
               switch (status) {
@@ -224,83 +265,56 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
             const markerColor = getMarkerColor(assignment.status || '');
             const pulseColor = markerColor + '40'; // Add transparency for pulse effect
 
-            // Create enhanced custom icon with status-based colors and animations
+            // Create multiple marker types to ensure visibility
+            
+            // 1. Default Leaflet marker (guaranteed to work)
+            const defaultMarker = L.marker([lat, lng]).addTo(mapInstanceRef.current);
+            defaultMarker.bindPopup(`
+              <strong>Shaft: ${assignment.shaftNumbers || 'N/A'}</strong><br>
+              Status: ${assignment.status || 'Unknown'}<br>
+              Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+            `);
+            markersRef.current.push(defaultMarker);
+            console.log(`MapView: ✅ Default marker created at [${lat}, ${lng}]`);
+
+            // 2. Custom styled marker
             const customIcon = L.divIcon({
               html: `
-                <div class="marker-container" style="position: relative;">
-                  <!-- Pulse animation ring -->
-                  <div style="
-                    position: absolute;
-                    top: -8px;
-                    left: -8px;
-                    width: 48px;
-                    height: 48px;
-                    background-color: ${pulseColor};
-                    border-radius: 50%;
-                    animation: pulse 2s infinite;
-                  "></div>
-                  
-                  <!-- Main marker -->
-                  <div style="
-                    background: linear-gradient(135deg, ${markerColor}, ${markerColor}dd);
-                    color: white;
-                    border-radius: 50%;
-                    width: 36px;
-                    height: 36px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: bold;
-                    font-size: 13px;
-                    border: 3px solid white;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-                    position: relative;
-                    z-index: 10;
-                    transition: all 0.3s ease;
-                  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                    ${assignment.shaftNumbers || (index + 1)}
-                  </div>
-                  
-                  <!-- Status indicator dot -->
-                  <div style="
-                    position: absolute;
-                    top: -2px;
-                    right: -2px;
-                    width: 12px;
-                    height: 12px;
-                    background-color: ${markerColor};
-                    border: 2px solid white;
-                    border-radius: 50%;
-                    z-index: 15;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                  "></div>
+                <div style="
+                  background-color: ${markerColor};
+                  color: white;
+                  border-radius: 50%;
+                  width: 50px;
+                  height: 50px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: bold;
+                  font-size: 18px;
+                  border: 5px solid white;
+                  box-shadow: 0 6px 20px rgba(0,0,0,0.8);
+                  position: relative;
+                  z-index: 2000;
+                  transform: translateZ(0);
+                ">
+                  ${assignment.shaftNumbers || (index + 1)}
                 </div>
-                
-                <style>
-                  @keyframes pulse {
-                    0% {
-                      transform: scale(0.8);
-                      opacity: 1;
-                    }
-                    50% {
-                      transform: scale(1.2);
-                      opacity: 0.3;
-                    }
-                    100% {
-                      transform: scale(0.8);
-                      opacity: 1;
-                    }
-                  }
-                </style>
               `,
-              className: 'enhanced-shaft-marker',
-              iconSize: [36, 36],
-              iconAnchor: [18, 18],
+              className: 'visible-shaft-marker',
+              iconSize: [50, 50],
+              iconAnchor: [25, 25],
             });
 
-            const marker = L.marker([assignment.latitude, assignment.longitude], {
-              icon: customIcon
+            const marker = L.marker([lat, lng], {
+              icon: customIcon,
+              zIndexOffset: 1000
             }).addTo(mapInstanceRef.current);
+            
+            console.log(`MapView: ✅ Marker created and added to map:`, {
+              position: [lat, lng],
+              shaft: assignment.shaftNumbers,
+              markerObject: marker
+            });
 
             // Create enhanced popup content
             const popupContent = `
@@ -404,8 +418,8 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
                       <strong style="font-size: 12px; color: #495057;">GPS Coordinates</strong>
                     </div>
                     <div style="font-family: 'Courier New', monospace; font-size: 11px; color: #6c757d; background-color: white; padding: 4px 8px; border-radius: 4px; border: 1px solid #e9ecef;">
-                      Lat: ${assignment.latitude?.toFixed(6)}<br>
-                      Lng: ${assignment.longitude?.toFixed(6)}
+                      Lat: ${lat.toFixed(6)}<br>
+                      Lng: ${lng.toFixed(6)}
                     </div>
                   </div>
                 </div>
@@ -418,16 +432,62 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
             });
 
             markersRef.current.push(marker);
+            
+            // 3. Add a circle marker for extra visibility
+            const circleMarker = L.circleMarker([lat, lng], {
+              radius: 15,
+              fillColor: markerColor,
+              color: 'white',
+              weight: 3,
+              opacity: 1,
+              fillOpacity: 0.8
+            }).addTo(mapInstanceRef.current);
+            circleMarker.bindPopup(`Circle: ${assignment.shaftNumbers || 'N/A'}`);
+            markersRef.current.push(circleMarker);
+            console.log(`MapView: ✅ Circle marker created at [${lat}, ${lng}]`);
+            
+            // 4. Force map to pan to this location
+            setTimeout(() => {
+              if (mapInstanceRef.current) {
+                mapInstanceRef.current.panTo([lat, lng]);
+                console.log(`MapView: 🎯 Map panned to marker location [${lat}, ${lng}]`);
+              }
+            }, 100);
+          } else {
+            console.log(`MapView: ❌ Skipping marker - invalid coordinates:`, { lat, lng });
           }
         });
+        
+        console.log(`MapView: Marker creation complete. Total markers: ${markersRef.current.length}`);
+
+        // Add a test marker to verify map is working (remove this in production)
+        if (process.env.NODE_ENV === 'development') {
+          try {
+            const testMarker = L.marker([-26.2041, 28.0473]).addTo(mapInstanceRef.current);
+            testMarker.bindPopup('🧪 Test Marker - Johannesburg<br>This confirms the map is working');
+            console.log('MapView: 🧪 Test marker added at Johannesburg');
+          } catch (testError) {
+            console.error('MapView: Test marker failed:', testError);
+          }
+        }
 
         // Adjust map view to fit all markers
         if (validAssignments.length > 0 && markersRef.current.length > 0) {
-          const group = L.featureGroup(markersRef.current);
-          mapInstanceRef.current.fitBounds(group.getBounds(), { 
-            padding: [20, 20],
-            maxZoom: 15 
-          });
+          if (validAssignments.length === 1) {
+            // For single marker, center directly on it
+            const assignment = validAssignments[0];
+            const lat = Number(assignment.latitude);
+            const lng = Number(assignment.longitude);
+            console.log(`MapView: Re-centering map on marker at [${lat}, ${lng}]`);
+            mapInstanceRef.current.setView([lat, lng], 14);
+          } else {
+            // For multiple markers, fit bounds
+            const group = L.featureGroup(markersRef.current);
+            mapInstanceRef.current.fitBounds(group.getBounds(), { 
+              padding: [20, 20],
+              maxZoom: 15 
+            });
+          }
         }
       } catch (error) {
         console.error('Error updating markers:', error);

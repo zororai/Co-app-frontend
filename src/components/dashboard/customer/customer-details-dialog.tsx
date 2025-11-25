@@ -720,9 +720,6 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
                       </Box>
                     ))}
                   </Box>
-                  
-                  {/* Overall Map View */}
-                  <MapView assignments={shaftAssignments} height={450} />
                 </>
               )}
             </Box>
