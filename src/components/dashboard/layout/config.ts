@@ -71,14 +71,13 @@ export const allNavItems = [
     title: 'SHE Management',
     icon: 'shield',
     items: [
-     { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
-      { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
-     { key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: 'id-card' },
-     { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'id-card' },
-     { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
-     { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
-     { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
-    
+      { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'seal-warning' },
+      { key: 'incidentresolve', title: 'Incident Resolution', href: paths.dashboard.resolveissue, icon: 'handshake' },
+      { key: 'guilty', title: 'Issue Admission of Guilty', href: paths.dashboard.guilty, icon: 'clipboard-text' },
+      { key: 'listissuedpenality', title: 'List of Issued Penality', href: paths.dashboard.listissuedpenality, icon: 'seal-warning' },
+      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'graduation-cap' },
+      { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'mountains' },
+      { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'shield-check' },
     ],
   },
 

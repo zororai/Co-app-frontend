@@ -33,7 +33,8 @@ import { CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
 import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
 
-
+import { ClipboardTextIcon } from '@phosphor-icons/react/dist/ssr/ClipboardText';
+import { GraduationCapIcon } from '@phosphor-icons/react/dist/ssr/GraduationCap';
 
 
 export const navIcons = {
@@ -44,6 +45,10 @@ export const navIcons = {
   'package': PackageIcon,
 
 
+  'clipboard-text': ClipboardTextIcon,
+  'graduation-cap': GraduationCapIcon,
+  'mountains': MountainsIcon,
+  'shield-check': ShieldCheckIcon,
 
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
