@@ -612,12 +612,11 @@ export function MapView({ assignments, height = 400 }: MapViewProps): React.JSX.
         </Typography>
         
         {/* Status-based marker legend */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 2 }}>
           {[
             { status: 'APPROVED', color: '#4caf50', label: 'Approved' },
             { status: 'PENDING', color: '#ff9800', label: 'Pending' },
-            { status: 'REJECTED', color: '#f44336', label: 'Rejected' },
-            { status: 'DEFAULT', color: theme.palette.secondary.main, label: 'No Status' }
+            { status: 'REJECTED', color: '#f44336', label: 'Rejected' }
           ].map((item) => (
             <Box key={item.status} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Box sx={{
