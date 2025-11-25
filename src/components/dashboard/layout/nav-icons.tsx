@@ -25,7 +25,7 @@ import { BriefcaseIcon } from '@phosphor-icons/react/dist/ssr/Briefcase';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowsLeftRight';
 import { UserSwitchIcon } from '@phosphor-icons/react/dist/ssr/UserSwitch';
 import { PlusCircleIcon } from '@phosphor-icons/react/dist/ssr/PlusCircle';
-
+import { EyeIcon } from '@phosphor-icons/react/dist/ssr/Eye';
 import { PercentIcon } from '@phosphor-icons/react/dist/ssr/Percent';
 import { CurrencyDollarIcon } from '@phosphor-icons/react/dist/ssr/CurrencyDollar';
 import { SealWarningIcon } from '@phosphor-icons/react/dist/ssr/SealWarning';
@@ -34,7 +34,7 @@ import { PackageIcon } from '@phosphor-icons/react/dist/ssr/Package';
 
 import { ChartLineIcon } from '@phosphor-icons/react/dist/ssr/ChartLine';
 import { FileTextIcon } from '@phosphor-icons/react/dist/ssr/FileText';
-
+import { SealCheckIcon } from '@phosphor-icons/react/dist/ssr/SealCheck';
 import { ClipboardTextIcon } from '@phosphor-icons/react/dist/ssr/ClipboardText';
 import { GraduationCapIcon } from '@phosphor-icons/react/dist/ssr/GraduationCap';
 
@@ -55,7 +55,7 @@ export const navIcons = {
   'graduation-cap': GraduationCapIcon,
   'mountains': MountainsIcon,
   'shield-check': ShieldCheckIcon,
-
+'eye': EyeIcon,
   'chart-pie': ChartPieIcon,
   'gear-six': GearSixIcon,
   'plus-circle': PlusCircleIcon,
@@ -68,7 +68,7 @@ export const navIcons = {
   'plugs-connected': PlugsConnectedIcon,
   'chart-bar': ChartBarIcon,
 
-  
+  'seal-check': SealCheckIcon,
   'x-square': XSquare,
   'shield': ShieldCheckIcon,
   'factory': FactoryIcon,

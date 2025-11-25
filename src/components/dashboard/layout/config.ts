@@ -99,12 +99,9 @@ export const allNavItems = [
     title: 'Ore Management',
     icon: 'mountain',
     items: [
-      { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
-     { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
-      { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
-     
-   
-   
+      { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'clipboard-text' },
+      { key: 'ore-mill', title: 'Ore To Mill Assignment', href: paths.dashboard.millasignment, icon: 'arrows-left-right' },
+      { key: 'Sample Ore Approval', title: 'Sample Ore Approval', href: paths.dashboard.Sample_Ore_Approval, icon: 'seal-check' },
     ],
   },
   {
@@ -112,11 +109,9 @@ export const allNavItems = [
     title: 'Site Management',
     icon: 'map-trifold',
     items: [
-
-      { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
-      { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-      { key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'id-card' },
-    
+      { key: 'site-add', title: 'Create Mining Section', href: paths.dashboard.sectioncreation, icon: 'plus-circle' },
+      { key: 'Sectionmapping', title: 'Section Mapping', href: paths.dashboard.sectionmapping, icon: 'map-trifold' },
+      { key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'eye' },
     ],
   },
   {
