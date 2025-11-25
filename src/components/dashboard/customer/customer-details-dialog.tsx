@@ -694,12 +694,34 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
                               )}
                             </Box>
                           </Box>
+                          
+                          {/* Individual Shaft Map */}
+                          {assignment.latitude && assignment.longitude && 
+                           !isNaN(assignment.latitude) && !isNaN(assignment.longitude) &&
+                           assignment.latitude !== 0 && assignment.longitude !== 0 && (
+                            <Box sx={{ mt: 2, borderTop: `1px solid ${theme.palette.divider}`, pt: 2 }}>
+                              <Typography variant="caption" sx={{ 
+                                color: 'text.secondary', 
+                                fontSize: '0.65rem', 
+                                fontWeight: 600, 
+                                textTransform: 'uppercase',
+                                mb: 1,
+                                display: 'block'
+                              }}>
+                                📍 Location
+                              </Typography>
+                              <MapView 
+                                assignments={[assignment]} 
+                                height={180}
+                              />
+                            </Box>
+                          )}
                         </Box>
                       </Box>
                     ))}
                   </Box>
                   
-                  {/* Map View */}
+                  {/* Overall Map View */}
                   <MapView assignments={shaftAssignments} height={450} />
                 </>
               )}
