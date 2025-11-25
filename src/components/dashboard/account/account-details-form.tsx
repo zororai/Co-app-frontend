@@ -195,15 +195,11 @@ export function AccountDetailsForm(): React.JSX.Element {
 
   const currentPermissions = userData.permissions?.map(p => p.permission) || [];
   const newPermissions = selectedPermissions.filter(p => !currentPermissions.includes(p));
-  const isAdmin = userData.role === 'admin';
 
   return (
     <form onSubmit={handleSubmit}>
       <Card>
-        <CardHeader 
-          subheader={isAdmin ? "The information can be edited" : "View your profile information"} 
-          title="Profile" 
-        />
+        <CardHeader subheader="The information can be edited" title="Profile" />
         <Divider />
         <CardContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -217,8 +213,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.name} 
                   label="First name" 
                   name="firstName" 
-                  readOnly={!isAdmin}
-                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -229,8 +223,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.surname} 
                   label="Last name" 
                   name="lastName" 
-                  readOnly={!isAdmin}
-                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -241,8 +233,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.email} 
                   label="Email address" 
                   name="email" 
-                  readOnly={!isAdmin}
-                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -254,8 +244,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Phone number" 
                   name="phone" 
                   type="tel" 
-                  readOnly={!isAdmin}
-                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -267,7 +255,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Position" 
                   name="position" 
                   variant="outlined"
-                  disabled={!isAdmin}
                 >
                   {positions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -285,7 +272,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Role" 
                   name="role" 
                   variant="outlined"
-                  disabled={!isAdmin}
                 >
                   {roles.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -304,8 +290,6 @@ export function AccountDetailsForm(): React.JSX.Element {
                   name="address"
                   multiline
                   rows={2}
-                  readOnly={!isAdmin}
-                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -357,17 +341,15 @@ export function AccountDetailsForm(): React.JSX.Element {
           )}
         </CardContent>
         <Divider />
-        {isAdmin && (
-          <CardActions sx={{ justifyContent: 'flex-end' }}>
-            <Button 
-              variant="contained" 
-              type="submit"
-              disabled={updating}
-            >
-              {updating ? <CircularProgress size={20} /> : 'Save details'}
-            </Button>
-          </CardActions>
-        )}
+        <CardActions sx={{ justifyContent: 'flex-end' }}>
+          <Button 
+            variant="contained" 
+            type="submit"
+            disabled={updating}
+          >
+            {updating ? <CircularProgress size={20} /> : 'Save details'}
+          </Button>
+        </CardActions>
       </Card>
     </form>
   );
