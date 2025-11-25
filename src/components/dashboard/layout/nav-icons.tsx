@@ -37,6 +37,8 @@ import { FileTextIcon } from '@phosphor-icons/react/dist/ssr/FileText';
 import { SealCheckIcon } from '@phosphor-icons/react/dist/ssr/SealCheck';
 import { ClipboardTextIcon } from '@phosphor-icons/react/dist/ssr/ClipboardText';
 import { GraduationCapIcon } from '@phosphor-icons/react/dist/ssr/GraduationCap';
+import { ArrowUpRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowUpRight';
+import { ArrowDownLeftIcon } from '@phosphor-icons/react/dist/ssr/ArrowDownLeft';
 
 
 export const navIcons = {
@@ -45,6 +47,10 @@ export const navIcons = {
   'seal-warning': SealWarningIcon,
   'credit-card': CreditCardIcon,
   'package': PackageIcon,
+
+'arrow-up-right': ArrowUpRightIcon,
+'arrow-down-left': ArrowDownLeftIcon,
+
 
 'chart-line': ChartLineIcon,
 'file-text': FileTextIcon,

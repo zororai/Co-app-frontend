@@ -131,8 +131,8 @@ export const allNavItems = [
     icon: 'lock',
     items: [
 
-      { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'mountain' },
-      { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'mountain' },
+      { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'arrow-up-right' },
+      { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'arrows-left-right' },
      // { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
       //{ key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
     ],
@@ -143,27 +143,16 @@ export const allNavItems = [
     icon: 'key',
     items: [
       { key: 'permission-list', title: 'Miner Registration', href: paths.dashboard.Syndicate, icon: 'id-card' },
-    
       { key: 'section-creation', title: 'Section Create', href: paths.dashboard.sectioncreationstatus, icon: 'plus-circle' },
-    
       { key: 'shaft-assignment-status', title: 'Shaft Assignment', href: paths.dashboard.shaftassignmentstatus, icon: 'mountains' },
-    
       { key: 'Useronboard-status', title: 'User', href: paths.dashboard.useronboardstatus, icon: 'user' },
-    
       { key: 'driveronboard-status', title: 'Driver', href: paths.dashboard.driveronboardingstatus, icon: 'id-card' },
-    
       { key: 'securityonboard-status', title: 'Security', href: paths.dashboard.securityonboardingstatus, icon: 'shield-check' },
-    
       { key: 'vehicleonboard-status', title: 'Vehicle', href: paths.dashboard.vehicleonboardingstatus, icon: 'truck' },
-    
       { key: 'taxonboard-status', title: 'Operational Tax', href: paths.dashboard.taxonboardingstatus, icon: 'currency-dollar' },
-    
       { key: 'mill-status', title: 'Mill', href: paths.dashboard.millstatus, icon: 'factory' },
-    
       { key:'Production_LoanStatus', title: 'Production Loan', href: paths.dashboard.Production_LoanStatus, icon: 'hand-coins' },
-    
       { key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'hand-coins' },
-    
       { key:'Transport_costStatus', title: 'Transport Cost Status', href: paths.dashboard.Transport_costStatus, icon: 'currency-dollar' },
     ],
     
