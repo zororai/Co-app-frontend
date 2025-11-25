@@ -195,11 +195,15 @@ export function AccountDetailsForm(): React.JSX.Element {
 
   const currentPermissions = userData.permissions?.map(p => p.permission) || [];
   const newPermissions = selectedPermissions.filter(p => !currentPermissions.includes(p));
+  const isAdmin = userData.role === 'admin';
 
   return (
     <form onSubmit={handleSubmit}>
       <Card>
-        <CardHeader subheader="The information can be edited" title="Profile" />
+        <CardHeader 
+          subheader={isAdmin ? "The information can be edited" : "View your profile information"} 
+          title="Profile" 
+        />
         <Divider />
         <CardContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -213,6 +217,8 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.name} 
                   label="First name" 
                   name="firstName" 
+                  readOnly={!isAdmin}
+                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -223,6 +229,8 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.surname} 
                   label="Last name" 
                   name="lastName" 
+                  readOnly={!isAdmin}
+                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -233,6 +241,8 @@ export function AccountDetailsForm(): React.JSX.Element {
                   defaultValue={userData.email} 
                   label="Email address" 
                   name="email" 
+                  readOnly={!isAdmin}
+                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -244,6 +254,8 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Phone number" 
                   name="phone" 
                   type="tel" 
+                  readOnly={!isAdmin}
+                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
@@ -255,6 +267,7 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Position" 
                   name="position" 
                   variant="outlined"
+                  disabled={!isAdmin}
                 >
                   {positions.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -272,6 +285,7 @@ export function AccountDetailsForm(): React.JSX.Element {
                   label="Role" 
                   name="role" 
                   variant="outlined"
+                  disabled={!isAdmin}
                 >
                   {roles.map((option) => (
                     <MenuItem key={option.value} value={option.value}>
@@ -290,63 +304,70 @@ export function AccountDetailsForm(): React.JSX.Element {
                   name="address"
                   multiline
                   rows={2}
+                  readOnly={!isAdmin}
+                  disabled={!isAdmin}
                 />
               </FormControl>
             </Grid>
           </Grid>
 
-          <Divider sx={{ my: 3 }} />
-
-          {/* Permissions Section */}
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Permissions</Typography>
-            <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {allAvailablePermissions.map((permission) => {
-                  const isCurrentPermission = currentPermissions.includes(permission);
-                  const isSelected = selectedPermissions.includes(permission);
-                  const isNewPermission = newPermissions.includes(permission);
-                  
-                  return (
-                    <Chip
-                      key={permission}
-                      label={permission.replace(/-/g, ' ').replace(/_/g, ' ')}
-                      onClick={() => handlePermissionToggle(permission)}
-                      color={
-                        isNewPermission ? 'error' : 
-                        isSelected ? 'success' : 
-                        'default'
-                      }
-                      variant={isSelected ? 'filled' : 'outlined'}
-                      size="small"
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 0.8
-                        }
-                      }}
-                    />
-                  );
-                })}
+          {/* Permissions Section - Only visible for admin users */}
+          {userData.role === 'admin' && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Permissions</Typography>
+                <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {allAvailablePermissions.map((permission) => {
+                      const isCurrentPermission = currentPermissions.includes(permission);
+                      const isSelected = selectedPermissions.includes(permission);
+                      const isNewPermission = newPermissions.includes(permission);
+                      
+                      return (
+                        <Chip
+                          key={permission}
+                          label={permission.replace(/-/g, ' ').replace(/_/g, ' ')}
+                          onClick={() => handlePermissionToggle(permission)}
+                          color={
+                            isNewPermission ? 'error' : 
+                            isSelected ? 'success' : 
+                            'default'
+                          }
+                          variant={isSelected ? 'filled' : 'outlined'}
+                          size="small"
+                          sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                              opacity: 0.8
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                  {newPermissions.length > 0 && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      Red permissions are new and haven't been applied yet. Click "Save details" to apply them.
+                    </Alert>
+                  )}
+                </Box>
               </Box>
-              {newPermissions.length > 0 && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  Red permissions are new and haven't been applied yet. Click "Save details" to apply them.
-                </Alert>
-              )}
-            </Box>
-          </Box>
+            </>
+          )}
         </CardContent>
         <Divider />
-        <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button 
-            variant="contained" 
-            type="submit"
-            disabled={updating}
-          >
-            {updating ? <CircularProgress size={20} /> : 'Save details'}
-          </Button>
-        </CardActions>
+        {isAdmin && (
+          <CardActions sx={{ justifyContent: 'flex-end' }}>
+            <Button 
+              variant="contained" 
+              type="submit"
+              disabled={updating}
+            >
+              {updating ? <CircularProgress size={20} /> : 'Save details'}
+            </Button>
+          </CardActions>
+        )}
       </Card>
     </form>
   );
