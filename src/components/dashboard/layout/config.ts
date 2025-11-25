@@ -78,7 +78,6 @@ export const allNavItems = [
      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
      { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
      { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
-     { key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'id-card' },
     
     ],
   },
@@ -94,7 +93,8 @@ export const allNavItems = [
   { key: 'Ore-reports', title: 'Ore Report', href: paths.dashboard.Ore_reports, icon: 'chart-pie' },
   { key: 'Section-reports', title: 'Section Report', href: paths.dashboard.Section_reports, icon: 'chart-pie' },
 { key: 'Mine-Level-reports', title: 'Mine Level Report', href: paths.dashboard.Mine_Levels, icon: 'chart-pie' },
-
+{ key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'id-card' },
+    
       // Legacy commented items
     ],
   },
@@ -119,7 +119,8 @@ export const allNavItems = [
 
       { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
       { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-      
+      { key: 'sectionview', title: 'Section View', href: paths.dashboard.sectionview, icon: 'id-card' },
+    
     ],
   },
   {
