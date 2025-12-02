@@ -4,23 +4,36 @@ import { paths } from '@/paths';
 export const allNavItems = [
   { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
-  { key: 'user-admin-onboarding', 
+  { key: 'user-admin-onboarding',
     title: 'Onboarding Process',
     icon: 'users',
     items: [
       { key: 'useronboard', title: 'User', href:  paths.dashboard.useronboard, icon: 'user'},
       { key: 'securityonboard', title: 'Security', href:  paths.dashboard.securityonboarding, icon: 'shield'},
-      { key: 'driveronboard', title: 'Driver ', href:  paths.dashboard.driveronboarding, icon: 'truck'},   
-      { key: 'vehicleonboard', title: 'Vehicle', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},   
+      { key: 'driveronboard', title: 'Driver ', href:  paths.dashboard.driveronboarding, icon: 'truck'},
+      { key: 'vehicleonboard', title: 'Vehicle', href:  paths.dashboard.vehicleonboarding, icon: 'truck'},
     { key: 'Taxonboard', title: 'Operational Taxs ', href:  paths.dashboard.taxonboarding, icon: 'truck'},
     { key: 'mill', title: 'Mill ', href:  paths.dashboard.mill, icon: 'truck'},
     { key: 'Production_loan', title: 'Production Loan ', href:  paths.dashboard.Production_loan, icon: 'truck'},
     { key: 'Transport_cost', title: 'Transport Cost ', href:  paths.dashboard.Transport_cost, icon: 'truck'}
- 
-  ], 
-    
+
+  ],
+
    },
+
   { key: 'miner-registration', title: 'Miner Registration', href: paths.dashboard.customers, icon: 'id-card' },
+    {
+    key: 'Site-management',
+    title: 'Site Management',
+    icon: 'tools',
+    items: [
+
+      { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
+      { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
+
+    ],
+  },
+
   {
     key: 'site-management',
     title: 'Shaft Management',
@@ -29,10 +42,34 @@ export const allNavItems = [
       { key: 'site-list', title: 'Shaft Assignment', href:  paths.dashboard.shaftreg, icon: 'id-card'},
      { key: 'shaftcreation', title: 'Shaft Creation', href:  paths.dashboard.shaftcreation, icon: 'id-card'},
      { key: 'Shafttransfare', title: 'Shaft Transfare', href:  paths.dashboard.shafttransfare, icon: 'id-card'},
-     
+
     ],
   },
+  {
+    key: 'ore-management',
+    title: 'Ore Management',
+    icon: 'mountain',
+    items: [
+      { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
+     { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
+      { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
 
+
+
+    ],
+  },
+    {
+    key: 'security',
+    title: 'Security',
+    icon: 'lock',
+    items: [
+
+      { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'mountain' },
+      { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'mountain' },
+     // { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
+      //{ key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
+    ],
+  },
   {
     key: 'financial-management',
     title: 'Financial Management',
@@ -42,7 +79,7 @@ export const allNavItems = [
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
       { key: 'ore-transport', title: 'Gold Selling', href: paths.dashboard.Refined_Ore_to_Gold, icon: 'id-card' },
       { key: 'peniltypay', title: 'Penality Payment', href: paths.dashboard.Penality_Payment, icon: 'id-card' },
-      
+
     ],
   },
 
@@ -58,7 +95,7 @@ export const allNavItems = [
      { key: 'training', title: 'Training', href: paths.dashboard.training, icon: 'id-card' },
      { key: 'shaftinspection', title: 'Shaft Inspection', href: paths.dashboard.shaftinspection, icon: 'id-card' },
      { key: 'shaftinspectionResolution', title: 'Shaft Inspection Resolution', href: paths.dashboard.shaftinspectionresolution, icon: 'id-card' },
-    
+
     ],
   },
 
@@ -67,7 +104,7 @@ export const allNavItems = [
     title: 'Report Management',
     icon: 'chart-pie',
     items: [
-     
+
    { key: 'she-summary-reports', title: 'SHE Summary Report', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
   { key: 'shaft-history-reports', title: 'Shaft History Report', href: paths.dashboard.shafthistoryreports, icon: 'chart-pie' },
   { key: 'Ore-reports', title: 'Ore Report', href: paths.dashboard.Ore_reports, icon: 'chart-pie' },
@@ -76,30 +113,8 @@ export const allNavItems = [
       // Legacy commented items
     ],
   },
-  {
-    key: 'ore-management',
-    title: 'Ore Management',
-    icon: 'mountain',
-    items: [
-      { key: 'ore-list', title: 'Ore Capturing', href: paths.dashboard.oremanagement, icon: 'id-card' },
-     { key: 'ore-mill', title: 'Ore To Mill Assignment ', href: paths.dashboard.millasignment, icon: 'id-card' },
-      { key: 'Sample Ore Approval', title: 'Sample Ore Approval ', href: paths.dashboard.Sample_Ore_Approval, icon: 'id-card' },
-     
-   
-   
-    ],
-  },
-  {
-    key: 'Site-management',
-    title: 'Site Management',
-    icon: 'tools',
-    items: [
 
-      { key: 'site-add', title: ' Create Mining Section', href:  paths.dashboard.sectioncreation, icon: 'id-card'},
-      { key: 'Sectionmapping', title: 'Section Mapping ', href:  paths.dashboard.sectionmapping, icon: 'id-card'},
-      
-    ],
-  },
+
   {
     key: 'transport-management',
     title: 'Transport Management',
@@ -109,18 +124,7 @@ export const allNavItems = [
        { key: 'transport-add', title: 'Assign Ore To Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
     ],
   },
-  {
-    key: 'security',
-    title: 'Security',
-    icon: 'lock',
-    items: [
 
-      { key: 'Check Point Ore Dispatch ', title: 'Check Point Ore Dispatch ', href: paths.dashboard.Ore_Dispatch, icon: 'mountain' },
-      { key: 'Check Point Ore Recieval ', title: 'Check Point Ore Recieval ', href: paths.dashboard.Ore_Recieval, icon: 'mountain' },
-     // { key: 'Patrol Log', title: 'Patrol Log ', href: paths.dashboard.Patrol_Log, icon: 'mountain' },
-      //{ key: 'Incident Report', title: 'Incident Report ', href: paths.dashboard.Incident_Report, icon: 'mountain' },
-    ],
-  },
   {
     key: 'permission',
     title: 'Record Approval Management',
@@ -139,7 +143,7 @@ export const allNavItems = [
       {key:'ShaftLoanStatus', title: 'Shaft Loan Status', href: paths.dashboard.ShaftLoanStatus, icon: 'truck' },
       {key:'Transport_costStatus', title: 'Transport Cost Status', href: paths.dashboard.Transport_costStatus, icon: 'truck' },
 
-   
+
     ],
   },
 ] satisfies NavItemConfig[];
@@ -152,9 +156,9 @@ export const allNavItems = [
 export function getNavItemsForUser(permissions: string[]): NavItemConfig[] {
   // Always include dashboard
   const permissionSet = new Set(['dashboard', ...permissions]);
-  
+
   const filtered: NavItemConfig[] = [];
-  
+
   for (const item of allNavItems) {
     // Check if user has permission for this top-level item
     if (!permissionSet.has(item.key)) {
@@ -163,7 +167,7 @@ export function getNavItemsForUser(permissions: string[]): NavItemConfig[] {
 
     // If item has sub-items, filter them based on permissions
     if (item.items) {
-      const filteredSubItems = item.items.filter((subItem) => 
+      const filteredSubItems = item.items.filter((subItem) =>
         permissionSet.has(subItem.key)
       );
 
@@ -180,7 +184,7 @@ export function getNavItemsForUser(permissions: string[]): NavItemConfig[] {
       filtered.push(item);
     }
   }
-  
+
   return filtered;
 }
 
@@ -193,16 +197,16 @@ export const navItems = allNavItems;
  */
 export function getAllAvailablePermissions(): string[] {
   const permissions = new Set<string>();
-  
+
   for (const item of allNavItems) {
     permissions.add(item.key);
-    
+
     if (item.items) {
       for (const subItem of item.items) {
         permissions.add(subItem.key);
       }
     }
   }
-  
+
   return Array.from(permissions);
 }
