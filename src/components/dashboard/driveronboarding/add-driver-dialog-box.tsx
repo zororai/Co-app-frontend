@@ -33,6 +33,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { authClient } from '../../../lib/auth/client';
 import { Snackbar } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import QRCode from 'qrcode';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AddDriverDialogProps {
   open: boolean;
@@ -57,6 +60,8 @@ export interface DriverFormData {
   emergencyContactPhone: string;
   licenseDocument: string ; // Changed to string for base64
   idDocument: string ; // Changed to string for base64
+  picture: string; // Passport photo (35mm x 45mm)
+  qrcode: string; // Generated QR code for driver ID
   additionalNotes: string;
 }
 
@@ -66,6 +71,7 @@ const steps = [
   'License Details',
   'Contact Information',
   'Review Details',
+  'Generate Driver ID',
   'Confirmation'
 ];
 
@@ -103,6 +109,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     emergencyContactPhone: '',
     licenseDocument: '',
     idDocument: '',
+    picture: '',
+    qrcode: '',
     additionalNotes: '',
   });
 
@@ -182,6 +190,17 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       setErrors(fieldErrors);
     }
     
+    // Special handling for years of experience
+    if (name === 'yearsOfExperience') {
+      const years = parseFloat(value);
+      if (value && years < 2) {
+        fieldErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+      } else {
+        delete fieldErrors.yearsOfExperience;
+      }
+      setErrors(fieldErrors);
+    }
+    
     setFormData({
       ...formData,
       [name]: processedValue,
@@ -199,19 +218,82 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
   };
 
   const handleDateChange = (field: keyof DriverFormData) => (value: dayjs.Dayjs | null) => {
-    setFormData({
+    const newFormData = {
       ...formData,
       [field]: value,
-    });
+    };
+    
+    const newErrors = { ...errors };
+    
+    // Validate age if this is the date of birth field
+    if (field === 'dateOfBirth' && value) {
+      const age = dayjs().diff(value, 'year');
+      
+      if (age < 18) {
+        newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+      } else {
+        delete newErrors.dateOfBirth;
+      }
+    }
+    
+    // Validate license expiry date
+    if (field === 'licenseExpiryDate' && value) {
+      const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+      
+      if (value.isBefore(startOfNextMonth)) {
+        newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+      } else {
+        delete newErrors.licenseExpiryDate;
+      }
+    }
+    
+    setErrors(newErrors);
+    setFormData(newFormData);
   };
   
   // Handle stepper navigation
   const handleNext = () => {
-    if (activeStep === steps.length - 2) {
-      // If on the review step, submit the form
+    if (activeStep === steps.length - 3) {
+      // If on the review step, generate QR code and move to ID generation
+      generateQRCode();
+      setActiveStep((prevStep) => prevStep + 1);
+    } else if (activeStep === steps.length - 2) {
+      // If on the ID generation step, submit the form
       handleSubmitForm();
     } else {
       setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+  
+  // Generate QR Code for driver
+  const generateQRCode = async () => {
+    try {
+      // Create QR code data with driver information
+      const qrData = JSON.stringify({
+        id: formData.idNumber,
+        name: `${formData.firstName} ${formData.lastName}`,
+        license: formData.licenseNumber,
+        class: formData.licenseClass,
+        expires: formData.licenseExpiryDate?.format('DD/MM/YYYY'),
+      });
+      
+      // Generate QR code as data URL
+      const qrCodeDataURL = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF',
+        },
+      });
+      
+      setFormData({
+        ...formData,
+        qrcode: qrCodeDataURL,
+      });
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      setError('Failed to generate QR code');
     }
   };
 
@@ -219,23 +301,74 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleFileChange = (field: 'licenseDocument' | 'idDocument') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (field: 'licenseDocument' | 'idDocument' | 'picture') => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const reader = new FileReader();
       
-      reader.addEventListener('load', (event) => {
-        if (event.target && event.target.result) {
-          // Store the base64 string in the form data
-          setFormData({
-            ...formData,
-            [field]: event.target.result as string,
-          });
+      // Special validation for passport photo
+      if (field === 'picture') {
+        // Check if it's an image
+        if (!file.type.startsWith('image/')) {
+          const newErrors = { ...errors };
+          newErrors.picture = 'Please upload an image file';
+          setErrors(newErrors);
+          return;
         }
-      });
-      
-      // Read the file as a data URL (base64)
-      reader.readAsDataURL(file);
+        
+        // Validate image dimensions (35mm x 45mm at 300 DPI = 413px x 531px)
+        const img = new Image();
+        const reader = new FileReader();
+        
+        reader.addEventListener('load', () => {
+          const result = reader.result;
+          if (typeof result === 'string') {
+            img.src = result;
+            
+            img.addEventListener('load', () => {
+              const expectedWidth = 413; // 35mm at 300 DPI
+              const expectedHeight = 531; // 45mm at 300 DPI
+              const tolerance = 50; // Allow some tolerance
+              
+              if (
+                Math.abs(img.width - expectedWidth) > tolerance ||
+                Math.abs(img.height - expectedHeight) > tolerance
+              ) {
+                const newErrors = { ...errors };
+                newErrors.picture = `Photo dimensions should be approximately 35mm x 45mm (${expectedWidth}px x ${expectedHeight}px). Current: ${img.width}px x ${img.height}px`;
+                setErrors(newErrors);
+              } else {
+                const newErrors = { ...errors };
+                delete newErrors.picture;
+                setErrors(newErrors);
+                
+                // Store the base64 string in the form data
+                setFormData({
+                  ...formData,
+                  [field]: result,
+                });
+              }
+            });
+          }
+        });
+        
+        reader.readAsDataURL(file);
+      } else {
+        const reader = new FileReader();
+        
+        reader.addEventListener('load', () => {
+          const result = reader.result;
+          if (typeof result === 'string') {
+            // Store the base64 string in the form data
+            setFormData({
+              ...formData,
+              [field]: result,
+            });
+          }
+        });
+        
+        // Read the file as a data URL (base64)
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -265,16 +398,34 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
           const idErr = validateZimbabweanID(formData.idNumber);
           if (idErr) newErrors.idNumber = idErr;
         }
-        if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+        if (!formData.dateOfBirth) {
+          newErrors.dateOfBirth = 'Date of birth is required';
+        } else {
+          const age = dayjs().diff(formData.dateOfBirth, 'year');
+          if (age < 18) {
+            newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+          }
+        }
         break;
       }
       
       case 1: { // License Details
         if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
         if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
-        if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+        if (!formData.licenseExpiryDate) {
+          newErrors.licenseExpiryDate = 'License expiry date is required';
+        } else {
+          const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+          if (formData.licenseExpiryDate.isBefore(startOfNextMonth)) {
+            newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+          }
+        }
+        if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
+          newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+        }
         if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
         if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
+        if (!formData.picture) newErrors.picture = 'Passport photo is required';
         break;
       }
       
@@ -299,10 +450,27 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!formData.idNumber.trim()) newErrors.idNumber = 'ID number is required';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+    } else {
+      const age = dayjs().diff(formData.dateOfBirth, 'year');
+      if (age < 18) {
+        newErrors.dateOfBirth = 'Driver must be at least 18 years old';
+      }
+    }
     if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
     if (!formData.licenseClass) newErrors.licenseClass = 'License class is required';
-    if (!formData.licenseExpiryDate) newErrors.licenseExpiryDate = 'License expiry date is required';
+    if (!formData.licenseExpiryDate) {
+      newErrors.licenseExpiryDate = 'License expiry date is required';
+    } else {
+      const startOfNextMonth = dayjs().add(1, 'month').startOf('month');
+      if (formData.licenseExpiryDate.isBefore(startOfNextMonth)) {
+        newErrors.licenseExpiryDate = 'License expiry date must be at least in the next month';
+      }
+    }
+    if (formData.yearsOfExperience && parseFloat(formData.yearsOfExperience) < 2) {
+      newErrors.yearsOfExperience = 'Minimum 2 years of experience required';
+    }
     if (!formData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone number is required';
     
     // Email validation if provided
@@ -324,6 +492,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     // Required documents
     if (!formData.licenseDocument) newErrors.licenseDocument = 'License document is required';
     if (!formData.idDocument) newErrors.idDocument = 'ID document is required';
+    if (!formData.picture) newErrors.picture = 'Passport photo is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -343,6 +512,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     }
     
     setLoading(true);
+    setError(''); // Clear any previous errors
+    
     try {
       // Call the API to register the driver
       const result = await authClient.registerDriver(formData);
@@ -357,24 +528,42 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
         if (onSubmit) {
           onSubmit(formData);
         }
-        
-        // If onRefresh is provided, call it to refresh the data
-        if (onRefresh) {
-          onRefresh();
-        }
       } else {
-        // Show error
-        setError(`Failed to register driver: ${result.error || 'Unknown error'}`);
+        // Show error with clear message
+        const errorMessage = result.error || 'Unknown error';
+        setError(errorMessage);
+        
+        // If it's a duplicate email error, set field-specific error and navigate back
+        if (errorMessage.toLowerCase().includes('email already exists')) {
+          setErrors(prev => ({
+            ...prev,
+            emailAddress: 'This email address is already registered. Please use a different email.'
+          }));
+          setActiveStep(0); // Go back to Personal Details step
+        }
       }
     } catch (error) {
       console.error('Error registering driver:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      
+      // If it's a duplicate email error, set field-specific error and go back to first step
+      if (errorMessage.toLowerCase().includes('email already exists')) {
+        setErrors(prev => ({
+          ...prev,
+          emailAddress: 'This email address is already registered. Please use a different email.'
+        }));
+        setActiveStep(0);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleClose = () => {
+    // If the submission was successful, refresh the table data
+    const wasSuccessful = success;
+    
     // Reset all form state
     setFormData({
       firstName: '',
@@ -392,6 +581,8 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       emergencyContactPhone: '',
       licenseDocument: '',
       idDocument: '',
+      picture: '',
+      qrcode: '',
       additionalNotes: '',
     });
     setActiveStep(0);
@@ -400,6 +591,55 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
     setError(null);
     setErrors({});
     onClose();
+    
+    // Refresh the table after closing if submission was successful
+    if (wasSuccessful && onRefresh) {
+      onRefresh();
+    }
+  };
+
+  // Download Driver ID Card as PDF
+  const downloadDriverIDCard = async () => {
+    try {
+      const cardElement = document.getElementById('driver-id-card');
+      if (!cardElement) return;
+      
+      // Capture the ID card as canvas
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+      });
+      
+      // Convert canvas to image
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      // Calculate dimensions to fit the card nicely on the page
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth - 40; // Leave margins
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const x = (pdfWidth - imgWidth) / 2;
+      const y = (pdfHeight - imgHeight) / 2;
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // Save PDF with driver's name
+      const filename = `${formData.firstName}_${formData.lastName}_Driver_ID.pdf`;
+      pdf.save(filename);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF');
+    }
   };
 
   // Render step content based on active step
@@ -477,12 +717,13 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     label="Date of Birth *"
                     value={formData.dateOfBirth}
                     onChange={handleDateChange('dateOfBirth')}
+                    maxDate={dayjs().subtract(18, 'year')}
                     slotProps={{
                       textField: {
                         fullWidth: true,
                         required: true,
                         error: formSubmitted && !!errors.dateOfBirth,
-                        helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : '',
+                        helperText: formSubmitted && errors.dateOfBirth ? errors.dateOfBirth : 'Driver must be at least 18 years old',
                         sx: textFieldStyle,
                       },
                     }}
@@ -505,7 +746,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                 <TextField
                   required
                   fullWidth
-                  label="License Number *"
+                  label="License Number "
                   name="licenseNumber"
                   value={formData.licenseNumber}
                   onChange={handleChange}
@@ -549,12 +790,13 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                     label="License Expiry Date *"
                     value={formData.licenseExpiryDate}
                     onChange={handleDateChange('licenseExpiryDate')}
+                    minDate={dayjs().add(1, 'month').startOf('month')}
                     slotProps={{
                       textField: {
                         fullWidth: true,
                         required: true,
                         error: formSubmitted && !!errors.licenseExpiryDate,
-                        helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : '',
+                        helperText: formSubmitted && errors.licenseExpiryDate ? errors.licenseExpiryDate : 'Must be at least next month',
                         sx: textFieldStyle,
                       },
                     }}
@@ -570,6 +812,16 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   onChange={handleChange}
                   placeholder="Enter years of experience"
                   type="number"
+                  error={formSubmitted && !!errors.yearsOfExperience}
+                  helperText={
+                    formSubmitted && errors.yearsOfExperience 
+                      ? errors.yearsOfExperience 
+                      : 'Minimum 2 years required'
+                  }
+                  inputProps={{
+                    min: 2,
+                    step: 0.5,
+                  }}
                   sx={textFieldStyle}
                 />
               </Box>
@@ -637,6 +889,55 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                       {errors.idDocument}
                     </Typography>
                   ) : null}
+                </Box>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' }, px: 1.5, mb: 2 }}>
+                <Box sx={{ border: '1px dashed #ccc', p: 2, borderRadius: 1 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Passport Photo * (35mm x 45mm)
+                  </Typography>
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    startIcon={<UploadIcon />}
+                    sx={{ mt: 1 }}
+                  >
+                    Upload Photo
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange('picture')}
+                    />
+                  </Button>
+                  {formData.picture ? (
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
+                        <Typography variant="body2">Photo uploaded</Typography>
+                      </Box>
+                      <Box 
+                        component="img"
+                        src={formData.picture}
+                        alt="Passport Photo Preview"
+                        sx={{
+                          mt: 2,
+                          width: '120px',
+                          height: '155px',
+                          objectFit: 'cover',
+                          border: '2px solid #ccc',
+                          borderRadius: 1,
+                        }}
+                      />
+                    </Box>
+                  ) : formSubmitted && errors.picture ? (
+                    <Typography color="error" variant="caption" sx={{ display: 'block', mt: 1 }}>
+                      {errors.picture}
+                    </Typography>
+                  ) : null}
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                    Photo should be 35mm wide x 45mm high (approximately 413px x 531px at 300 DPI)
+                  </Typography>
                 </Box>
               </Box>
             </Box>
@@ -851,6 +1152,176 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
       }
       
       case 4: {
+        // Generate Driver ID step
+        return (
+          <Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, textAlign: 'center' }}>
+              Driver ID Card
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
+              Review the generated driver ID card with QR code
+            </Typography>
+            
+            {/* Driver ID Card */}
+            <Box
+              id="driver-id-card"
+              sx={{
+                maxWidth: 600,
+                mx: 'auto',
+                border: '3px solid #000',
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: 3,
+              }}
+            >
+              {/* Header */}
+              <Box
+                sx={{
+                  bgcolor: '#C9A958',
+                  py: 2,
+                  textAlign: 'center',
+                  borderBottom: '2px solid #000',
+                }}
+              >
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#000' }}>
+                  DRIVER
+                </Typography>
+              </Box>
+              
+              {/* Content */}
+              <Box sx={{ bgcolor: '#F5E6D3', p: 3 }}>
+                <Box sx={{ display: 'flex', gap: 3 }}>
+                  {/* Photo Section */}
+                  <Box sx={{ flex: '0 0 auto' }}>
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 155,
+                        bgcolor: '#E0E0E0',
+                        border: '2px solid #999',
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {formData.picture ? (
+                        <Box
+                          component="img"
+                          src={formData.picture}
+                          alt="Driver Photo"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ) : (
+                        <Typography variant="caption" sx={{ textAlign: 'center', px: 1 }}>
+                          PHOTO SIZE<br />W=35mm H=45mm
+                        </Typography>
+                      )}
+                    </Box>
+                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5, fontSize: '0.65rem' }}>
+                      PHOTO SIZE W=0.1 x H=1 in
+                    </Typography>
+                  </Box>
+                  
+                  {/* Details Section */}
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {formData.firstName.toUpperCase()} {formData.lastName.toUpperCase()}
+                    </Typography>
+                    
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        <strong>ID:</strong> {formData.idNumber} <strong style={{ marginLeft: 16 }}>CLASS:</strong> {formData.licenseClass}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#C9A958' }}>
+                        FULL NAME
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        {formData.firstName} {formData.lastName}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        <strong>ADDRESS:</strong> {formData.address || 'N/A'}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        <strong>ISSUED:</strong> {dayjs().format('DD-MM-YY')}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        <strong>EXPIRES:</strong> {formData.licenseExpiryDate?.format('DD-MM-YY') || 'N/A'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  {/* QR Code Section */}
+                  <Box sx={{ flex: '0 0 auto' }}>
+                    {formData.qrcode ? (
+                      <Box
+                        component="img"
+                        src={formData.qrcode}
+                        alt="QR Code"
+                        sx={{
+                          width: 120,
+                          height: 120,
+                          border: '2px solid #000',
+                          borderRadius: 1,
+                        }}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          width: 120,
+                          height: 120,
+                          bgcolor: '#E0E0E0',
+                          border: '2px solid #999',
+                          borderRadius: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Typography variant="caption">QR CODE</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Download Button */}
+            <Box sx={{ textAlign: 'center', mt: 3 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={downloadDriverIDCard}
+                disabled={!formData.qrcode}
+                sx={{
+                  bgcolor: theme.palette.secondary.main,
+                  '&:hover': {
+                    bgcolor: theme.palette.secondary.dark,
+                  },
+                }}
+              >
+                Download ID Card as PDF
+              </Button>
+            </Box>
+          </Box>
+        );
+      }
+      
+      case 5: {
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <CheckCircleOutlineIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
@@ -1015,7 +1486,7 @@ export function AddDriverDialog({ open, onClose, onSubmit, onRefresh }: AddDrive
                   }
                 }}
               >
-                {activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}
+                {activeStep === steps.length - 3 ? 'Generate ID' : activeStep === steps.length - 2 ? 'Send for Approval' : 'Next'}
               </Button>
             </Fragment>
           )}

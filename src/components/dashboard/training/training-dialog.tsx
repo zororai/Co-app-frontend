@@ -25,6 +25,7 @@ import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import type { Training } from './training-table';
 import { authClient } from '@/lib/auth/client';
+import { useTheme } from '@mui/material/styles';
 
 interface TrainingDialogProps {
   open: boolean;
@@ -72,6 +73,7 @@ export function TrainingDialog({
   onSuccess, 
   training 
 }: TrainingDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [formData, setFormData] = React.useState<TrainingFormData>({
     trainingType: '',
     trainerName: '',
@@ -308,10 +310,10 @@ export function TrainingDialog({
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       '& fieldset': { borderColor: '#d1d5db' },
-      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
     },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+    '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.secondary.main },
   };
 
   const renderArrayField = (
@@ -331,11 +333,11 @@ export function TrainingDialog({
           variant="outlined"
           size="small"
           sx={{ 
-            borderColor: 'rgb(5, 5, 68)', 
-            color: 'rgb(5, 5, 68)', 
+            borderColor: theme.palette.secondary.main, 
+            color: theme.palette.secondary.main, 
             '&:hover': { 
-              borderColor: 'rgb(5, 5, 68)', 
-              backgroundColor: 'rgba(5, 5, 68, 0.04)' 
+              borderColor: theme.palette.secondary.dark, 
+              backgroundColor: 'rgba(50, 56, 62, 0.04)' 
             } 
           }}
         >
@@ -387,11 +389,11 @@ export function TrainingDialog({
           variant="outlined"
           size="small"
           sx={{ 
-            borderColor: 'rgb(5, 5, 68)', 
-            color: 'rgb(5, 5, 68)', 
+            borderColor: theme.palette.secondary.main, 
+            color: theme.palette.secondary.main, 
             '&:hover': { 
-              borderColor: 'rgb(5, 5, 68)', 
-              backgroundColor: 'rgba(5, 5, 68, 0.04)' 
+              borderColor: theme.palette.secondary.dark, 
+              backgroundColor: 'rgba(50, 56, 62, 0.04)' 
             } 
           }}
         >
@@ -477,11 +479,12 @@ export function TrainingDialog({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
         color: 'white',
         py: 2.5,
         px: 3,
-        m: 0
+        m: 0,
+        fontWeight: 600
       }}>
         {training ? 'Edit Training' : 'Create Training'}
         <IconButton
@@ -603,11 +606,11 @@ export function TrainingDialog({
           disabled={loading}
           variant="outlined"
           sx={{ 
-            borderColor: 'rgb(5, 5, 68)', 
-            color: 'rgb(5, 5, 68)', 
+            borderColor: theme.palette.secondary.main, 
+            color: theme.palette.secondary.main, 
             '&:hover': { 
-              borderColor: 'rgb(5, 5, 68)', 
-              backgroundColor: 'rgba(5, 5, 68, 0.04)' 
+              borderColor: theme.palette.secondary.dark, 
+              backgroundColor: 'rgba(50, 56, 62, 0.04)' 
             } 
           }}
         >
@@ -619,8 +622,8 @@ export function TrainingDialog({
           variant="contained"
           startIcon={loading ? <CircularProgress size={16} /> : null}
           sx={{ 
-            bgcolor: 'rgb(5, 5, 68)',
-            '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+            bgcolor: theme.palette.secondary.main,
+            '&:hover': { bgcolor: theme.palette.secondary.dark } 
           }}
         >
           {loading ? (training ? 'Updating...' : 'Creating...') : (training ? 'Update Training' : 'Create Training')}

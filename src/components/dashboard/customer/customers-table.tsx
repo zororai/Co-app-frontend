@@ -295,16 +295,14 @@ export function CustomersTable({
                   Nationality ID Number
                 </TableSortLabel>
               </TableCell>
-              <TableCell sortDirection={sortField === 'shaftnumber' ? sortDirection : false}>
-               
-              </TableCell>
+              
               <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
                 <TableSortLabel
                   active={sortField === 'status'}
                   direction={sortField === 'status' ? sortDirection : 'asc'}
                   onClick={() => handleSort('status')}
                 >
-                  Status
+                  xxStatus
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
@@ -345,14 +343,14 @@ export function CustomersTable({
                 <TableRow hover key={uniqueKey} selected={isSelected}>
 
                    <TableCell>{row.registrationNumber}</TableCell>
-                    {/* <TableCell>{row.cooperativename}</TableCell> */}
+                
                   <TableCell>{row.name}</TableCell>
                   <TableCell>{row.surname}</TableCell>
                    <TableCell>{row.shaftnumber}</TableCell>
                   <TableCell>{row.nationIdNumber}</TableCell>
                   
                 
-                  <TableCell>{row.shaftnumber}</TableCell>
+                  
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box

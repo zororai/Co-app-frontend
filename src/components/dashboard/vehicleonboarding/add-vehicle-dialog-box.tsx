@@ -47,7 +47,8 @@ export interface VehicleFormData {
   make: string;
   model: string;
   year: string;
-  assignedDriver: string;
+  assignedDriver: string; // This will store the driver's full name for display
+  driverId: string; // This will store the driver's ID for the API
   lastServiceDate: dayjs.Dayjs | null;
   ownerName: string;
   ownerAddress: string;
@@ -93,6 +94,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     model: '',
     year: '',
     assignedDriver: '',
+    driverId: '',
     lastServiceDate: null,
     ownerName: '',
     ownerAddress: '',
@@ -157,15 +159,15 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
   // Validate Zimbabwean ID number format
   const validateZimbabweanID = (idNumber: string): string | null => {
     // Remove any spaces or dashes for validation
-    const cleanId = idNumber.replace(/[\s-]/g, '');
+    const cleanId = idNumber.replace(/[\s-]/g, '').toUpperCase();
     
     // Check if it's exactly 11 characters
     if (cleanId.length !== 11) {
       return 'ID number must be exactly 11 characters';
     }
     
-    // Check format: 2 digits + 6 digits + 2 digits + 1 letter
-    const idPattern = /^\d{2}\d{6}\d{2}[A-Za-z]$/;
+    // Check format: 2 digits + 6 digits + 1 letter + 2 digits
+    const idPattern = /^\d{2}\d{6}[A-Z]\d{2}$/;
     if (!idPattern.test(cleanId)) {
       return 'Invalid format. Expected: XX-XXXXXXDXX (e.g., 67-657432D45)';
     }
@@ -175,15 +177,15 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
 
   // Format ID number with dashes
   const formatIdNumber = (value: string): string => {
-    // Remove all non-alphanumeric characters
-    const clean = value.replace(/[^0-9A-Za-z]/g, '');
+    // Remove all non-alphanumeric characters and convert to uppercase
+    const clean = value.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
     
     // Apply formatting: XX-XXXXXXDXX
     if (clean.length <= 2) {
       return clean;
     } else if (clean.length <= 8) {
       return `${clean.slice(0, 2)}-${clean.slice(2)}`;
-    } else if (clean.length <= 10) {
+    } else if (clean.length <= 9) {
       return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8)}`;
     } else {
       return `${clean.slice(0, 2)}-${clean.slice(2, 8)}${clean.slice(8, 9)}${clean.slice(9, 11)}`;
@@ -250,7 +252,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
         if (!formData.make) newErrors.make = 'Make is required';
         if (!formData.model) newErrors.model = 'Model is required';
         if (!formData.year) newErrors.year = 'Year is required';
-        if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+        if (!formData.driverId) newErrors.assignedDriver = 'Assigned driver is required';
         if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
         break;
       }
@@ -266,9 +268,12 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           newErrors.ownerCellNumber = 'Invalid phone number format';
         }
         
-        // ID number validation to allow format like 80-101500D87
-        if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
-          newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
+        // ID number validation - convert to uppercase for validation
+        if (formData.ownerIdNumber) {
+          const cleanId = formData.ownerIdNumber.replace(/[\s-]/g, '').toUpperCase();
+          if (!/^\d{2}\d{6}[A-Z]\d{2}$/.test(cleanId)) {
+            newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXDXX (e.g., 80-101500D87)';
+          }
         }
         break;
       }
@@ -295,7 +300,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     if (!formData.make) newErrors.make = 'Make is required';
     if (!formData.model) newErrors.model = 'Model is required';
     if (!formData.year) newErrors.year = 'Year is required';
-    if (!formData.assignedDriver) newErrors.assignedDriver = 'Assigned driver is required';
+    if (!formData.driverId) newErrors.assignedDriver = 'Assigned driver is required';
     if (!formData.lastServiceDate) newErrors.lastServiceDate = 'Last service date is required';
     if (!formData.ownerName) newErrors.ownerName = 'Owner name is required';
     if (!formData.ownerIdNumber) newErrors.ownerIdNumber = 'Owner ID number is required';
@@ -307,9 +312,12 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       newErrors.ownerCellNumber = 'Invalid phone number format';
     }
     
-    // ID number validation to allow format like 80-101500D87
-    if (formData.ownerIdNumber && !/^\d{2}-\d{6}[A-Z]\d{2}$/.test(formData.ownerIdNumber)) {
-      newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXAXX (e.g., 80-101500D87)';
+    // ID number validation - convert to uppercase for validation
+    if (formData.ownerIdNumber) {
+      const cleanId = formData.ownerIdNumber.replace(/[\s-]/g, '').toUpperCase();
+      if (!/^\d{2}\d{6}[A-Z]\d{2}$/.test(cleanId)) {
+        newErrors.ownerIdNumber = 'ID number should be in format XX-XXXXXXDXX (e.g., 80-101500D87)';
+      }
     }
     
     // Document validation
@@ -351,10 +359,28 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       return;
     }
     
+    // Additional validation for driverId
+    if (!formData.driverId || formData.driverId.trim() === '') {
+      setError('Please select an assigned driver');
+      setErrors({ ...errors, assignedDriver: 'Driver selection is required' });
+      setActiveStep(0); // Go back to first step
+      return;
+    }
+    
+    // Debug log before submission
+    console.log('=== SUBMITTING VEHICLE REGISTRATION ===');
+    console.log('Form Data:', formData);
+    console.log('Driver ID:', formData.driverId);
+    console.log('Driver Name:', formData.assignedDriver);
+    
     setLoading(true);
+    setError(null); // Clear previous errors
+    
     try {
       // Call the API to register the vehicle
       const result = await authClient.registerVehicle(formData);
+      
+      console.log('Registration Result:', result);
       
       if (result.success) {
         // Set success state and move to confirmation step
@@ -372,12 +398,36 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
           onRefresh();
         }
       } else {
-        // Show error
-        setError(`Failed to register vehicle: ${result.error || 'Unknown error'}`);
+        // Show error with better formatting
+        const errorMessage = result.error || 'Unknown error';
+        
+        // Check for specific error types and provide helpful messages
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          setError(`Registration Number Conflict: ${errorMessage}\n\nPlease use a different registration number.`);
+          // Also highlight the field with the error
+          setErrors({ ...errors, regNumber: 'This registration number is already in use' });
+          // Go back to the first step to fix it
+          setActiveStep(0);
+        } else if (errorMessage.toLowerCase().includes('driver')) {
+          setError(`Driver Error: ${errorMessage}`);
+          setErrors({ ...errors, assignedDriver: 'Please select a valid driver' });
+          setActiveStep(0);
+        } else {
+          setError(`Failed to register vehicle: ${errorMessage}`);
+        }
       }
     } catch (error) {
       console.error('Error registering vehicle:', error);
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      
+      // Handle specific error types
+      if (errorMessage.toLowerCase().includes('already exists')) {
+        setError(`Registration Number Conflict: ${errorMessage}\n\nPlease use a different registration number.`);
+        setErrors({ ...errors, regNumber: 'This registration number is already in use' });
+        setActiveStep(0);
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -392,6 +442,7 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
       model: '',
       year: '',
       assignedDriver: '',
+      driverId: '',
       lastServiceDate: null,
       ownerName: '',
       ownerAddress: '',
@@ -406,6 +457,11 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
     setSuccess(false);
     setError(null);
     setErrors({});
+    
+    // Refresh the table if onRefresh callback is provided
+    if (onRefresh) {
+      onRefresh();
+    }
     
     onClose();
   };
@@ -522,9 +578,43 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                   <Select
                     labelId="assigned-driver-label"
                     id="assigned-driver"
-                    name="assignedDriver"
-                    value={formData.assignedDriver}
-                    onChange={handleChange}
+                    name="driverId"
+                    value={formData.driverId || ''}
+                    onChange={(e) => {
+                      const selectedDriverId = e.target.value;
+                      
+                      // Debug log to see what's being selected
+                      console.log('Selected Driver ID:', selectedDriverId);
+                      console.log('Available Drivers:', approvedDrivers);
+                      
+                      // If empty string is selected (None), don't update
+                      if (!selectedDriverId) {
+                        console.warn('No driver selected - skipping update');
+                        return;
+                      }
+                      
+                      const selectedDriver = approvedDrivers.find(driver => driver.id === selectedDriverId);
+                      console.log('Found Driver:', selectedDriver);
+                      
+                      if (selectedDriver) {
+                        const driverFullName = `${selectedDriver.name || (selectedDriver as any).firstName || ''} ${selectedDriver.surname || (selectedDriver as any).lastName || ''}`.trim();
+                        console.log('Setting driverId to:', selectedDriverId);
+                        console.log('Setting assignedDriver to:', driverFullName);
+                        
+                        setFormData({
+                          ...formData,
+                          driverId: selectedDriverId,
+                          assignedDriver: driverFullName
+                        });
+                        
+                        // Clear any previous errors
+                        const newErrors = { ...errors };
+                        delete newErrors.assignedDriver;
+                        setErrors(newErrors);
+                      } else {
+                        console.error('Driver not found in approvedDrivers array!');
+                      }
+                    }}
                     label="Assigned Driver"
                     sx={{
                       '& .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
@@ -532,15 +622,26 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: theme.palette.secondary.main },
                     }}
                   >
-                    <MenuItem value=""><em>None</em></MenuItem>
+                    <MenuItem value="" disabled><em>Select a driver</em></MenuItem>
                     {Array.isArray(approvedDrivers) && approvedDrivers.length > 0 ? (
-                      approvedDrivers.map((driver) => (
-                        <MenuItem key={driver?.id || Math.random()} value={driver?.name || (driver as any)?.firstName || '' + ' ' + driver?.surname || (driver as any)?.lastName || ''} >
-                          {driver?.name || (driver as any)?.firstName || ''} {driver?.surname || (driver as any)?.lastName || ''}
-                        </MenuItem>
-                      ))
+                      approvedDrivers.map((driver) => {
+                        const driverId = driver?.id || '';
+                        const driverName = `${driver?.name || (driver as any)?.firstName || ''} ${driver?.surname || (driver as any)?.lastName || ''}`.trim();
+                        
+                        // Skip if driver has no ID
+                        if (!driverId) {
+                          console.warn('Driver without ID found:', driver);
+                          return null;
+                        }
+                        
+                        return (
+                          <MenuItem key={driverId} value={driverId}>
+                            {driverName || 'Unnamed Driver'}
+                          </MenuItem>
+                        );
+                      }).filter(Boolean)
                     ) : (
-                      <MenuItem value=""><em>No drivers available</em></MenuItem>
+                      <MenuItem value="" disabled><em>No drivers available</em></MenuItem>
                     )}
                   </Select>
                   {formSubmitted && errors.assignedDriver && (
@@ -818,6 +919,14 @@ export function AddVehicleDialog({ open, onClose, onSubmit, onRefresh }: AddVehi
                     </Typography>
                     <Typography variant="body2">
                       {formData.year}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'medium', width: '140px' }}>
+                      Assigned Driver:
+                    </Typography>
+                    <Typography variant="body2">
+                      {formData.assignedDriver || 'Not assigned'}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', mb: 0.5 }}>

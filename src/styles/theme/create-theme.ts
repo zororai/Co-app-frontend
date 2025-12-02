@@ -20,7 +20,46 @@ function customCreateTheme(): Theme {
     typography,
   });
 
-  return theme;
+  // Override focus colors for input fields to use secondary instead of primary
+  const overriddenTheme = createTheme(
+    {
+      ...theme,
+    },
+    {
+      components: {
+        ...components,
+        MuiOutlinedInput: {
+          styleOverrides: {
+            root: {
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'inherit',
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'inherit',
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: theme.palette.secondary.main,
+                borderWidth: '2px',
+              },
+            },
+          },
+        },
+        MuiTextField: {
+          styleOverrides: {
+            root: {
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused fieldset': {
+                  borderColor: theme.palette.secondary.main,
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+  );
+
+  return overriddenTheme;
 }
 
 export { customCreateTheme as createTheme };

@@ -17,6 +17,10 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import PrintIcon from '@mui/icons-material/Print';
+import DownloadIcon from '@mui/icons-material/Download';
+import FileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import { printElementById } from '@/lib/print';
@@ -45,6 +49,9 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
   const [actionLoading, setActionLoading] = React.useState(false);
   const [actionSuccess, setActionSuccess] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  
+  // Preview attachment state
+  const [previewAttachment, setPreviewAttachment] = React.useState<{data: string, info: any} | null>(null);
 
   // Fetch incident details when dialog opens and incidentId changes
   React.useEffect(() => {
@@ -182,6 +189,75 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
     return dayjs(dateString).format('MMM D, YYYY');
   };
 
+  // Helper function to get file info from attachment
+  const getAttachmentInfo = (attachment: string) => {
+    try {
+      // Check if it's a data URL
+      if (attachment.startsWith('data:')) {
+        const matches = attachment.match(/data:([^;]+);base64,/);
+        const mimeType = matches ? matches[1] : 'application/octet-stream';
+        
+        // Determine file extension from mime type
+        const mimeToExt: Record<string, string> = {
+          'image/png': 'png',
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/gif': 'gif',
+          'image/webp': 'webp',
+          'application/pdf': 'pdf',
+          'application/msword': 'doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'application/vnd.ms-excel': 'xls',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+        };
+        
+        const ext = mimeToExt[mimeType] || 'file';
+        const isImage = mimeType.startsWith('image/');
+        
+        return {
+          mimeType,
+          ext,
+          isImage,
+          fileName: `attachment.${ext}`,
+          isDataUrl: true
+        };
+      }
+      
+      // Regular URL
+      const urlParts = attachment.split('/');
+      const fileName = urlParts[urlParts.length - 1].split('?')[0];
+      const isImage = /\.(png|jpe?g|gif|webp)$/i.test(fileName);
+      
+      return {
+        mimeType: 'application/octet-stream',
+        fileName,
+        isImage,
+        isDataUrl: false
+      };
+    } catch {
+      return {
+        mimeType: 'application/octet-stream',
+        fileName: 'attachment',
+        isImage: false,
+        isDataUrl: false
+      };
+    }
+  };
+
+  // Helper function to download attachment
+  const downloadAttachment = (attachment: string, fileName: string) => {
+    try {
+      const link = document.createElement('a');
+      link.href = attachment;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+    }
+  };
+
   return (
     <Dialog 
       open={open} 
@@ -195,7 +271,7 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
           justifyContent: 'space-between', 
           alignItems: 'center',
           p: 2,
-          bgcolor: '#15073d'
+          bgcolor: theme.palette.secondary.main
         }}
       >
         <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Incident Details</Typography>
@@ -226,13 +302,13 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, 
               gap: 2 
             }}>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Incident Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
                   <Typography sx={{ mb: 1 }}><strong>Title:</strong> {incident.incidentTitle || 'Untitled Incident'}</Typography>
-                  <Typography sx={{ mb: 1 }}><strong>Severity Level:</strong> 
+                  <Typography component="div" sx={{ mb: 1 }}><strong>Severity Level:</strong> 
                     <Chip 
                       label={incident.severityLevel || 'N/A'}
                       size="small"
@@ -267,8 +343,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Location Information
                 </Typography>
                 <Box sx={{ mt: 2 }}>
@@ -277,8 +353,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
                 </Box>
               </Box>
               
-              <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+              <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                   Description
                 </Typography>
                 <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
@@ -287,8 +363,8 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               </Box>
               
               {incident.participants && incident.participants.length > 0 && (
-                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                     Participants ({incident.participants.length})
                   </Typography>
                   <Stack spacing={2} sx={{ mt: 2 }}>
@@ -320,28 +396,110 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
               )}
               
               {incident.attachments && incident.attachments.length > 0 && (
-                <Box sx={{ gridColumn: '1 / -1', border: '1px solid #000080', borderRadius: '8px', p: 2, mt: 2 }}>
-                  <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ gridColumn: '1 / -1', border: `1px solid ${theme.palette.secondary.main}`, borderRadius: '8px', p: 2, mt: 2 }}>
+                  <Typography variant="subtitle2" sx={{ color: theme.palette.secondary.main, fontWeight: 'bold', mb: 2 }}>
                     Attachments ({incident.attachments.length})
                   </Typography>
                   <Box sx={{ mt: 2 }}>
                     <Stack spacing={1}>
-                      {incident.attachments.map((attachment: string, index: number) => (
-                        <Box 
-                          key={index}
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: 1,
-                            p: 1.5,
-                            bgcolor: '#f5f5f5',
-                            borderRadius: 1
-                          }}
-                        >
-                          <CheckCircleOutlineIcon fontSize="small" color="success" />
-                          <Typography variant="body2">{attachment}</Typography>
-                        </Box>
-                      ))}
+                      {incident.attachments.map((attachment: string, index: number) => {
+                        const attachmentInfo = getAttachmentInfo(attachment);
+                        const isImage = attachmentInfo.isImage;
+
+                        return (
+                          <Box 
+                            key={index}
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: 2,
+                              p: 1.5,
+                              bgcolor: '#f5f5f5',
+                              borderRadius: 1,
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                bgcolor: '#eeeeee'
+                              }
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
+                              {isImage ? (
+                                <ImageIcon sx={{ color: theme.palette.secondary.main, flexShrink: 0 }} fontSize="small" />
+                              ) : (
+                                <FileIcon sx={{ color: theme.palette.secondary.main, flexShrink: 0 }} fontSize="small" />
+                              )}
+                              
+                              {isImage && attachmentInfo.isDataUrl ? (
+                                <Box
+                                  component="img"
+                                  src={attachment}
+                                  alt={`attachment-${index}`}
+                                  sx={{
+                                    maxWidth: 240,
+                                    maxHeight: 160,
+                                    borderRadius: 1,
+                                    objectFit: 'cover',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      opacity: 0.8
+                                    }
+                                  }}
+                                  onClick={() => window.open(attachment, '_blank')}
+                                />
+                              ) : (
+                                <Box sx={{ minWidth: 0, flex: 1 }}>
+                                  <Typography 
+                                    variant="body2" 
+                                    sx={{ 
+                                      fontWeight: 500,
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                    title={attachmentInfo.fileName}
+                                  >
+                                    {attachmentInfo.fileName}
+                                  </Typography>
+                                  <Typography 
+                                    variant="caption" 
+                                    color="text.secondary"
+                                  >
+                                    {(attachmentInfo.ext ?? '').toUpperCase()}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                            
+                            <IconButton
+                              size="small"
+                              onClick={() => setPreviewAttachment({ data: attachment, info: attachmentInfo })}
+                              sx={{
+                                color: theme.palette.secondary.main,
+                                '&:hover': {
+                                  bgcolor: `rgba(50, 56, 62, 0.1)`
+                                }
+                              }}
+                              title="Preview attachment"
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                            
+                            <IconButton
+                              size="small"
+                              onClick={() => downloadAttachment(attachment, attachmentInfo.fileName)}
+                              sx={{
+                                color: theme.palette.secondary.main,
+                                '&:hover': {
+                                  bgcolor: `rgba(50, 56, 62, 0.1)`
+                                }
+                              }}
+                              title="Download attachment"
+                            >
+                              <DownloadIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        );
+                      })}
                     </Stack>
                   </Box>
                 </Box>
@@ -472,6 +630,124 @@ export function IncidentDetailsDialog({ open, onClose, incidentId, onRefresh }: 
             disabled={actionLoading || !actionReason.trim()}
           >
             {actionLoading ? 'Processing...' : 'Escalate'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Attachment Preview Modal */}
+      <Dialog
+        open={!!previewAttachment}
+        onClose={() => setPreviewAttachment(null)}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle 
+          sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            bgcolor: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0
+          }}
+        >
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+            {previewAttachment?.info?.fileName || 'Preview Attachment'}
+          </Typography>
+          <IconButton 
+            onClick={() => setPreviewAttachment(null)} 
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', bgcolor: '#f5f5f5' }}>
+          {previewAttachment && (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+              {previewAttachment.info?.isImage ? (
+                <Box
+                  component="img"
+                  src={previewAttachment.data}
+                  alt="Attachment preview"
+                  sx={{
+                    maxWidth: '100%',
+                    maxHeight: '600px',
+                    borderRadius: 1,
+                    objectFit: 'contain'
+                  }}
+                />
+              ) : previewAttachment.info?.ext === 'pdf' ? (
+                <Box
+                  component="iframe"
+                  src={previewAttachment.data}
+                  sx={{
+                    width: '100%',
+                    height: '600px',
+                    border: 'none',
+                    borderRadius: 1
+                  }}
+                />
+              ) : (
+                <Box sx={{ textAlign: 'center' }}>
+                  <FileIcon sx={{ fontSize: 80, color: theme.palette.secondary.main, mb: 2 }} />
+                  <Typography variant="h6" sx={{ mb: 1 }}>
+                    {previewAttachment.info?.fileName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Preview not available for this file type
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    startIcon={<DownloadIcon />}
+                    onClick={() => {
+                      if (previewAttachment) {
+                        downloadAttachment(previewAttachment.data, previewAttachment.info.fileName);
+                        setPreviewAttachment(null);
+                      }
+                    }}
+                    sx={{
+                      bgcolor: theme.palette.secondary.main,
+                      color: 'white',
+                      '&:hover': { bgcolor: theme.palette.secondary.dark }
+                    }}
+                  >
+                    Download File
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => {
+              if (previewAttachment) {
+                downloadAttachment(previewAttachment.data, previewAttachment.info.fileName);
+              }
+            }}
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            sx={{
+              bgcolor: theme.palette.secondary.main,
+              color: 'white',
+              '&:hover': { bgcolor: theme.palette.secondary.dark }
+            }}
+          >
+            Download
+          </Button>
+          <Button 
+            onClick={() => setPreviewAttachment(null)} 
+            variant="outlined"
+            sx={{
+              borderColor: theme.palette.secondary.main,
+              color: theme.palette.secondary.main
+            }}
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>

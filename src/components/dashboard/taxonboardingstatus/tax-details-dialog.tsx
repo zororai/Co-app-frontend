@@ -190,19 +190,26 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
-            Tax Details
-          </Typography>
-          <Box>
-            <IconButton onClick={() => printElementById('taxonboardingstatus-details-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
-              <PrintIcon />
-            </IconButton>
-            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2,
+          bgcolor: 'secondary.main',
+          color: 'white'
+        }}
+      >
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Tax Details
+        </Typography>
+        <Box>
+          <IconButton onClick={() => printElementById('taxonboardingstatus-details-printable')} size="small" sx={{ color: 'white', mr: 1 }}>
+            <PrintIcon />
+          </IconButton>
+          <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent sx={{ py: 3 }}>

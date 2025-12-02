@@ -80,29 +80,34 @@ export default function Page(): React.JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={3}>
+      <Stack direction="row" spacing={3} sx={{ 
+        alignItems: 'flex-start', 
+        justifyContent: 'space-between' 
+      }}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Shaft Creation</Typography>
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+            <Button 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} 
+              onClick={handleExport}
+            >
               Export
             </Button>
           </Stack>
         </Stack>
-        <Stack sx={{ alignItems: 'flex-end' }}>
-          <Button 
-            variant="contained"
-            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
-            onClick={() => setIsShaftDialogOpen(true)}
-            sx={{
-              bgcolor: '#5f4bfa',
-              color: '#fff',
-              '&:hover': { bgcolor: '#4d3fd6' }
-            }}
-          >
-            Create Shaft
-          </Button>
-        </Stack>
+        <Button 
+          variant="contained"
+          startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} 
+          onClick={() => setIsShaftDialogOpen(true)}
+          sx={{
+            bgcolor: 'secondary.main',
+            color: '#fff',
+            '&:hover': { bgcolor: 'secondary.dark' }
+          }}
+        >
+          Create Shaft
+        </Button>
       </Stack>
 
       <LazyWrapper>

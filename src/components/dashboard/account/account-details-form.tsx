@@ -295,47 +295,50 @@ export function AccountDetailsForm(): React.JSX.Element {
             </Grid>
           </Grid>
 
-          <Divider sx={{ my: 3 }} />
-
-          {/* Permissions Section */}
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Permissions</Typography>
-            <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {allAvailablePermissions.map((permission) => {
-                  const isCurrentPermission = currentPermissions.includes(permission);
-                  const isSelected = selectedPermissions.includes(permission);
-                  const isNewPermission = newPermissions.includes(permission);
-                  
-                  return (
-                    <Chip
-                      key={permission}
-                      label={permission.replace(/-/g, ' ').replace(/_/g, ' ')}
-                      onClick={() => handlePermissionToggle(permission)}
-                      color={
-                        isNewPermission ? 'error' : 
-                        isSelected ? 'success' : 
-                        'default'
-                      }
-                      variant={isSelected ? 'filled' : 'outlined'}
-                      size="small"
-                      sx={{ 
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 0.8
-                        }
-                      }}
-                    />
-                  );
-                })}
+          {/* Permissions Section - Only visible for admin users */}
+          {userData.role === 'admin' && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2 }}>Permissions</Typography>
+                <Box sx={{ maxHeight: '300px', overflow: 'auto' }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {allAvailablePermissions.map((permission) => {
+                      const isCurrentPermission = currentPermissions.includes(permission);
+                      const isSelected = selectedPermissions.includes(permission);
+                      const isNewPermission = newPermissions.includes(permission);
+                      
+                      return (
+                        <Chip
+                          key={permission}
+                          label={permission.replace(/-/g, ' ').replace(/_/g, ' ')}
+                          onClick={() => handlePermissionToggle(permission)}
+                          color={
+                            isNewPermission ? 'error' : 
+                            isSelected ? 'success' : 
+                            'default'
+                          }
+                          variant={isSelected ? 'filled' : 'outlined'}
+                          size="small"
+                          sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                              opacity: 0.8
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+                  {newPermissions.length > 0 && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      Red permissions are new and haven't been applied yet. Click "Save details" to apply them.
+                    </Alert>
+                  )}
+                </Box>
               </Box>
-              {newPermissions.length > 0 && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  Red permissions are new and haven't been applied yet. Click "Save details" to apply them.
-                </Alert>
-              )}
-            </Box>
-          </Box>
+            </>
+          )}
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>

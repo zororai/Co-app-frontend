@@ -144,9 +144,7 @@ export function MinerCompanyDetails({ minerData, companyData }: MinerCompanyDeta
                   <InfoItem label="Position" value={minerData.position} />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <InfoItem label="Shaft Number" value={minerData.shaftnumber} />
-                </Grid>
+            
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <InfoItem label="Registration Number" value={minerData.registrationNumber} />
@@ -211,13 +209,9 @@ export function MinerCompanyDetails({ minerData, companyData }: MinerCompanyDeta
                   <InfoItem label="Registration Number" value={companyData.registrationNumber} />
                 </Grid>
 
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <InfoItem label="Shaft Number" value={companyData.shaftnumber} />
-                </Grid>
+                
 
-                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                  <InfoItem label="Cell Number" value={companyData.cellNumber} />
-                </Grid>
+               
 
                 <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                   <InfoItem label="Email" value={companyData.email} />

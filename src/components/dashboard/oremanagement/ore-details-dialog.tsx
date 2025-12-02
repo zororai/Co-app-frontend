@@ -9,10 +9,12 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { authClient } from '@/lib/auth/client';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import PrintIcon from '@mui/icons-material/Print';
+import { useTheme } from '@mui/material/styles';
 import { printElementById } from '@/lib/print';
 
 interface OreDetailsDialogProps {
@@ -23,6 +25,7 @@ interface OreDetailsDialogProps {
 }
 
 export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetailsDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [oreDetails, setOreDetails] = React.useState<any>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string>('');
@@ -70,6 +73,17 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       setError('');
     }
   }, [open, userId]);
+  
+  // Defensive formatting for shaft numbers (could be array or string from backend)
+  const shaftNumbersDisplay = React.useMemo(() => {
+    if (!oreDetails) return 'N/A';
+    const s = oreDetails.shaftNumbers;
+    if (Array.isArray(s)) return s.join(', ');
+    if (s == null) return 'N/A';
+    // If it's a non-empty string or other primitive, coerce to string
+    const str = String(s);
+    return str.trim() === '' ? 'N/A' : str;
+  }, [oreDetails]);
   
   // Cancel action
   const cancelAction = () => {
@@ -121,41 +135,78 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          p: 2,
-          bgcolor: '#15073d'
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Ore Details</Typography>
+        <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+          Ore Details
+        </Typography>
         <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('ore-details-printable', 'Ore Details')} size="small" sx={{ mr: 1, color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={() => printElementById('ore-details-printable', 'Ore Details')} 
+            size="small" 
+            sx={{ 
+              mr: 1, 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ py: 3 }}>
+      
+      <DialogContent sx={{ p: 3 }}>
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={40} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[...Array(4)].map((_, index) => (
+              <Skeleton key={index} variant="rectangular" height={80} />
+            ))}
           </Box>
         )}
 
         {!loading && error && (
-          <Box sx={{ textAlign: 'center', color: 'error.main', py: 4 }}>
-            <Typography>{error}</Typography>
-          </Box>
+          <Alert severity="error">{error}</Alert>
         )}
 
         {!loading && !error && oreDetails && (
-          <Box id="ore-details-printable" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Ore Information</Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+          <Box id="ore-details-printable" sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* Ore Information Section */}
+            <Box sx={{ 
+              border: `2px solid ${theme.palette.secondary.main}`, 
+              borderRadius: '12px', 
+              p: 2.5,
+              bgcolor: '#ffffff'
+            }}>
+              <Typography 
+                variant="subtitle1" 
+                sx={{ 
+                  color: theme.palette.secondary.main, 
+                  fontWeight: 700, 
+                  mb: 2,
+                  fontSize: '1rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Ore Information
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                 <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
-                <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
-                <DetailItem label="Weight" value={oreDetails.weight?.toString() || 'N/A'} />
+                <DetailItem label="Shaft Numbers" value={shaftNumbersDisplay} />
+                <DetailItem label="Weight" value={`${oreDetails.weight || 'N/A'} kg`} />
                 <DetailItem label="Number of Bags" value={oreDetails.numberOfBags?.toString() || 'N/A'} />
                 <DetailItem label="Transport Status" value={oreDetails.transportStatus || 'N/A'} />
                 <DetailItem label="Transport Driver" value={oreDetails.selectedTransportdriver || 'N/A'} />
@@ -163,46 +214,94 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
                 <DetailItem label="Process Status" value={oreDetails.processStatus || 'N/A'} />
                 <DetailItem label="Location" value={oreDetails.location || 'N/A'} />
                 <DetailItem label="Date" value={oreDetails.date ? new Date(oreDetails.date).toLocaleDateString() : 'N/A'} />
-                <DetailItem label="Time" value={oreDetails.time ? new Date(oreDetails.time).toLocaleTimeString() : 'N/A'} />
               </Box>
             </Box>
 
+            {/* Transport Reason Section */}
             {oreDetails.transportReason && (
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Transport Reason</Typography>
-                <Box sx={{ whiteSpace: 'pre-wrap' }}>
-                  <Typography variant="body2">{oreDetails.transportReason}</Typography>
-                </Box>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: '1rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Transport Reason
+                </Typography>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {oreDetails.transportReason}
+                </Typography>
               </Box>
             )}
 
+            {/* Transport Costs Section */}
             {oreDetails.transportCosts && oreDetails.transportCosts.length > 0 && (
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Transport Costs</Typography>
-                <Box>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: '1rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Transport Costs
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {oreDetails.transportCosts.map((costItem: any, index: number) => (
-                    <Box key={index} sx={{ mb: index < oreDetails.transportCosts.length - 1 ? 2 : 0, p: 1, bgcolor: '#f5f5f5', borderRadius: '4px' }}>
-                      <Typography variant="body2"><strong>Payment Method:</strong> {costItem.paymentMethod || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Amount/Grams:</strong> {costItem.amountOrGrams?.toString() || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Status:</strong> {costItem.status || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Reason:</strong> {costItem.reason || 'N/A'}</Typography>
-                    </Box>
+                    <DetailItem key={index} label="Payment Method" value={costItem.paymentMethod || 'N/A'} />
                   ))}
                 </Box>
               </Box>
             )}
             
+            {/* Tax Information Section */}
             {oreDetails.tax && oreDetails.tax.length > 0 && (
-              <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Tax Information</Typography>
-                <Box>
+              <Box sx={{ 
+                border: `2px solid ${theme.palette.secondary.main}`, 
+                borderRadius: '12px', 
+                p: 2.5,
+                bgcolor: '#ffffff'
+              }}>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    color: theme.palette.secondary.main, 
+                    fontWeight: 700, 
+                    mb: 2,
+                    fontSize: '1rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Tax Information
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
                   {oreDetails.tax.map((taxItem: any, index: number) => (
-                    <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>
-                      <Typography variant="body2"><strong>Tax Type:</strong> {taxItem.taxType || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Tax Rate:</strong> {taxItem.taxRate?.toString() || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Location:</strong> {taxItem.location || 'N/A'}</Typography>
-                      <Typography variant="body2"><strong>Description:</strong> {taxItem.description || 'N/A'}</Typography>                   
-                    </Box>
+                    <React.Fragment key={index}>
+                      <DetailItem label="Tax Type" value={taxItem.taxType || 'N/A'} />
+                      <DetailItem label="Tax Rate" value={`${taxItem.taxRate || 'N/A'}%`} />
+                      <DetailItem label="Location" value={taxItem.location || 'N/A'} />
+                      <DetailItem label="Description" value={taxItem.description || 'N/A'} />
+                    </React.Fragment>
                   ))}
                 </Box>
               </Box>
@@ -210,19 +309,12 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
           </Box>
         )}
       </DialogContent>
+      
       {/* Action feedback messages */}
       {(actionError || actionSuccess) && (
         <Box sx={{ px: 3, pb: 2 }}>
-          {actionError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {actionError}
-            </Alert>
-          )}
-          {actionSuccess && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {actionSuccess}
-            </Alert>
-          )}
+          {actionError && <Alert severity="error" sx={{ mb: 2 }}>{actionError}</Alert>}
+          {actionSuccess && <Alert severity="success" sx={{ mb: 2 }}>{actionSuccess}</Alert>}
         </Box>
       )}
       
@@ -243,20 +335,30 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
           />
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
             <Button 
-              onClick={cancelAction}
+              onClick={() => cancelAction()}
               variant="outlined"
               disabled={actionLoading}
+              sx={{
+                borderColor: 'secondary.main',
+                color: 'secondary.main',
+                '&:hover': {
+                  borderColor: 'secondary.dark',
+                  bgcolor: 'rgba(50, 56, 62, 0.04)'
+                }
+              }}
             >
               Cancel
             </Button>
             <Button 
               onClick={() => handleAction()}
               variant="contained"
-              color="primary"
               disabled={actionLoading || reason.trim() === ''}
-              sx={{ bgcolor: actionType === 'reject' ? '#d32f2f' : '#ed6c02', '&:hover': { bgcolor: actionType === 'reject' ? '#b71c1c' : '#e65100' } }}
+              sx={{ 
+                bgcolor: 'secondary.main',
+                '&:hover': { bgcolor: 'secondary.dark' }
+              }}
             >
-              {actionLoading ? 'Processing...' : actionType === 'reject' ? 'Confirm Reject' : 'Confirm Push Back'}
+              {actionLoading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : actionType === 'reject' ? 'Confirm Reject' : 'Confirm Push Back'}
             </Button>
           </Box>
         </Box>
@@ -264,16 +366,22 @@ export function OreDetailsDialog({ open, onClose, userId, onRefresh }: OreDetail
       
       {/* Action buttons */}
       {!showReasonField && (
-        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between' }}>
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
           <Button 
             onClick={onClose} 
             variant="outlined"
             disabled={actionLoading}
+            sx={{
+              borderColor: 'secondary.main',
+              color: 'secondary.main',
+              '&:hover': {
+                borderColor: 'secondary.dark',
+                bgcolor: 'rgba(50, 56, 62, 0.04)'
+              }
+            }}
           >
             Close
           </Button>
-          
-         
         </DialogActions>
       )}
     </Dialog>

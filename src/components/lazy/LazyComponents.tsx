@@ -6,7 +6,12 @@ import { LazyWrapper } from '@/components/common/LazyWrapper';
 // Lazy load table components
 export const LazyCustomersTable = lazy(() => import('@/components/dashboard/useronboard/miner-status-table').then(module => ({ default: module.CustomersTable })));
 export const LazyCompanyTable = lazy(() => import('@/components/dashboard/customer/company-table').then(module => ({ default: module.CompanyTable })));
+// Point the registration company lazy loader directly at the canonical company-table
+// implementation under `customer` to avoid path-resolution issues in some envs.
+export const LazyRegCompanyTable = lazy(() => import('@/components/dashboard/customer/company-table').then(module => ({ default: module.CompanyTable })));
+export const LazyRegCustomersMainTable = lazy(() => import('@/components/dashboard/registration_Payment/regcustomers-table').then(module => ({ default: module.CustomersTable })));
 export const LazyCustomersMainTable = lazy(() => import('@/components/dashboard/customer/customers-table').then(module => ({ default: module.CustomersTable })));
+export const LazySyndicateTable = lazy(() => import('@/components/dashboard/syndicatemembership/syndicate-table').then(module => ({ default: module.CustomersTable })));
 export const LazyIncidentManagementTable = lazy(() => import('@/components/dashboard/incidentmanagement/incidentmanagement-table').then(module => ({ default: module.CustomersTable })));
 export const LazyProductionLoanTable = lazy(() => import('@/components/dashboard/Production_Loan/productionloan-table').then(module => ({ default: module.CustomersTable })));
 export const LazyOreDispatchTable = lazy(() => import('@/components/dashboard/Ore_Dispatch/ore-table').then(module => ({ default: module.CustomersTable })));

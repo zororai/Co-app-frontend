@@ -34,6 +34,13 @@ import Divider from '@mui/material/Divider';
 import { CheckCircle } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import { Snackbar } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import QRCode from 'qrcode';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -48,12 +55,14 @@ const steps = [
   'Permissions',
   'Additional Details',
   'Review',
+  'Generate User ID',
   'Confirmation'
 ];
 
 // Define role options
 const roleOptions = [
   { value: 'admin', label: 'Admin' },
+  { value: 'Security', label: 'Security' },
   { value: 'manager', label: 'Manager' },
   { value: 'user', label: 'User' },
   { value: 'she_officer', label: 'SHE Officer' },
@@ -67,6 +76,7 @@ const positionOptions = [
   { value: 'operator', label: 'Operator' },
   { value: 'engineer', label: 'Engineer' },
   { value: 'safety_officer', label: 'Safety Officer' },
+  { value: 'security_officer', label: 'Security Officer' },
   { value: 'administrator', label: 'Administrator' }
 ];
 
@@ -88,6 +98,13 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
   const [formSubmitted, setFormSubmitted] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [tempPassword, setTempPassword] = React.useState('••••••••••');
+  const theme = useTheme();
+  
+  // State for security companies
+  const [securityCompanies, setSecurityCompanies] = React.useState<any[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = React.useState(false);
+  const [showCompanyDropdown, setShowCompanyDropdown] = React.useState(false);
+  const [selectedCompanyId, setSelectedCompanyId] = React.useState<string>('');
   
   // Custom TextField styling
   const textFieldStyle = {
@@ -127,7 +144,10 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     notes: '',
     startDate: null as dayjs.Dayjs | null,
     emergencyContactName: '',
-    emergencyContactPhone: ''
+    emergencyContactPhone: '',
+    picture: '',
+    qrcode: '',
+    securityCompany: ''
   });
 
   const validateEmail = (email: string): boolean => {
@@ -214,10 +234,50 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
 
   // Handle select changes
   const handleSelectChange = (field: string) => (event: any) => {
+    const value = event.target.value;
     setFormData({
       ...formData,
-      [field]: event.target.value
+      [field]: value
     });
+    
+    // If selecting a security company, also store the company ID
+    if (field === 'securityCompany') {
+      const selectedCompany = securityCompanies.find(company => company.companyName === value);
+      if (selectedCompany) {
+        setSelectedCompanyId(selectedCompany.id);
+      }
+    }
+    
+    // Check if security company dropdown should be shown
+    if (field === 'role' || field === 'position') {
+      const updatedFormData = { ...formData, [field]: value };
+      const shouldShowCompany = 
+        updatedFormData.role === 'Security' || 
+        updatedFormData.position === 'security_officer';
+      
+      if (shouldShowCompany && !showCompanyDropdown) {
+        setShowCompanyDropdown(true);
+        fetchSecurityCompanies();
+      } else if (!shouldShowCompany && showCompanyDropdown) {
+        setShowCompanyDropdown(false);
+        setFormData(prev => ({ ...prev, securityCompany: '' }));
+        setSelectedCompanyId('');
+      }
+    }
+  };
+
+  // Fetch security companies
+  const fetchSecurityCompanies = async () => {
+    setLoadingCompanies(true);
+    try {
+      const companies = await authClient.fetchSecurityCompany();
+      setSecurityCompanies(companies);
+    } catch (error) {
+      console.error('Error fetching security companies:', error);
+      setSecurityCompanies([]);
+    } finally {
+      setLoadingCompanies(false);
+    }
   };
 
   // Handle date changes
@@ -262,6 +322,122 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setPermissions(updatedPermissions);
   };
 
+  // Generate QR Code from user data
+  const generateQRCode = async () => {
+    try {
+      const qrData = JSON.stringify({
+        id: formData.idNumber,
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        role: formData.role,
+        position: formData.position
+      });
+      
+      const qrCodeDataURL = await QRCode.toDataURL(qrData, {
+        width: 200,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      setFormData({
+        ...formData,
+        qrcode: qrCodeDataURL
+      });
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
+
+  // Handle file upload for passport photo
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file');
+        return;
+      }
+      
+      // Validate image dimensions (35mm x 45mm at 300 DPI = 413px x 531px)
+      const img = new Image();
+      const reader = new FileReader();
+      
+      reader.addEventListener('load', () => {
+        const result = reader.result;
+        if (typeof result === 'string') {
+          img.src = result;
+          
+          img.addEventListener('load', () => {
+            const expectedWidth = 413; // 35mm at 300 DPI
+            const expectedHeight = 531; // 45mm at 300 DPI
+            const tolerance = 50; // Allow some tolerance
+            
+            if (
+              Math.abs(img.width - expectedWidth) > tolerance ||
+              Math.abs(img.height - expectedHeight) > tolerance
+            ) {
+              setError(`Photo dimensions should be approximately 35mm x 45mm (${expectedWidth}px x ${expectedHeight}px). Current: ${img.width}px x ${img.height}px`);
+            } else {
+              setError(null);
+              
+              // Store the base64 string in the form data
+              setFormData({
+                ...formData,
+                picture: result,
+              });
+            }
+          });
+        }
+      });
+      
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Download User ID Card as PDF
+  const downloadUserIDCard = async () => {
+    try {
+      const cardElement = document.getElementById('user-id-card');
+      if (!cardElement) return;
+      
+      // Capture the ID card as canvas
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions to fit the card in PDF
+      const imgWidth = pdfWidth - 20; // 10mm margin on each side
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      const x = 10; // 10mm left margin
+      const y = (pdfHeight - imgHeight) / 2; // Center vertically
+      
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      pdf.save(`UserID_${formData.firstName}_${formData.lastName}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF');
+    }
+  };
+
   // Handle next step
   const handleNext = () => {
     // For the first step, validate required fields
@@ -278,7 +454,8 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         !formData.email ||
         !validateEmail(formData.email) ||
         !formData.idNumber ||
-        !idValidation.isValid
+        !idValidation.isValid ||
+        !formData.picture
       ) {
         return; // Don't proceed if validation fails
       }
@@ -288,10 +465,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     if (activeStep === 1) {
       setFormSubmitted(true);
       
+      // Check if security company is required
+      const requiresCompany = formData.role === 'Security' || formData.position === 'security_officer';
+      
       if (
         !formData.role ||
         !formData.position ||
-        !formData.location
+        !formData.location ||
+        (requiresCompany && !formData.securityCompany)
       ) {
         return; // Don't proceed if validation fails
       }
@@ -353,22 +534,28 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         return;
       }
       
+      // If security company is selected, assign the user to the security company
+      if (selectedCompanyId && response.data?.id) {
+        const assignResponse = await authClient.assignEmployeeToSecurityCompany(
+          selectedCompanyId, 
+          response.data.id
+        );
+        
+        if (!assignResponse.success) {
+          console.error('Failed to assign employee to security company:', assignResponse.error);
+          // Note: We don't fail the entire operation, just log the error
+          // The user was created successfully, but assignment failed
+        }
+      }
+      
       // Generate temporary password and reference number
       const tempPass = '0000';
       setTempPassword(tempPass);
       setReferenceNumber(`USR-${Math.floor(Math.random() * 10_000).toString().padStart(4, '0')}`);
       setSuccess(true);
       
-      // Move to success step
-      setActiveStep(steps.length - 1);
-      
-      // Refresh parent component if callback provided
-      if (onRefresh) {
-        onRefresh();
-      }
-
-      // Revalidate and refresh the current route so lists reflect the new user
-      router.refresh();
+      // Move to Generate User ID step (step 5)
+      setActiveStep(5);
     } catch (error_) {
       console.error('Error creating user:', error_);
       setError(error_ instanceof Error ? error_.message : 'Failed to create user');
@@ -379,6 +566,9 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
 
   // Handle dialog close
   const handleClose = () => {
+    // Check if the submission was successful before resetting
+    const wasSuccessful = success;
+    
     // Reset form state
     setActiveStep(0);
     setFormData({
@@ -395,7 +585,10 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
       notes: '',
       startDate: null,
       emergencyContactName: '',
-      emergencyContactPhone: ''
+      emergencyContactPhone: '',
+      picture: '',
+      qrcode: '',
+      securityCompany: ''
     });
     setValidationErrors({});
     setError(null);
@@ -405,9 +598,17 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
     setShowPassword(false);
     setFormSubmitted(false);
     setPermissions({});
+    setShowCompanyDropdown(false);
+    setSecurityCompanies([]);
+    setSelectedCompanyId('');
     
     // Call parent onClose
     onClose();
+    
+    // Refresh the table after closing if submission was successful
+    if (wasSuccessful && onRefresh) {
+      onRefresh();
+    }
   };
 
   const copyToClipboard = () => {
@@ -432,7 +633,7 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        background: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -484,19 +685,19 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
               },
             },
             '& .MuiStepLabel-label': {
               '&.Mui-active': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 600,
               },
               '&.Mui-completed': {
-                color: 'rgb(5, 5, 68)',
+                color: theme.palette.secondary.main,
                 fontWeight: 500,
               },
             },
@@ -504,10 +705,10 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
               borderColor: '#d1d5db',
             },
             '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
             '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-              borderColor: 'rgb(5, 5, 68)',
+              borderColor: theme.palette.secondary.main,
             },
           }}
         >
@@ -659,6 +860,60 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   />
                 </LocalizationProvider>
               </Grid>
+              
+              {/* Passport Photo Upload */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
+                  Passport Photo *
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Upload a passport-sized photo (35mm x 45mm or approximately 413px x 531px)
+                </Typography>
+                
+                <Button
+                  variant="outlined"
+                  component="label"
+                  sx={{
+                    borderColor: 'rgb(5, 5, 68)',
+                    color: 'rgb(5, 5, 68)',
+                    '&:hover': {
+                      borderColor: 'rgb(5, 5, 68)',
+                      backgroundColor: 'rgba(5, 5, 68, 0.04)'
+                    }
+                  }}
+                >
+                  Choose Photo
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+                
+                {formData.picture && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" sx={{ mb: 1 }}>Preview:</Typography>
+                    <Box
+                      component="img"
+                      src={formData.picture}
+                      alt="Passport photo preview"
+                      sx={{
+                        width: 150,
+                        height: 193,
+                        objectFit: 'cover',
+                        border: '2px solid #e0e0e0',
+                        borderRadius: 1
+                      }}
+                    />
+                  </Box>
+                )}
+                
+                {formSubmitted && !formData.picture && (
+                  <FormHelperText error>Passport photo is required</FormHelperText>
+                )}
+              </Grid>
             </Grid>
           </Box>
         )}
@@ -791,6 +1046,55 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                   )}
                 </FormControl>
               </Grid>
+              
+              {/* Security Company Dropdown - Only shown for Security role or Security Officer position */}
+              {showCompanyDropdown && (
+                <Grid item xs={12}>
+                  <FormControl 
+                    fullWidth 
+                    required 
+                    error={formSubmitted && !formData.securityCompany}
+                    margin="normal"
+                  >
+                    <Typography variant="body2" component="label" sx={{ mb: 1, fontWeight: 500 }}>
+                      Security Company *
+                    </Typography>
+                    <Select
+                      displayEmpty
+                      value={formData.securityCompany}
+                      onChange={handleSelectChange('securityCompany')}
+                      disabled={loadingCompanies}
+                      renderValue={
+                        formData.securityCompany === "" 
+                          ? () => <Typography color="text.secondary">
+                              {loadingCompanies ? 'Loading companies...' : 'Select security company'}
+                            </Typography> 
+                          : undefined
+                      }
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgb(5, 5, 68)',
+                        },
+                      }}
+                    >
+                      {securityCompanies.map((company) => (
+                        <MenuItem key={company.id} value={company.companyName}>
+                          {company.companyName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {formSubmitted && !formData.securityCompany && (
+                      <FormHelperText>Security company is required for security personnel</FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+              )}
             
               <Grid item xs={12}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -1005,6 +1309,14 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
                     {locationOptions.find(option => option.value === formData.location)?.label || formData.location}
                   </Typography>
                 </Grid>
+                {formData.securityCompany && (
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary">Security Company</Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                      {formData.securityCompany}
+                    </Typography>
+                  </Grid>
+                )}
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" color="text.secondary">Status</Typography>
                   <Typography variant="body1" sx={{ mb: 2 }}>
@@ -1054,8 +1366,188 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
           </Box>
         )}
 
-        {/* Step 6: Confirmation */}
+        {/* Step 6: Generate User ID */}
         {activeStep === 5 && (
+          <Box>
+            <Typography variant="h6" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
+              User Identification Card
+            </Typography>
+            
+            {/* Generate QR Code button if not already generated */}
+            {!formData.qrcode && (
+              <Box sx={{ textAlign: 'center', mb: 3 }}>
+                <Button
+                  variant="contained"
+                  onClick={generateQRCode}
+                  sx={{
+                    bgcolor: 'rgb(5, 5, 68)',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.8)' }
+                  }}
+                >
+                  Generate QR Code
+                </Button>
+              </Box>
+            )}
+            
+            {/* User ID Card */}
+            {formData.qrcode && (
+              <Box>
+                <Card
+                  id="user-id-card"
+                  sx={{
+                    maxWidth: 800,
+                    mx: 'auto',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: 2,
+                    overflow: 'hidden'
+                  }}
+                >
+                  {/* Gold Header */}
+                  <Box
+                    sx={{
+                      bgcolor: '#DAA520',
+                      color: 'white',
+                      py: 2,
+                      textAlign: 'center'
+                    }}
+                  >
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
+                      USER IDENTIFICATION CARD
+                    </Typography>
+                  </Box>
+                  
+                  <CardContent sx={{ p: 4 }}>
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'flex-start' }}>
+                      {/* Photo Section */}
+                      <Box sx={{ flex: '0 0 auto' }}>
+                        {formData.picture ? (
+                          <Box
+                            component="img"
+                            src={formData.picture}
+                            alt="User photo"
+                            sx={{
+                              width: 150,
+                              height: 193,
+                              objectFit: 'cover',
+                              border: '3px solid #DAA520',
+                              borderRadius: 1
+                            }}
+                          />
+                        ) : (
+                          <Box
+                            sx={{
+                              width: 150,
+                              height: 193,
+                              bgcolor: '#f5f5f5',
+                              border: '3px solid #DAA520',
+                              borderRadius: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary">
+                              No Photo
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      
+                      {/* User Details Section */}
+                      <Box sx={{ flex: 1 }}>
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            NAME
+                          </Typography>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                            {formData.firstName} {formData.lastName}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            ID NUMBER
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {formData.idNumber}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            ROLE
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500, textTransform: 'uppercase' }}>
+                            {formData.role}
+                          </Typography>
+                        </Box>
+                        
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            POSITION
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                            {formData.position}
+                          </Typography>
+                        </Box>
+                        
+                        {formData.startDate && (
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                              START DATE
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                              {formData.startDate.format('DD/MM/YYYY')}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                      
+                      {/* QR Code Section */}
+                      <Box sx={{ flex: '0 0 auto', textAlign: 'center' }}>
+                        <Box
+                          component="img"
+                          src={formData.qrcode}
+                          alt="QR Code"
+                          sx={{
+                            width: 150,
+                            height: 150,
+                            border: '2px solid #e0e0e0',
+                            borderRadius: 1,
+                            p: 1,
+                            bgcolor: 'white'
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                          Scan for Details
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+                
+                {/* Download Button */}
+                <Box sx={{ textAlign: 'center', mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    onClick={downloadUserIDCard}
+                    sx={{
+                      bgcolor: '#DAA520',
+                      color: 'white',
+                      '&:hover': { bgcolor: '#B8860B' }
+                    }}
+                  >
+                    Download User ID Card
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {/* Step 7: Confirmation */}
+        {activeStep === 6 && (
           <Box>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <CheckCircle color="success" sx={{ fontSize: 60, mb: 2 }} />
@@ -1191,6 +1683,22 @@ export function AddUserDialog({ open, onClose, onRefresh }: AddUserDialogProps):
         )}
         
         {activeStep === 5 && (
+          <Button
+            variant="contained"
+            onClick={handleNext}
+            sx={{ 
+              bgcolor: 'rgb(5, 5, 68)', 
+              color: 'white',
+              '&:hover': { 
+                bgcolor: 'rgba(5, 5, 68, 0.8)' 
+              } 
+            }}
+          >
+            {formData.qrcode ? 'Continue to Confirmation' : 'Generate ID First'}
+          </Button>
+        )}
+        
+        {activeStep === 6 && (
           <Button
             variant="contained"
             onClick={handleClose}

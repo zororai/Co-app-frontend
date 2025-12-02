@@ -382,19 +382,28 @@ export function CustomersTable({
                   
             
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <Button
                         onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Vehicle Details</button>
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          bgcolor: 'secondary.dark',
+                          color: 'white',
+                          borderRadius: '999px',
+                          textTransform: 'none',
+                          minWidth: 140,
+                          px: 2,
+                          py: '6px',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            bgcolor: 'secondary.main'
+                          }
+                        }}
+                      >
+                        Make Decision
+                      </Button>
                     </Box>
                   </TableCell>
                

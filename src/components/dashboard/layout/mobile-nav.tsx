@@ -363,6 +363,12 @@ function NavItem({ disabled, external, href, icon, matcher, pathname, title, ite
           textDecoration: 'none',
           whiteSpace: 'nowrap',
           transition: 'background-color 0.2s ease',
+          // When the global side-nav is collapsed, center icons for a compact look (matches side-nav behavior)
+          'body[data-nav-collapsed="true"] &': {
+            gap: 0,
+            p: '6px',
+            justifyContent: 'center',
+          },
           ...(disabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',

@@ -26,6 +26,12 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
             '--MobileNav-width': '320px',
             '--MobileNav-zIndex': 1100,
           },
+          'body[data-nav-collapsed="true"]': {
+            '--SideNav-width': '72px'
+          },
+          'body[data-nav-collapsed="false"]': {
+            '--SideNav-width': '280px'
+          }
         }}
       />
       <Box
@@ -38,12 +44,12 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
         }}
       >
         <SideNav />
-        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' } }}>
+        <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' }, transition: { lg: 'padding-left 220ms ease' } }}>
           <MainNav />
           <main>
-            <Container maxWidth="xl" sx={{ py: '64px' }}>
+            <Box sx={{ py: '24px', px: '32px' }}>
               {children}
-            </Container>
+            </Box>
           </main>
         </Box>
       </Box>

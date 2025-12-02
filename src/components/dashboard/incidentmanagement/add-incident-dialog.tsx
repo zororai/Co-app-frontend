@@ -29,6 +29,11 @@ import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import ImageIcon from '@mui/icons-material/Image';
+import DocumentScannerIcon from '@mui/icons-material/DocumentScanner';
 import Switch from '@mui/material/Switch';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -100,15 +105,9 @@ interface PersonDetail {
 
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
   const theme = useTheme();
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [success, setSuccess] = React.useState(false);
-  const [referenceNumber, setReferenceNumber] = React.useState('');
-  const [formSubmitted, setFormSubmitted] = React.useState(false);
   
-  // State for form data
-  const [formData, setFormData] = React.useState({
+  // Helper function to create fresh form data
+  const getInitialFormData = () => ({
     // Incident Details
     incidentTitle: '',
     incidentType: '',
@@ -130,6 +129,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       }
     ] as PersonDetail[]
   });
+  
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [success, setSuccess] = React.useState(false);
+  const [referenceNumber, setReferenceNumber] = React.useState('');
+  const [formSubmitted, setFormSubmitted] = React.useState(false);
+  
+  // State for form data
+  const [formData, setFormData] = React.useState(getInitialFormData());
 
   // State for shaft assignments
   const [shaftAssignments, setShaftAssignments] = React.useState<any[]>([]);
@@ -174,19 +183,19 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
     });
   };
 
-  // Add new person
+  // Add new person (adds to the beginning of the array)
   const addPerson = () => {
     setFormData({
       ...formData,
       persons: [
-        ...formData.persons,
         {
           id: crypto.randomUUID(),
           name: '',
           surname: '',
           nationalId: '',
           address: ''
-        }
+        },
+        ...formData.persons
       ]
     });
   };
@@ -403,25 +412,28 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
   // Handle dialog close
   const handleClose = () => {
     if (!loading) {
-      // Reset form state
+      // Reset all form state to initial values
       setActiveStep(0);
       setError(null);
       setSuccess(false);
       setFormSubmitted(false);
+      setReferenceNumber('');
+      setValidationErrors({});
+      setFormData(getInitialFormData());
       onClose();
     }
   };
 
 
 
-  // TextField styling with rgb(5, 5, 68) theme
+  // TextField styling with theme colors
   const textFieldStyle = {
     '& .MuiOutlinedInput-root': {
       '& fieldset': { borderColor: '#d1d5db' },
-      '&:hover fieldset': { borderColor: 'rgb(5, 5, 68)' },
-      '&.Mui-focused fieldset': { borderColor: 'rgb(5, 5, 68)' },
+      '&:hover fieldset': { borderColor: theme.palette.secondary.main },
+      '&.Mui-focused fieldset': { borderColor: theme.palette.secondary.main },
     },
-    '& .MuiInputLabel-root.Mui-focused': { color: 'rgb(5, 5, 68)' },
+    '& .MuiInputLabel-root.Mui-focused': { color: theme.palette.secondary.main },
   };
 
   return (
@@ -438,7 +450,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -463,16 +475,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           sx={{
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
-              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-active': { color: theme.palette.secondary.main },
+              '&.Mui-completed': { color: theme.palette.secondary.main },
             },
             '& .MuiStepLabel-label': {
-              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+              '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
             },
             '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
           }}
         >
           {steps.map((label) => (
@@ -490,7 +502,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         overflow: 'auto',
         '&::-webkit-scrollbar': { width: '6px' },
         '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
-        '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(5, 5, 68)', borderRadius: '3px' },
+        '&::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.secondary.main, borderRadius: '3px' },
       }}>
         
         {/* Error Message */}
@@ -649,49 +661,178 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {/* Step 1: Attachments */}
         {activeStep === 1 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
               Attachments (Photos/Documents)
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <input
-                  accept="image/*,.pdf,.doc,.docx"
-                  style={{ display: 'none' }}
-                  id="raised-button-file"
-                  multiple
-                  type="file"
-                  onChange={handleFileUpload}
-                />
-                <label htmlFor="raised-button-file">
-                  <Button variant="outlined" component="span" startIcon={<AddIcon />}>
-                    Add Files
-                  </Button>
-                </label>
+            
+            <input
+              accept="image/*,.pdf,.doc,.docx"
+              style={{ display: 'none' }}
+              id="raised-button-file"
+              multiple
+              type="file"
+              onChange={handleFileUpload}
+            />
+            
+            {/* Upload Area */}
+            <label htmlFor="raised-button-file" style={{ width: '100%' }}>
+              <Box
+                sx={{
+                  border: `2px dashed ${theme.palette.secondary.main}`,
+                  borderRadius: 2,
+                  p: 4,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  bgcolor: 'rgba(50, 56, 62, 0.02)',
+                  '&:hover': {
+                    bgcolor: 'rgba(50, 56, 62, 0.08)',
+                    borderColor: theme.palette.secondary.dark
+                  },
+                  component: 'div'
+                }}
+              >
+                <CloudUploadIcon sx={{ fontSize: 48, color: theme.palette.secondary.main, mb: 1 }} />
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, color: theme.palette.secondary.main }}>
+                  Click to upload or drag and drop
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Supported formats: Images (PNG, JPG, GIF), PDF, DOC, DOCX
+                </Typography>
+                <Button
+                  variant="contained"
+                  component="span"
+                  startIcon={<AddIcon />}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    color: 'white',
+                    '&:hover': { bgcolor: theme.palette.secondary.dark }
+                  }}
+                >
+                  Select Files
+                </Button>
+              </Box>
+            </label>
 
-                {formData.attachments.length > 0 && (
-                  <Box sx={{ mt: 2 }}>
-                    {formData.attachments.map((file, index) => (
-                      <Box key={index} sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 1,
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 1,
-                        mb: 1
-                      }}>
-                        <Typography variant="body2">
+            {/* File Count */}
+            {formData.attachments.length > 0 && (
+              <Box sx={{ mt: 3, mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <CheckCircleOutlineIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    {formData.attachments.length} file{formData.attachments.length !== 1 ? 's' : ''} selected
+                  </Typography>
+                </Box>
+
+                {/* Files Grid */}
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr' },
+                  gap: 2
+                }}>
+                  {formData.attachments.map((file, index) => {
+                    const isImage = file.type.startsWith('image/');
+                    const isPdf = file.type === 'application/pdf';
+                    const isDocument = file.type.includes('word') || file.type.includes('document');
+                    
+                    let icon = <InsertDriveFileIcon />;
+                    if (isImage) icon = <ImageIcon />;
+                    else if (isPdf) icon = <DocumentScannerIcon />;
+                    else if (isDocument) icon = <InsertDriveFileIcon />;
+
+                    return (
+                      <Box
+                        key={index}
+                        sx={{
+                          border: `1px solid ${theme.palette.secondary.main}`,
+                          borderRadius: 1.5,
+                          p: 2,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: 1,
+                          transition: 'all 0.2s ease',
+                          bgcolor: 'background.paper',
+                          '&:hover': {
+                            boxShadow: `0 2px 8px rgba(50, 56, 62, 0.12)`,
+                            bgcolor: 'rgba(50, 56, 62, 0.02)'
+                          }
+                        }}
+                      >
+                        {/* File Icon */}
+                        <Box sx={{ color: theme.palette.secondary.main, fontSize: 32 }}>
+                          {icon}
+                        </Box>
+
+                        {/* File Name */}
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 500,
+                            textAlign: 'center',
+                            wordBreak: 'break-word',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            minHeight: '40px'
+                          }}
+                          title={file.name}
+                        >
                           {file.name}
                         </Typography>
-                        <IconButton size="small" onClick={() => removeAttachment(index)}>
-                          <CloseIcon fontSize="small" />
+
+                        {/* File Size */}
+                        <Typography variant="caption" color="text.secondary">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </Typography>
+
+                        {/* Delete Button */}
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            removeAttachment(index);
+                          }}
+                          sx={{
+                            color: 'error.main',
+                            marginTop: 'auto',
+                            '&:hover': {
+                              bgcolor: 'rgba(211, 47, 47, 0.1)'
+                            }
+                          }}
+                          title="Remove file"
+                        >
+                          <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Box>
-                    ))}
-                  </Box>
-                )}
-              </Grid>
-            </Grid>
+                    );
+                  })}
+                </Box>
+
+                {/* Add More Button */}
+                <Box sx={{ mt: 3 }}>
+                  <label htmlFor="raised-button-file">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        borderColor: theme.palette.secondary.main,
+                        color: theme.palette.secondary.main,
+                        '&:hover': {
+                          borderColor: theme.palette.secondary.dark,
+                          bgcolor: 'rgba(50, 56, 62, 0.04)'
+                        }
+                      }}
+                    >
+                      Add More Files
+                    </Button>
+                  </label>
+                </Box>
+              </Box>
+            )}
 
             {/* Buttons moved to fixed bottom action bar */}
           </Box>
@@ -700,91 +841,140 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         {/* Step 2: Persons Involved */}
         {activeStep === 2 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Persons Involved
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+              Persons Involved in the Incident
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                {formData.persons.map((person, index) => (
-                  <Box key={person.id} sx={{ 
-                    p: 2, 
-                    mb: 2, 
-                    border: '1px solid #e0e0e0', 
-                    borderRadius: 1
-                  }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="subtitle2">Person {index + 1}</Typography>
-                      {index > 0 && (
-                        <IconButton
-                          size="small"
-                          onClick={() => removePerson(index)}
-                          sx={{ color: 'error.main' }}
-                          aria-label="Remove person"
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                      )}
-                    </Box>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Add details of all individuals involved in or affected by this incident. At least one person is required.
+            </Typography>
 
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Name"
-                          value={person.name}
-                          onChange={handlePersonChange(index, 'name')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Surname"
-                          value={person.surname}
-                          onChange={handlePersonChange(index, 'surname')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="National ID"
-                          value={person.nationalId}
-                          onChange={handlePersonChange(index, 'nationalId')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6} md={3}>
-                        <TextField
-                          fullWidth
-                          label="Address"
-                          value={person.address}
-                          onChange={handlePersonChange(index, 'address')}
-                          margin="normal"
-                          size="small"
-                          sx={textFieldStyle}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
-                ))}
-                
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={addPerson}
-                  sx={{ mt: 1 }}
+            {/* Add Person Button - Sticky at Top */}
+            <Box sx={{ mb: 3, pb: 2.5, borderBottom: `1px solid #e0e0e0` }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={addPerson}
+                sx={{
+                  bgcolor: theme.palette.secondary.main,
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: theme.palette.secondary.dark
+                  }
+                }}
+              >
+                Add Person
+              </Button>
+            </Box>
+
+            {/* Persons List */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              {formData.persons.map((person, index) => (
+                <Box 
+                  key={person.id}
+                  sx={{
+                    border: `1px solid ${theme.palette.secondary.main}`,
+                    borderRadius: 2,
+                    p: 2.5,
+                    bgcolor: 'background.paper',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      boxShadow: `0 2px 8px rgba(50, 56, 62, 0.12)`,
+                      bgcolor: 'rgba(50, 56, 62, 0.01)'
+                    }
+                  }}
                 >
-                  Add Person
-                </Button>
-              </Grid>
-            </Grid>
+                  {/* Person Header */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, pb: 1.5, borderBottom: `1px solid ${theme.palette.secondary.main}` }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box 
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          bgcolor: theme.palette.secondary.main,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '14px'
+                        }}
+                      >
+                        {index + 1}
+                      </Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                        Person {index + 1}
+                        {person.name || person.surname ? ` - ${person.name} ${person.surname}`.trim() : ''}
+                      </Typography>
+                    </Box>
+                    {index > 0 && (
+                      <IconButton
+                        size="small"
+                        onClick={() => removePerson(index)}
+                        sx={{
+                          color: 'error.main',
+                          '&:hover': {
+                            bgcolor: 'rgba(211, 47, 47, 0.1)'
+                          }
+                        }}
+                        title="Remove person"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+
+                  {/* Form Fields Grid */}
+                  <Box sx={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 2
+                  }}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      placeholder="Enter first name"
+                      value={person.name}
+                      onChange={handlePersonChange(index, 'name')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        placeholder="Enter last name"
+                        value={person.surname}
+                        onChange={handlePersonChange(index, 'surname')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="National ID"
+                        placeholder="Enter national ID number"
+                        value={person.nationalId}
+                        onChange={handlePersonChange(index, 'nationalId')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                      <TextField
+                        fullWidth
+                        label="Address"
+                        placeholder="Enter residential address"
+                        value={person.address}
+                        onChange={handlePersonChange(index, 'address')}
+                        size="small"
+                        sx={textFieldStyle}
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+              ))}
+            </Box>
 
             {/* Buttons moved to fixed bottom action bar */}
           </Box>

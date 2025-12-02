@@ -15,7 +15,6 @@ import { Sales } from '@/components/dashboard/overview/sales';
 import { TasksProgress } from '@/components/dashboard/overview/tasks-progress';
 import { TotalCustomers } from '@/components/dashboard/overview/total-customers';
 import { TotalProfit } from '@/components/dashboard/overview/total-profit';
-import { Traffic } from '@/components/dashboard/overview/traffic';
 
 interface DashboardData {
   budget: { value: number; trend: string };
@@ -108,7 +107,6 @@ export default function Page(): React.JSX.Element {
       </Grid>
       <Grid
         size={{
-          lg: 8,
           xs: 12,
         }}
       >
@@ -116,26 +114,6 @@ export default function Page(): React.JSX.Element {
       </Grid>
       <Grid
         size={{
-          lg: 4,
-          md: 6,
-          xs: 12,
-        }}
-      >
-        <Traffic sx={{ height: '100%' }} />
-      </Grid>
-      <Grid
-        size={{
-          lg: 4,
-          md: 6,
-          xs: 12,
-        }}
-      >
-      
-      </Grid>
-      <Grid
-        size={{
-          lg: 8,
-          md: 12,
           xs: 12,
         }}
       >

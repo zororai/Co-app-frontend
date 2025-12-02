@@ -365,24 +365,29 @@ export function CustomersTable({
 
                   <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Button 
+                        <Button
                           onClick={() => {
                             const assignmentId = (row as any).assignmentId || row.id;
                             setSelectedAssignmentId(assignmentId);
                             setIsBorrowDialogOpen(true);
                           }}
-                          variant="outlined"
+                          variant="contained"
                           size="small"
                           sx={{
-                            borderColor: '#06131fff',
-                            color: '#081b2fff',
+                            bgcolor: 'secondary.dark',
+                            color: 'white',
+                            borderRadius: '999px',
+                            textTransform: 'none',
+                            minWidth: 140,
+                            px: 2,
+                            py: '6px',
+                            boxShadow: 'none',
                             '&:hover': {
-                              borderColor: '#06131fff',
-                              backgroundColor: 'rgba(6, 19, 31, 0.04)',
+                              bgcolor: 'secondary.main'
                             }
                           }}
                         >
-                          Borrowe
+                          Borrow
                         </Button>
                       </Box>
                     

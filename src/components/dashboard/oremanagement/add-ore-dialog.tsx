@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Fragment } from 'react';
+import { useTheme } from '@mui/material/styles';
 import { 
   Box, 
   Button, 
@@ -86,6 +87,7 @@ const locationOptions = [
 ];
 
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -477,22 +479,37 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
         m: 0
       }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: 'white' }}>
           Assign Ore to Transport
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{ color: 'white' }}>
+        <IconButton 
+          edge="end" 
+          color="inherit" 
+          onClick={handleClose} 
+          aria-label="close" 
+          sx={{ 
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
       {/* Fixed Stepper Section */}
-      <Box sx={{ width: '100%', px: 3, py: 2, background: '#fafafa', borderBottom: '1px solid #eaeaea' }}>
+      <Box sx={{ 
+        width: '100%', 
+        px: 3, 
+        py: 2, 
+        background: '#fafafa', 
+        borderBottom: '1px solid #eaeaea' 
+      }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
           Assign ore to transport with tax information and additional details
         </Typography>
@@ -502,16 +519,16 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
           sx={{
             '& .MuiStepIcon-root': {
               color: '#d1d5db',
-              '&.Mui-active': { color: 'rgb(5, 5, 68)' },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)' },
+              '&.Mui-active': { color: theme.palette.secondary.main },
+              '&.Mui-completed': { color: theme.palette.secondary.main },
             },
             '& .MuiStepLabel-label': {
-              '&.Mui-active': { color: 'rgb(5, 5, 68)', fontWeight: 600 },
-              '&.Mui-completed': { color: 'rgb(5, 5, 68)', fontWeight: 500 },
+              '&.Mui-active': { color: theme.palette.secondary.main, fontWeight: 600 },
+              '&.Mui-completed': { color: theme.palette.secondary.main, fontWeight: 500 },
             },
             '& .MuiStepConnector-line': { borderColor: '#d1d5db' },
-            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
-            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: 'rgb(5, 5, 68)' },
+            '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
+            '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': { borderColor: theme.palette.secondary.main },
           }}
         >
           {steps.map((label) => (
@@ -988,8 +1005,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               variant="contained"
               onClick={handleClose}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: 'white',
+                '&:hover': { bgcolor: theme.palette.secondary.dark }
               }}
             >
               Close
@@ -1001,7 +1019,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               variant="outlined"
               onClick={handleBack}
               disabled={activeStep === 0}
-              sx={{ borderColor: 'rgb(5, 5, 68)', color: 'rgb(5, 5, 68)', '&:hover': { borderColor: 'rgb(5, 5, 68)', backgroundColor: 'rgba(5, 5, 68, 0.04)' } }}
+              sx={{ 
+                borderColor: theme.palette.secondary.main, 
+                color: theme.palette.secondary.main, 
+                '&:hover': { 
+                  borderColor: theme.palette.secondary.dark,
+                  bgcolor: 'rgba(50, 56, 62, 0.04)' 
+                }
+              }}
             >
               Back
             </Button>
@@ -1011,11 +1036,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               onClick={activeStep === steps.length - 2 ? handleSubmit : handleNext}
               disabled={isSubmitting}
               sx={{ 
-                bgcolor: 'rgb(5, 5, 68)',
-                '&:hover': { bgcolor: 'rgba(5, 5, 68, 0.9)' } 
+                bgcolor: theme.palette.secondary.main,
+                color: 'white',
+                '&:hover': { bgcolor: theme.palette.secondary.dark }
               }}
             >
-              {activeStep === steps.length - 2 ? (isSubmitting ? 'Creating...' : 'Submit') : 'Next'}
+              {activeStep === steps.length - 2 ? (isSubmitting ? <CircularProgress size={24} sx={{ color: 'white' }} /> : 'Submit') : 'Next'}
             </Button>
           </Fragment>
         )}

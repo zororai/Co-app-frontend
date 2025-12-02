@@ -22,6 +22,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
@@ -141,21 +143,21 @@ export function CustomersTable({
         <Button
           variant="contained"
           sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           onClick={() => handleRedirect('/dashboard/syndicate')}
         >
           View Syndicate Miner Reg Status Health 
         </Button>
         <Button
           variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+            sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           onClick={() => handleRedirect('/dashboard/companyhealth')}
         >
 View Company Miner Reg Status Health
@@ -209,13 +211,11 @@ View Company Miner Reg Status Health
               <TableCell>Registration Number</TableCell>
          <TableCell>Company Name</TableCell>
          <TableCell>Company Address</TableCell>
-         <TableCell>Contact Number</TableCell>
+
          <TableCell>Email</TableCell>
-         <TableCell>Owner Name</TableCell>
-         <TableCell>Owner Surname</TableCell>
-                       <TableCell>Owner ID</TableCell>
+      
                        <TableCell>Status</TableCell>
-                       <TableCell>Actions</TableCell>
+                       <TableCell>Make Decision</TableCell>
               
             </TableRow>
           </TableHead>
@@ -227,11 +227,9 @@ View Company Miner Reg Status Health
                   <TableCell>{row.registrationNumber}</TableCell>
                   <TableCell>{row.companyName}</TableCell>
                   <TableCell>{row.address}</TableCell>
-                  <TableCell>{row.cellNumber}</TableCell>
+                  
                   <TableCell>{row.email}</TableCell>
-                  <TableCell>{row.ownerName}</TableCell>
-                                    <TableCell>{row.ownerSurname}</TableCell>
-                                    <TableCell>{row.ownerIdNumber}</TableCell>
+                  
                   
                   <TableCell>
                     <Box sx={{
@@ -256,19 +254,26 @@ View Company Miner Reg Status Health
                     </Box>
                   </TableCell>
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Application Details</button>
+                      {(() => {
+                        const v = String(row.regfeePaid ?? '').trim().toLowerCase();
+                        const isUnpaid = v === '' || v === 'null' || v === 'none' || v === 'not paid';
+                        return !isUnpaid && (
+                          <IconButton
+                            aria-label="view application details"
+                            onClick={() => handleViewCustomer(row.id)}
+                            size="small"
+                            sx={{
+                              color: '#081b2fff',
+                              borderRadius: '6px',
+                              padding: '4px',
+                            }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        );
+                      })()}
                     </Box>
                   </TableCell>
                

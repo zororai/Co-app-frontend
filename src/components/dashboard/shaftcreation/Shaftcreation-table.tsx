@@ -22,7 +22,14 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
 import dayjs from 'dayjs';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode } from 'react';
@@ -63,6 +70,8 @@ export function CustomersTable({
   // Local state for pagination if not controlled by parent
   const [internalPage, setInternalPage] = React.useState(page);
   const [internalRowsPerPage, setInternalRowsPerPage] = React.useState(rowsPerPage);
+  const [sortField, setSortField] = React.useState<string>('sectionName');
+  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
 
   // Use controlled or internal state
   const currentPage = onPageChange ? page : internalPage;
@@ -73,6 +82,12 @@ export function CustomersTable({
     position: 'all'
   });
 
+  const handleSort = (field: string) => {
+    const isAsc = sortField === field && sortDirection === 'asc';
+    setSortDirection(isAsc ? 'desc' : 'asc');
+    setSortField(field);
+  };
+
   // Filter the rows based on search and filters
   const filteredRows = React.useMemo(() => {
     return rows.filter(row => {
@@ -81,15 +96,34 @@ export function CustomersTable({
           String(value).toLowerCase().includes(filters.search.toLowerCase())
         );
       const matchesStatus = filters.status === 'all' || row.status === filters.status;
-      const matchesPosition = filters.position === 'all' || row.position === filters.position;
-      return matchesSearch && matchesStatus && matchesPosition;
+      return matchesSearch && matchesStatus;
     });
   }, [rows, filters]);
 
-  // Paginate filtered rows
+  // Sort filtered rows
+  const sortedRows = React.useMemo(() => {
+    return [...filteredRows].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+      
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+  }, [filteredRows, sortField, sortDirection]);
+
+  // Paginate sorted rows
   const paginatedRows = React.useMemo(() => {
-    return filteredRows.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
-  }, [filteredRows, currentPage, currentRowsPerPage]);
+    return sortedRows.slice(currentPage * currentRowsPerPage, currentPage * currentRowsPerPage + currentRowsPerPage);
+  }, [sortedRows, currentPage, currentRowsPerPage]);
 
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
@@ -105,52 +139,79 @@ export function CustomersTable({
   return (
     <Card>
       {/* Filters Section */}
-      <Box sx={{ p: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          size="small"
-          label="Search"
-          variant="outlined"
-          value={filters.search}
-          onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-          sx={{ minWidth: 200 }}
-          placeholder="Search by any field..."
-        />
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filters.status}
-            label="Status"
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          >
-            <MenuItem value="all">All Status</MenuItem>
-            <MenuItem value="Approved">Approved</MenuItem>
-            <MenuItem value="Rejected">Rejected</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Position</InputLabel>
-          <Select
-            value={filters.position}
-            label="Position"
-            onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
-          >
-            <MenuItem value="all">All Positions</MenuItem>
-            <MenuItem value="Representatives">Representatives</MenuItem>
-            <MenuItem value="Owner">Owner</MenuItem>
-            <MenuItem value="Member">Member</MenuItem>
-          </Select>
-        </FormControl>
+      <Box sx={{ 
+        p: 2, 
+        mb: 2,
+        borderRadius: 1,
+        bgcolor: '#fff',
+        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          flexWrap: 'wrap',
+          alignItems: 'center'
+        }}>
+          {/* Search input */}
+          <TextField
+            size="small"
+            label="Search"
+            variant="outlined"
+            value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            sx={{ minWidth: 220 }}
+            placeholder="Search shafts..."
+          />
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={filters.status}
+              label="Status"
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+            >
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="APPROVED">Approved</MenuItem>
+              <MenuItem value="REJECTED">Rejected</MenuItem>
+              <MenuItem value="PENDING">Pending</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
+
       <Divider />
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
             <TableRow>
-              
-              <TableCell>Shaft Number</TableCell>
-              <TableCell>Section</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell sortDirection={sortField === 'shaftNumbers' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'shaftNumbers'}
+                  direction={sortField === 'shaftNumbers' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('shaftNumbers')}
+                >
+                  Shaft Number
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'sectionName' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'sectionName'}
+                  direction={sortField === 'sectionName' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('sectionName')}
+                >
+                  Section
+                </TableSortLabel>
+              </TableCell>
+              <TableCell sortDirection={sortField === 'status' ? sortDirection : false}>
+                <TableSortLabel
+                  active={sortField === 'status'}
+                  direction={sortField === 'status' ? sortDirection : 'asc'}
+                  onClick={() => handleSort('status')}
+                >
+                  Status
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Assignment Status</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -161,23 +222,61 @@ export function CustomersTable({
                   <TableCell>{row.shaftNumbers}</TableCell>
                   <TableCell>{row.sectionName}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          bgcolor: row.status === 'APPROVED' ? '#d0f5e8' : '#ffebee', // vivid green or light red
-                          color: row.status === 'APPROVED' ? '#1b5e20' : '#c62828',   // deep green or deep red
-                          fontWeight: 500,
-                          fontSize: 13,
-                        }}
-                      >
-                        {row.status}
-                      </Box>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: row.status === 'APPROVED' ? '#C8E6C9' : 
+                               row.status === 'REJECTED' ? '#FFCDD2' : 
+                               row.status === 'PENDING' ? '#FFF9C4' : '#E0E0E0',
+                      color: row.status === 'APPROVED' ? '#1B5E20' : 
+                             row.status === 'REJECTED' ? '#B71C1C' : 
+                             row.status === 'PENDING' ? '#F57F17' : '#616161',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.status}
                     </Box>
                   </TableCell>
                   <TableCell>{row.assignStatus}</TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                      <Tooltip title="View Details">
+                        <IconButton 
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Edit">
+                        <IconButton 
+                          size="small"
+                          sx={{
+                            color: 'secondary.main',
+                            '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete">
+                        <IconButton 
+                          size="small"
+                          sx={{
+                            color: 'error.main',
+                            '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.08)' }
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -187,7 +286,7 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={filteredRows.length}
+        count={sortedRows.length}
         page={currentPage}
         rowsPerPage={currentRowsPerPage}
         onPageChange={onPageChange || ((_e, newPage) => setInternalPage(newPage))}

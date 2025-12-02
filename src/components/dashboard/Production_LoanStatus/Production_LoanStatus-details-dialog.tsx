@@ -180,16 +180,23 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
   if (loading) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
-              Production Loan Details
-            </Typography>
-            <Box>
-              <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            bgcolor: 'secondary.main',
+            color: 'white'
+          }}
+        >
+          <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+            Production Loan Details
+          </Typography>
+          <Box>
+            <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -205,16 +212,23 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
   if (error) {
     return (
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
-              Production Loan Details
-            </Typography>
-            <Box>
-              <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            bgcolor: 'secondary.main',
+            color: 'white'
+          }}
+        >
+          <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+            Production Loan Details
+          </Typography>
+          <Box>
+            <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -234,21 +248,28 @@ export function ProductionLoanDetailsDialog({ open, onClose, userId, onRefresh }
       maxWidth="md" 
       fullWidth
     >
-      <DialogTitle sx={{ bgcolor: '#15073d', p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" component="span" sx={{ color: '#FF8F00', fontWeight: 700 }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            bgcolor: 'secondary.main',
+            color: 'white'
+          }}
+        >
+          <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
             Production Loan Details / Make Decision
           </Typography>
           <Box>
-            <IconButton onClick={() => printElementById('production-loanstatus-printable')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+            <IconButton onClick={() => printElementById('production-loanstatus-printable')} size="small" sx={{ color: 'white', mr: 1 }}>
               <PrintIcon />
             </IconButton>
-            <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+            <IconButton onClick={onClose} size="small" sx={{ color: 'white' }}>
               <CloseIcon />
             </IconButton>
           </Box>
-        </Box>
-      </DialogTitle>
+        </DialogTitle>
       <DialogContent sx={{ py: 3 }}>
         <Box id="production-loanstatus-printable">
         {loanDetails && (

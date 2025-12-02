@@ -411,10 +411,10 @@ export function CustomersTable({
            
               <TableCell>Ore ID</TableCell>
               <TableCell>Shaft Numbers</TableCell>
-              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Weight (Before Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Number of Bags (Before Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Weight (After Tax Deduction)</TableCell>
-              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Tax Deduction)</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Extracted Ore</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffcccc' }}>Number of Bags (Before Charges Deduction)</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>Processed Ore</TableCell>
+              <TableCell sx={{ backgroundColor: '#ccffcc' }}>New Number of Bags (After Charges  Deduction)</TableCell>
               <TableCell>Transport Status</TableCell>
              
               <TableCell>Location</TableCell>
@@ -450,35 +450,49 @@ export function CustomersTable({
                   
                  
               
-                   <TableCell>
+                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
+                      <Button
                         onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Ore Details</button>
+                        variant="contained"
+                        size="small"
+                        sx={{
+                          bgcolor: 'secondary.dark',
+                          color: 'white',
+                          borderRadius: '999px',
+                          textTransform: 'none',
+                          minWidth: 140,
+                          px: 2,
+                          py: '6px',
+                          boxShadow: 'none',
+                          '&:hover': { bgcolor: 'secondary.main' }
+                        }}
+                      >
+                        View Ore Details
+                      </Button>
                     </Box>
                   </TableCell>
                   <TableCell>
                     {(!row.newnumberOfBags || row.newWeight === '') && (
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <button 
+                        <Button
                           onClick={() => handleCostDeduction(row.id)}
-                          style={{
-                            background: 'none',
-                            border: '1px solid #06131fff',
-                            color: '#081b2fff',
-                            borderRadius: '6px',
-                            padding: '2px 12px',
-                            cursor: 'pointer',
-                            fontWeight: 500,
-                        }}>Cost Deduction</button>
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            bgcolor: 'secondary.dark',
+                            color: 'white',
+                            borderRadius: '999px',
+                            textTransform: 'none',
+                            minWidth: 140,
+                            px: 2,
+                            py: '6px',
+                            boxShadow: 'none',
+                            '&:hover': { bgcolor: 'secondary.main' }
+                          }}
+                        >
+                          Cost Deduction
+                        </Button>
                       </Box>
                     )}
                   </TableCell>

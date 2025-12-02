@@ -127,19 +127,23 @@ export function UserDetailsDialog({ open, onClose, userId, onRefresh }: UserDeta
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          p: 2
-        }}
-      >
-        <Typography variant="subtitle1" component="span">User Details</Typography>
-        <IconButton onClick={onClose} size="small" aria-label="close">
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            p: 2,
+            bgcolor: 'secondary.main',
+            color: 'white'
+          }}
+        >
+          <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+            User Details
+          </Typography>
+          <IconButton onClick={onClose} size="small" aria-label="close" sx={{ color: 'white' }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
       <DialogContent>
         <Box sx={{ p: 2 }}>
           {loading && (

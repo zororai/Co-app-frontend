@@ -384,31 +384,72 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { borderRadius: 1 }
+        sx: { 
+          borderRadius: 1,
+          display: 'flex',
+          flexDirection: 'column'
+        }
       }}
     >
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        pb: 1
+        bgcolor: '#323E3E',
+        color: 'white',
+        py: 2.5,
+        px: 3,
+        m: 0
       }}>
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
           Assign Ore to Transport
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton 
+          edge="end" 
+          onClick={handleClose} 
+          aria-label="close"
+          sx={{
+            color: 'white',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
+      <DialogContent sx={{ 
+        px: 3,
+        py: 2,
+        flex: 1,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { 
+          backgroundColor: '#323E3E', 
+          borderRadius: '3px' 
+        },
+      }}>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
   
         </Typography>
         
         {/* Stepper */}
         <Box sx={{ width: '100%', mb: 4 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper 
+            activeStep={activeStep} 
+            alternativeLabel
+            sx={{
+              '& .MuiStepIcon-root': {
+                color: '#d1d5db',
+                '&.Mui-active': { color: '#323E3E' },
+                '&.Mui-completed': { color: '#323E3E' },
+              },
+              '& .MuiStepLabel-label': {
+                '&.Mui-active': { color: '#323E3E', fontWeight: 600 },
+                '&.Mui-completed': { color: '#323E3E', fontWeight: 500 },
+              },
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -553,14 +594,17 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 <Box sx={{ height: 0 }}></Box> {/* Empty box to satisfy children requirement */}
               </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Box /> {/* Spacer for alignment */}
               <Button
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: '#323E3E', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  textTransform: 'capitalize',
+                  '&:hover': { bgcolor: '#1c2626' },
+                  '&.MuiButton-contained': { bgcolor: '#323E3E', color: 'white' }
                 }}
               >
                 Next
@@ -616,8 +660,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                         <IconButton 
                           onClick={() => removeTaxEntry(index)}
                           disabled={formData.tax.length === 1}
-                          color="error"
-                          sx={{ mt: 1 }}
+                          sx={{ 
+                            mt: 1,
+                            color: '#d32f2f',
+                            '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.08)' }
+                          }}
                         >
                           <CloseIcon />
                         </IconButton>
@@ -630,7 +677,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                   variant="outlined"
                   onClick={addTaxEntry}
                   startIcon={<AddIcon />}
-                  sx={{ mt: 1 }}
+                  sx={{ 
+                    mt: 1,
+                    borderColor: '#323E3E',
+                    color: '#323E3E',
+                    textTransform: 'capitalize',
+                    '&:hover': { borderColor: '#1c2626', backgroundColor: 'rgba(50, 62, 62, 0.04)' }
+                  }}
                 >
                   Add Tax
                 </Button>
@@ -645,7 +698,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: '#323E3E', 
+                  color: '#323E3E',
+                  textTransform: 'capitalize',
+                  '&:hover': { borderColor: '#1c2626', backgroundColor: 'rgba(50, 62, 62, 0.04)' }
+                }}
               >
                 Back
               </Button>
@@ -653,9 +711,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: '#323E3E', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  textTransform: 'capitalize',
+                  '&:hover': { bgcolor: '#1c2626' },
+                  '&.MuiButton-contained': { bgcolor: '#323E3E', color: 'white' }
                 }}
               >
                 Next
@@ -729,7 +789,12 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: '#323E3E', 
+                  color: '#323E3E',
+                  textTransform: 'capitalize',
+                  '&:hover': { borderColor: '#1c2626', backgroundColor: 'rgba(50, 62, 62, 0.04)' }
+                }}
               >
                 Back
               </Button>
@@ -737,9 +802,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: '#323E3E', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  textTransform: 'capitalize',
+                  '&:hover': { bgcolor: '#1c2626' },
+                  '&.MuiButton-contained': { bgcolor: '#323E3E', color: 'white' }
                 }}
               >
                 Next
@@ -884,7 +951,13 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                disabled={isSubmitting}
+                sx={{ 
+                  borderColor: '#323E3E', 
+                  color: '#323E3E',
+                  textTransform: 'capitalize',
+                  '&:hover': { borderColor: '#1c2626', backgroundColor: 'rgba(50, 62, 62, 0.04)' }
+                }}
               >
                 Back
               </Button>
@@ -893,12 +966,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: '#323E3E', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  textTransform: 'capitalize',
+                  '&:hover': { bgcolor: '#1c2626' },
+                  '&.MuiButton-contained': { bgcolor: '#323E3E', color: 'white' }
                 }}
               >
-                {isSubmitting ? 'Creating...' : 'Save ore record'}
+                {isSubmitting ? 'Creating...' : 'Save Ore Record'}
               </Button>
             </Box>
           </Box>
@@ -926,9 +1001,11 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleClose}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: '#323E3E', 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  textTransform: 'capitalize',
+                  '&:hover': { bgcolor: '#1c2626' },
+                  '&.MuiButton-contained': { bgcolor: '#323E3E', color: 'white' }
                 }}
               >
                 Close

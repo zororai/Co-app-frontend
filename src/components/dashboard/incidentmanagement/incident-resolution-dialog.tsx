@@ -13,6 +13,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
 
 interface IncidentResolutionDialogProps {
@@ -28,6 +29,7 @@ export function IncidentResolutionDialog({
   incidentId,
   onResolutionComplete,
 }: IncidentResolutionDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [resolution, setResolution] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
@@ -89,7 +91,7 @@ export function IncidentResolutionDialog({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
-        background: 'linear-gradient(135deg,rgb(5, 5, 68) 0%,rgb(5, 5, 68) 100%)',
+        bgcolor: theme.palette.secondary.main,
         color: 'white',
         py: 2.5,
         px: 3,
@@ -197,10 +199,10 @@ export function IncidentResolutionDialog({
             disabled={loading || !resolution.trim()}
             variant="contained"
             sx={{
-              backgroundColor: 'rgb(5, 5, 68)',
+              backgroundColor: theme.palette.secondary.main,
               color: 'white',
               '&:hover': {
-                backgroundColor: 'rgb(4, 4, 58)',
+                backgroundColor: theme.palette.secondary.dark,
               },
               '&:disabled': {
                 backgroundColor: '#ccc',

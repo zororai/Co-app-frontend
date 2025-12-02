@@ -28,6 +28,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import { useTheme } from '@mui/material/styles';
 import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
@@ -123,6 +124,7 @@ export function CustomersTable({
   const [discussionReason, setDiscussionReason] = React.useState<string>('');
   const [showReasonField, setShowReasonField] = React.useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = React.useState<boolean>(false);
+  const theme = useTheme();
 
   const handleViewCustomer = async (customerId: string) => {
     // Open discussion dialog instead of view dialog
@@ -304,22 +306,26 @@ export function CustomersTable({
                                                     </Box>
                                 </TableCell>
 
-                                <TableCell>{row.reason}</TableCell>
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>Make A Decision</button>
-                    </Box>
-                  </TableCell>
+                                 <TableCell>{row.reason}</TableCell>
+                                 <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <Button
+                                      onClick={() => handleViewCustomer(row.id)}
+                                      variant="contained"
+                                      size="small"
+                                      sx={{
+                                        bgcolor: 'secondary.main',
+                                        color: '#fff',
+                                        '&:hover': { bgcolor: 'secondary.dark' },
+                                        textTransform: 'none',
+                                        borderRadius: '24px',
+                                        paddingX: 2
+                                      }}
+                                    >
+                                      Make A Decision
+                                    </Button>
+                                  </Box>
+                                </TableCell>
                
                 </TableRow>
               );
@@ -351,19 +357,23 @@ export function CustomersTable({
       
       {/* Discussion Dialog */}
       <Dialog open={isDiscussionDialogOpen} onClose={handleCloseDiscussionDialog} maxWidth="sm" fullWidth>
-        <DialogTitle 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            p: 2
-          }}
-        >
-          Section Discussion
-          <IconButton onClick={handleCloseDiscussionDialog} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+          <DialogTitle 
+            sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              p: 2,
+              bgcolor: theme.palette.secondary.main,
+              color: 'white'
+            }}
+          >
+            <Typography variant="h6" component="span" sx={{ color: 'white', fontWeight: 600 }}>
+              Shaft Discussions
+            </Typography>
+            <IconButton onClick={handleCloseDiscussionDialog} size="small" sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
         <DialogContent>
           <Box sx={{ p: 2 }}>
             {discussionCustomer && (

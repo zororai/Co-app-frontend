@@ -254,10 +254,7 @@ export function CompanyTable({
                           cursor: 'pointer',
                           padding: '2px 12px',
                         }}
-                        onClick={() => {
-                          // TODO: Implement document view functionality
-                          alert('View company documents');
-                        }}
+                    
                       >
                         <span role="img" aria-label="view" style={{ fontSize: 20 }}>📄</span>
                       </button>

@@ -13,12 +13,14 @@ import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import { useTheme } from '@mui/material/styles';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { generateSampleOreData } from '@/utils/generateSampleOreData';
 import { authClient } from '@/lib/auth/client';
 
 export function UtilitiesContent(): React.JSX.Element {
   const theme = useTheme();
   const [loadingSections, setLoadingSections] = React.useState(false);
   const [loadingSyndicates, setLoadingSyndicates] = React.useState(false);
+  const [loadingOre, setLoadingOre] = React.useState(false);
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
   const [snackbarSeverity, setSnackbarSeverity] = React.useState<'success' | 'error'>('success');
@@ -141,6 +143,49 @@ export function UtilitiesContent(): React.JSX.Element {
     }
   };
 
+  const handleGenerateSampleOreData = async () => {
+    setLoadingOre(true);
+    try {
+      // Generate 120 sample ore records
+      const sampleData = generateSampleOreData();
+      
+      // Send each record to the backend using authClient
+      const promises = sampleData.map(async (record) => {
+        // Format record to match createOre requirements
+        const orePayload = {
+          shaftNumbers: record.shaftNumbers,
+          weight: record.weight,
+          numberOfBags: record.numberOfBags,
+          transportStatus: record.transportStatus,
+          processStatus: record.processStatus,
+          location: record.location,
+          tax: record.tax
+        };
+
+        const response = await authClient.createOre(orePayload);
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to create ore record');
+        }
+
+        return response.data;
+      });
+
+      await Promise.all(promises);
+
+      setSnackbarMessage('Successfully generated and saved 120 ore records');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+    } catch (error: any) {
+      console.error('Error generating ore data:', error);
+      setSnackbarMessage(`Failed to generate ore data: ${error.message}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setLoadingOre(false);
+    }
+  };
+
   return (
     <Box>
       <Stack spacing={3}>
@@ -252,17 +297,56 @@ export function UtilitiesContent(): React.JSX.Element {
           </CardContent>
         </Card>
 
-        {/* Future utilities can be added here */}
-        {/* Example placeholder for future utilities */}
-        <Card sx={{ bgcolor: 'rgba(0, 0, 0, 0.02)' }}>
+        {/* Generate Sample Ore Data Card */}
+        <Card>
+          <CardHeader
+            title="Generate Sample Ore Data"
+            subheader="Create 120 sample ore records (10 per month, Jan-Dec 2025)"
+            sx={{
+              '& .MuiCardHeader-title': {
+                color: theme.palette.secondary.main,
+                fontWeight: 600
+              }
+            }}
+          />
           <CardContent>
-            <Stack spacing={1}>
-              <Typography variant="h6" color="text.secondary">
-                More Utilities Coming Soon
-              </Typography>
+            <Stack spacing={2}>
               <Typography variant="body2" color="text.secondary">
-                Additional data initialization and management utilities will be added here.
+                This action will generate 120 ore records with realistic data:
               </Typography>
+              <Box component="ul" sx={{ pl: 3, my: 1 }}>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  10 records per month from January to December 2025
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Weights ranging from 35,000 - 45,000 kg (±5,000 from base 40,000)
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Realistic date and time distribution
+                </Typography>
+                <Typography component="li" variant="body2" color="text.secondary">
+                  Default transport status: Pending
+                </Typography>
+              </Box>
+              <Box>
+                <Button
+                  variant="contained"
+                  startIcon={loadingOre ? <CircularProgress size={20} sx={{ color: 'white' }} /> : <PlayArrowIcon />}
+                  onClick={handleGenerateSampleOreData}
+                  disabled={loadingOre}
+                  sx={{
+                    bgcolor: theme.palette.secondary.main,
+                    color: '#fff',
+                    '&:hover': { bgcolor: theme.palette.secondary.dark },
+                    '&:disabled': {
+                      bgcolor: 'rgba(0, 0, 0, 0.12)',
+                      color: 'rgba(0, 0, 0, 0.26)'
+                    }
+                  }}
+                >
+                  {loadingOre ? 'Generating & Saving...' : 'Generate 120 Sample Ore Records'}
+                </Button>
+              </Box>
             </Stack>
           </CardContent>
         </Card>

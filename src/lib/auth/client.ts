@@ -110,7 +110,7 @@ class AuthClient {
 
     /**
      * Fetch all incidents
-     * GET http://localhost:1000/api/incident-management/all
+     * GET /api/incident-management/all
      */
     async fetchIncidents(): Promise<any[]> {
       const token = localStorage.getItem('custom-auth-token');
@@ -136,7 +136,7 @@ class AuthClient {
 
     /**
      * Fetch incident details by ID
-     * GET http://localhost:1000/api/incident-management/{id}
+     * GET /api/incident-management/{id}
      */
     async fetchIncidentById(incidentId: string): Promise<any> {
       const token = localStorage.getItem('custom-auth-token');
@@ -163,7 +163,7 @@ class AuthClient {
 
     /**
      * Fetch incident count by period
-     * GET http://localhost:1000/api/incident-management/count?period={period}&value={value}&year={year}
+     * GET /api/incident-management/count?period={period}&value={value}&year={year}
      */
     async fetchIncidentCount(period: string, value: number, year: number): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -189,7 +189,7 @@ class AuthClient {
 
     /**
      * Fetch incident count by severity
-     * GET http://localhost:1000/api/incident-management/count-by-severity?period={period}
+     * GET /api/incident-management/count-by-severity?period={period}
      */
     async fetchIncidentCountBySeverity(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -215,7 +215,7 @@ class AuthClient {
 
     /**
      * Fetch shaft inspection counts by section
-     * GET http://localhost:1000/api/shaft-inspections/counts-by-section?period={period}
+     * GET /api/shaft-inspections/counts-by-section?period={period}
      */
     async fetchShaftInspectionCountsBySection(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -241,7 +241,7 @@ class AuthClient {
 
     /**
      * Fetch shaft inspection counts by type
-     * GET http://localhost:1000/api/shaft-inspections/counts-by-type?period={period}
+     * GET /api/shaft-inspections/counts-by-type?period={period}
      */
     async fetchShaftInspectionCountsByType(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -267,7 +267,7 @@ class AuthClient {
 
     /**
      * Fetch contraventions statistics by status
-     * GET http://localhost:1000/api/contraventions/stats/status?period={period}
+     * GET /api/contraventions/stats/status?period={period}
      */
     async fetchContraventionsStatsByStatus(period: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -843,6 +843,168 @@ class AuthClient {
     }
 
     /**
+     * Fetch financial report for contraventions by shaft
+     * GET /api/contraventions/financial-report/shaft/{shaftNumber}
+     * @param shaftNumber - Shaft number to query
+     * @param period - Report period: 'week', 'month', or 'year'
+     * @param year - Year to filter (e.g., 2024)
+     * @param month - Optional: Month (1-12) for monthly filtering
+     * @param weekOfYear - Optional: Week of year (1-53) for weekly filtering
+     */
+    async fetchContraventionFinancialReport(params: {
+      shaftNumber: string;
+      period: 'week' | 'month' | 'year';
+      year: number;
+      month?: number;
+      weekOfYear?: number;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { shaftNumber, period, year, month, weekOfYear } = params;
+        const encodedShaftNumber = encodeURIComponent(shaftNumber);
+        
+        // Build query parameters
+        const queryParams = new URLSearchParams({
+          period,
+          year: year.toString(),
+        });
+        
+        if (month !== undefined && period === 'month') {
+          queryParams.append('month', month.toString());
+        }
+        
+        if (weekOfYear !== undefined && period === 'week') {
+          queryParams.append('weekOfYear', weekOfYear.toString());
+        }
+        
+        const url = `/api/contraventions/financial-report/shaft/${encodedShaftNumber}?${queryParams.toString()}`;
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch financial report for shaft ${shaftNumber}:`, errorText);
+          return { success: false, error: errorText || 'Failed to fetch financial report' };
+        }
+        
+        const data = await response.json();
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching financial report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Fetch mine level report data
+     * GET /api/all-reports/returnAtMineLevel (with query params)
+     * @param startDate - Start date in ISO format
+     * @param endDate - End date in ISO format
+     */
+    async fetchMineLevelReport(params: {
+      startDate: string;
+      endDate: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { startDate, endDate } = params;
+        
+        // Try GET with query parameters (as per curl example)
+        const queryParams = new URLSearchParams();
+        queryParams.append('startDate', startDate);
+        queryParams.append('endDate', endDate);
+        
+        const url = `/api/all-reports/returnAtMineLevel?${queryParams.toString()}`;
+        
+        console.log('Fetching mine level report with params:', { startDate, endDate });
+        console.log('URL:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch mine level report (GET):`, errorText);
+          console.error('Response status:', response.status);
+          return { success: false, error: errorText || 'Failed to fetch mine level report' };
+        }
+        
+        const data = await response.json();
+        console.log('Mine level report data received:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching mine level report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
+     * Fetch section report data
+     * GET /api/all-reports/returnOneSection (with query params)
+     * @param name - Section name
+     * @param startDate - Start date in ISO format
+     * @param endDate - End date in ISO format
+     */
+    async fetchSectionReport(params: {
+      name: string;
+      startDate: string;
+      endDate: string;
+    }): Promise<{ success: boolean; data?: any; error?: string }> {
+      const token = localStorage.getItem('custom-auth-token');
+      try {
+        const { name, startDate, endDate } = params;
+        
+        // Build query parameters
+        const queryParams = new URLSearchParams();
+        queryParams.append('name', name);
+        queryParams.append('startDate', startDate);
+        queryParams.append('endDate', endDate);
+        
+        const url = `/api/all-reports/returnOneSection?${queryParams.toString()}`;
+        
+        console.log('Fetching section report with params:', { name, startDate, endDate });
+        console.log('URL:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': '*/*',
+            'Authorization': `Bearer ${token || ''}`,
+          },
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Request failed');
+          console.error(`Failed to fetch section report:`, errorText);
+          console.error('Response status:', response.status);
+          return { success: false, error: errorText || 'Failed to fetch section report' };
+        }
+        
+        const data = await response.json();
+        console.log('Section report data received:', data);
+        return { success: true, data };
+      } catch (error) {
+        console.error(`Error fetching section report:`, error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+      }
+    }
+
+    /**
      * Fetch approved security companies count
      * GET /api/security-companies/status/approved-count
      */
@@ -1275,7 +1437,7 @@ class AuthClient {
 
     /**
      * Create an incident record
-     * POST http://localhost:1000/api/incident-management/create
+     * POST /api/incident-management/create
      */
     async createIncident(payload: {
       incidentTitle: string;
@@ -1329,7 +1491,7 @@ class AuthClient {
 
     /**
      * Resolve an incident by ID
-     * PUT http://localhost:1000/api/incident-management/{id}/resolve?resolution={resolution}
+     * PUT /api/incident-management/{id}/resolve?resolution={resolution}
      */
     async resolveIncident(incidentId: string, resolution: string): Promise<{ success: boolean; data?: any; error?: string }> {
       const token = localStorage.getItem('custom-auth-token');
@@ -1761,6 +1923,135 @@ class AuthClient {
       }
   }
 
+  /**
+   * Create a gold sale record for an ore transport
+   * PUT /api/ore-transports/{id}/gold-sale
+   * Body: { weight: number, price: number, buyer: string }
+   * @param oreTransportId - The ID of the ore transport
+   * @param weight - Gold weight in grams
+   * @param price - Price per gram
+   * @param buyer - Name of the buyer
+   */
+  async createGoldSale(
+    oreTransportId: string | number,
+    weight: number,
+    price: number,
+    buyer: string
+  ): Promise<{ success: boolean; error?: string; data?: any }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(oreTransportId).trim());
+      const url = new URL(`/api/ore-transports/${safeId}/gold-sale`, globalThis.location.origin);
+      
+      const payload = {
+        weight,
+        price,
+        buyer: buyer || '',
+      };
+      
+      console.log('Creating gold sale with payload:', payload);
+      
+      const response = await fetch(url.toString(), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Failed to create gold sale:', response.status, errorText);
+        return { success: false, error: errorText || 'Failed to create gold sale' };
+      }
+      
+      const data = await response.json().catch(() => ({}));
+      console.log('Gold sale created successfully:', data);
+      return { success: true, data };
+    } catch (error) {
+      console.error(`Error creating gold sale for ore transport ${oreTransportId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Submit registration/payment for a miner
+   * PUT /api/miners/{id}/payment
+   * Body: { regfeePaid: string, attachDocuments: string, reciptnumber: string }
+   */
+  async putMinerPayment(minerId: string, payload: { regfeePaid: string; attachDocuments: string; reciptnumber: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId).trim());
+      const url = `/api/miners/${safeId}/payment`;
+      console.log('PUT', url, 'payload:', payload);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('putMinerPayment failed:', response.status, errorText);
+        return { success: false, error: errorText || 'Failed to submit payment' };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error in putMinerPayment:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
+  /**
+   * Submit registration/payment for a company
+   * PUT /api/companies/{id}/payment
+   * Body: { regfeePaid: string, attachDocuments: string, reciptnumber: string }
+   */
+  async putCompanyPayment(companyId: string, payload: { regfeePaid: string; attachDocuments: string; reciptnumber: string }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(companyId).trim());
+      const url = `/api/companies/${safeId}/payment`;
+      console.log('PUT', url, 'payload:', payload);
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('putCompanyPayment failed:', response.status, errorText);
+        return { success: false, error: errorText || 'Failed to submit payment' };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error in putCompanyPayment:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  }
+
     async  fetchsecurityonboarding(): Promise<any[]> {
         const token = localStorage.getItem('custom-auth-token');
         try {
@@ -1805,6 +2096,33 @@ class AuthClient {
         } catch (error) {
             console.error('Error fetching users:', error);
             return [];
+        }
+    }
+
+    async assignEmployeeToSecurityCompany(companyId: string, employeeId: string): Promise<{ success: boolean; error?: string }> {
+        const token = localStorage.getItem('custom-auth-token');
+        try {
+            const response = await fetch(`/api/security-companies/${companyId}/employees`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': '*/*',
+                    'Authorization': `Bearer ${token || ''}`,
+                },
+                credentials: 'include',
+                body: JSON.stringify({ employeeId }),
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Failed to assign employee to security company:', response.status, errorText);
+                return { success: false, error: `Failed to assign employee: ${response.status}` };
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error('Error assigning employee to security company:', error);
+            return { success: false, error: error instanceof Error ? error.message : 'An unexpected error occurred' };
         }
     }
     // Transport cost actions (moved here from inside fetchSecurityCompany)
@@ -2970,6 +3288,52 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     }
   }
 
+  /**
+   * Update driver status with a reason
+   */
+  async updateDriverStatus(driverId: string, status: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    if (!status) {
+      return { success: false, error: 'Status is required' };
+    }
+    
+    if (!reason.trim()) {
+      return { success: false, error: 'Reason is required for status change' };
+    }
+    
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      return { success: false, error: 'Authentication required' };
+    }
+    
+    try {
+      const response = await fetch(`/api/drivers/${driverId}/update-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status, reason }),
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to update driver status:', response.status, response.statusText);
+        const errorText = await response.text();
+        return { success: false, error: errorText || 'Request failed' };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error(`Error updating driver status with ID ${driverId}:`, error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+      };
+    }
+  }
+
     /**
      * Fetch a company by its ID
      */
@@ -4048,20 +4412,72 @@ async applyTax(oreId: string): Promise<{ success: boolean; data?: any; error?: s
     cell: string;
     nationId: string;
     position: string;
-cooperativename: string;
+    cooperativename: string;
     idPicture: string;  // Changed to string for base64
     teamMembers: Array<{
+      id?: string;
       name: string;
       surname: string;
       address: string;
       idNumber: string;
-   
+      cellNumber?: string;
+      picture?: string;
+      qrcode?: string;
     }>;
   }): Promise<{ error?: string; success?: boolean }> {
     try {
       const token = localStorage.getItem('custom-auth-token');
       if (!token) {
         throw new Error('Authentication required');
+      }
+
+      // Function to clean base64 strings - ensure they're valid
+      const cleanBase64 = (base64String: string | undefined | null): string => {
+        if (!base64String) return '';
+        // Remove any potential problematic characters and ensure it's a valid base64
+        return base64String.trim();
+      };
+
+      // Clean and validate team members data
+      const cleanTeamMembers = data.teamMembers.map(member => ({
+        name: String(member.name || '').trim(),
+        surname: String(member.surname || '').trim(),
+        address: String(member.address || '').trim(),
+        idNumber: String(member.idNumber || '').trim(),
+        cellNumber: String(member.cellNumber || '').trim(),
+        picture: cleanBase64(member.picture),
+        // Don't send qrcode and id to backend if not needed
+      }));
+
+      // Build the request payload
+      const payload = {
+        name: String(data.name).trim(),
+        surname: String(data.surname).trim(),
+        address: String(data.address).trim(),
+        cellNumber: String(data.cell).trim(),
+        nationIdNumber: String(data.nationId).trim(),
+        position: String(data.position).trim(),
+        cooperativename: String(data.cooperativename).trim(),
+        idPicture: cleanBase64(data.idPicture),
+        teamMembers: cleanTeamMembers
+      };
+
+      console.log('Sending registration payload:', {
+        ...payload,
+        idPicture: payload.idPicture ? `${payload.idPicture.substring(0, 50)}...` : 'empty',
+        teamMembers: payload.teamMembers.map(m => ({ 
+          ...m, 
+          picture: m.picture ? `${m.picture.substring(0, 50)}...` : 'empty' 
+        }))
+      });
+
+      // Validate JSON before sending
+      let jsonString;
+      try {
+        jsonString = JSON.stringify(payload);
+      } catch (jsonError) {
+        console.error('Failed to stringify payload:', jsonError);
+        throw new Error('Invalid data format. Please check all fields and try again.');
       }
 
       // Send JSON data with base64 image
@@ -4072,22 +4488,18 @@ cooperativename: string;
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          name: data.name,
-          surname: data.surname,
-          address: data.address,
-          cellNumber: data.cell,
-          nationIdNumber: data.nationId,
-          position: data.position,
-          cooperativename: data.cooperativename,
-          idPicture: data.idPicture,  // Send base64 image string
-          teamMembers: data.teamMembers
-        })
+        body: jsonString
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to register miner');
+        const errorText = await response.text();
+        console.error('Server response error:', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to register miner');
+        } catch (parseError) {
+          throw new Error(errorText || `Failed to register miner (Status: ${response.status})`);
+        }
       }
 
       const result = await response.json();
@@ -4810,6 +5222,7 @@ cooperativename: string;
     model: string;
     year: string;
     assignedDriver: string;
+    driverId: string;
     lastServiceDate: any; // dayjs.Dayjs | null
     ownerName: string;
     ownerAddress: string;
@@ -4844,7 +5257,7 @@ cooperativename: string;
         make: vehicleData.make,
         model: vehicleData.model,
         year: vehicleData.year,
-        assignedDriver: vehicleData.assignedDriver,
+        driverId: vehicleData.driverId, // Send the driver ID instead of name
         lastServiceDate: lastServiceDate,
         ownerName: vehicleData.ownerName,
         ownerAddress: vehicleData.ownerAddress,
@@ -4966,7 +5379,7 @@ cooperativename: string;
         console.warn('No authentication token found');
       }
 
-      const response = await fetch('/api/vehicles/status/approved', {
+      const response = await fetch('/api/vehicles', {
         method: 'GET',
         headers: {
           'accept': '*/*',
@@ -5044,6 +5457,54 @@ cooperativename: string;
     } catch (error) {
       console.error('Error fetching approved drivers:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Assign driver to vehicle
+   * @param vehicleId The ID of the vehicle
+   * @param driverId The ID of the driver to assign
+   * @returns A promise that resolves to the response
+   */
+  async assignDriverToVehicle(vehicleId: string, driverId: string): Promise<any> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
+      const response = await fetch(`/api/vehicles/${vehicleId}/assign-driver`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          driverId: driverId
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to assign driver: ${errorText}`);
+      }
+
+      // Try to parse as JSON, if it fails, treat as plain text success message
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // Plain text response (e.g., "Driver assigned successfully")
+        data = await response.text();
+      }
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error assigning driver to vehicle:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -5247,6 +5708,52 @@ cooperativename: string;
       return { success: true };
     } catch (error) {
       console.error('Error sending vehicle to maintenance:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
+    }
+  }
+
+  /**
+   * Update vehicle status with reason
+   * PUT /api/vehicles/{id}/update-status
+   * @param vehicleId The ID of the vehicle to update
+   * @param status The new status for the vehicle
+   * @param reason The reason for the status update
+   * @returns A promise that resolves to success or error
+   */
+  async updateVehicleStatus(vehicleId: string, status: string, reason: string): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    if (!token) {
+      console.error('No token found in localStorage');
+      globalThis.location.href = '/auth/signin';
+      return { success: false, error: 'Authentication required' };
+    }
+
+    try {
+      const response = await fetch(`/api/vehicles/${vehicleId}/update-status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status,
+          reason,
+        }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to update vehicle status: ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating vehicle status:', error);
       return { 
         success: false, 
         error: error instanceof Error ? error.message : 'Unknown error occurred' 
@@ -5728,19 +6235,26 @@ cooperativename: string;
       return { success: false, error: 'Authentication required. Please sign in first.' };
     }
     try {
+
       const response = await fetch('/api/sections/status/approved', {
         method: 'GET',
         headers: {
           'Accept': '*/*',
           'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
-        credentials: 'include',
       });
+            console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Request failed');
-        return { success: false, error: errorText || 'Failed to fetch approved sections' };
+        console.error('API Error Response:', errorText);
+        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
       }
+      
       const data = await response.json().catch(() => []);
+      console.log('Parsed data:', data);
       return { success: true, data: Array.isArray(data) ? data : [] };
     } catch (error) {
       console.error('Error fetching approved sections:', error);
@@ -5984,7 +6498,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'GET',
         headers: {
           'Accept': '*/*',
@@ -6018,7 +6532,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch('http://localhost:1000/api/trainers', {
+      const response = await fetch('/api/trainers', {
         method: 'GET',
         headers: {
           'Accept': '*/*',
@@ -6052,7 +6566,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: {
           'Accept': '*/*',
@@ -6101,7 +6615,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch(`http://localhost:1000/api/trainers/${encodeURIComponent(id)}`, {
+      const response = await fetch(`/api/trainers/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: {
           'Accept': '*/*',
@@ -6153,7 +6667,7 @@ cooperativename: string;
     }
     
     try {
-      const response = await fetch('http://localhost:1000/api/trainers', {
+      const response = await fetch('/api/trainers', {
         method: 'POST',
         headers: {
           'Accept': '*/*',
@@ -6649,6 +7163,225 @@ cooperativename: string;
   }
 
   /**
+   * Fetch team members by miner ID
+   * GET /api/miners/{id}/team-members
+   */
+  async fetchTeamMembers(minerId: string | number): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId));
+      const response = await fetch(`/api/miners/${safeId}/team-members`, {
+        method: 'GET',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { success: false, error: 'Team members not found' };
+        }
+        const errorText = await response.text().catch(() => 'Request failed');
+        return { success: false, error: errorText || 'Failed to fetch team members' };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data: Array.isArray(data) ? data : [] };
+        }
+      }
+      
+      return { success: true, data: [] };
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Add a new team member (lasher) to a miner
+   * POST /api/miners/{id}/team-members
+   */
+  async addTeamMember(minerId: string | number, teamMemberData: {
+    name: string;
+    surname: string;
+    qrcode: string;
+    cellNumber: string;
+    picture: string;
+    idNumber: string;
+    address: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(minerId));
+      
+      // Clean and validate data
+      const payload = {
+        name: String(teamMemberData.name).trim(),
+        surname: String(teamMemberData.surname).trim(),
+        qrcode: String(teamMemberData.qrcode).trim(),
+        cellNumber: String(teamMemberData.cellNumber).trim(),
+        picture: String(teamMemberData.picture).trim(),
+        idNumber: String(teamMemberData.idNumber).trim(),
+        address: String(teamMemberData.address).trim(),
+      };
+
+      console.log('Adding team member:', {
+        minerId: safeId,
+        ...payload,
+        picture: payload.picture ? `${payload.picture.substring(0, 30)}...` : 'empty',
+        qrcode: payload.qrcode ? `${payload.qrcode.substring(0, 30)}...` : 'empty'
+      });
+
+      const response = await fetch(`/api/miners/${safeId}/team-members`, {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to add team member (Status: ${response.status})` };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding team member:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Delete a team member (lasher) from a miner
+   * DELETE /api/miners/{minerId}/team-members/{index}
+   */
+  async deleteTeamMember(minerId: string | number, memberIndex: number): Promise<{ success: boolean; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeMinerId = encodeURIComponent(String(minerId));
+      const safeIndex = encodeURIComponent(memberIndex);
+
+      console.log('Deleting team member:', {
+        minerId: safeMinerId,
+        memberIndex: safeIndex
+      });
+
+      const response = await fetch(`/api/miners/${safeMinerId}/team-members/${safeIndex}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to delete team member (Status: ${response.status})` };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting team member:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Add a new employee (lasher) to a company
+   * POST /api/company-employees/{companyId}
+   */
+  async addCompanyEmployee(companyId: string | number, employeeData: {
+    name: string;
+    postion: string;
+    contactNumber: string;
+    email: string;
+    address: string;
+    idNumber: string;
+    qrcode: string;
+    picture: string;
+  }): Promise<{ success: boolean; data?: any; error?: string }> {
+    const token = localStorage.getItem('custom-auth-token');
+    try {
+      const safeId = encodeURIComponent(String(companyId));
+      
+      // Clean and validate data
+      const payload = {
+        name: String(employeeData.name).trim(),
+        postion: String(employeeData.postion).trim(),
+        contactNumber: String(employeeData.contactNumber).trim(),
+        email: String(employeeData.email).trim(),
+        address: String(employeeData.address).trim(),
+        idNumber: String(employeeData.idNumber).trim(),
+        qrcode: String(employeeData.qrcode).trim(),
+        picture: String(employeeData.picture).trim(),
+      };
+
+      console.log('Adding company employee:', {
+        companyId: safeId,
+        ...payload,
+        picture: payload.picture ? `${payload.picture.substring(0, 30)}...` : 'empty',
+        qrcode: payload.qrcode ? `${payload.qrcode.substring(0, 30)}...` : 'empty'
+      });
+
+      const response = await fetch(`/api/company-employees/${safeId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': '*/*',
+          'Authorization': `Bearer ${token || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Request failed');
+        console.error('Server response error:', errorText);
+        return { success: false, error: errorText || `Failed to add company employee (Status: ${response.status})` };
+      }
+
+      // Check if response has content before parsing JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text.trim()) {
+          const data = JSON.parse(text);
+          return { success: true, data };
+        }
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding company employee:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
    * Fetch total mining area
    * GET /api/sectionmapping/area-total
    */
@@ -6684,6 +7417,37 @@ cooperativename: string;
       return { success: false, error: 'Empty or invalid response' };
     } catch (error) {
       console.error('Error fetching total mining area:', error);
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
+    }
+  }
+
+  /**
+   * Fetch section coordinates with boundaries and shafts
+   */
+  async fetchSectionCoordinatesWithBoundaries(sectionName: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      if (!token) {
+        return { success: false, error: 'No authentication token found' };
+      }
+
+      const response = await fetch(`/api/shaft-assignments/coordinates-with-boundaries/section/${encodeURIComponent(sectionName)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'accept': '*/*'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      console.error('Error fetching section coordinates with boundaries:', error);
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
   }

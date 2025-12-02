@@ -17,10 +17,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import CircularProgress from '@mui/material/CircularProgress';
-import { DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 
 import { WarningCircle, Bell } from '@phosphor-icons/react/dist/ssr';
+import { useTheme } from '@mui/material/styles';
 
 
 
@@ -32,6 +32,7 @@ import { authClient } from '@/lib/auth/client';
 
 
 export default function Page(): React.JSX.Element {
+  const theme = useTheme();
   const page = 0;
   const rowsPerPage = 5;
   const [open, setOpen] = React.useState(false);
@@ -139,36 +140,7 @@ export default function Page(): React.JSX.Element {
   const paginatedCustomers = React.useMemo(() => 
     applyPagination(customers, page, rowsPerPage), [customers, page, rowsPerPage]);
 
-  const handleExport = React.useCallback(() => {
-    const headers = [
-      'ID', 'Name', 'Surname', 'Address', 'Phone', 'Position', 'Cooperative', 'Num Shafts', 'Status', 'Reason'
-    ];
-
-    const rows = customers.map((c: any) => [
-      c.id || '',
-      c.name || '',
-      c.surname || '',
-      c.address || '',
-      c.cellNumber || '',
-      c.position || '',
-      c.cooperativeName || '',
-      c.numShafts || '',
-      c.status || '',
-      c.reason || ''
-    ]);
-    
-    const csvContent = [headers, ...rows].map(r => r.map(String).map(x => `"${x.replaceAll('"', '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `incident-management-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.append(a);
-
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }, [customers]);
+  
 
   
 
@@ -178,14 +150,23 @@ export default function Page(): React.JSX.Element {
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
             <Typography variant="h4" sx={{ flexGrow: 1 }}>Incident Report Register</Typography>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
-              Export
-            </Button>
           </Stack>
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained" onClick={() => setOpen(true)}>
+          <Button
+            startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+            variant="contained"
+            onClick={() => setOpen(true)}
+            sx={{
+              bgcolor: 'secondary.dark',
+              color: 'white',
+              borderRadius: '999px',
+              textTransform: 'none',
+              px: 2,
+              py: '6px',
+              '&:hover': { bgcolor: 'secondary.main' }
+            }}
+          >
             Add Incident
           </Button>
         </div>
@@ -193,10 +174,10 @@ export default function Page(): React.JSX.Element {
 
       {/* Quick Action Cards */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('emergency')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.error.main}` }} onClick={() => openQuickAction('emergency')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <WarningCircle size={32} color="#d32f2f" />
+              <WarningCircle size={32} color={theme.palette.error.main} />
               <Stack>
                 <Typography variant="h6" color="error">Emergency Alert</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -207,10 +188,10 @@ export default function Page(): React.JSX.Element {
           </CardContent>
         </Card>
 
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('safety')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.warning.main}` }} onClick={() => openQuickAction('safety')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <WarningCircle size={32} color="#ed6c02" />
+              <WarningCircle size={32} color={theme.palette.warning.main} />
               <Stack>
                 <Typography variant="h6" color="warning.main">Safety Reminder</Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -221,10 +202,10 @@ export default function Page(): React.JSX.Element {
           </CardContent>
         </Card>
 
-        <Card sx={{ minWidth: 200, cursor: 'pointer' }} onClick={() => openQuickAction('notice')}>
+  <Card sx={{ minWidth: 200, cursor: 'pointer', borderLeft: `4px solid ${theme.palette.primary.main}` }} onClick={() => openQuickAction('notice')}>
           <CardContent>
             <Stack direction="row" spacing={2} alignItems="center">
-              <Bell size={32} color="#1976d2" />
+              <Bell size={32} color={theme.palette.primary.main} />
               <Stack>
                 <Typography variant="h6" color="primary">General Notice</Typography>
                 <Typography variant="body2" color="text.secondary">

@@ -22,6 +22,11 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -73,6 +78,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -274,7 +280,8 @@ export function CustomersTable({
           variant="subtitle1" 
           sx={{ 
             fontWeight: 500, 
-            mb: 2 
+            mb: 2,
+            color: theme.palette.secondary.main
           }}
         >
           Filters
@@ -292,7 +299,10 @@ export function CustomersTable({
             borderRadius: 1,
             px: 1,
             py: 0.5,
-            minWidth: 220
+            minWidth: 220,
+            '&:focus-within': {
+              borderColor: theme.palette.secondary.main,
+            }
           }}>
             <Box component="span" sx={{ color: '#9e9e9e', mr: 1 }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -301,7 +311,7 @@ export function CustomersTable({
             </Box>
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search ore..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               style={{
@@ -333,40 +343,6 @@ export function CustomersTable({
               <MenuItem value="APPROVED">Approved</MenuItem>
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
-            <Select
-              value={filters.position}
-              displayEmpty
-              size="small"
-              sx={{ 
-                '& .MuiSelect-select': { 
-                  py: 1,
-                  fontSize: '14px'
-                }
-              }}
-              onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
-            >
-              <MenuItem value="all">All Roles</MenuItem>
-              <MenuItem value="Representatives">Representatives</MenuItem>
-              <MenuItem value="Owner">Owner</MenuItem>
-              <MenuItem value="Member">Member</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
-            <Select
-              value="all"
-              displayEmpty
-              size="small"
-              sx={{ 
-                '& .MuiSelect-select': { 
-                  py: 1,
-                  fontSize: '14px'
-                }
-              }}
-            >
-              <MenuItem value="all">All Locations</MenuItem>
-            </Select>
-          </FormControl>
         </Box>
       </Box>
       <Box sx={{ overflowX: 'auto' }}>
@@ -390,45 +366,75 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
+            {loading && Array.from({ length: 5 }).map((_, index) => (
+              <TableRow key={`skeleton-${index}`}>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="80%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="90%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="85%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                <TableCell><Skeleton variant="text" width="75%" /></TableCell>
+                <TableCell><Skeleton variant="rounded" width={80} height={24} /></TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Skeleton variant="circular" width={32} height={32} />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+            
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-              
+                <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No ore found
+                  </Typography>
+                </TableCell>
               </TableRow>
             )}
-            {filteredRows.map((row) => {
+            
+            {!loading && filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
               return (
                 <TableRow hover key={row.id} selected={isSelected}>
-             
-                  <TableCell>{row.oreUniqueId }</TableCell>
-                  <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell>{row.weight || 0} kg</TableCell>
+                  <TableCell>{row.oreUniqueId || 'N/A'}</TableCell>
+                  <TableCell>{Array.isArray(row.shaftNumbers) ? row.shaftNumbers.join(', ') : row.shaftNumbers || 'N/A'}</TableCell>
+                  <TableCell>{row.weight ? `${row.weight} kg` : '0 kg'}</TableCell>
                   <TableCell>{row.numberOfBags || 0}</TableCell>
-                  
-                  <TableCell>{row.selectedTransport || ''}</TableCell>
-                  <TableCell>{row.location || ''}</TableCell>
-                  <TableCell>{row.processStatus || ''}</TableCell>
-                  
-                  
-                  
-                 
-              
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewUserDetails(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Ore Details</button>
+                  <TableCell>{row.selectedTransport || 'N/A'}</TableCell>
+                  <TableCell>{row.location || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Box sx={{
+                      display: 'inline-block',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1,
+                      bgcolor: row.processStatus === 'Completed' ? '#C8E6C9' : 
+                               row.processStatus === 'Processing' ? '#FFF9C4' : 
+                               row.processStatus === 'Pending' ? '#FFE0B2' : '#FFCDD2',
+                      color: row.processStatus === 'Completed' ? '#1B5E20' : 
+                             row.processStatus === 'Processing' ? '#F57F17' : 
+                             row.processStatus === 'Pending' ? '#E65100' : '#B71C1C',
+                      fontWeight: 'medium',
+                      fontSize: '0.875rem'
+                    }}>
+                      {row.processStatus || 'N/A'}
                     </Box>
                   </TableCell>
-               
+                  <TableCell>
+                    <Tooltip title="View Ore Details">
+                      <IconButton 
+                        onClick={() => handleViewUserDetails(row.id)}
+                        size="small"
+                        sx={{
+                          color: theme.palette.secondary.main,
+                          '&:hover': { bgcolor: 'rgba(50, 56, 62, 0.08)' }
+                        }}
+                      >
+                        <VisibilityIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                 </TableRow>
               );
             })}

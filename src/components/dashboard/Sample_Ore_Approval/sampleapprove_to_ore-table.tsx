@@ -28,6 +28,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import CloseIcon from '@mui/icons-material/Close';
+import { useTheme } from '@mui/material/styles';
 import dayjs from 'dayjs';
 
 import { sortNewestFirst } from '@/utils/sort';
@@ -38,6 +44,83 @@ import { authClient } from '@/lib/auth/client';
 //import { OreDetailsDialog } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove-details-dialog';
 import { OreDetailsDialog  } from '@/components/dashboard/Sample_Ore_Approval/sampleapprove-details-dialog';
 
+// ============================================================================
+// STYLING CONSTANTS
+// ============================================================================
+
+const TABLE_STYLES = {
+  headerCell: {
+    fontWeight: 600,
+    fontSize: '0.875rem',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+    whiteSpace: 'nowrap' as const,
+    backgroundColor: '#f5f5f5',
+    borderBottom: '2px solid #e0e0e0',
+  },
+  bodyCell: {
+    fontSize: '0.875rem',
+    padding: '12px 16px',
+    borderBottom: '1px solid #f0f0f0',
+  },
+  statusBadge: {
+    padding: '6px 12px',
+    borderRadius: '12px',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    textTransform: 'capitalize' as const,
+    display: 'inline-block',
+    whiteSpace: 'nowrap' as const,
+    letterSpacing: 0.3,
+  },
+  avatarSize: {
+    width: 40,
+    height: 40,
+    fontSize: '0.875rem',
+    fontWeight: 600,
+  },
+  actionButton: {
+    padding: '6px 12px',
+    minWidth: 'auto',
+    fontSize: '0.75rem',
+    fontWeight: 500,
+    textTransform: 'none' as const,
+  },
+};
+
+const STATUS_COLORS = {
+  approved: { bg: '#e8f5e9', text: '#2e7d32', border: '#c8e6c9' },
+  pending: { bg: '#fff3e0', text: '#e65100', border: '#ffe0b2' },
+  rejected: { bg: '#ffebee', text: '#c62828', border: '#ffcdd2' },
+  pushed_back: { bg: '#f3e5f5', text: '#6a1b9a', border: '#e1bee7' },
+  unknown: { bg: '#eeeeee', text: '#616161', border: '#e0e0e0' },
+};
+
+const FILTER_STYLES = {
+  container: {
+    p: 2.5,
+    mb: 2,
+    borderRadius: '8px',
+    bgcolor: '#fafafa',
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)',
+    border: '1px solid #e0e0e0',
+  },
+  searchBox: {
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #e0e0e0',
+    borderRadius: '6px',
+    px: 1.5,
+    py: 0.75,
+    minWidth: 240,
+    backgroundColor: '#fff',
+    transition: 'all 0.2s ease',
+    '&:focus-within': {
+      borderColor: '#06131f',
+      boxShadow: '0px 0px 0px 3px rgba(6, 19, 31, 0.1)',
+    },
+  },
+};
 
 function noop(): void {
   // do nothing
@@ -80,6 +163,7 @@ export function CustomersTable({
   onRefresh,
   statusFilter = null,
 }: CustomersTableProps): React.JSX.Element {
+  const theme = useTheme();
   // State to store users fetched from API
   const [users, setUsers] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
@@ -517,18 +601,15 @@ export function CustomersTable({
         </Box>
       )}
       {/* Filters Section */}
-      <Box sx={{ 
-        p: 2, 
-        mb: 2,
-        borderRadius: 1,
-        bgcolor: '#fff',
-        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)'
-      }}>
+      <Box sx={FILTER_STYLES.container}>
         <Typography 
-          variant="subtitle1" 
+          variant="subtitle2" 
           sx={{ 
-            fontWeight: 500, 
-            mb: 2 
+            fontWeight: 600, 
+            mb: 2,
+            color: '#333',
+            fontSize: '0.95rem',
+            letterSpacing: 0.3,
           }}
         >
           Filters
@@ -539,23 +620,15 @@ export function CustomersTable({
           flexWrap: 'wrap',
           alignItems: 'center'
         }}>
-          <Box sx={{ 
-            display: 'flex',
-            alignItems: 'center',
-            border: '1px solid #e0e0e0',
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-            minWidth: 220
-          }}>
-            <Box component="span" sx={{ color: '#9e9e9e', mr: 1 }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <Box sx={FILTER_STYLES.searchBox}>
+            <Box component="span" sx={{ color: '#9e9e9e', mr: 1, display: 'flex', alignItems: 'center' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
               </svg>
             </Box>
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search by ore ID, shaft number..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
               style={{
@@ -563,11 +636,12 @@ export function CustomersTable({
                 outline: 'none',
                 width: '100%',
                 background: 'transparent',
-                fontSize: '14px'
+                fontSize: '0.875rem',
+                color: '#333',
               }}
             />
           </Box>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl sx={{ minWidth: 160 }}>
             <Select
               value={filters.status}
               displayEmpty
@@ -575,19 +649,24 @@ export function CustomersTable({
               sx={{ 
                 '& .MuiSelect-select': { 
                   py: 1,
-                  fontSize: '14px'
-                }
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '6px',
+                  backgroundColor: '#fff',
+                },
               }}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
             >
-              <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="REJECTED">Rejected</MenuItem>
-              <MenuItem value="PUSHED_BACK">Pushed Back</MenuItem>
-              <MenuItem value="APPROVED">Approved</MenuItem>
+              <MenuItem value="all" sx={{ fontSize: '0.875rem' }}>All Status</MenuItem>
+              <MenuItem value="PENDING" sx={{ fontSize: '0.875rem' }}>Pending</MenuItem>
+              <MenuItem value="REJECTED" sx={{ fontSize: '0.875rem' }}>Rejected</MenuItem>
+              <MenuItem value="PUSHED_BACK" sx={{ fontSize: '0.875rem' }}>Pushed Back</MenuItem>
+              <MenuItem value="APPROVED" sx={{ fontSize: '0.875rem' }}>Approved</MenuItem>
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl sx={{ minWidth: 160 }}>
             <Select
               value={filters.position}
               displayEmpty
@@ -595,138 +674,169 @@ export function CustomersTable({
               sx={{ 
                 '& .MuiSelect-select': { 
                   py: 1,
-                  fontSize: '14px'
-                }
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '6px',
+                  backgroundColor: '#fff',
+                },
               }}
               onChange={(e) => setFilters(prev => ({ ...prev, position: e.target.value }))}
             >
-              <MenuItem value="all">All Roles</MenuItem>
-              <MenuItem value="Representatives">Representatives</MenuItem>
-              <MenuItem value="Owner">Owner</MenuItem>
-              <MenuItem value="Member">Member</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
-            <Select
-              value="all"
-              displayEmpty
-              size="small"
-              sx={{ 
-                '& .MuiSelect-select': { 
-                  py: 1,
-                  fontSize: '14px'
-                }
-              }}
-            >
-              <MenuItem value="all">All Locations</MenuItem>
+              <MenuItem value="all" sx={{ fontSize: '0.875rem' }}>All Roles</MenuItem>
+              <MenuItem value="Representatives" sx={{ fontSize: '0.875rem' }}>Representatives</MenuItem>
+              <MenuItem value="Owner" sx={{ fontSize: '0.875rem' }}>Owner</MenuItem>
+              <MenuItem value="Member" sx={{ fontSize: '0.875rem' }}>Member</MenuItem>
             </Select>
           </FormControl>
         </Box>
       </Box>
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
-          <TableHead>
+          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
             <TableRow>
           
-              <TableCell>Ore ID</TableCell>
-              <TableCell>Shaft Numbers</TableCell>
+
+              <TableCell sx={TABLE_STYLES.headerCell}>Shaft Numbers</TableCell>
               
-              <TableCell>Sample Type</TableCell>
-              <TableCell>Sample Weight</TableCell>
-              <TableCell>Sample Status</TableCell>
-              <TableCell>Sample Results</TableCell>
-              <TableCell>View Details</TableCell>
-              <TableCell>Collect Sample </TableCell>
-              <TableCell>Sample Results</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Sample Type</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Sample Weight</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Sample Status</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Sample Results</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>View Details</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Collect Sample</TableCell>
+              <TableCell sx={TABLE_STYLES.headerCell}>Sample Results</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {!loading && filteredRows.length === 0 && (
               <TableRow>
-              
+                <TableCell colSpan={9} sx={{ textAlign: 'center', py: 3 }}>
+                  <Typography color="textSecondary">No ore data found</Typography>
+                </TableCell>
               </TableRow>
             )}
             {filteredRows.map((row) => {
               const isSelected = selected?.has(row.id);
+              const statusKey = ((row.oreSample && row.oreSample[0] && row.oreSample[0].status?.toLowerCase().replace('_', '_')) || 'unknown') as keyof typeof STATUS_COLORS;
+              const statusColor = STATUS_COLORS[statusKey] || STATUS_COLORS.unknown;
+              
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow 
+                  hover 
+                  key={row.id} 
+                  selected={isSelected}
+                  sx={{
+                    '&:hover': {
+                      backgroundColor: 'rgba(6, 19, 31, 0.03)',
+                    },
+                    '&.Mui-selected': {
+                      backgroundColor: 'rgba(6, 19, 31, 0.08)',
+                    },
+                  }}
+                >
                 
-                  <TableCell>{row.oreUniqueId}</TableCell>
-                  <TableCell>{row.shaftNumbers}</TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : ''} </TableCell>
-                  <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : ''}</TableCell>
-                  <TableCell>
-                    {row.oreSample && row.oreSample[0] 
-                      ? (row.oreSample[0].status === 'Unknown' ? 'PENDING' : row.oreSample[0].status)
-                      : ''
-                    }
-                  </TableCell>
-                 <TableCell>{row.oreSample && row.oreSample[0] ? row.oreSample[0].result : ''}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                 
 
-                                   <Button 
-                                                     onClick={() => handleViewUserDetails(row.id)}
-                                                variant="outlined"
-                                                size="small"
-                                                sx={{
-                                                  borderColor: '#06131fff',
-                                                  color: '#081b2fff',
-                                                  '&:hover': {
-                                                    borderColor: '#06131fff',
-                                                    backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                                                  }
-                                                }}
-                                              >View Details</Button>
-                        
+                  <TableCell sx={TABLE_STYLES.bodyCell}>{row.shaftNumbers || 'N/A'}</TableCell>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    {row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleType : 'N/A'}
+                  </TableCell>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    {row.oreSample && row.oreSample[0] ? row.oreSample[0].sampleWeight : 'N/A'}
+                  </TableCell>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    <Box
+                      component="span"
+                      sx={{
+                        ...TABLE_STYLES.statusBadge,
+                        backgroundColor: statusColor.bg,
+                        color: statusColor.text,
+                        border: `1px solid ${statusColor.border}`,
+                      }}
+                    >
+                      {row.oreSample && row.oreSample[0] 
+                        ? (row.oreSample[0].status === 'Unknown' ? 'PENDING' : row.oreSample[0].status)
+                        : 'PENDING'
+                      }
                     </Box>
                   </TableCell>
-                  <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {/* Show the 'Collect Sample' button when status is not 'Approved' */}
-                    {/* Don't hide the button based on sampleType anymore */}
-                    {(row.oreSample && row.oreSample[0] && 
-                       row.oreSample[0].sampleType === 'Unknown' ) && (
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    {row.oreSample && row.oreSample[0] && row.oreSample[0].result 
+                      ? `${row.oreSample[0].result}g`
+                      : 'Pending'
+                    }
+                  </TableCell>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Button 
-                        onClick={() => handleOpenSampleUpdateDialog(row.id)}
+                        onClick={() => handleViewUserDetails(row.id)}
                         variant="outlined"
                         size="small"
+                        startIcon={<VisibilityIcon sx={{ fontSize: '0.875rem' }} />}
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
+                          /* remove border while keeping visual text/icon */
+                          border: 'none',
+                          boxShadow: 'none',
+                          color: '#081b2f',
+                          fontSize: '0.75rem',
+                          fontWeight: 500,
+                          textTransform: 'none',
+                          padding: '6px 10px',
                         }}
-                      >Collect Sample</Button>
-                    )}
-      
-  </Box>
+                      >
+                      </Button>
+                    </Box>
                   </TableCell>
-                  <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                 
-                  {/* Only hide the 'Add Sample Results' button when status is 'Approved' */}
-                  {!(row.oreSample && row.oreSample[0] && 
-                      row.oreSample[0].status === 'APPROVED' || row.oreSample[0].sampleType === 'Unknown') && (
-                    <Button 
-                      onClick={() => handleOpenSampleResultsDialog(row.id)}
-                      variant="outlined"
-                      size="small"
-                      sx={{
-                        borderColor: '#06131fff',
-                        color: '#081b2fff',
-                        '&:hover': {
-                          borderColor: '#06131fff',
-                          backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                        }
-                      }}
-                    >Add Sample Results</Button>
-                  )}
-      
-  </Box>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {(row.oreSample && row.oreSample[0] && 
+                         row.oreSample[0].sampleType === 'Unknown') && (
+                        <Button 
+                          onClick={() => handleOpenSampleUpdateDialog(row.id)}
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            backgroundColor: '#06131f',
+                            color: '#fff',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            padding: '6px 10px',
+                            '&:hover': {
+                              backgroundColor: '#000814',
+                            }
+                          }}
+                        >
+                          Collect
+                        </Button>
+                      )}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={TABLE_STYLES.bodyCell}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {!(row.oreSample && row.oreSample[0] && 
+                          (row.oreSample[0].status === 'APPROVED' || row.oreSample[0].sampleType === 'Unknown')) && (
+                        <Button 
+                          onClick={() => handleOpenSampleResultsDialog(row.id)}
+                          variant="outlined"
+                          size="small"
+                         sx={{
+                            backgroundColor: '#06131f',
+                            color: '#fff',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            padding: '6px 10px',
+                            '&:hover': {
+                              backgroundColor: '#000814',
+                            }
+                          }}
+                        >
+                          Add Results
+                        </Button>
+                      )}
+                    </Box>
                   </TableCell>
                 </TableRow>
               );
@@ -834,19 +944,50 @@ export function CustomersTable({
         PaperProps={{
           sx: {
             width: '100%',
-            maxWidth: '600px'
+            maxWidth: '600px',
+            borderRadius: '12px',
           }
         }}
       >
-        <DialogTitle>Update Sample Information</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3}>
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Update Sample Information</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleUpdateDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Stack spacing={2.5}>
             <TextField
               fullWidth
               label="Sample Type"
               name="sampleType"
               value={sampleType}
               onChange={(e) => setSampleType(e.target.value)}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                },
+              }}
             />
             <TextField
               fullWidth
@@ -854,6 +995,12 @@ export function CustomersTable({
               name="sampleWeight"
               value={sampleWeight}
               onChange={(e) => setSampleWeight(e.target.value)}
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                },
+              }}
             />
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
@@ -861,23 +1008,37 @@ export function CustomersTable({
                 value={sampleStatus}
                 label="Status"
                 onChange={(e) => setSampleStatus(e.target.value)}
+                sx={{
+                  borderRadius: '8px',
+                }}
               >
                 <MenuItem value="Unknown">Pending for Results</MenuItem>
-              
               </Select>
             </FormControl>
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
           <Button 
             onClick={() => setIsSampleUpdateDialogOpen(false)}
-            sx={{ color: 'text.secondary' }}
+            sx={{ 
+              color: 'text.secondary',
+              textTransform: 'none',
+              fontWeight: 500,
+            }}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleSubmitSampleUpdate}
             variant="contained"
+            sx={{
+              backgroundColor: '#06131f',
+              textTransform: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: '#000814',
+              }
+            }}
           >
             Update Sample
           </Button>
@@ -891,14 +1052,38 @@ export function CustomersTable({
         PaperProps={{
           sx: {
             width: '100%',
-            maxWidth: '600px'
+            maxWidth: '600px',
+            borderRadius: '12px',
           }
         }}
       >
-        <DialogTitle>Add Sample Results</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 2 }}>
-       
+          <DialogTitle sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: theme.palette.secondary.main,
+            color: 'white',
+            py: 2.5,
+            px: 3,
+            m: 0,
+            fontWeight: 600,
+            fontSize: '1.1rem'
+          }}>
+            <Box component="div" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>Add Sample Results</Box>
+            <IconButton
+              edge="end"
+              onClick={() => setIsSampleResultsDialogOpen(false)}
+              aria-label="close"
+              sx={{
+                color: 'white',
+                '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+        <DialogContent sx={{ pt: 3 }}>
+          <Stack spacing={2.5}>
             <TextField
               fullWidth
               label="Result In Grams Per Load"
@@ -909,22 +1094,38 @@ export function CustomersTable({
               onChange={(e) => setSampleResult(e.target.value)}
               placeholder="Enter sample result value in grams"
               helperText="Enter a numeric value (e.g., 12.5)"
+              variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                },
+              }}
             />
-                 <TextField
+            <TextField
               fullWidth
               label="Reason"
               name="sampleReason"
               value={sampleReason}
               onChange={(e) => setSampleReason(e.target.value)}
               placeholder="Enter reason for the sample result"
-            /> 
-
+              variant="outlined"
+              multiline
+              rows={3}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                },
+              }}
+            />
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
                 value={sampleResultStatus}
                 label="Status"
                 onChange={(e) => setSampleResultStatus((e.target.value || '').toString().toUpperCase())}
+                sx={{
+                  borderRadius: '8px',
+                }}
               >
                 <MenuItem value="APPROVED">Approved</MenuItem>
                 <MenuItem value="REJECTED">Rejected</MenuItem>
@@ -932,10 +1133,14 @@ export function CustomersTable({
             </FormControl>
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
           <Button 
             onClick={() => setIsSampleResultsDialogOpen(false)}
-            sx={{ color: 'text.secondary' }}
+            sx={{ 
+              color: 'text.secondary',
+              textTransform: 'none',
+              fontWeight: 500,
+            }}
           >
             Cancel
           </Button>
@@ -943,6 +1148,17 @@ export function CustomersTable({
             onClick={handleSubmitSampleResults}
             variant="contained"
             disabled={isLoading}
+            sx={{
+              backgroundColor: '#06131f',
+              textTransform: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: '#000814',
+              },
+              '&:disabled': {
+                backgroundColor: '#ccc',
+              }
+            }}
           >
             {isLoading ? 'Submitting...' : 'Submit Results'}
           </Button>
@@ -954,33 +1170,54 @@ export function CustomersTable({
         open={feedbackDialogOpen}
         onClose={() => {
           setFeedbackDialogOpen(false);
-          // Refresh data when dialog is closed if it was a successful operation
           if (feedbackSuccess) {
             refreshTableData();
           }
         }}
         aria-labelledby="feedback-dialog-title"
         aria-describedby="feedback-dialog-description"
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+          }
+        }}
       >
-        <DialogTitle id="feedback-dialog-title">
-          {feedbackSuccess ? 'Success' : 'Error'}
+        <DialogTitle 
+          id="feedback-dialog-title"
+          sx={{ 
+            fontWeight: 600, 
+            fontSize: '1.1rem',
+            color: feedbackSuccess ? '#2e7d32' : '#c62828',
+            backgroundColor: feedbackSuccess ? '#e8f5e9' : '#ffebee',
+            borderBottom: feedbackSuccess 
+              ? '2px solid #2e7d32' 
+              : '2px solid #c62828',
+          }}
+        >
+          {feedbackSuccess ? '✓ Success' : '✕ Error'}
         </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="feedback-dialog-description">
+        <DialogContent sx={{ pt: 2 }}>
+          <DialogContentText id="feedback-dialog-description" sx={{ color: '#333' }}>
             {feedbackMessage}
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid #e0e0e0' }}>
           <Button 
             onClick={() => {
               setFeedbackDialogOpen(false);
-              // Refresh data when dialog is closed if it was a successful operation
               if (feedbackSuccess) {
                 refreshTableData();
               }
             }} 
-            color="primary" 
             variant="contained"
+            sx={{
+              backgroundColor: feedbackSuccess ? '#2e7d32' : '#c62828',
+              textTransform: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                backgroundColor: feedbackSuccess ? '#1b5e20' : '#b71c1c',
+              }
+            }}
           >
             Close
           </Button>

@@ -32,6 +32,7 @@ import { useTheme } from '@mui/material/styles';
 import { useSelection } from '@/hooks/use-selection';
 import { ReactNode, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
+import { sortNewestFirst } from '@/utils/sort';
 import { authClient } from '@/lib/auth/client';
 import { Customer } from './customers-table';
 import { CompanyDetailsDialog } from './company-details-dialog';
@@ -147,7 +148,8 @@ export function CompanyTable({
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
-    return filtered;
+    // Apply LIFO sorting (newest first) after filtering
+    return sortNewestFirst(filtered);
   }, [rows, filters, sortField, sortDirection]);
 
   const rowIds = React.useMemo(() => {

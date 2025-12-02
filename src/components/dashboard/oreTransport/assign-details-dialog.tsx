@@ -271,21 +271,50 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
-          p: 2,
-          bgcolor: '#15073d'
+          bgcolor: '#323E3E',
+          color: 'white',
+          py: 2.5,
+          px: 3,
+          m: 0
         }}
       >
-        <Typography variant="subtitle1" component="span" sx={{ color: '#FFFFFF', fontWeight: 'bold' }}>Assign Ore To Vehicle</Typography>
-        <Box sx={{ display: 'flex' }}>
-          <IconButton onClick={() => printElementById('assign-ore-details-printable', 'Assign Ore To Vehicle')} size="small" sx={{ color: '#9e9e9e', mr: 1 }}>
+        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
+          Assign Ore To Vehicle
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          <IconButton 
+            onClick={() => printElementById('assign-ore-details-printable', 'Assign Ore To Vehicle')} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <PrintIcon />
           </IconButton>
-          <IconButton onClick={onClose} size="small" sx={{ color: '#9e9e9e' }}>
+          <IconButton 
+            onClick={onClose} 
+            size="small" 
+            sx={{ 
+              color: 'white',
+              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ py: 3 }}>
+      <DialogContent sx={{ 
+        px: 3,
+        py: 2,
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { width: '6px' },
+        '&::-webkit-scrollbar-track': { backgroundColor: '#f1f1f1' },
+        '&::-webkit-scrollbar-thumb': { 
+          backgroundColor: '#323E3E', 
+          borderRadius: '3px' 
+        },
+      }}>
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <CircularProgress size={40} />
@@ -306,7 +335,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
               </Alert>
             )}
             <Box sx={{ border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF8F00', fontWeight: 'bold', mb: 2 }}>Ore Assignment</Typography>
+              <Typography variant="subtitle2" sx={{ color: '#323E3E', fontWeight: 'bold', mb: 2 }}>Ore Assignment</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                 <DetailItem label="Ore Unique ID" value={oreDetails.oreUniqueId || 'N/A'} />
                 <DetailItem label="Shaft Numbers" value={oreDetails.shaftNumbers || 'N/A'} />
@@ -374,7 +403,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
             </Box>
             {/* Transport Reason Section */}
             <Box sx={{ mt: 2, gridColumn: '1 / span 2', border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Transport Reason</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#323E3E' }}>Transport Reason</Typography>
               <TextField
                 fullWidth
                 multiline
@@ -388,7 +417,7 @@ export function AssignOreDetailsDialog({ open, onClose, userId, onRefresh }: Ore
             {/* Tax Information Section */}
             {oreDetails.tax && oreDetails.tax.length > 0 && (
               <Box sx={{ mt: 2, border: '1px solid #000080', borderRadius: '8px', p: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#FF8F00' }}>Tax Information</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 'bold', color: '#323E3E' }}>Tax Information</Typography>
                 <Box>
                   {oreDetails.tax.map((taxItem: any, index: number) => (
                     <Box key={index} sx={{ mb: index < oreDetails.tax.length - 1 ? 2 : 0 }}>

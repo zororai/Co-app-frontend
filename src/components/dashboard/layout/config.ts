@@ -2,7 +2,6 @@ import type { NavItemConfig } from '@/types/nav';
 import { paths } from '@/paths';
 
 export const allNavItems = [
-  { key: 'dashboard', title: 'Dashboard', href: paths.dashboard.overview, icon: 'chart-pie' },
   //{key: 'admin', title: 'Admin', href: '/admin', icon: 'shield' },
   { key: 'user-admin-onboarding',
     title: 'Onboarding Process',
@@ -58,6 +57,17 @@ export const allNavItems = [
 
     ],
   },
+   {
+    key: 'transport-management',
+    title: 'Transport Management',
+    icon: 'truck',
+    items: [
+      { key: 'transport', title: 'Vehicles Management', href: paths.dashboard.approvedvehic, icon: 'truck' },
+      { key: 'drivermanagement', title: 'Driver Management', href: paths.dashboard.drivermanagement, icon: 'id-card' },
+      { key: 'transport-add', title: 'Assign Ore To Transport', href: paths.dashboard.oreTransport, icon: 'arrows-left-right' },
+    ],
+
+  },
     {
     key: 'security',
     title: 'Security',
@@ -73,7 +83,7 @@ export const allNavItems = [
   {
     key: 'financial-management',
     title: 'Financial Management',
-    icon: 'buildings',
+    icon: 'wallet',
     items: [
       { key: 'Borrowing', title: 'Resources Borrowing', href:  paths.dashboard.borrowing, icon: 'id-card'},
       { key: 'ore-tax', title: 'Charges Ore Dediction ', href: paths.dashboard.oreTax, icon: 'id-card' },
@@ -86,7 +96,7 @@ export const allNavItems = [
   {
     key: 'she-management',
     title: 'SHE Management',
-    icon: 'buildings',
+    icon: 'shield',
     items: [
      { key: 'Incident Management', title: 'Incident reports', href: paths.dashboard.incidentmanagement, icon: 'id-card' },
       { key: 'incidentresolve', title: 'Incident Resolution ', href: paths.dashboard.resolveissue, icon: 'id-card' },
@@ -102,7 +112,7 @@ export const allNavItems = [
   {
     key: 'Report-management',
     title: 'Report Management',
-    icon: 'chart-pie',
+    icon: 'chart-bar',
     items: [
 
    { key: 'she-summary-reports', title: 'SHE Summary Report', href: paths.dashboard.shesummaryreports, icon: 'chart-pie' },
@@ -115,15 +125,7 @@ export const allNavItems = [
   },
 
 
-  {
-    key: 'transport-management',
-    title: 'Transport Management',
-    icon: 'truck',
-    items: [
-     { key: 'transport', title: 'Approved Vehicles', href: paths.dashboard.approvedvehic, icon: 'mountain' },
-       { key: 'transport-add', title: 'Assign Ore To Transport', href: paths.dashboard.oreTransport, icon: 'mountain' },
-    ],
-  },
+
 
   {
     key: 'permission',
@@ -145,6 +147,7 @@ export const allNavItems = [
 
 
     ],
+
   },
 ] satisfies NavItemConfig[];
 

@@ -184,30 +184,12 @@ export function TrainingDetailsDialog({ open, onClose, trainingId, onRefresh }: 
                   </Typography>
                   <Typography sx={{ fontSize: '0.95rem' }}>
                     <strong>Status:</strong> 
-                    <Box 
-                      component="span" 
-                      sx={{
-                        display: 'inline-block',
-                        px: 1,
-                        py: 0.5,
-                        borderRadius: 1,
-                        ml: 1,
-                        bgcolor: 
-                          trainingDetails?.status === 'Scheduled' ? '#FFF9C4' : 
-                          trainingDetails?.status === 'Cancelled' ? '#FFCDD2' : 
-                          trainingDetails?.status === 'In Progress' ? '#FFE0B2' : 
-                          '#C8E6C9',
-                        color: 
-                          trainingDetails?.status === 'Scheduled' ? '#F57F17' : 
-                          trainingDetails?.status === 'Cancelled' ? '#B71C1C' : 
-                          trainingDetails?.status === 'In Progress' ? '#E65100' : 
-                          '#1B5E20',
-                        fontWeight: 'medium',
-                        fontSize: '0.875rem'
-                      }}
-                    >
-                      {trainingDetails?.status || 'Scheduled'}
-                    </Box>
+                    <Chip
+                      label={trainingDetails?.status || 'Scheduled'}
+                      size="small"
+                      color={trainingDetails?.status === 'Scheduled' ? 'info' : trainingDetails?.status === 'Cancelled' ? 'error' : trainingDetails?.status === 'In Progress' ? 'warning' : 'success'}
+                      sx={{ ml: 1, fontWeight: 500 }}
+                    />
                   </Typography>
                 </Box>
               </Box>

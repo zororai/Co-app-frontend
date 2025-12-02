@@ -148,21 +148,72 @@ export default function Page(): React.JSX.Element {
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3} sx={{ alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
-          <Typography variant="h4">Check Point Ore Recieval</Typography>
+        <Stack spacing={2} sx={{ flex: '1 1 auto' }}>
+          {/* Page Title */}
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 600, 
+              color: '#323E3E'
+            }}
+          >
+            Check Point Ore Receival
+          </Typography>
+
+          {/* Subtitle */}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: '#666',
+              mb: 1.5 
+            }}
+          >
+            Manage and verify ore receival at security checkpoints
+          </Typography>
+
+          {/* Tabs */}
           <Tabs
             value={tab}
             onChange={(_e, newValue) => setTab(newValue)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#323E3E',
+                height: 3,
+              },
+              '& .MuiTab-root': {
+                textTransform: 'capitalize',
+                fontWeight: 500,
+                '&.Mui-selected': {
+                  color: '#323E3E',
+                  fontWeight: 600,
+                },
+              },
+            }}
           >
             <Tab label="Pending" value="PENDING" />
             <Tab label="Pushed Back" value="PUSHED_BACK" />
             <Tab label="Rejected" value="REJECTED" />
             <Tab label="Approved" value="APPROVED" />
           </Tabs>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            
-            <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />} onClick={handleExport}>
+
+          {/* Action Buttons */}
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <Button 
+              variant="outlined" 
+              color="inherit" 
+              startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}
+              onClick={handleExport}
+              sx={{
+                textTransform: 'capitalize',
+                borderColor: '#e0e0e0',
+                color: '#666',
+                '&:hover': {
+                  borderColor: '#323E3E',
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            >
               Export
             </Button>
           </Stack>

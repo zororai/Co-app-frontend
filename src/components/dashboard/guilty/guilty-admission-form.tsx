@@ -649,15 +649,20 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
                   startIcon={<PlusIcon fontSize="var(--icon-fontSize-sm)" />}
                   onClick={addContravention}
                   disabled={loading}
-                  variant="outlined"
+                  variant="contained"
                   size="small"
-                  sx={{ 
-                    borderColor: 'rgb(5, 5, 68)', 
-                    color: 'rgb(5, 5, 68)', 
-                    '&:hover': { 
-                      borderColor: 'rgb(5, 5, 68)', 
-                      backgroundColor: 'rgba(5, 5, 68, 0.04)' 
-                    } 
+                  sx={{
+                    bgcolor: '#202226',
+                    color: '#ffffff',
+                    borderRadius: '999px',
+                    px: 3,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: '#0f0f10',
+                      boxShadow: 'none'
+                    }
                   }}
                 >
                   Add Contravention
@@ -1071,17 +1076,21 @@ export function GuiltyAdmissionForm(): React.JSX.Element {
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
               <Button
                 onClick={handlePrint}
-                variant="outlined"
+                variant="contained"
                 startIcon={<PrinterIcon fontSize="var(--icon-fontSize-md)" />}
                 sx={{ 
-                  borderColor: 'rgb(5, 5, 68)', 
-                  color: 'rgb(5, 5, 68)', 
-                  '&:hover': { 
-                    borderColor: 'rgb(5, 5, 68)', 
-                    backgroundColor: 'rgba(5, 5, 68, 0.04)' 
-                  },
+                  bgcolor: '#202226',
+                  color: '#ffffff',
+                  borderRadius: '999px',
                   px: 4,
-                  py: 1.5
+                  py: 1.5,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#0f0f10',
+                    boxShadow: 'none'
+                  }
                 }}
               >
                 Print Form

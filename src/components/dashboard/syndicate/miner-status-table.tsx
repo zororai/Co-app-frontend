@@ -22,6 +22,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import dayjs from 'dayjs';
 import { sortNewestFirst } from '@/utils/sort';
 
@@ -91,6 +93,12 @@ export function CustomersTable({
     return sortNewestFirst(filtered);
   }, [rows, filters]);
 
+  // Determine whether to show the View column: show it when at least one visible row
+  // has regfeePaid !== 'Not Paid' (case-insensitive)
+  const showViewColumn = React.useMemo(() => {
+    return filteredRows.some(r => String(r.regfeePaid || '').toLowerCase() !== 'not paid');
+  }, [filteredRows]);
+
   const rowIds = React.useMemo(() => {
     return filteredRows.map((customer) => customer.id);
   }, [filteredRows]);
@@ -139,22 +147,22 @@ export function CustomersTable({
       <Box sx={{ p: 2, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
         <Button
           variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+             sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           onClick={() => handleRedirect('/dashboard/syndicate')}
         >
           View Syndicate Miner Reg Status Health 
         </Button>
         <Button
           variant="contained"
-          sx={{
-            bgcolor: '#5f4bfa',
-            color: '#fff',
-            '&:hover': { bgcolor: '#4d3fd6' }
-          }}
+            sx={{
+          bgcolor: 'secondary.main',
+          color: '#fff',
+          '&:hover': { bgcolor: 'secondary.dark' }
+        }}
           onClick={() => handleRedirect('/dashboard/companyhealth')}
         >
 View Company Miner Reg Status Health
@@ -215,7 +223,7 @@ View Company Miner Reg Status Health
               <TableCell>Name Of Cooperative</TableCell>
               <TableCell>Current Status</TableCell>
               
-              <TableCell>View Application Details</TableCell>
+              {showViewColumn && <TableCell>Make Decision</TableCell>}
               
             </TableRow>
           </TableHead>
@@ -231,7 +239,7 @@ View Company Miner Reg Status Health
                   <TableCell>{row.address}</TableCell>
                   <TableCell>{row.cellNumber}</TableCell>
                 
-                  <TableCell>{row.cooperativeName}</TableCell>
+                  <TableCell>{row.cooperativename}</TableCell>
                   
                   <TableCell>
                     <Box sx={{
@@ -256,21 +264,30 @@ View Company Miner Reg Status Health
                     </Box>
                   </TableCell>
               
-                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleViewCustomer(row.id)}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #06131fff',
-                          color: '#081b2fff',
-                          borderRadius: '6px',
-                          padding: '2px 12px',
-                          cursor: 'pointer',
-                          fontWeight: 500,
-                      }}>View Application Details</button>
-                    </Box>
-                  </TableCell>
+                  {showViewColumn && (
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {(() => {
+                          const v = String(row.regfeePaid ?? '').trim().toLowerCase();
+                          const isUnpaid = v === '' || v === 'null' || v === 'none' || v === 'not paid';
+                          return !isUnpaid && (
+                            <IconButton
+                              aria-label="view application details"
+                              onClick={() => handleViewCustomer(row.id)}
+                              size="small"
+                              sx={{
+                                color: '#081b2fff',
+                                borderRadius: '6px',
+                                padding: '4px',
+                              }}
+                            >
+                              <VisibilityIcon fontSize="small" />
+                            </IconButton>
+                          );
+                        })()}
+                      </Box>
+                    </TableCell>
+                  )}
                
                 </TableRow>
               );

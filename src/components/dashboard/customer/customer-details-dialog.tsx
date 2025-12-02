@@ -26,6 +26,7 @@ import ConstructionIcon from '@mui/icons-material/Construction';
 import { printElementById } from '@/lib/print';
 import { useTheme } from '@mui/material/styles';
 import { authClient } from '@/lib/auth/client';
+import { MapView } from './map-view';
 
 interface CustomerDetailsDialogProps {
   open: boolean;
@@ -564,138 +565,162 @@ export function CustomerDetailsDialog({ open, onClose, customer, customerId }: C
                   </Typography>
                 </Box>
               ) : (
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 2.5 }}>
-                  {shaftAssignments.map((assignment, idx) => (
-                    <Box 
-                      key={assignment.id || idx}
-                      sx={{
-                        border: `2px solid ${theme.palette.secondary.main}`,
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        bgcolor: 'white',
-                        '&:hover': {
-                          boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
-                          transform: 'translateY(-2px)'
-                        },
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {/* Card Header */}
-                      <Box sx={{ 
-                        bgcolor: theme.palette.secondary.main,
-                        p: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5
-                      }}>
-                        <Box 
-                          sx={{ 
-                            width: 36, 
-                            height: 36, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'center',
-                            bgcolor: 'rgba(255, 255, 255, 0.2)',
-                            borderRadius: '6px',
-                            color: 'white'
-                          }}
-                        >
-                          <ConstructionIcon sx={{ fontSize: 24 }} />
+                <>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(3, 1fr)' }, gap: 2.5, mb: 4 }}>
+                    {shaftAssignments.map((assignment, idx) => (
+                      <Box 
+                        key={assignment.id || idx}
+                        sx={{
+                          border: `2px solid ${theme.palette.secondary.main}`,
+                          borderRadius: '8px',
+                          overflow: 'hidden',
+                          bgcolor: 'white',
+                          '&:hover': {
+                            boxShadow: '0 6px 16px rgba(0,0,0,0.1)',
+                            transform: 'translateY(-2px)'
+                          },
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {/* Card Header */}
+                        <Box sx={{ 
+                          bgcolor: theme.palette.secondary.main,
+                          p: 1.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5
+                        }}>
+                          <Box 
+                            sx={{ 
+                              width: 36, 
+                              height: 36, 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center',
+                              bgcolor: 'rgba(255, 255, 255, 0.2)',
+                              borderRadius: '6px',
+                              color: 'white'
+                            }}
+                          >
+                            <ConstructionIcon sx={{ fontSize: 24 }} />
+                          </Box>
+                          <Box>
+                            <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>
+                              Shaft #{assignment.shaftNumbers || 'N/A'}
+                            </Typography>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
+                              {assignment.sectionName || 'No Section'}
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box>
-                          <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>
-                            Shaft #{assignment.shaftNumbers || 'N/A'}
-                          </Typography>
-                          <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.75rem' }}>
-                            {assignment.sectionName || 'No Section'}
-                          </Typography>
-                        </Box>
-                      </Box>
 
-                      {/* Card Body */}
-                      <Box sx={{ p: 2 }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                          {/* Status Badge */}
-                          {assignment.status && (
-                            <Box>
-                              <Chip
-                                label={assignment.status}
-                                size="small"
-                                sx={{
-                                  bgcolor: assignment.status === 'APPROVED' ? '#C8E6C9' : 
-                                           assignment.status === 'REJECTED' ? '#FFCDD2' : 
-                                           assignment.status === 'PENDING' ? '#FFF9C4' :
-                                           '#FFE0B2',
-                                  color: assignment.status === 'APPROVED' ? '#1B5E20' : 
-                                         assignment.status === 'REJECTED' ? '#B71C1C' : 
-                                         assignment.status === 'PENDING' ? '#F57F17' :
-                                         '#E65100',
-                                  fontWeight: 600,
-                                  fontSize: '0.7rem',
-                                  height: 24
-                                }}
+                        {/* Card Body */}
+                        <Box sx={{ p: 2 }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                            {/* Status Badge */}
+                            {assignment.status && (
+                              <Box>
+                                <Chip
+                                  label={assignment.status}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: assignment.status === 'APPROVED' ? '#C8E6C9' : 
+                                             assignment.status === 'REJECTED' ? '#FFCDD2' : 
+                                             assignment.status === 'PENDING' ? '#FFF9C4' :
+                                             '#FFE0B2',
+                                    color: assignment.status === 'APPROVED' ? '#1B5E20' : 
+                                           assignment.status === 'REJECTED' ? '#B71C1C' : 
+                                           assignment.status === 'PENDING' ? '#F57F17' :
+                                           '#E65100',
+                                    fontWeight: 600,
+                                    fontSize: '0.7rem',
+                                    height: 24
+                                  }}
+                                />
+                              </Box>
+                            )}
+
+                            {/* Details Grid */}
+                            <Box sx={{ display: 'grid', gap: 1.2 }}>
+                              {assignment.medicalFee && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    Medical Fee
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                                    {assignment.medicalFee}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {assignment.regFee && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    Registration Fee
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                                    {assignment.regFee}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {assignment.startContractDate && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    Contract Period
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                                    {assignment.startContractDate} - {assignment.endContractDate || 'Ongoing'}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {assignment.reason && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    Reason
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                                    {assignment.reason}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {assignment.createdAt && (
+                                <Box>
+                                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                                    Created
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                                    {assignment.createdAt}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                          
+                          {/* Individual Shaft Map */}
+                          {assignment.latitude && assignment.longitude && 
+                           !isNaN(assignment.latitude) && !isNaN(assignment.longitude) &&
+                           assignment.latitude !== 0 && assignment.longitude !== 0 && (
+                            <Box sx={{ mt: 2, borderTop: `1px solid ${theme.palette.divider}`, pt: 2 }}>
+                              <Typography variant="caption" sx={{ 
+                                color: 'text.secondary', 
+                                fontSize: '0.65rem', 
+                                fontWeight: 600, 
+                                textTransform: 'uppercase',
+                                mb: 1,
+                                display: 'block'
+                              }}>
+                                📍 Location
+                              </Typography>
+                              <MapView 
+                                assignments={[assignment]} 
+                                height={180}
                               />
                             </Box>
                           )}
-
-                          {/* Details Grid */}
-                          <Box sx={{ display: 'grid', gap: 1.2 }}>
-                            {assignment.medicalFee && (
-                              <Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                  Medical Fee
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
-                                  {assignment.medicalFee}
-                                </Typography>
-                              </Box>
-                            )}
-                            {assignment.regFee && (
-                              <Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                  Registration Fee
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
-                                  {assignment.regFee}
-                                </Typography>
-                              </Box>
-                            )}
-                            {assignment.startContractDate && (
-                              <Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                  Contract Period
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
-                                  {assignment.startContractDate} - {assignment.endContractDate || 'Ongoing'}
-                                </Typography>
-                              </Box>
-                            )}
-                            {assignment.reason && (
-                              <Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                  Reason
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                                  {assignment.reason}
-                                </Typography>
-                              </Box>
-                            )}
-                            {assignment.createdAt && (
-                              <Box>
-                                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' }}>
-                                  Created
-                                </Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                                  {assignment.createdAt}
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
                         </Box>
                       </Box>
-                    </Box>
-                  ))}
-                </Box>
+                    ))}
+                  </Box>
+                </>
               )}
             </Box>
           )}

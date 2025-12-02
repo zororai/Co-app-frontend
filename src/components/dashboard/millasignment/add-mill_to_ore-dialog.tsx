@@ -37,6 +37,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/material/styles';
 
 
 interface AddUserDialogProps {
@@ -52,33 +53,6 @@ const steps = [
   'Transport Information',
   'Review',
   'Confirmation'
-];
-
-// Define role options
-const roleOptions = [
-  { value: 'admin', label: 'Admin' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'user', label: 'User' },
-  { value: 'she_officer', label: 'SHE Officer' },
-  { value: 'mine_manager', label: 'Mine Manager' }
-];
-
-// Define position options
-const positionOptions = [
-  { value: 'general_manager', label: 'General Manager' },
-  { value: 'supervisor', label: 'Supervisor' },
-  { value: 'operator', label: 'Operator' },
-  { value: 'engineer', label: 'Engineer' },
-  { value: 'safety_officer', label: 'Safety Officer' },
-  { value: 'administrator', label: 'Administrator' }
-];
-
-// Define location options
-const locationOptions = [
-  { value: 'main_shaft', label: 'Main Shaft' },
-  { value: 'processing_plant', label: 'Processing Plant' },
-  { value: 'security_office', label: 'Security Office' },
-  { value: 'head_office', label: 'Head Office' }
 ];
 
 type TaxItem = { taxType: string; taxRate: number };
@@ -100,7 +74,25 @@ interface FormData {
   tax: TaxItem[];
 }
 
+interface FormData {
+  shaftNumbers: string;
+  weight: string | number;
+  numberOfBags: string | number;
+  transportStatus: string;
+  selectedTransportdriver: string;
+  selectedTransport: string;
+  originLocation: string;
+  destination: string;
+  location: string;
+  transportReason: string;
+  processStatus: string;
+  date: dayjs.Dayjs;
+  time: dayjs.Dayjs;
+  tax: TaxItem[];
+}
+
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -406,12 +398,18 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
+        p: 2.5,
+        bgcolor: theme.palette.secondary.main,
+        color: 'white',
         pb: 1
       }}>
-        <Typography variant="h6" component="div">
+        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
           Assign Ore to Transport
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
+        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{
+          color: 'white',
+          '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' }
+        }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -573,9 +571,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 Next
@@ -660,7 +658,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: theme.palette.secondary.main, 
+                  color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    bgcolor: 'rgba(50, 56, 62, 0.04)'
+                  }
+                }}
               >
                 Back
               </Button>
@@ -668,9 +673,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 Next
@@ -744,7 +749,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: theme.palette.secondary.main, 
+                  color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    bgcolor: 'rgba(50, 56, 62, 0.04)'
+                  }
+                }}
               >
                 Back
               </Button>
@@ -752,9 +764,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleNext}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 Next
@@ -899,7 +911,14 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
               <Button
                 variant="outlined"
                 onClick={handleBack}
-                sx={{ borderColor: '#121212', color: '#121212' }}
+                sx={{ 
+                  borderColor: theme.palette.secondary.main, 
+                  color: theme.palette.secondary.main,
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.dark,
+                    bgcolor: 'rgba(50, 56, 62, 0.04)'
+                  }
+                }}
               >
                 Back
               </Button>
@@ -908,9 +927,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 onClick={handleSubmit}
                 disabled={isSubmitting}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 {isSubmitting ? 'Creating...' : 'Save ore record'}
@@ -941,9 +960,9 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
                 variant="contained"
                 onClick={handleClose}
                 sx={{ 
-                  bgcolor: '#121212', 
+                  bgcolor: theme.palette.secondary.main, 
                   color: 'white',
-                  '&:hover': { bgcolor: '#333' } 
+                  '&:hover': { bgcolor: theme.palette.secondary.dark } 
                 }}
               >
                 Close

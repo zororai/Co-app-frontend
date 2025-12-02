@@ -563,7 +563,7 @@ export function CustomersTable({
               <TableCell>Shaft Numbers</TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Weight </TableCell>
               <TableCell sx={{ backgroundColor: '#ccffcc' }}>Number of Bags </TableCell>
-              <TableCell sx={{ backgroundColor: '#ffffcc' }}>Free Gold Weight</TableCell>
+              <TableCell sx={{ backgroundColor: '#ffffcc' }}>Free Gold Weight(gs)</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Price</TableCell>
               <TableCell sx={{ backgroundColor: '#ffffcc' }}>Buyer</TableCell>
               <TableCell>Milling Progress Status</TableCell>
@@ -594,35 +594,43 @@ export function CustomersTable({
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                  
 
-                                   <Button 
-                                                     onClick={() => handleViewUserDetails(row.id)}
-                                                variant="outlined"
-                                                size="small"
-                                                sx={{
-                                                  borderColor: '#06131fff',
-                                                  color: '#081b2fff',
-                                                  '&:hover': {
-                                                    borderColor: '#06131fff',
-                                                    backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                                                  }
-                                                }}
-                                              >View Details</Button>
+                                   <Button
+                                     onClick={() => handleViewUserDetails(row.id)}
+                                     variant="contained"
+                                     size="small"
+                                     sx={{
+                                       bgcolor: 'secondary.dark',
+                                       color: 'white',
+                                       borderRadius: '999px',
+                                       textTransform: 'none',
+                                       minWidth: 140,
+                                       px: 2,
+                                       py: '6px',
+                                       boxShadow: 'none',
+                                       '&:hover': { bgcolor: 'secondary.main' }
+                                     }}
+                                   >
+                                     View Details
+                                   </Button>
                         
                     </Box>
                   </TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Button 
+                      <Button
                         onClick={() => handleOpenPayout(row)}
-                        variant="outlined"
-                                                size="small"
+                        variant="contained"
+                        size="small"
                         sx={{
-                          borderColor: '#06131fff',
-                          color: '#081b2fff',
-                          '&:hover': {
-                            borderColor: '#06131fff',
-                            backgroundColor: 'rgba(6, 19, 31, 0.04)',
-                          }
+                          bgcolor: 'secondary.dark',
+                          color: 'white',
+                          borderRadius: '999px',
+                          textTransform: 'none',
+                          minWidth: 140,
+                          px: 2,
+                          py: '6px',
+                          boxShadow: 'none',
+                          '&:hover': { bgcolor: 'secondary.main' }
                         }}
                       >
                         Pay Out

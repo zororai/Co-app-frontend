@@ -15,6 +15,9 @@ import Button from '@mui/material/Button';
 import { authClient } from '@/lib/auth/client';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
+import PrintIcon from '@mui/icons-material/Print';
+import { useTheme } from '@mui/material/styles';
+import { printElementById } from '@/lib/print';
 import AddIcon from '@mui/icons-material/Add';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -84,6 +87,7 @@ const locationOptions = [
 ];
 
 export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): React.JSX.Element {
+  const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -386,21 +390,35 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
         sx: { borderRadius: 1 }
       }}
     >
-      <DialogTitle sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        pb: 1
-      }}>
-        <Typography variant="h6" component="div">
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 2.5,
+          bgcolor: theme.palette.secondary.main,
+          color: 'white'
+        }}
+      >
+        <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 600 }}>
           Assign Ore to Transport
         </Typography>
-        <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close">
-          <CloseIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex' }}>
+          <IconButton
+            onClick={() => printElementById('assign-ore-printable', 'Assign Ore')}
+            size="small"
+            sx={{ mr: 1, color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}
+          >
+            <PrintIcon />
+          </IconButton>
+          <IconButton edge="end" color="inherit" onClick={handleClose} aria-label="close" sx={{ color: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
-      
+
       <DialogContent sx={{ pt: 2 }}>
+        <Box id="assign-ore-printable">
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
   
         </Typography>
@@ -935,6 +953,7 @@ export function AddOreDialog({ open, onClose, onRefresh }: AddUserDialogProps): 
             </Box>
           </Box>
         )}
+        </Box>
       </DialogContent>
     </Dialog>
   );
